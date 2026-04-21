@@ -186,11 +186,11 @@ export function HomeScreen() {
           </button>
         </div>
 
-        <div className="mt-5 flex gap-4 overflow-x-auto px-6 pb-2 scrollbar-hide">
+        <div className="mt-5 flex flex-col gap-3 px-6 pb-2">
           {nearby.map((item, i) => (
             <article
               key={item.title}
-              className="group flex w-[300px] shrink-0 items-center gap-3 rounded-2xl border border-border/60 p-3 transition-smooth hover:border-primary/40 hover:shadow-soft"
+              className="group flex w-full items-center gap-3 rounded-2xl border border-border/60 p-3 transition-smooth hover:border-primary/40 hover:shadow-soft"
               style={{
                 backgroundColor: "oklch(0.20 0.014 60)",
                 animation: `float-up 0.6s ${i * 0.08 + 0.1}s var(--transition-smooth) both`,
