@@ -7,12 +7,12 @@ export function BottomNav() {
   const { t } = useT();
   const { pathname } = useLocation();
 
-  const items = [
+  const items: Array<{ to: "/" | "/results" | "/library" | "/settings"; label: string; icon: typeof Compass; exact?: boolean }> = [
     { to: "/", label: t("discover"), icon: Compass, exact: true },
     { to: "/results", label: t("mapTab"), icon: Map },
     { to: "/library", label: t("libraryTab"), icon: BookmarkCheck },
     { to: "/settings", label: t("settingsTab"), icon: Settings },
-  ] as const;
+  ];
 
   return (
     <nav className="fixed bottom-0 left-1/2 z-40 w-full max-w-[480px] -translate-x-1/2 border-t border-border bg-card/95 backdrop-blur-md pb-safe">
