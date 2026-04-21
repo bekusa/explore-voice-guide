@@ -9,38 +9,148 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SplashRouteImport } from './routes/splash'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as ResultsRouteImport } from './routes/results'
+import { Route as LibraryRouteImport } from './routes/library'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PlayerIdRouteImport } from './routes/player.$id'
+import { Route as AttractionIdRouteImport } from './routes/attraction.$id'
 
+const SplashRoute = SplashRouteImport.update({
+  id: '/splash',
+  path: '/splash',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResultsRoute = ResultsRouteImport.update({
+  id: '/results',
+  path: '/results',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LibraryRoute = LibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlayerIdRoute = PlayerIdRouteImport.update({
+  id: '/player/$id',
+  path: '/player/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AttractionIdRoute = AttractionIdRouteImport.update({
+  id: '/attraction/$id',
+  path: '/attraction/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/library': typeof LibraryRoute
+  '/results': typeof ResultsRoute
+  '/settings': typeof SettingsRoute
+  '/splash': typeof SplashRoute
+  '/attraction/$id': typeof AttractionIdRoute
+  '/player/$id': typeof PlayerIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/library': typeof LibraryRoute
+  '/results': typeof ResultsRoute
+  '/settings': typeof SettingsRoute
+  '/splash': typeof SplashRoute
+  '/attraction/$id': typeof AttractionIdRoute
+  '/player/$id': typeof PlayerIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/library': typeof LibraryRoute
+  '/results': typeof ResultsRoute
+  '/settings': typeof SettingsRoute
+  '/splash': typeof SplashRoute
+  '/attraction/$id': typeof AttractionIdRoute
+  '/player/$id': typeof PlayerIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/library'
+    | '/results'
+    | '/settings'
+    | '/splash'
+    | '/attraction/$id'
+    | '/player/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/library'
+    | '/results'
+    | '/settings'
+    | '/splash'
+    | '/attraction/$id'
+    | '/player/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/library'
+    | '/results'
+    | '/settings'
+    | '/splash'
+    | '/attraction/$id'
+    | '/player/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LibraryRoute: typeof LibraryRoute
+  ResultsRoute: typeof ResultsRoute
+  SettingsRoute: typeof SettingsRoute
+  SplashRoute: typeof SplashRoute
+  AttractionIdRoute: typeof AttractionIdRoute
+  PlayerIdRoute: typeof PlayerIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/splash': {
+      id: '/splash'
+      path: '/splash'
+      fullPath: '/splash'
+      preLoaderRoute: typeof SplashRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/results': {
+      id: '/results'
+      path: '/results'
+      fullPath: '/results'
+      preLoaderRoute: typeof ResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/library': {
+      id: '/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +158,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/player/$id': {
+      id: '/player/$id'
+      path: '/player/$id'
+      fullPath: '/player/$id'
+      preLoaderRoute: typeof PlayerIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/attraction/$id': {
+      id: '/attraction/$id'
+      path: '/attraction/$id'
+      fullPath: '/attraction/$id'
+      preLoaderRoute: typeof AttractionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LibraryRoute: LibraryRoute,
+  ResultsRoute: ResultsRoute,
+  SettingsRoute: SettingsRoute,
+  SplashRoute: SplashRoute,
+  AttractionIdRoute: AttractionIdRoute,
+  PlayerIdRoute: PlayerIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
