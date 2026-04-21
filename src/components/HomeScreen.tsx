@@ -51,6 +51,20 @@ const nearby = [
 ];
 
 export function HomeScreen() {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
+
+  const submitSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    navigate({ to: "/results", search: { q } });
+  };
+
+  const startFeatured = () => {
+    navigate({ to: "/player", search: { name: "Whispers of Old Tbilisi" } });
+  };
+
   return (
     <div className="relative pb-32 bg-background text-foreground">
       {/* HERO */}
