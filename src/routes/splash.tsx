@@ -61,7 +61,10 @@ function SplashPage() {
                 <ArrowRight className="h-4 w-4 text-muted-foreground" />
               </button>
               <button
-                onClick={() => navigate({ to: "/" })}
+                onClick={() => {
+                  markFirstLaunched();
+                  navigate({ to: "/" });
+                }}
                 className="mt-3 w-full rounded-full bg-primary py-3.5 text-sm font-semibold text-primary-foreground shadow-card transition-colors hover:bg-primary/90"
               >
                 {t("continue")}
