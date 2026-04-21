@@ -1,32 +1,59 @@
-import { Search, MapPin, Bell, Headphones, Play, Clock, Star, Compass, Bookmark, User, Home as HomeIcon, Globe2 } from "lucide-react";
-import heroImg from "@/assets/global-hero.jpg";
-import santoriniImg from "@/assets/santorini.jpg";
-import kyotoImg from "@/assets/kyoto.jpg";
-import marrakechImg from "@/assets/marrakech.jpg";
+import {
+  Search,
+  MapPin,
+  Bell,
+  Headphones,
+  Play,
+  Clock,
+  Star,
+  Compass,
+  Bookmark,
+  User,
+  Home as HomeIcon,
+  ArrowRight,
+} from "lucide-react";
+import heroImg from "@/assets/tbilisi-hero.jpg";
+import abanotubaniImg from "@/assets/abanotubani.jpg";
+import samebaImg from "@/assets/sameba.jpg";
+import rustaveliImg from "@/assets/rustaveli.jpg";
 
 const categories = [
   { label: "All", active: true },
-  { label: "Cities" },
+  { label: "Historic" },
   { label: "Sacred" },
   { label: "Culinary" },
   { label: "Hidden" },
-  { label: "Nature" },
 ];
 
-const trending = [
-  { title: "Santorini at Sunset", city: "Greece", duration: "38 min", rating: 4.9, img: santoriniImg, length: "9 stops" },
-  { title: "Kyoto's Vermilion Path", city: "Japan", duration: "42 min", rating: 4.95, img: kyotoImg, length: "11 stops" },
-  { title: "Marrakech After Dark", city: "Morocco", duration: "29 min", rating: 4.8, img: marrakechImg, length: "7 stops" },
+const nearby = [
+  {
+    title: "Abanotubani Steam",
+    duration: "18 min",
+    rating: 4.92,
+    img: abanotubaniImg,
+  },
+  {
+    title: "Sameba at Dusk",
+    duration: "24 min",
+    rating: 4.88,
+    img: samebaImg,
+  },
+  {
+    title: "Rustaveli Reverie",
+    duration: "31 min",
+    rating: 4.9,
+    img: rustaveliImg,
+  },
 ];
 
 export function HomeScreen() {
   return (
     <div className="relative pb-32 bg-background text-foreground">
       {/* HERO */}
-      <section className="relative h-[560px] w-full overflow-hidden">
+      <section className="relative h-[620px] w-full overflow-hidden">
         <img
           src={heroImg}
-          alt="Narikala Fortress overlooking Tbilisi old town at golden hour"
+          alt="Old Tbilisi rooftops at golden hour with sulfur bath domes"
           width={1024}
           height={1280}
           className="absolute inset-0 h-full w-full object-cover"
@@ -34,13 +61,15 @@ export function HomeScreen() {
         <div className="absolute inset-0 bg-gradient-hero" />
 
         {/* Top bar */}
-        <header className="relative z-10 flex items-center justify-between px-6 pt-12">
-          <div className="flex items-center gap-2">
-            <Globe2 className="h-4 w-4 text-primary" strokeWidth={2.2} />
-            <div className="flex flex-col leading-tight">
-              <span className="text-[10px] uppercase tracking-[0.18em] text-foreground/60">Explore the world</span>
-              <span className="text-sm font-medium text-foreground">142 cities · 38 countries</span>
-            </div>
+        <header className="relative z-10 flex items-start justify-between px-6 pt-12">
+          <div className="flex flex-col leading-tight">
+            <span className="text-[10px] font-medium uppercase tracking-[0.22em] text-primary">
+              Currently in
+            </span>
+            <span className="mt-1.5 flex items-center gap-1.5 text-[15px] font-medium text-foreground">
+              <MapPin className="h-3.5 w-3.5 text-primary" strokeWidth={2.4} />
+              Tbilisi, Georgia
+            </span>
           </div>
           <button
             aria-label="Notifications"
@@ -52,68 +81,87 @@ export function HomeScreen() {
         </header>
 
         {/* Hero copy */}
-        <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-8 animate-float-up">
+        <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-9 animate-float-up">
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 backdrop-blur-md">
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full animate-pulse-ring rounded-full bg-primary" />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
             </span>
-            <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-primary">Featured Tour</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
+              Featured Tour
+            </span>
           </span>
 
-          <h1 className="mt-4 font-display text-[2.6rem] font-500 leading-[1.05] text-foreground">
-            Stories of <span className="italic text-gradient-gold">Santorini</span>
+          <h1 className="mt-5 font-display text-[2.5rem] font-medium leading-[1.02] text-foreground">
+            Whispers of <span className="italic text-primary">Old Tbilisi</span>
           </h1>
 
-          <p className="mt-3 max-w-[18rem] text-sm leading-relaxed text-foreground/75">
-            From whitewashed cliffs to Aegean sunsets — a cinematic journey through the islands, narrated by local voices.
+          <p className="mt-4 max-w-[19rem] text-[13.5px] leading-relaxed text-foreground/75">
+            From sulfur baths and crooked balconies to the chants of Sioni — a cinematic walk through the soul of the old town.
           </p>
 
-          <div className="mt-5 flex items-center gap-4 text-xs text-foreground/70">
-            <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> Greece</span>
-            <span className="h-3 w-px bg-foreground/20" />
-            <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> 47 min</span>
-            <span className="h-3 w-px bg-foreground/20" />
-            <span className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 fill-primary text-primary" /> 4.96</span>
-          </div>
-
-          <button className="group mt-6 flex w-full items-center justify-between rounded-2xl bg-gradient-gold px-5 py-4 text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01]">
-            <span className="flex items-center gap-3">
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-primary-foreground/15">
-                <Play className="h-4 w-4 translate-x-[1px] fill-current" />
-              </span>
-              <span className="text-left">
-                <span className="block text-[10px] uppercase tracking-[0.2em] opacity-70">Begin journey</span>
-                <span className="block text-sm font-semibold">Listen to first chapter</span>
-              </span>
+          <div className="mt-5 flex items-center gap-3 text-[11px] text-foreground/70">
+            <span className="flex items-center gap-1.5">
+              <Clock className="h-3.5 w-3.5" /> 47 min
             </span>
-            <span className="text-xs opacity-70">Free</span>
-          </button>
+            <span className="h-3 w-px bg-foreground/25" />
+            <span className="flex items-center gap-1.5">
+              <Star className="h-3.5 w-3.5 fill-primary text-primary" /> 4.96
+            </span>
+            <span className="h-3 w-px bg-foreground/25" />
+            <span className="flex items-center gap-1.5">
+              <MapPin className="h-3.5 w-3.5" /> 12 stops
+            </span>
+          </div>
         </div>
       </section>
 
+      {/* CTA */}
+      <section className="px-6 -mt-2 relative z-20">
+        <button className="group flex w-full items-center justify-between rounded-2xl bg-gradient-gold px-5 py-4 text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01]">
+          <span className="flex items-center gap-3">
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-primary-foreground/15">
+              <Play className="h-4 w-4 translate-x-[1px] fill-current" />
+            </span>
+            <span className="text-left">
+              <span className="block text-[10px] font-semibold uppercase tracking-[0.22em] opacity-70">
+                Begin journey
+              </span>
+              <span className="block text-[14px] font-semibold">
+                Listen to first chapter
+              </span>
+            </span>
+          </span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] opacity-80">
+            Free
+          </span>
+        </button>
+      </section>
+
       {/* SEARCH */}
-      <section className="px-6 -mt-4 relative z-20">
-        <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 shadow-soft">
-          <Search className="h-4 w-4 text-muted-foreground" />
+      <section className="mt-6 px-6">
+        <div className="flex items-center gap-3 rounded-full border border-border bg-card px-5 py-3.5 shadow-soft">
+          <Search className="h-4 w-4 text-muted-foreground" strokeWidth={2.2} />
           <input
-            placeholder="Search cities, stories, themes…"
-            className="flex-1 bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none"
+            placeholder="Search places, stories, themes…"
+            className="flex-1 bg-transparent text-[13px] placeholder:text-muted-foreground focus:outline-none"
           />
-          <kbd className="rounded-md border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">⌘K</kbd>
+          <kbd className="rounded-md border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">
+            ⌘K
+          </kbd>
         </div>
       </section>
 
       {/* CATEGORIES */}
-      <section className="mt-8">
+      <section className="mt-6">
         <div className="flex gap-2 overflow-x-auto px-6 scrollbar-hide">
           {categories.map((c) => (
             <button
               key={c.label}
-              className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-medium transition-smooth ${
+              className={`whitespace-nowrap rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] transition-smooth ${
                 c.active
                   ? "bg-foreground text-background"
-                  : "border border-border bg-card text-muted-foreground hover:text-foreground"
+                  : "border border-border bg-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
               {c.label}
@@ -122,56 +170,66 @@ export function HomeScreen() {
         </div>
       </section>
 
-      {/* TRENDING */}
-      <section className="mt-8 px-6">
-        <div className="flex items-end justify-between">
+      {/* NEAR YOU */}
+      <section className="mt-10">
+        <div className="flex items-end justify-between px-6">
           <div>
-            <h2 className="font-display text-2xl font-500 text-foreground">Trending worldwide</h2>
-            <p className="mt-1 text-xs text-muted-foreground">Most-loved tours this week</p>
+            <h2 className="font-display text-[28px] font-medium leading-tight text-foreground">
+              Near <span className="italic text-primary">you</span>
+            </h2>
+            <p className="mt-1.5 text-[12px] text-muted-foreground">
+              Curated stops within walking distance
+            </p>
           </div>
-          <button className="text-xs text-primary">See all</button>
+          <button className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+            See all <ArrowRight className="h-3 w-3" />
+          </button>
         </div>
 
-        <div className="mt-5 space-y-4">
-          {trending.map((item, i) => (
+        <div className="mt-5 flex gap-4 overflow-x-auto px-6 pb-2 scrollbar-hide">
+          {nearby.map((item, i) => (
             <article
               key={item.title}
-              className="group flex gap-4 rounded-2xl border border-border bg-gradient-card p-3 transition-smooth hover:border-primary/40 hover:shadow-soft"
-              style={{ animation: `float-up 0.6s ${i * 0.08 + 0.1}s var(--transition-smooth) both` }}
+              className="group flex w-[300px] shrink-0 items-center gap-3 rounded-2xl border border-border/60 p-3 transition-smooth hover:border-primary/40 hover:shadow-soft"
+              style={{
+                backgroundColor: "oklch(0.20 0.014 60)",
+                animation: `float-up 0.6s ${i * 0.08 + 0.1}s var(--transition-smooth) both`,
+              }}
             >
-              <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl">
+              <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-xl">
                 <img
                   src={item.img}
                   alt={item.title}
-                  width={200}
-                  height={200}
+                  width={144}
+                  height={144}
                   loading="lazy"
                   className="h-full w-full object-cover transition-smooth group-hover:scale-105"
                 />
-                <span className="absolute bottom-1.5 left-1.5 rounded-md bg-background/70 px-1.5 py-0.5 text-[9px] font-medium backdrop-blur-sm">
-                  {item.city}
-                </span>
               </div>
-              <div className="flex flex-1 flex-col justify-between py-1">
-                <div>
-                  <h3 className="text-base font-semibold leading-tight text-foreground">{item.title}</h3>
-                  <p className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                    <Headphones className="h-3 w-3" /> {item.length}
-                  </p>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{item.duration}</span>
-                    <span className="flex items-center gap-1"><Star className="h-3 w-3 fill-primary text-primary" />{item.rating}</span>
-                  </div>
-                  <button
-                    aria-label={`Play ${item.title}`}
-                    className="grid h-9 w-9 place-items-center rounded-full bg-foreground text-background transition-smooth hover:bg-primary hover:text-primary-foreground"
-                  >
-                    <Play className="h-3.5 w-3.5 translate-x-[1px] fill-current" />
-                  </button>
+              <div className="flex flex-1 flex-col gap-1.5">
+                <h3 className="text-[14px] font-semibold leading-tight text-foreground">
+                  {item.title}
+                </h3>
+                <p className="flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground">
+                  <Headphones className="h-3 w-3" /> Audio guide
+                </p>
+                <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {item.duration}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Star className="h-3 w-3 fill-primary text-primary" />
+                    {item.rating}
+                  </span>
                 </div>
               </div>
+              <button
+                aria-label={`Play ${item.title}`}
+                className="grid h-9 w-9 place-items-center rounded-full bg-foreground text-background transition-smooth hover:bg-primary hover:text-primary-foreground"
+              >
+                <Play className="h-3.5 w-3.5 translate-x-[1px] fill-current" />
+              </button>
             </article>
           ))}
         </div>
@@ -191,10 +249,19 @@ function NowPlaying() {
     <div className="fixed bottom-20 left-0 right-0 z-30 px-4 md:absolute md:left-1/2 md:-translate-x-1/2 md:max-w-[388px]">
       <div className="flex items-center gap-3 rounded-2xl border border-border bg-card/90 px-3 py-2.5 shadow-elegant backdrop-blur-xl">
         <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg">
-          <img src={santoriniImg} alt="" width={88} height={88} loading="lazy" className="h-full w-full object-cover" />
+          <img
+            src={abanotubaniImg}
+            alt=""
+            width={88}
+            height={88}
+            loading="lazy"
+            className="h-full w-full object-cover"
+          />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[13px] font-semibold text-foreground">Chapter 2 · Caldera at Sunset</p>
+          <p className="truncate text-[13px] font-semibold text-foreground">
+            Chapter 2 · Sulfur & Stone
+          </p>
           <div className="mt-1 flex items-center gap-2">
             <div className="flex h-3 items-center gap-[2px]">
               {[0, 1, 2, 3].map((i) => (
@@ -236,10 +303,13 @@ function TabBar() {
           <button
             key={t.label}
             className={`flex flex-col items-center gap-1 transition-smooth ${
-              t.active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+              t.active ? "text-primary" : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            <t.icon className={`h-5 w-5 ${t.active ? "fill-primary/20 stroke-primary" : ""}`} strokeWidth={t.active ? 2.2 : 1.8} />
+            <t.icon
+              className={`h-5 w-5 ${t.active ? "fill-primary/20 stroke-primary" : ""}`}
+              strokeWidth={t.active ? 2.2 : 1.8}
+            />
             <span className="text-[10px] font-medium">{t.label}</span>
           </button>
         ))}
