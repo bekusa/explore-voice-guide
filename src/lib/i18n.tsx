@@ -976,6 +976,7 @@ interface LangContextValue {
 const LangContext = createContext<LangContextValue | null>(null);
 
 const STORAGE_KEY = "lokali.lang";
+const LAUNCH_KEY = "lokali.launched";
 
 function detectInitial(): LangCode {
   if (typeof window === "undefined") return "ka";
