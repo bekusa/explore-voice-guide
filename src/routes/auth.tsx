@@ -23,13 +23,26 @@ function AuthPage() {
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Redirect if already signed in
+  // Redirect if already signed in. Send to onboarding if profile is unset.
   useEffect(() => {
+    const route = async (userId: string) => {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("preferred_language, preferred_voice")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (profile?.preferred_language && profile?.preferred_voice) {
+        navigate({ to: "/" });
+      } else {
+        navigate({ to: "/onboarding" });
+      }
+    };
+
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/" });
+      if (data.session) route(data.session.user.id);
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      if (session) navigate({ to: "/" });
+      if (session) route(session.user.id);
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
