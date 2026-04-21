@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Search,
   MapPin,
@@ -13,7 +14,7 @@ import {
   ArrowRight,
   LogOut,
 } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import heroImg from "@/assets/tbilisi-hero.jpg";
 import abanotubaniImg from "@/assets/abanotubani.jpg";
