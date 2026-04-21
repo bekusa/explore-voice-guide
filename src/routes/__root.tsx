@@ -31,7 +31,7 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#D9573D" },
+      { name: "theme-color", content: "#1A1410" },
       { title: "Lokali — AI Travel Audio Guide in 37 Languages" },
       { name: "description", content: "Discover landmarks worldwide with AI-narrated audio guides in your own language. 37 languages, offline listening, beautifully simple." },
       { property: "og:title", content: "Lokali — AI Travel Audio Guide" },
