@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import splashBg from "@/assets/splash-bg.jpg";
-import { LANGUAGES, useT } from "@/lib/i18n";
+import { LANGUAGES, useT, markFirstLaunched } from "@/lib/i18n";
 import { Check, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -61,7 +61,10 @@ function SplashPage() {
                 <ArrowRight className="h-4 w-4 text-muted-foreground" />
               </button>
               <button
-                onClick={() => navigate({ to: "/" })}
+                onClick={() => {
+                  markFirstLaunched();
+                  navigate({ to: "/" });
+                }}
                 className="mt-3 w-full rounded-full bg-primary py-3.5 text-sm font-semibold text-primary-foreground shadow-card transition-colors hover:bg-primary/90"
               >
                 {t("continue")}
