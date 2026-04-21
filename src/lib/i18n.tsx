@@ -1030,5 +1030,10 @@ export function useT() {
 
 export function hasFirstLaunched(): boolean {
   if (typeof window === "undefined") return true;
-  return !!window.localStorage.getItem(STORAGE_KEY);
+  return !!window.localStorage.getItem(LAUNCH_KEY);
+}
+
+export function markFirstLaunched() {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(LAUNCH_KEY, "1");
 }
