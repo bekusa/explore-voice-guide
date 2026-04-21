@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Search,
   MapPin,
@@ -13,7 +14,7 @@ import {
   ArrowRight,
   LogOut,
 } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import heroImg from "@/assets/tbilisi-hero.jpg";
 import abanotubaniImg from "@/assets/abanotubani.jpg";
@@ -50,6 +51,20 @@ const nearby = [
 ];
 
 export function HomeScreen() {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
+
+  const submitSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    navigate({ to: "/results", search: { q } });
+  };
+
+  const startFeatured = () => {
+    navigate({ to: "/player", search: { name: "Whispers of Old Tbilisi" } });
+  };
+
   return (
     <div className="relative pb-32 bg-background text-foreground">
       {/* HERO */}
@@ -121,7 +136,10 @@ export function HomeScreen() {
 
       {/* CTA */}
       <section className="px-6 -mt-2 relative z-20">
-        <button className="group flex w-full items-center justify-between rounded-2xl bg-gradient-gold px-5 py-4 text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01]">
+        <button
+          onClick={startFeatured}
+          className="group flex w-full items-center justify-between rounded-2xl bg-gradient-gold px-5 py-4 text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01]"
+        >
           <span className="flex items-center gap-3">
             <span className="grid h-10 w-10 place-items-center rounded-full bg-primary-foreground/15">
               <Play className="h-4 w-4 translate-x-[1px] fill-current" />
@@ -143,16 +161,21 @@ export function HomeScreen() {
 
       {/* SEARCH */}
       <section className="mt-6 px-6">
-        <div className="flex items-center gap-3 rounded-full border border-border bg-card px-5 py-3.5 shadow-soft">
+        <form
+          onSubmit={submitSearch}
+          className="flex items-center gap-3 rounded-full border border-border bg-card px-5 py-3.5 shadow-soft"
+        >
           <Search className="h-4 w-4 text-muted-foreground" strokeWidth={2.2} />
           <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder="Search places, stories, themes…"
             className="flex-1 bg-transparent text-[13px] placeholder:text-muted-foreground focus:outline-none"
           />
           <kbd className="rounded-md border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">
             ⌘K
           </kbd>
-        </div>
+        </form>
       </section>
 
       {/* CATEGORIES */}
