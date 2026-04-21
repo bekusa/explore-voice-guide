@@ -11,7 +11,10 @@ import {
   User,
   Home as HomeIcon,
   ArrowRight,
+  LogOut,
 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/useAuth";
 import heroImg from "@/assets/tbilisi-hero.jpg";
 import abanotubaniImg from "@/assets/abanotubani.jpg";
 import samebaImg from "@/assets/sameba.jpg";
@@ -290,11 +293,11 @@ function NowPlaying() {
 }
 
 function TabBar() {
+  const { user, signOut } = useAuth();
   const tabs = [
     { icon: HomeIcon, label: "Home", active: true },
     { icon: Compass, label: "Explore" },
     { icon: Bookmark, label: "Saved" },
-    { icon: User, label: "Profile" },
   ];
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background/80 backdrop-blur-xl md:absolute md:rounded-b-[3rem]">
@@ -313,6 +316,24 @@ function TabBar() {
             <span className="text-[10px] font-medium">{t.label}</span>
           </button>
         ))}
+        {user ? (
+          <button
+            onClick={signOut}
+            aria-label="Sign out"
+            className="flex flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
+          >
+            <LogOut className="h-5 w-5" strokeWidth={1.8} />
+            <span className="text-[10px] font-medium">Sign out</span>
+          </button>
+        ) : (
+          <Link
+            to="/auth"
+            className="flex flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
+          >
+            <User className="h-5 w-5" strokeWidth={1.8} />
+            <span className="text-[10px] font-medium">Sign in</span>
+          </Link>
+        )}
       </div>
     </nav>
   );
