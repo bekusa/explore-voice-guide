@@ -16,10 +16,10 @@ export const Route = createFileRoute("/player")({
   validateSearch: (search: Record<string, unknown>): Search => ({
     name: typeof search.name === "string" ? search.name : "",
   }),
-  head: ({ search }) => ({
+  head: () => ({
     meta: [
-      { title: `${search.name || "Audio guide"} — Whispers of Old Tbilisi` },
-      { name: "description", content: `Listen to a narrated audio guide of ${search.name}.` },
+      { title: "Audio guide — Whispers of Old Tbilisi" },
+      { name: "description", content: "Listen to a cinematic narrated audio guide." },
     ],
   }),
   component: PlayerPage,
@@ -176,7 +176,7 @@ function PlayerPage() {
             {name || "Audio guide"}
           </h1>
           <p className="mt-1.5 text-center text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-            {LANGUAGES.find((l) => l.code === langTag)?.label ?? langTag}
+            {LANGUAGES.find((l) => l.code === langTag)?.name ?? langTag}
           </p>
         </section>
 
