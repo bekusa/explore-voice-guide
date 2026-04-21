@@ -1,143 +1,239 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Search, MapPin, Sparkles, Bell } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Search, Bell, MapPin, Play, Star, Clock, Headphones, ChevronRight } from "lucide-react";
 import { useT, hasFirstLaunched } from "@/lib/i18n";
-import { LanguageSelector } from "@/components/LanguageSelector";
-import { AttractionCard } from "@/components/AttractionCard";
-import { CardSkeleton } from "@/components/CardSkeleton";
-import { listAttractions, FEATURED_CITIES, type Attraction } from "@/lib/mockApi";
-import { getRecent, addRecent } from "@/lib/library";
+import { listAttractions, type Attraction } from "@/lib/mockApi";
+import heroTbilisi from "@/assets/hero-tbilisi.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Lokali — Discover audio guides worldwide" },
-      { name: "description", content: "Browse featured destinations and generate AI audio guides in 37 languages." },
+      { title: "Lokali — Whispers of the world, in your language" },
+      { name: "description", content: "Cinematic AI-narrated audio guides for travellers. Curated journeys, local stories, 37 languages." },
     ],
   }),
   component: DiscoverPage,
 });
 
+const FILTERS = ["All", "Historic", "Sacred", "Culinary", "Hidden"];
+
 function DiscoverPage() {
   const { t } = useT();
   const navigate = useNavigate();
-  const [q, setQ] = useState("");
   const [items, setItems] = useState<Attraction[] | null>(null);
-  const [recent, setRecent] = useState<string[]>([]);
+  const [filter, setFilter] = useState("All");
+  const [q, setQ] = useState("");
 
-  // First-launch redirect
   useEffect(() => {
-    if (!hasFirstLaunched()) {
-      navigate({ to: "/splash" });
-    }
+    if (!hasFirstLaunched()) navigate({ to: "/splash" });
   }, [navigate]);
 
-  useEffect(() => {
-    listAttractions().then(setItems);
-    setRecent(getRecent());
-  }, []);
+  useEffect(() => { listAttractions().then(setItems); }, []);
+
+  const featured = items?.[0];
+  const nearby = items?.slice(1) ?? [];
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!q.trim()) return;
-    addRecent(q.trim());
     navigate({ to: "/results", search: { q: q.trim() } });
   };
 
   return (
-    <div className="animate-slide-in pt-safe">
+    <div className="animate-slide-in pt-safe pb-2">
       {/* Top bar */}
-      <header className="flex items-center justify-between px-5 pb-3 pt-4">
+      <header className="flex items-start justify-between px-5 pb-5 pt-4">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Lokali</p>
-          <h1 className="mt-0.5 font-display text-3xl leading-tight text-foreground">{t("greeting")}</h1>
+          <p className="text-[10px] font-semibold tracking-editorial text-primary-bright uppercase">
+            Currently in
+          </p>
+          <div className="mt-1 flex items-center gap-1.5">
+            <MapPin className="h-3.5 w-3.5 text-primary-bright" strokeWidth={2.4} />
+            <h2 className="font-sans text-base font-semibold text-foreground">Tbilisi, Georgia</h2>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <LanguageSelector />
-          <button
-            aria-label="notifications"
-            className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground shadow-soft"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
-        </div>
+        <button
+          aria-label="notifications"
+          className="grid h-10 w-10 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:border-primary"
+        >
+          <Bell className="h-4 w-4" />
+        </button>
       </header>
 
-      {/* Search */}
-      <form onSubmit={submit} className="px-5">
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder={t("searchPlaceholder")}
-              className="h-12 rounded-full border-border bg-card pl-11 text-sm shadow-soft"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={() => navigate({ to: "/results", search: { q: "near" } })}
-            className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground shadow-card"
-            aria-label={t("useGPS")}
+      {/* HERO featured tour */}
+      {featured && (
+        <section className="px-5">
+          <Link
+            to="/attraction/$id"
+            params={{ id: featured.id }}
+            className="group relative block overflow-hidden rounded-3xl shadow-card transition-smooth"
           >
-            <MapPin className="h-5 w-5" />
-          </button>
-        </div>
-      </form>
+            <div className="relative aspect-[3/4] w-full overflow-hidden bg-card">
+              <img
+                src={heroTbilisi}
+                alt={featured.name}
+                width={1080}
+                height={1440}
+                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+              />
+              <div className="absolute inset-0 bg-gradient-hero" />
 
-      {/* Featured chips */}
-      <section className="mt-6">
-        <h2 className="mb-3 px-5 text-sm font-semibold text-foreground">{t("featured")}</h2>
-        <div className="scrollbar-hide flex gap-2 overflow-x-auto px-5 pb-1">
-          {FEATURED_CITIES.map((c) => (
-            <Link
-              key={c.city}
-              to="/results"
-              search={{ q: c.city }}
-              className="flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground shadow-soft transition-smooth hover:border-primary"
-            >
-              <span>{c.flag}</span>
-              <span>{c.city}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
+              <div className="absolute inset-x-0 bottom-0 space-y-3 p-6">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1 text-[10px] font-bold tracking-editorial text-primary-bright uppercase backdrop-blur">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary-bright" />
+                  Featured Tour
+                </span>
+                <h1 className="font-display text-[34px] leading-[1.1] text-foreground">
+                  Whispers of <em className="italic font-medium">Old Tbilisi</em>
+                </h1>
+                <p className="line-clamp-2 max-w-[90%] text-sm leading-relaxed text-foreground/85">
+                  {featured.description}
+                </p>
+                <div className="flex items-center gap-3 pt-1 text-[11px] font-medium text-foreground/75">
+                  <span className="inline-flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> {featured.durationMin} min
+                  </span>
+                  <span className="h-3 w-px bg-foreground/30" />
+                  <span className="inline-flex items-center gap-1">
+                    <Star className="h-3 w-3 fill-primary-bright text-primary-bright" /> {featured.rating.toFixed(2)}
+                  </span>
+                  <span className="h-3 w-px bg-foreground/30" />
+                  <span>{featured.stops} stops</span>
+                </div>
+              </div>
+            </div>
+          </Link>
 
-      {/* Recent */}
-      {recent.length > 0 && (
-        <section className="mt-6 px-5">
-          <h2 className="mb-3 text-sm font-semibold text-foreground">{t("recent")}</h2>
-          <ul className="space-y-2">
-            {recent.map((r) => (
-              <li key={r}>
-                <Link
-                  to="/results"
-                  search={{ q: r }}
-                  className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3 text-sm shadow-soft"
-                >
-                  <Search className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-foreground">{r}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {/* CTA pill */}
+          <Link
+            to="/player/$id"
+            params={{ id: featured.id }}
+            className="mt-4 flex items-center gap-4 rounded-2xl bg-primary px-5 py-4 text-primary-foreground shadow-amber transition-smooth hover:brightness-105"
+          >
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary-foreground/15">
+              <Play className="h-4 w-4 fill-current" />
+            </span>
+            <span className="flex-1">
+              <span className="block text-[10px] font-bold tracking-editorial uppercase opacity-80">
+                Begin Journey
+              </span>
+              <span className="block font-semibold leading-tight">Listen to first chapter</span>
+            </span>
+            <span className="text-sm font-bold">Free</span>
+          </Link>
         </section>
       )}
 
-      {/* Trending grid */}
-      <section className="mt-8 px-5">
-        <div className="mb-3 flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-primary" />
-          <h2 className="text-sm font-semibold text-foreground">Trending</h2>
+      {!featured && (
+        <div className="mx-5 aspect-[3/4] rounded-3xl shimmer" />
+      )}
+
+      {/* Search */}
+      <form onSubmit={submit} className="mt-7 px-5">
+        <div className="relative">
+          <Search className="absolute left-5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search places, stories, themes..."
+            className="h-13 w-full rounded-full border border-border bg-secondary py-3.5 pl-12 pr-16 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+          />
+          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 rounded-md border border-border bg-card px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+            ⌘K
+          </span>
         </div>
-        <div className="grid grid-cols-1 gap-4">
-          {items === null
-            ? Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
-            : items.slice(0, 6).map((a, i) => <AttractionCard key={a.id} attr={a} priority={i === 0} />)}
+      </form>
+
+      {/* Filters */}
+      <div className="scrollbar-hide mt-5 flex gap-2 overflow-x-auto px-5">
+        {FILTERS.map((f) => {
+          const active = filter === f;
+          return (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={
+                active
+                  ? "shrink-0 rounded-full bg-foreground px-4 py-2 text-xs font-semibold text-background"
+                  : "shrink-0 rounded-full border border-border bg-transparent px-4 py-2 text-xs font-medium text-muted-foreground transition-smooth hover:text-foreground"
+              }
+            >
+              {f}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Near you section */}
+      <section className="mt-8 pl-5">
+        <div className="mb-4 flex items-end justify-between pr-5">
+          <div>
+            <h2 className="font-display text-2xl leading-tight text-foreground">
+              Near <em className="italic font-medium">you</em>
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Curated stops within walking distance
+            </p>
+          </div>
+          <Link
+            to="/results"
+            search={{ q: "" }}
+            className="inline-flex items-center gap-0.5 text-xs font-semibold text-primary-bright"
+          >
+            See all <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        <div className="scrollbar-hide flex gap-3 overflow-x-auto pr-5 pb-2">
+          {(items === null ? Array.from({ length: 4 }) : nearby).map((a, i) =>
+            a ? (
+              <NearbyCard key={(a as Attraction).id} attr={a as Attraction} />
+            ) : (
+              <div key={i} className="h-24 w-[300px] shrink-0 rounded-2xl shimmer" />
+            ),
+          )}
         </div>
       </section>
     </div>
+  );
+}
+
+function NearbyCard({ attr }: { attr: Attraction }) {
+  return (
+    <Link
+      to="/attraction/$id"
+      params={{ id: attr.id }}
+      className="group flex w-[300px] shrink-0 items-center gap-3 rounded-2xl border border-border bg-card p-3 transition-smooth hover:border-primary/60"
+    >
+      <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-xl bg-muted">
+        <img
+          src={attr.image}
+          alt={attr.name}
+          loading="lazy"
+          width={144}
+          height={144}
+          className="h-full w-full object-cover"
+        />
+      </div>
+      <div className="min-w-0 flex-1">
+        <h3 className="truncate font-display text-base leading-tight text-foreground">
+          {attr.name}
+        </h3>
+        <p className="mt-1 inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+          <Headphones className="h-3 w-3" /> Audio guide
+        </p>
+        <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1">
+            <Clock className="h-3 w-3" /> {attr.durationMin}m
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <Star className="h-3 w-3 fill-primary-bright text-primary-bright" /> {attr.rating.toFixed(2)}
+          </span>
+        </div>
+      </div>
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-secondary text-foreground transition-smooth group-hover:bg-primary group-hover:text-primary-foreground">
+        <Play className="h-3.5 w-3.5 fill-current" />
+      </span>
+    </Link>
   );
 }
