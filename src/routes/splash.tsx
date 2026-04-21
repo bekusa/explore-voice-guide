@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import splashBg from "@/assets/splash-bg.jpg";
-import { LANGUAGES, useT } from "@/lib/i18n";
+import { LANGUAGES, useT, markFirstLaunched } from "@/lib/i18n";
 import { Check, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
