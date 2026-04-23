@@ -22,8 +22,9 @@ export type GuideResponse = {
   script: string;
 };
 
-const ATTRACTIONS_URL = "https://bekusa.app.n8n.cloud/webhook/attractions";
-const GUIDE_URL = "https://bekusa.app.n8n.cloud/webhook/guide";
+// Same-origin proxy routes (avoid n8n CORS by relaying through our server).
+const ATTRACTIONS_URL = "/api/attractions";
+const GUIDE_URL = "/api/guide";
 
 async function postJSON<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, {
