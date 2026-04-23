@@ -15,6 +15,8 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AttractionIdRouteImport } from './routes/attraction.$id'
+import { Route as ApiGuideRouteImport } from './routes/api.guide'
+import { Route as ApiAttractionsRouteImport } from './routes/api.attractions'
 
 const ResultsRoute = ResultsRouteImport.update({
   id: '/results',
@@ -46,6 +48,16 @@ const AttractionIdRoute = AttractionIdRouteImport.update({
   path: '/attraction/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGuideRoute = ApiGuideRouteImport.update({
+  id: '/api/guide',
+  path: '/api/guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAttractionsRoute = ApiAttractionsRouteImport.update({
+  id: '/api/attractions',
+  path: '/api/attractions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,6 +65,8 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
   '/results': typeof ResultsRoute
+  '/api/attractions': typeof ApiAttractionsRoute
+  '/api/guide': typeof ApiGuideRoute
   '/attraction/$id': typeof AttractionIdRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +75,8 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
   '/results': typeof ResultsRoute
+  '/api/attractions': typeof ApiAttractionsRoute
+  '/api/guide': typeof ApiGuideRoute
   '/attraction/$id': typeof AttractionIdRoute
 }
 export interface FileRoutesById {
@@ -70,6 +86,8 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
   '/results': typeof ResultsRoute
+  '/api/attractions': typeof ApiAttractionsRoute
+  '/api/guide': typeof ApiGuideRoute
   '/attraction/$id': typeof AttractionIdRoute
 }
 export interface FileRouteTypes {
@@ -80,9 +98,19 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/player'
     | '/results'
+    | '/api/attractions'
+    | '/api/guide'
     | '/attraction/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/onboarding' | '/player' | '/results' | '/attraction/$id'
+  to:
+    | '/'
+    | '/auth'
+    | '/onboarding'
+    | '/player'
+    | '/results'
+    | '/api/attractions'
+    | '/api/guide'
+    | '/attraction/$id'
   id:
     | '__root__'
     | '/'
@@ -90,6 +118,8 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/player'
     | '/results'
+    | '/api/attractions'
+    | '/api/guide'
     | '/attraction/$id'
   fileRoutesById: FileRoutesById
 }
@@ -99,6 +129,8 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PlayerRoute: typeof PlayerRoute
   ResultsRoute: typeof ResultsRoute
+  ApiAttractionsRoute: typeof ApiAttractionsRoute
+  ApiGuideRoute: typeof ApiGuideRoute
   AttractionIdRoute: typeof AttractionIdRoute
 }
 
@@ -146,6 +178,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AttractionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/guide': {
+      id: '/api/guide'
+      path: '/api/guide'
+      fullPath: '/api/guide'
+      preLoaderRoute: typeof ApiGuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/attractions': {
+      id: '/api/attractions'
+      path: '/api/attractions'
+      fullPath: '/api/attractions'
+      preLoaderRoute: typeof ApiAttractionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -155,8 +201,19 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PlayerRoute: PlayerRoute,
   ResultsRoute: ResultsRoute,
+  ApiAttractionsRoute: ApiAttractionsRoute,
+  ApiGuideRoute: ApiGuideRoute,
   AttractionIdRoute: AttractionIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
