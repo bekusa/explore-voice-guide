@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
 import {
   fetchAttractions,
+  fetchPlacePhoto,
   attractionSlug,
   type Attraction,
 } from "@/lib/api";
@@ -108,7 +109,12 @@ function ResultsPage() {
           {!loading && results && results.length > 0 && (
             <div className="flex flex-col gap-3">
               {results.map((a, i) => (
-                <ResultCard key={`${a.name}-${i}`} attraction={a} index={i} />
+                <ResultCard
+                  key={`${a.name}-${i}`}
+                  attraction={a}
+                  index={i}
+                  language={language}
+                />
               ))}
             </div>
           )}
@@ -118,8 +124,30 @@ function ResultsPage() {
   );
 }
 
-function ResultCard({ attraction, index }: { attraction: Attraction; index: number }) {
+function ResultCard({
+  attraction,
+  index,
+  language,
+}: {
+  attraction: Attraction;
+  index: number;
+  language: string;
+}) {
   const slug = attractionSlug(attraction.name);
+  // n8n-supplied image_url wins; otherwise lazily fetch from Wikipedia.
+  const [photo, setPhoto] = useState<string | null>(attraction.image_url ?? null);
+
+  useEffect(() => {
+    if (attraction.image_url) return; // already have one
+    let cancelled = false;
+    fetchPlacePhoto(attraction.name, language).then((url) => {
+      if (!cancelled && url) setPhoto(url);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [attraction.name, attraction.image_url, language]);
+
   return (
     <Link
       to="/attraction/$id"
@@ -129,11 +157,12 @@ function ResultCard({ attraction, index }: { attraction: Attraction; index: numb
       style={{ animation: `float-up 0.5s ${index * 0.06 + 0.05}s var(--transition-smooth) both` }}
     >
       <div className="relative h-[78px] w-[78px] shrink-0 overflow-hidden rounded-xl bg-secondary">
-        {attraction.image_url ? (
+        {photo ? (
           <img
-            src={attraction.image_url}
+            src={photo}
             alt={attraction.name}
             loading="lazy"
+            onError={() => setPhoto(null)}
             className="h-full w-full object-cover transition-smooth group-hover:scale-105"
           />
         ) : (

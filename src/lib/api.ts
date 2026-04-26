@@ -106,6 +106,70 @@ export async function fetchGuide(
 }
 
 /**
+ * Look up a thumbnail photo for an attraction via Wikipedia.
+ *
+ * Uses MediaWiki's action API with `generator=search` so the lookup is
+ * tolerant of imperfect titles (e.g. "ნარიყალას ციხე" → article "ნარიყალა").
+ * Tries the preferred language first, then falls back to English.
+ * CORS-allowed (origin=*), free, no API key required.
+ *
+ * Returns a direct image URL (typically Wikimedia Commons) or null.
+ */
+export async function fetchPlacePhoto(
+  name: string,
+  language = "ka",
+): Promise<string | null> {
+  const cleaned = name.trim();
+  if (!cleaned) return null;
+
+  // Languages to try in order: preferred → English fallback (deduped).
+  const langs = Array.from(new Set([language, "en"]));
+
+  for (const lang of langs) {
+    try {
+      const url = new URL(`https://${lang}.wikipedia.org/w/api.php`);
+      url.searchParams.set("action", "query");
+      url.searchParams.set("format", "json");
+      url.searchParams.set("origin", "*"); // CORS
+      url.searchParams.set("generator", "search");
+      url.searchParams.set("gsrsearch", cleaned);
+      url.searchParams.set("gsrlimit", "1");
+      url.searchParams.set("prop", "pageimages");
+      url.searchParams.set("piprop", "thumbnail|original");
+      url.searchParams.set("pithumbsize", "400");
+
+      const res = await fetch(url.toString(), {
+        headers: { Accept: "application/json" },
+      });
+      if (!res.ok) continue;
+
+      const data: {
+        query?: {
+          pages?: Record<
+            string,
+            {
+              thumbnail?: { source?: string };
+              original?: { source?: string };
+            }
+          >;
+        };
+      } = await res.json();
+
+      const pages = data.query?.pages;
+      if (!pages) continue;
+      const first = Object.values(pages)[0];
+      // Prefer original (higher-res) when available, else thumbnail.
+      const src = first?.original?.source ?? first?.thumbnail?.source;
+      if (src) return src;
+    } catch {
+      // try next language
+    }
+  }
+
+  return null;
+}
+
+/**
  * Stable, URL-safe id derived from an attraction name.
  * Used to round-trip between /results and /attraction/$id without a backend.
  */
