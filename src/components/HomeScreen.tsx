@@ -17,7 +17,7 @@ import {
   Home as HomeIcon,
   LogOut,
 } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import abanotubaniImg from "@/assets/abanotubani.jpg";
 import samebaImg from "@/assets/sameba.jpg";
@@ -90,8 +90,17 @@ const CATEGORIES = [
 
 export function HomeScreen() {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [cat, setCat] = useState("all");
   const [playing, setPlaying] = useState(true);
+  const [query, setQuery] = useState("");
+
+  function submitSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    navigate({ to: "/results", search: { q } });
+  }
 
   return (
     <div className="relative h-[100dvh] w-full overflow-hidden bg-background text-foreground md:h-[860px]">
@@ -185,16 +194,32 @@ export function HomeScreen() {
 
         {/* ─── SEARCH ─── */}
         <section className="mt-5 px-5">
-          <div className="flex items-center gap-2.5 rounded-full border border-border bg-card px-4 py-3">
+          <form
+            onSubmit={submitSearch}
+            className="flex items-center gap-2.5 rounded-full border border-border bg-card px-4 py-3 transition-smooth focus-within:border-primary/60"
+          >
             <Search className="h-3.5 w-3.5 text-muted-foreground" />
             <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
               placeholder="Search places, stories, themes…"
+              enterKeyHint="search"
+              autoComplete="off"
               className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
-            <span className="rounded-md bg-muted px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
-              ⌘K
-            </span>
-          </div>
+            {query.trim() ? (
+              <button
+                type="submit"
+                className="rounded-full bg-gradient-gold px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-primary-foreground transition-smooth hover:scale-105"
+              >
+                Search
+              </button>
+            ) : (
+              <span className="rounded-md bg-muted px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
+                ⌘K
+              </span>
+            )}
+          </form>
         </section>
 
         {/* ─── CATEGORIES ─── */}
