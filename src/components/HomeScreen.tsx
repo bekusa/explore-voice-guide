@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import {
   Search,
   MapPin,
@@ -90,8 +91,17 @@ const CATEGORIES = [
 
 export function HomeScreen() {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [cat, setCat] = useState("all");
   const [playing, setPlaying] = useState(true);
+  const [query, setQuery] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    navigate({ to: "/results", search: { q } });
+  };
 
   return (
     <div className="relative h-[100dvh] w-full overflow-hidden bg-background text-foreground md:h-[860px]">
@@ -185,16 +195,27 @@ export function HomeScreen() {
 
         {/* ─── SEARCH ─── */}
         <section className="mt-5 px-5">
-          <div className="flex items-center gap-2.5 rounded-full border border-border bg-card px-4 py-3">
+          <form
+            onSubmit={handleSearch}
+            className="flex items-center gap-2 rounded-full border border-border bg-card py-1.5 pl-4 pr-1.5"
+          >
             <Search className="h-3.5 w-3.5 text-muted-foreground" />
             <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
               placeholder="Search places, stories, themes…"
-              className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none"
+              className="flex-1 bg-transparent py-1.5 text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
-            <span className="rounded-md bg-muted px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
-              ⌘K
-            </span>
-          </div>
+            <button
+              type="submit"
+              aria-label="Search"
+              disabled={!query.trim()}
+              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-gradient-gold px-4 text-[11px] font-bold uppercase tracking-[0.16em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
+            >
+              <Search className="h-3 w-3" />
+              <span className="hidden sm:inline">Search</span>
+            </button>
+          </form>
         </section>
 
         {/* ─── CATEGORIES ─── */}
