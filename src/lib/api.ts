@@ -26,6 +26,48 @@ export type GuideResponse = {
 const ATTRACTIONS_URL = "/api/attractions";
 const GUIDE_URL = "/api/guide";
 
+/**
+ * Tolerant JSON parser — n8n/Claude often wrap JSON in ```json ... ``` fences,
+ * or prepend/append stray text. Strip the noise before JSON.parse.
+ */
+function tolerantParse<T>(text: string): T {
+  const trimmed = text.trim();
+
+  // 1. Try direct parse first.
+  try {
+    return JSON.parse(trimmed) as T;
+  } catch {
+    // fall through
+  }
+
+  // 2. Strip markdown code fences (```json ... ``` or ``` ... ```).
+  const fenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (fenceMatch) {
+    try {
+      return JSON.parse(fenceMatch[1].trim()) as T;
+    } catch {
+      // fall through
+    }
+  }
+
+  // 3. Extract first {...} or [...] block by balanced-brace heuristic.
+  const firstBrace = trimmed.search(/[{[]/);
+  if (firstBrace >= 0) {
+    const open = trimmed[firstBrace];
+    const close = open === "{" ? "}" : "]";
+    const lastClose = trimmed.lastIndexOf(close);
+    if (lastClose > firstBrace) {
+      try {
+        return JSON.parse(trimmed.slice(firstBrace, lastClose + 1)) as T;
+      } catch {
+        // fall through
+      }
+    }
+  }
+
+  throw new Error("Could not parse response as JSON");
+}
+
 async function postJSON<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, {
     method: "POST",
@@ -35,8 +77,8 @@ async function postJSON<T>(url: string, body: unknown): Promise<T> {
   if (!res.ok) {
     throw new Error(`Request failed (${res.status})`);
   }
-  const data = await res.json();
-  return data as T;
+  const text = await res.text();
+  return tolerantParse<T>(text);
 }
 
 export async function fetchAttractions(
