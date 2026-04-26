@@ -84,7 +84,7 @@ function ResultsPage() {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search places, stories…"
+                placeholder="Country, city, or landmark…"
                 className="flex-1 bg-transparent text-[13px] placeholder:text-muted-foreground focus:outline-none"
               />
             </form>
