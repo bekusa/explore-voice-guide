@@ -27,15 +27,92 @@ const ATTRACTIONS_URL = "/api/attractions";
 const GUIDE_URL = "/api/guide";
 
 /**
+ * Walk the string char-by-char and return the first balanced {...} or [...]
+ * block, respecting JSON string escaping AND mixed-bracket nesting.
+ */
+function extractBalancedJson(text: string): string | null {
+  const stack: string[] = [];
+  let start = -1;
+  let inStr = false;
+  let escape = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+
+    if (inStr) {
+      if (escape) escape = false;
+      else if (c === "\\") escape = true;
+      else if (c === '"') inStr = false;
+      continue;
+    }
+
+    if (c === '"') {
+      inStr = true;
+      continue;
+    }
+    if (c === "{" || c === "[") {
+      if (stack.length === 0) start = i;
+      stack.push(c);
+    } else if (c === "}" || c === "]") {
+      const expectedOpen = c === "}" ? "{" : "[";
+      if (stack.length > 0 && stack[stack.length - 1] === expectedOpen) {
+        stack.pop();
+        if (stack.length === 0 && start >= 0) {
+          return text.slice(start, i + 1);
+        }
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Unwrap common LLM envelope shapes: Anthropic Messages API returns
+ * { content: [{ type: "text", text: "..." }] }. Some n8n workflows pass
+ * this through verbatim; pull the text field out and recurse.
+ */
+function unwrapEnvelope(parsed: unknown): unknown {
+  if (!parsed || typeof parsed !== "object") return parsed;
+  const obj = parsed as Record<string, unknown>;
+
+  // Anthropic Messages API shape
+  if (Array.isArray(obj.content) && obj.content.length > 0) {
+    const first = obj.content[0] as { type?: string; text?: string };
+    if (first?.type === "text" && typeof first.text === "string") {
+      try {
+        return JSON.parse(first.text);
+      } catch {
+        const inner = extractBalancedJson(first.text);
+        if (inner) {
+          try {
+            return JSON.parse(inner);
+          } catch {
+            // fall through
+          }
+        }
+      }
+    }
+  }
+
+  // n8n sometimes wraps as { json: {...} } or { data: {...} }
+  if (obj.json && typeof obj.json === "object") return obj.json;
+  if (obj.data && typeof obj.data === "object") return obj.data;
+
+  return parsed;
+}
+
+/**
  * Tolerant JSON parser — n8n/Claude often wrap JSON in ```json ... ``` fences,
- * or prepend/append stray text. Strip the noise before JSON.parse.
+ * the Anthropic message envelope, or prepend/append stray text. Strip noise
+ * progressively until something parses.
  */
 function tolerantParse<T>(text: string): T {
   const trimmed = text.trim();
 
-  // 1. Try direct parse first.
+  // 1. Try direct parse, then unwrap any LLM envelope.
   try {
-    return JSON.parse(trimmed) as T;
+    const parsed = JSON.parse(trimmed);
+    return unwrapEnvelope(parsed) as T;
   } catch {
     // fall through
   }
@@ -44,28 +121,41 @@ function tolerantParse<T>(text: string): T {
   const fenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
   if (fenceMatch) {
     try {
-      return JSON.parse(fenceMatch[1].trim()) as T;
+      const parsed = JSON.parse(fenceMatch[1].trim());
+      return unwrapEnvelope(parsed) as T;
     } catch {
       // fall through
     }
   }
 
-  // 3. Extract first {...} or [...] block by balanced-brace heuristic.
-  const firstBrace = trimmed.search(/[{[]/);
-  if (firstBrace >= 0) {
-    const open = trimmed[firstBrace];
-    const close = open === "{" ? "}" : "]";
-    const lastClose = trimmed.lastIndexOf(close);
-    if (lastClose > firstBrace) {
-      try {
-        return JSON.parse(trimmed.slice(firstBrace, lastClose + 1)) as T;
-      } catch {
-        // fall through
-      }
+  // 3. Find a balanced JSON block anywhere in the text.
+  const balanced = extractBalancedJson(trimmed);
+  if (balanced) {
+    try {
+      const parsed = JSON.parse(balanced);
+      return unwrapEnvelope(parsed) as T;
+    } catch {
+      // fall through
     }
   }
 
-  throw new Error("Could not parse response as JSON");
+  // 4. Last resort: greedy regex for "attractions" key.
+  const attrMatch = trimmed.match(/\{\s*"attractions"\s*:[\s\S]*?\]\s*\}/);
+  if (attrMatch) {
+    try {
+      return JSON.parse(attrMatch[0]) as T;
+    } catch {
+      // fall through
+    }
+  }
+
+  // Diagnostic — first 200 chars of what we got, so the user can copy it.
+  const preview = trimmed.slice(0, 200).replace(/\s+/g, " ");
+  throw new Error(
+    `Could not parse response as JSON. Got: ${preview}${
+      trimmed.length > 200 ? "…" : ""
+    }`,
+  );
 }
 
 async function postJSON<T>(url: string, body: unknown): Promise<T> {
