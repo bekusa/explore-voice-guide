@@ -7,7 +7,7 @@ export const Route = createFileRoute("/api/attractions")({
         try {
           const body = await request.text();
           const upstream = await fetch(
-            "https://bekusa.app.n8n.cloud/webhook/attractions",
+            "https://tsitskabeka.app.n8n.cloud/webhook/attractions",
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
