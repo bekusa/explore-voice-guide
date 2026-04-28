@@ -16,6 +16,7 @@ import {
   User as UserIcon,
   Home as HomeIcon,
   LogOut,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
@@ -127,6 +128,13 @@ export function HomeScreen() {
               </div>
             </div>
             <div className="flex gap-2">
+              <Link
+                to="/settings"
+                aria-label="Settings"
+                className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
+              >
+                <SettingsIcon className="h-3.5 w-3.5" />
+              </Link>
               <button className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60">
                 <Globe className="h-3.5 w-3.5" />
               </button>
