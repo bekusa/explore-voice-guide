@@ -186,10 +186,73 @@ function SettingsPage() {
   };
 
   const clearOffline = () => {
-    if (!confirm(`Clear ${saved.length} saved place${saved.length === 1 ? "" : "s"}?`))
+    if (
+      !confirm(
+        `Clear ${saved.length} saved place${saved.length === 1 ? "" : "s"} and all cached guides?`,
+      )
+    )
       return;
     clearAll();
+    clearGuideCache();
     toast.success("Offline library cleared");
+  };
+
+  /* ─── Offline guide cache (live-updating count + size) ─── */
+  const [cacheStats, setCacheStats] = useState({ count: 0, bytes: 0 });
+  useEffect(() => {
+    const refresh = () =>
+      setCacheStats({ count: guideCacheCount(), bytes: guideCacheSize() });
+    refresh();
+    return onGuideCacheChange(refresh);
+  }, []);
+
+  const online = useOnlineStatus();
+  const [downloading, setDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState({ done: 0, total: 0 });
+
+  const downloadAllForOffline = async () => {
+    if (!online) {
+      toast.error("You're offline", {
+        description: "Connect to download guides for offline use.",
+      });
+      return;
+    }
+    if (saved.length === 0) {
+      toast.info("Save some places first", {
+        description: "Bookmark places, then download them in your language here.",
+      });
+      return;
+    }
+    setDownloading(true);
+    setDownloadProgress({ done: 0, total: saved.length });
+    let ok = 0;
+    let failed = 0;
+    for (const item of saved) {
+      try {
+        const script = await fetchGuideFresh(item.name, language.code);
+        if (script) {
+          // Mirror the script onto the saved item itself so the Saved page can
+          // show "Guide cached" + use it directly when offline.
+          updateItem(item.id, { script, language: language.code });
+          ok++;
+        } else {
+          failed++;
+        }
+      } catch {
+        failed++;
+      }
+      setDownloadProgress((p) => ({ ...p, done: p.done + 1 }));
+    }
+    setDownloading(false);
+    if (ok > 0) {
+      toast.success(`Downloaded ${ok} guide${ok === 1 ? "" : "s"}`, {
+        description: `Available offline in ${language.native}${failed ? ` · ${failed} failed` : ""}.`,
+      });
+    } else {
+      toast.error("Couldn't download any guides", {
+        description: "Check your connection and try again.",
+      });
+    }
   };
 
   const handleSignOut = async () => {
