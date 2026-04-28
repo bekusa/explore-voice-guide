@@ -196,11 +196,36 @@ export async function fetchGuide(
   attraction: string,
   language = "ka",
 ): Promise<string> {
+  // Lazy import — keeps SSR clean (guideCache touches localStorage)
+  const { getCachedGuide, setCachedGuide } = await import("./guideCache");
+
+  // 1. Cache hit → instant offline-friendly result
+  const cached = getCachedGuide(attraction, language);
+  if (cached) return cached;
+
+  // 2. Network — and persist for next time
   const data = await postJSON<GuideResponse | { script?: string }>(
     GUIDE_URL,
     { attraction, language },
   );
-  return data.script ?? "";
+  const script = data.script ?? "";
+  if (script) setCachedGuide(attraction, language, script);
+  return script;
+}
+
+/** Network-only variant: bypass cache + always refresh. Used by the bulk download. */
+export async function fetchGuideFresh(
+  attraction: string,
+  language = "ka",
+): Promise<string> {
+  const { setCachedGuide } = await import("./guideCache");
+  const data = await postJSON<GuideResponse | { script?: string }>(
+    GUIDE_URL,
+    { attraction, language },
+  );
+  const script = data.script ?? "";
+  if (script) setCachedGuide(attraction, language, script);
+  return script;
 }
 
 /**
