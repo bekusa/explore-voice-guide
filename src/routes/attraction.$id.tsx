@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -8,15 +8,20 @@ import {
   Play,
   Headphones,
   Loader2,
+  Bookmark,
+  BookmarkCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
 import {
+  attractionSlug,
   fetchAttractions,
   unslugAttraction,
   type Attraction,
 } from "@/lib/api";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
+import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
+import { useSavedItems } from "@/hooks/useSavedItems";
 
 type Search = { name?: string };
 
@@ -112,6 +117,7 @@ function AttractionPage() {
             >
               <ArrowLeft className="h-4 w-4" />
             </Link>
+            <SaveToggle name={a?.name ?? fallbackName} attraction={a} language={language} />
           </header>
 
           <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-7 animate-float-up">
