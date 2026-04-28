@@ -203,3 +203,31 @@
 .animate-float-up { animation: float-up 0.8s var(--transition-smooth) both; }
 .animate-pulse-ring { animation: pulse-ring 2s var(--transition-smooth) infinite; }
 .animate-wave { animation: wave 1.2s ease-in-out infinite; }
+
+/* Leaflet — themed to match the cinematic UI */
+.leaflet-container {
+  background: hsl(var(--background) / 1);
+  font-family: inherit;
+}
+.leaflet-container .tg-pin { background: transparent; border: none; }
+.leaflet-tooltip.tg-tooltip {
+  background: oklch(from var(--card) l c h / 0.95);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: var(--shadow-elegant, 0 6px 20px rgba(0,0,0,0.25));
+  backdrop-filter: blur(12px);
+}
+.leaflet-tooltip.tg-tooltip::before { display: none; }
+.leaflet-control-attribution {
+  background: oklch(from var(--card) l c h / 0.6) !important;
+  color: var(--muted-foreground) !important;
+  font-size: 9px !important;
+  padding: 2px 6px !important;
+  border-radius: 6px !important;
+  margin: 6px !important;
+}
+.leaflet-control-attribution a { color: var(--primary) !important; }
