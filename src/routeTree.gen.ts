@@ -17,8 +17,10 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as LanguageRouteImport } from './routes/language'
+import { Route as DestinationsRouteImport } from './routes/destinations'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DestinationSlugRouteImport } from './routes/destination.$slug'
 import { Route as AttractionIdRouteImport } from './routes/attraction.$id'
 import { Route as ApiPhotoRouteImport } from './routes/api.photo'
 import { Route as ApiGuideRouteImport } from './routes/api.guide'
@@ -64,6 +66,11 @@ const LanguageRoute = LanguageRouteImport.update({
   path: '/language',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DestinationsRoute = DestinationsRouteImport.update({
+  id: '/destinations',
+  path: '/destinations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -72,6 +79,11 @@ const AuthRoute = AuthRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DestinationSlugRoute = DestinationSlugRouteImport.update({
+  id: '/destination/$slug',
+  path: '/destination/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AttractionIdRoute = AttractionIdRouteImport.update({
@@ -98,6 +110,7 @@ const ApiAttractionsRoute = ApiAttractionsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/destinations': typeof DestinationsRoute
   '/language': typeof LanguageRoute
   '/map': typeof MapRoute
   '/notifications': typeof NotificationsRoute
@@ -110,10 +123,12 @@ export interface FileRoutesByFullPath {
   '/api/guide': typeof ApiGuideRoute
   '/api/photo': typeof ApiPhotoRoute
   '/attraction/$id': typeof AttractionIdRoute
+  '/destination/$slug': typeof DestinationSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/destinations': typeof DestinationsRoute
   '/language': typeof LanguageRoute
   '/map': typeof MapRoute
   '/notifications': typeof NotificationsRoute
@@ -126,11 +141,13 @@ export interface FileRoutesByTo {
   '/api/guide': typeof ApiGuideRoute
   '/api/photo': typeof ApiPhotoRoute
   '/attraction/$id': typeof AttractionIdRoute
+  '/destination/$slug': typeof DestinationSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/destinations': typeof DestinationsRoute
   '/language': typeof LanguageRoute
   '/map': typeof MapRoute
   '/notifications': typeof NotificationsRoute
@@ -143,12 +160,14 @@ export interface FileRoutesById {
   '/api/guide': typeof ApiGuideRoute
   '/api/photo': typeof ApiPhotoRoute
   '/attraction/$id': typeof AttractionIdRoute
+  '/destination/$slug': typeof DestinationSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
+    | '/destinations'
     | '/language'
     | '/map'
     | '/notifications'
@@ -161,10 +180,12 @@ export interface FileRouteTypes {
     | '/api/guide'
     | '/api/photo'
     | '/attraction/$id'
+    | '/destination/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/destinations'
     | '/language'
     | '/map'
     | '/notifications'
@@ -177,10 +198,12 @@ export interface FileRouteTypes {
     | '/api/guide'
     | '/api/photo'
     | '/attraction/$id'
+    | '/destination/$slug'
   id:
     | '__root__'
     | '/'
     | '/auth'
+    | '/destinations'
     | '/language'
     | '/map'
     | '/notifications'
@@ -193,11 +216,13 @@ export interface FileRouteTypes {
     | '/api/guide'
     | '/api/photo'
     | '/attraction/$id'
+    | '/destination/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  DestinationsRoute: typeof DestinationsRoute
   LanguageRoute: typeof LanguageRoute
   MapRoute: typeof MapRoute
   NotificationsRoute: typeof NotificationsRoute
@@ -210,6 +235,7 @@ export interface RootRouteChildren {
   ApiGuideRoute: typeof ApiGuideRoute
   ApiPhotoRoute: typeof ApiPhotoRoute
   AttractionIdRoute: typeof AttractionIdRoute
+  DestinationSlugRoute: typeof DestinationSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -270,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LanguageRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/destinations': {
+      id: '/destinations'
+      path: '/destinations'
+      fullPath: '/destinations'
+      preLoaderRoute: typeof DestinationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -282,6 +315,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/destination/$slug': {
+      id: '/destination/$slug'
+      path: '/destination/$slug'
+      fullPath: '/destination/$slug'
+      preLoaderRoute: typeof DestinationSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/attraction/$id': {
@@ -318,6 +358,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  DestinationsRoute: DestinationsRoute,
   LanguageRoute: LanguageRoute,
   MapRoute: MapRoute,
   NotificationsRoute: NotificationsRoute,
@@ -330,6 +371,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGuideRoute: ApiGuideRoute,
   ApiPhotoRoute: ApiPhotoRoute,
   AttractionIdRoute: AttractionIdRoute,
+  DestinationSlugRoute: DestinationSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

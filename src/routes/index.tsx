@@ -5,13 +5,17 @@ import { HomeScreen } from "@/components/HomeScreen";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Whispers of Old Tbilisi — Cinematic Audio Guides" },
+      { title: "Whispers — Cinematic Audio Guides for Cities Around the World" },
       {
         name: "description",
-        content: "A cinematic, locally-narrated audio guide through Old Tbilisi — sulfur baths, sacred chants, and hidden courtyards.",
+        content:
+          "Locally narrated, cinematic walking tours for cities across the globe — from Tbilisi to Kyoto, Rome to Marrakech. Listen anywhere, even offline.",
       },
-      { property: "og:title", content: "Whispers of Old Tbilisi" },
-      { property: "og:description", content: "Cinematic audio tours of Tbilisi's old town." },
+      { property: "og:title", content: "Whispers — Audio Guides for Travellers" },
+      {
+        property: "og:description",
+        content: "Cinematic walking tours, narrated by locals, for cities around the world.",
+      },
     ],
   }),
   component: Index,
