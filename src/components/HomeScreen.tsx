@@ -14,7 +14,6 @@ import {
   Search,
   Settings as SettingsIcon,
   Sparkles,
-  Star,
   User as UserIcon,
   WifiOff,
 } from "lucide-react";
@@ -401,5 +400,3 @@ function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void>
   );
 }
 
-// Star is imported but unused at module level — keep import lean
-void Star;

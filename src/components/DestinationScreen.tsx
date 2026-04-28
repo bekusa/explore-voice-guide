@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -25,7 +25,6 @@ import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { NearYouCard } from "@/components/NearYouCard";
 import type { Destination } from "@/lib/destinations";
 import { setSelectedSlug } from "@/lib/destinationStore";
-import { useEffect } from "react";
 
 /* ─────────────────────────────────────────────
  * DESTINATION SCREEN — what used to be the home screen
