@@ -135,9 +135,13 @@ export function HomeScreen() {
               >
                 <SettingsIcon className="h-3.5 w-3.5" />
               </Link>
-              <button className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60">
+              <Link
+                to="/language"
+                aria-label="Change language"
+                className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
+              >
                 <Globe className="h-3.5 w-3.5" />
-              </button>
+              </Link>
               <button className="relative grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60">
                 <Bell className="h-3.5 w-3.5" />
                 <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-accent" />
