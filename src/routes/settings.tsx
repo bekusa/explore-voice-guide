@@ -16,6 +16,10 @@ import {
   Trash2,
   User as UserIcon,
   Volume2,
+  Download,
+  WifiOff,
+  Wifi,
+  CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
@@ -28,8 +32,16 @@ import {
   voicesForLanguage,
 } from "@/hooks/useSpeechVoices";
 import { LANGUAGES, getPreviewPhrase, type Language } from "@/lib/languages";
-import { clearAll, getSaved } from "@/lib/savedStore";
+import { clearAll, getSaved, updateItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { fetchGuideFresh } from "@/lib/api";
+import {
+  clearGuideCache,
+  guideCacheCount,
+  guideCacheSize,
+  onGuideCacheChange,
+} from "@/lib/guideCache";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -174,10 +186,73 @@ function SettingsPage() {
   };
 
   const clearOffline = () => {
-    if (!confirm(`Clear ${saved.length} saved place${saved.length === 1 ? "" : "s"}?`))
+    if (
+      !confirm(
+        `Clear ${saved.length} saved place${saved.length === 1 ? "" : "s"} and all cached guides?`,
+      )
+    )
       return;
     clearAll();
+    clearGuideCache();
     toast.success("Offline library cleared");
+  };
+
+  /* ─── Offline guide cache (live-updating count + size) ─── */
+  const [cacheStats, setCacheStats] = useState({ count: 0, bytes: 0 });
+  useEffect(() => {
+    const refresh = () =>
+      setCacheStats({ count: guideCacheCount(), bytes: guideCacheSize() });
+    refresh();
+    return onGuideCacheChange(refresh);
+  }, []);
+
+  const online = useOnlineStatus();
+  const [downloading, setDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState({ done: 0, total: 0 });
+
+  const downloadAllForOffline = async () => {
+    if (!online) {
+      toast.error("You're offline", {
+        description: "Connect to download guides for offline use.",
+      });
+      return;
+    }
+    if (saved.length === 0) {
+      toast.info("Save some places first", {
+        description: "Bookmark places, then download them in your language here.",
+      });
+      return;
+    }
+    setDownloading(true);
+    setDownloadProgress({ done: 0, total: saved.length });
+    let ok = 0;
+    let failed = 0;
+    for (const item of saved) {
+      try {
+        const script = await fetchGuideFresh(item.name, language.code);
+        if (script) {
+          // Mirror the script onto the saved item itself so the Saved page can
+          // show "Guide cached" + use it directly when offline.
+          updateItem(item.id, { script, language: language.code });
+          ok++;
+        } else {
+          failed++;
+        }
+      } catch {
+        failed++;
+      }
+      setDownloadProgress((p) => ({ ...p, done: p.done + 1 }));
+    }
+    setDownloading(false);
+    if (ok > 0) {
+      toast.success(`Downloaded ${ok} guide${ok === 1 ? "" : "s"}`, {
+        description: `Available offline in ${language.native}${failed ? ` · ${failed} failed` : ""}.`,
+      });
+    } else {
+      toast.error("Couldn't download any guides", {
+        description: "Check your connection and try again.",
+      });
+    }
   };
 
   const handleSignOut = async () => {
@@ -350,25 +425,89 @@ function SettingsPage() {
           </button>
         </Group>
 
-        {/* Offline */}
-        <Group title="Offline library">
+        {/* Offline mode */}
+        <Group title="Offline mode">
+          <div className="flex items-center gap-3 px-4 py-4">
+            <span
+              className={`grid h-9 w-9 place-items-center rounded-full ${
+                online ? "bg-primary/15 text-primary" : "bg-accent/15 text-accent"
+              }`}
+            >
+              {online ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
+            </span>
+            <div className="flex-1">
+              <div className="text-[13px] font-semibold">
+                {online ? "You're online" : "You're offline"}
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                {online
+                  ? "Download guides now so they keep playing without signal."
+                  : "Cached guides keep working — others will load when you reconnect."}
+              </div>
+            </div>
+          </div>
+          <Divider />
+
           <div className="flex items-center gap-3 px-4 py-4">
             <span className="grid h-9 w-9 place-items-center rounded-full bg-secondary text-foreground">
               <Headphones className="h-4 w-4" />
             </span>
             <div className="flex-1">
               <div className="text-[13px] font-semibold">
-                {saved.length} saved {saved.length === 1 ? "place" : "places"}
+                {saved.length} saved · {cacheStats.count} guide
+                {cacheStats.count === 1 ? "" : "s"} cached
               </div>
               <div className="text-[11px] text-muted-foreground">
-                ~{Math.max(1, Math.round(estimateBytes() / 1024))} KB on this device
+                {language.flag} {language.native} · ~
+                {Math.max(
+                  1,
+                  Math.round((estimateBytes() + cacheStats.bytes) / 1024),
+                )}{" "}
+                KB on this device
               </div>
             </div>
           </div>
           <Divider />
+
+          <button
+            onClick={downloadAllForOffline}
+            disabled={downloading || saved.length === 0 || !online}
+            className="flex w-full items-center gap-3 px-4 py-4 text-left transition-smooth hover:bg-secondary/40 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
+          >
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow">
+              {downloading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : downloadProgress.done > 0 &&
+                downloadProgress.done === downloadProgress.total ? (
+                <CheckCircle2 className="h-4 w-4" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+            </span>
+            <span className="flex-1">
+              <span className="block text-[13px] font-semibold">
+                {downloading
+                  ? `Downloading… ${downloadProgress.done}/${downloadProgress.total}`
+                  : `Download ${saved.length || ""} guide${saved.length === 1 ? "" : "s"} for offline`}
+              </span>
+              <span className="block text-[11px] text-muted-foreground">
+                Caches all saved places in {language.native}
+              </span>
+            </span>
+            {downloading && downloadProgress.total > 0 && (
+              <span className="font-mono text-[10px] text-primary">
+                {Math.round(
+                  (downloadProgress.done / downloadProgress.total) * 100,
+                )}
+                %
+              </span>
+            )}
+          </button>
+          <Divider />
+
           <button
             onClick={clearOffline}
-            disabled={saved.length === 0}
+            disabled={saved.length === 0 && cacheStats.count === 0}
             className="flex w-full items-center gap-3 px-4 py-4 text-left text-destructive transition-smooth hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
           >
             <span className="grid h-9 w-9 place-items-center rounded-full bg-destructive/15">

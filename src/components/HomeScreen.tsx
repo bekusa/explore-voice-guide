@@ -17,9 +17,11 @@ import {
   Home as HomeIcon,
   LogOut,
   Settings as SettingsIcon,
+  WifiOff,
 } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import abanotubaniImg from "@/assets/abanotubani.jpg";
 import samebaImg from "@/assets/sameba.jpg";
 import rustaveliImg from "@/assets/rustaveli.jpg";
@@ -92,6 +94,7 @@ const CATEGORIES = [
 export function HomeScreen() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const online = useOnlineStatus();
   const [cat, setCat] = useState("all");
   const [playing, setPlaying] = useState(true);
   const [query, setQuery] = useState("");
@@ -118,8 +121,13 @@ export function HomeScreen() {
           {/* top bar */}
           <div className="absolute left-5 right-5 top-12 z-[5] flex items-start justify-between">
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
+              <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
                 Currently in
+                {!online && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/15 px-1.5 py-0.5 text-[9px] tracking-[0.16em] text-accent">
+                    <WifiOff className="h-2.5 w-2.5" /> Offline
+                  </span>
+                )}
               </div>
               <div className="mt-1 flex items-center gap-1.5 text-[15px] font-medium text-foreground">
                 <MapPin className="h-3.5 w-3.5 text-primary" />
