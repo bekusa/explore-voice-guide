@@ -94,6 +94,7 @@ const CATEGORIES = [
 export function HomeScreen() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const online = useOnlineStatus();
   const [cat, setCat] = useState("all");
   const [playing, setPlaying] = useState(true);
   const [query, setQuery] = useState("");
