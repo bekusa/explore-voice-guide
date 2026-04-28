@@ -16,12 +16,14 @@ import { MobileFrame } from "@/components/MobileFrame";
 import {
   attractionSlug,
   fetchAttractions,
+  fetchGuide,
   unslugAttraction,
   type Attraction,
 } from "@/lib/api";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
+import { getCachedGuide } from "@/lib/guideCache";
 
 type Search = { name?: string };
 
@@ -55,6 +57,10 @@ function AttractionPage() {
   );
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
+  const [script, setScript] = useState<string>(() =>
+    getCachedGuide(fallbackName, language) ?? "",
+  );
+  const [loadingScript, setLoadingScript] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -80,6 +86,33 @@ function AttractionPage() {
       cancelled = true;
     };
   }, [fallbackName, language]);
+
+  // Fetch the narrated guide (cache-first) so we can show the stops outline.
+  useEffect(() => {
+    const name = attraction?.name ?? fallbackName;
+    const cached = getCachedGuide(name, language);
+    if (cached) {
+      setScript(cached);
+      return;
+    }
+    let cancelled = false;
+    setLoadingScript(true);
+    fetchGuide(name, language)
+      .then((s) => {
+        if (!cancelled) setScript(s);
+      })
+      .catch(() => {
+        /* silent — stops are optional */
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingScript(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [attraction?.name, fallbackName, language]);
+
+  const stops = useMemo(() => parseStops(script), [script]);
 
   const startJourney = () => {
     if (starting) return;
@@ -211,9 +244,117 @@ function AttractionPage() {
             )}
           </div>
         </section>
+
+        {/* Stops */}
+        <section className="mt-8 px-6">
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-display text-[20px] text-foreground">
+              The <span className="italic text-primary">stops</span>
+            </h2>
+            {stops.length > 0 && (
+              <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                {stops.length} chapters
+              </span>
+            )}
+          </div>
+
+          <ol className="mt-4 space-y-3">
+            {loadingScript && stops.length === 0 ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <li
+                  key={i}
+                  className="flex gap-3 rounded-2xl border border-border/40 bg-card/40 p-4"
+                >
+                  <div className="h-7 w-7 shrink-0 animate-pulse rounded-full bg-secondary" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3 w-1/2 animate-pulse rounded bg-secondary" />
+                    <div className="h-3 w-11/12 animate-pulse rounded bg-secondary/70" />
+                  </div>
+                </li>
+              ))
+            ) : stops.length > 0 ? (
+              stops.map((stop, i) => (
+                <li
+                  key={i}
+                  className="group flex gap-3 rounded-2xl border border-border/40 bg-card/40 p-4 transition-smooth hover:border-primary/40"
+                >
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary/15 text-[11px] font-semibold text-primary">
+                    {i + 1}
+                  </span>
+                  <div className="flex-1">
+                    <h3 className="text-[13px] font-semibold text-foreground">
+                      {stop.title}
+                    </h3>
+                    {stop.preview && (
+                      <p className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-muted-foreground">
+                        {stop.preview}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))
+            ) : (
+              <li className="rounded-2xl border border-dashed border-border/50 bg-card/30 p-4 text-[12px] text-muted-foreground">
+                Stops appear once the narrated guide is generated.
+              </li>
+            )}
+          </ol>
+        </section>
       </div>
     </MobileFrame>
   );
+}
+
+/**
+ * Derive a list of "stops" from a narrated guide script.
+ * Tries numbered headings, then markdown headings, then paragraph chunks.
+ */
+function parseStops(script: string): { title: string; preview: string }[] {
+  if (!script || !script.trim()) return [];
+  const text = script.trim();
+
+  const numbered = text
+    .split(/\n(?=\s*(?:Stop\s+\d+|\d+[.)])\s)/i)
+    .map((b) => b.trim())
+    .filter(Boolean);
+  if (numbered.length >= 2) {
+    return numbered.slice(0, 12).map((block) => {
+      const [first, ...rest] = block.split("\n");
+      const title = first
+        .replace(/^\s*(?:Stop\s+\d+\s*[—:.\-]?\s*|\d+[.)]\s*)/i, "")
+        .trim();
+      return {
+        title: title || first.trim(),
+        preview: rest.join(" ").trim(),
+      };
+    });
+  }
+
+  const mdHeadings = [...text.matchAll(/^#{1,3}\s+(.+)$/gm)];
+  if (mdHeadings.length >= 2) {
+    return mdHeadings.slice(0, 12).map((m, i) => {
+      const start = (m.index ?? 0) + m[0].length;
+      const end = mdHeadings[i + 1]?.index ?? text.length;
+      return {
+        title: m[1].trim(),
+        preview: text.slice(start, end).trim().replace(/\s+/g, " "),
+      };
+    });
+  }
+
+  const paragraphs = text
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 40);
+  return paragraphs.slice(0, 8).map((p, i) => {
+    const sentences = p.split(/(?<=[.!?])\s+/);
+    const title =
+      sentences[0].length > 80
+        ? `Chapter ${i + 1}`
+        : sentences[0].replace(/[.!?]+$/, "");
+    const preview = sentences.slice(1).join(" ") || sentences[0];
+    return { title, preview };
+  });
 }
 
 function SaveToggle({
