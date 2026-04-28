@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -8,15 +8,20 @@ import {
   Play,
   Headphones,
   Loader2,
+  Bookmark,
+  BookmarkCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
 import {
+  attractionSlug,
   fetchAttractions,
   unslugAttraction,
   type Attraction,
 } from "@/lib/api";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
+import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
+import { useSavedItems } from "@/hooks/useSavedItems";
 
 type Search = { name?: string };
 
@@ -112,6 +117,7 @@ function AttractionPage() {
             >
               <ArrowLeft className="h-4 w-4" />
             </Link>
+            <SaveToggle name={a?.name ?? fallbackName} attraction={a} language={language} />
           </header>
 
           <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-7 animate-float-up">
@@ -207,5 +213,56 @@ function AttractionPage() {
         </section>
       </div>
     </MobileFrame>
+  );
+}
+
+function SaveToggle({
+  name,
+  attraction,
+  language,
+}: {
+  name: string;
+  attraction: Attraction | null;
+  language: string;
+}) {
+  const items = useSavedItems();
+  const id = useMemo(() => attractionSlug(name), [name]);
+  const saved = items.some((s) => s.id === id) || isSaved(id);
+
+  const toggle = () => {
+    if (saved) {
+      removeItem(id);
+      toast("Removed from Saved");
+      return;
+    }
+    saveItem({
+      id,
+      name,
+      language,
+      savedAt: Date.now(),
+      attraction: attraction ?? { name },
+    });
+    toast.success("Saved for offline", {
+      description: "Find it in the Saved tab — works without a connection.",
+    });
+  };
+
+  return (
+    <button
+      onClick={toggle}
+      aria-label={saved ? "Remove from saved" : "Save for offline"}
+      aria-pressed={saved}
+      className={`grid h-10 w-10 place-items-center rounded-full border backdrop-blur-md transition-smooth ${
+        saved
+          ? "border-primary/60 bg-primary/20 text-primary"
+          : "border-foreground/20 bg-background/30 text-foreground hover:bg-background/50"
+      }`}
+    >
+      {saved ? (
+        <BookmarkCheck className="h-4 w-4 fill-current" />
+      ) : (
+        <Bookmark className="h-4 w-4" />
+      )}
+    </button>
   );
 }
