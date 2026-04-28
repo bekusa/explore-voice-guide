@@ -28,64 +28,98 @@ type FindPlaceResponse = {
   status?: string;
 };
 
-type WikiResponse = {
-  query?: {
-    pages?: Record<
-      string,
-      {
-        thumbnail?: { source: string };
-        original?: { source: string };
-      }
-    >;
-  };
+type WikiSearchResponse = {
+  query?: { search?: Array<{ title: string }> };
 };
 
-async function googlePhoto(q: string): Promise<string | null> {
-  const findUrl =
-    `https://maps.googleapis.com/maps/api/place/findplacefromtext/json` +
-    `?input=${encodeURIComponent(q)}` +
-    `&inputtype=textquery&fields=photos&key=${GOOGLE_KEY}`;
+type WikiSummaryResponse = {
+  thumbnail?: { source: string };
+  originalimage?: { source: string };
+};
 
-  const findRes = await fetch(findUrl);
-  if (!findRes.ok) return null;
-  const findData = (await findRes.json()) as FindPlaceResponse;
-  const photoRef = findData.candidates?.[0]?.photos?.[0]?.photo_reference;
-  if (!photoRef) return null;
+/**
+ * Google Places photo lookup. Tries multiple query variants because
+ * Google's `findplacefromtext` is sensitive to query wording — a bare
+ * Georgian name often misses, but adding the city ("ბოტანიკური ბაღი
+ * Batumi") usually disambiguates well.
+ */
+async function googlePhoto(
+  q: string,
+  city: string | null,
+): Promise<string | null> {
+  // Build query variants in priority order. If city is provided AND the
+  // name doesn't already contain it, try "name + city" first.
+  const variants: string[] = [];
+  if (city && !q.toLowerCase().includes(city.toLowerCase())) {
+    variants.push(`${q} ${city}`);
+  }
+  variants.push(q);
 
-  // The /place/photo endpoint returns a 302 to the actual CDN URL on
-  // lh3.googleusercontent.com — read the Location header and return it
-  // so the browser fetches the image directly without going through us.
-  const photoUrl =
-    `https://maps.googleapis.com/maps/api/place/photo` +
-    `?maxwidth=600&photo_reference=${photoRef}&key=${GOOGLE_KEY}`;
-  const photoRes = await fetch(photoUrl, { redirect: "manual" });
-  return photoRes.headers.get("Location");
+  for (const variant of variants) {
+    const findUrl =
+      `https://maps.googleapis.com/maps/api/place/findplacefromtext/json` +
+      `?input=${encodeURIComponent(variant)}` +
+      `&inputtype=textquery&fields=photos&key=${GOOGLE_KEY}`;
+
+    const findRes = await fetch(findUrl);
+    if (!findRes.ok) continue;
+    const findData = (await findRes.json()) as FindPlaceResponse;
+    const photoRef = findData.candidates?.[0]?.photos?.[0]?.photo_reference;
+    if (!photoRef) continue;
+
+    // /place/photo returns a 302 to lh3.googleusercontent.com — read
+    // Location header and return it so the browser fetches directly.
+    const photoUrl =
+      `https://maps.googleapis.com/maps/api/place/photo` +
+      `?maxwidth=600&photo_reference=${photoRef}&key=${GOOGLE_KEY}`;
+    const photoRes = await fetch(photoUrl, { redirect: "manual" });
+    const location = photoRes.headers.get("Location");
+    if (location) return location;
+  }
+  return null;
 }
 
+/**
+ * Wikipedia fallback. Two-step strategy because Action API's pageimages
+ * misses many articles that DO have lead images:
+ *
+ *   1. action=query&list=search → find the most relevant page title
+ *   2. /api/rest_v1/page/summary/{title} → fetch summary which includes
+ *      thumbnail more reliably (it returns lead image from infobox OR
+ *      first image in the article body)
+ *
+ * Tries the user's language first, then English (much wider coverage).
+ */
 async function wikipediaPhoto(
   q: string,
   lang: string,
 ): Promise<string | null> {
-  // Try the user's preferred language first, then English as fallback
-  // (Wikipedia coverage in non-English wikis is much narrower).
   const langs = lang === "en" ? ["en"] : [lang, "en"];
 
   for (const l of langs) {
     try {
-      const url =
+      // Step 1 — find the best matching page title
+      const searchUrl =
         `https://${l}.wikipedia.org/w/api.php` +
-        `?action=query&format=json` +
-        `&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrlimit=1` +
-        `&prop=pageimages&piprop=thumbnail&pithumbsize=600` +
-        `&origin=*`;
-      const res = await fetch(url);
-      if (!res.ok) continue;
-      const data = (await res.json()) as WikiResponse;
-      const pages = data.query?.pages;
-      if (!pages) continue;
-      const firstPage = Object.values(pages)[0];
+        `?action=query&format=json&list=search` +
+        `&srsearch=${encodeURIComponent(q)}&srlimit=1&origin=*`;
+      const searchRes = await fetch(searchUrl);
+      if (!searchRes.ok) continue;
+      const searchData = (await searchRes.json()) as WikiSearchResponse;
+      const title = searchData.query?.search?.[0]?.title;
+      if (!title) continue;
+
+      // Step 2 — get summary with thumbnail
+      const summaryUrl =
+        `https://${l}.wikipedia.org/api/rest_v1/page/summary/` +
+        encodeURIComponent(title);
+      const summaryRes = await fetch(summaryUrl);
+      if (!summaryRes.ok) continue;
+      const summaryData = (await summaryRes.json()) as WikiSummaryResponse;
       const src =
-        firstPage?.thumbnail?.source ?? firstPage?.original?.source ?? null;
+        summaryData.thumbnail?.source ??
+        summaryData.originalimage?.source ??
+        null;
       if (src) return src;
     } catch {
       // try next language
@@ -101,6 +135,9 @@ export const Route = createFileRoute("/api/photo")({
         const url = new URL(request.url);
         const q = url.searchParams.get("q")?.trim();
         const lang = url.searchParams.get("lang") ?? "ka";
+        // City context — the original search query (e.g. "Batumi") helps
+        // disambiguate generic names like "ბოტანიკური ბაღი" in Google.
+        const city = url.searchParams.get("city")?.trim() || null;
 
         if (!q) {
           return new Response(JSON.stringify({ url: null }), {
@@ -108,7 +145,7 @@ export const Route = createFileRoute("/api/photo")({
           });
         }
 
-        const cacheKey = `${lang}:${q}`;
+        const cacheKey = `${lang}:${city ?? ""}:${q}`;
         if (cache.has(cacheKey)) {
           return new Response(
             JSON.stringify({ url: cache.get(cacheKey) ?? null }),
@@ -118,7 +155,7 @@ export const Route = createFileRoute("/api/photo")({
 
         let photoUrl: string | null = null;
         try {
-          photoUrl = await googlePhoto(q);
+          photoUrl = await googlePhoto(q, city);
         } catch {
           // fall through to Wikipedia
         }

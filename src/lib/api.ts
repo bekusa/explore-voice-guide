@@ -220,16 +220,24 @@ const photoCache = new Map<string, string | null>();
 export async function fetchPlacePhoto(
   name: string,
   language = "ka",
+  // Optional city/region context — helps Google disambiguate generic
+  // names. E.g. searching "ბოტანიკური ბაღი" alone returns nothing, but
+  // "ბოტანიკური ბაღი + Batumi" finds Batumi Botanical Garden.
+  city: string | null = null,
 ): Promise<string | null> {
   const cleaned = name.trim();
   if (!cleaned) return null;
 
-  const cacheKey = `${language}:${cleaned}`;
+  const cleanCity = city?.trim() || "";
+  const cacheKey = `${language}:${cleanCity}:${cleaned}`;
   if (photoCache.has(cacheKey)) return photoCache.get(cacheKey) ?? null;
 
   try {
+    const cityParam = cleanCity
+      ? `&city=${encodeURIComponent(cleanCity)}`
+      : "";
     const res = await fetch(
-      `/api/photo?q=${encodeURIComponent(cleaned)}&lang=${encodeURIComponent(language)}`,
+      `/api/photo?q=${encodeURIComponent(cleaned)}&lang=${encodeURIComponent(language)}${cityParam}`,
     );
     if (!res.ok) {
       photoCache.set(cacheKey, null);

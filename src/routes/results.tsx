@@ -114,6 +114,7 @@ function ResultsPage() {
                   attraction={a}
                   index={i}
                   language={language}
+                  cityContext={q}
                 />
               ))}
             </div>
@@ -128,25 +129,29 @@ function ResultCard({
   attraction,
   index,
   language,
+  cityContext,
 }: {
   attraction: Attraction;
   index: number;
   language: string;
+  // The user's original search query (e.g. "Batumi"). Passed to Google
+  // Places to disambiguate generic attraction names.
+  cityContext: string;
 }) {
   const slug = attractionSlug(attraction.name);
-  // n8n-supplied image_url wins; otherwise lazily fetch from Wikipedia.
+  // n8n-supplied image_url wins; otherwise lazily fetch from Google/Wikipedia.
   const [photo, setPhoto] = useState<string | null>(attraction.image_url ?? null);
 
   useEffect(() => {
     if (attraction.image_url) return; // already have one
     let cancelled = false;
-    fetchPlacePhoto(attraction.name, language).then((url) => {
+    fetchPlacePhoto(attraction.name, language, cityContext).then((url) => {
       if (!cancelled && url) setPhoto(url);
     });
     return () => {
       cancelled = true;
     };
-  }, [attraction.name, attraction.image_url, language]);
+  }, [attraction.name, attraction.image_url, language, cityContext]);
 
   return (
     <Link
