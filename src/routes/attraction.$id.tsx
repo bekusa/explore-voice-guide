@@ -215,3 +215,54 @@ function AttractionPage() {
     </MobileFrame>
   );
 }
+
+function SaveToggle({
+  name,
+  attraction,
+  language,
+}: {
+  name: string;
+  attraction: Attraction | null;
+  language: string;
+}) {
+  const items = useSavedItems();
+  const id = useMemo(() => attractionSlug(name), [name]);
+  const saved = items.some((s) => s.id === id) || isSaved(id);
+
+  const toggle = () => {
+    if (saved) {
+      removeItem(id);
+      toast("Removed from Saved");
+      return;
+    }
+    saveItem({
+      id,
+      name,
+      language,
+      savedAt: Date.now(),
+      attraction: attraction ?? { name },
+    });
+    toast.success("Saved for offline", {
+      description: "Find it in the Saved tab — works without a connection.",
+    });
+  };
+
+  return (
+    <button
+      onClick={toggle}
+      aria-label={saved ? "Remove from saved" : "Save for offline"}
+      aria-pressed={saved}
+      className={`grid h-10 w-10 place-items-center rounded-full border backdrop-blur-md transition-smooth ${
+        saved
+          ? "border-primary/60 bg-primary/20 text-primary"
+          : "border-foreground/20 bg-background/30 text-foreground hover:bg-background/50"
+      }`}
+    >
+      {saved ? (
+        <BookmarkCheck className="h-4 w-4 fill-current" />
+      ) : (
+        <Bookmark className="h-4 w-4" />
+      )}
+    </button>
+  );
+}
