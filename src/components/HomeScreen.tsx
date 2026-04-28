@@ -363,7 +363,7 @@ function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void>
   const tabs = [
     { id: "home", icon: HomeIcon, label: "Home", to: "/" as const, active: true },
     { id: "explore", icon: Compass, label: "Explore", to: "/" as const, active: false },
-    { id: "map", icon: MapPin, label: "Map", to: "/" as const, active: false },
+    { id: "map", icon: MapPin, label: "Map", to: "/map" as const, active: false },
     { id: "saved", icon: Bookmark, label: "Saved", to: "/saved" as const, active: false },
   ];
   return (
