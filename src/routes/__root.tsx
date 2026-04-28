@@ -62,6 +62,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
         <HeadContent />
       </head>
       <body>
@@ -73,6 +74,10 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  useEffect(() => {
+    const stored = localStorage.getItem("tg.theme");
+    document.documentElement.classList.toggle("light", stored === "light");
+  }, []);
   return (
     <>
       <Outlet />
