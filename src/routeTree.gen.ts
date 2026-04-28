@@ -14,6 +14,7 @@ import { Route as SavedRouteImport } from './routes/saved'
 import { Route as ResultsRouteImport } from './routes/results'
 import { Route as PlayerRouteImport } from './routes/player'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as LanguageRouteImport } from './routes/language'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -46,6 +47,11 @@ const PlayerRoute = PlayerRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MapRoute = MapRouteImport.update({
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/language': typeof LanguageRoute
   '/map': typeof MapRoute
+  '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
   '/results': typeof ResultsRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/language': typeof LanguageRoute
   '/map': typeof MapRoute
+  '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
   '/results': typeof ResultsRoute
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/language': typeof LanguageRoute
   '/map': typeof MapRoute
+  '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
   '/results': typeof ResultsRoute
@@ -142,6 +151,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/language'
     | '/map'
+    | '/notifications'
     | '/onboarding'
     | '/player'
     | '/results'
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/language'
     | '/map'
+    | '/notifications'
     | '/onboarding'
     | '/player'
     | '/results'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/language'
     | '/map'
+    | '/notifications'
     | '/onboarding'
     | '/player'
     | '/results'
@@ -188,6 +200,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   LanguageRoute: typeof LanguageRoute
   MapRoute: typeof MapRoute
+  NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
   PlayerRoute: typeof PlayerRoute
   ResultsRoute: typeof ResultsRoute
@@ -234,6 +247,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/map': {
@@ -300,6 +320,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   LanguageRoute: LanguageRoute,
   MapRoute: MapRoute,
+  NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
   PlayerRoute: PlayerRoute,
   ResultsRoute: ResultsRoute,

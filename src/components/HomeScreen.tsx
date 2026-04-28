@@ -22,6 +22,7 @@ import {
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { useUnreadCount } from "@/hooks/useNotifications";
 import { NearYouCard } from "@/components/NearYouCard";
 import abanotubaniImg from "@/assets/abanotubani.jpg";
 import samebaImg from "@/assets/sameba.jpg";
@@ -103,6 +104,7 @@ export function HomeScreen() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const online = useOnlineStatus();
+  const unread = useUnreadCount();
   const [cat, setCat] = useState("all");
   const [playing, setPlaying] = useState(true);
   const [query, setQuery] = useState("");
@@ -159,10 +161,18 @@ export function HomeScreen() {
               >
                 <Globe className="h-3.5 w-3.5" />
               </Link>
-              <button className="relative grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60">
+              <Link
+                to="/notifications"
+                aria-label={unread > 0 ? `Notifications, ${unread} unread` : "Notifications"}
+                className="relative grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
+              >
                 <Bell className="h-3.5 w-3.5" />
-                <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-accent" />
-              </button>
+                {unread > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[9px] font-bold text-accent-foreground">
+                    {unread > 9 ? "9+" : unread}
+                  </span>
+                )}
+              </Link>
             </div>
           </div>
 
