@@ -57,6 +57,10 @@ function AttractionPage() {
   );
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
+  const [script, setScript] = useState<string>(() =>
+    getCachedGuide(fallbackName, language) ?? "",
+  );
+  const [loadingScript, setLoadingScript] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -82,6 +86,33 @@ function AttractionPage() {
       cancelled = true;
     };
   }, [fallbackName, language]);
+
+  // Fetch the narrated guide (cache-first) so we can show the stops outline.
+  useEffect(() => {
+    const name = attraction?.name ?? fallbackName;
+    const cached = getCachedGuide(name, language);
+    if (cached) {
+      setScript(cached);
+      return;
+    }
+    let cancelled = false;
+    setLoadingScript(true);
+    fetchGuide(name, language)
+      .then((s) => {
+        if (!cancelled) setScript(s);
+      })
+      .catch(() => {
+        /* silent — stops are optional */
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingScript(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [attraction?.name, fallbackName, language]);
+
+  const stops = useMemo(() => parseStops(script), [script]);
 
   const startJourney = () => {
     if (starting) return;
