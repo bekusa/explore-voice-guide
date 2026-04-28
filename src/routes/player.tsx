@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Pause, Play, Square, Loader2, Headphones } from "lucide-react";
+import { ArrowLeft, Pause, Play, Square, Loader2, Headphones, WifiOff, Download } from "lucide-react";
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
 import { fetchGuide } from "@/lib/api";
@@ -9,6 +9,8 @@ import { useSpeechVoices, voicesForLanguage } from "@/hooks/useSpeechVoices";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { LANGUAGES } from "@/lib/languages";
+import { getCachedGuide } from "@/lib/guideCache";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 type Search = { name: string };
 
@@ -30,9 +32,11 @@ function PlayerPage() {
   const language = usePreferredLanguage();
   const voices = useSpeechVoices();
   const { user } = useAuth();
+  const online = useOnlineStatus();
 
   const [script, setScript] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fromCache, setFromCache] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [paused, setPaused] = useState(false);
   const [preferredVoiceURI, setPreferredVoiceURI] = useState<string | null>(null);
@@ -60,7 +64,8 @@ function PlayerPage() {
     };
   }, [user]);
 
-  // Fetch the narrated script
+  // Fetch the narrated script — cache first, then network. If offline AND no
+  // cache, surface a clear "go online" hint instead of a generic error.
   useEffect(() => {
     if (!name) {
       setLoading(false);
@@ -69,6 +74,29 @@ function PlayerPage() {
     let cancelled = false;
     setLoading(true);
     setScript(null);
+    setFromCache(false);
+
+    const cached = getCachedGuide(name, language);
+    if (cached) {
+      setScript(cached);
+      setFromCache(true);
+      setLoading(false);
+      // If we're online, refresh in background so cache stays fresh
+      if (online) {
+        fetchGuide(name, language).catch(() => {});
+      }
+      return;
+    }
+
+    if (!online) {
+      setScript("");
+      setLoading(false);
+      toast.error("You're offline", {
+        description: "This guide isn't downloaded yet. Connect once to cache it.",
+      });
+      return;
+    }
+
     fetchGuide(name, language)
       .then((text) => {
         if (cancelled) return;
@@ -87,7 +115,7 @@ function PlayerPage() {
     return () => {
       cancelled = true;
     };
-  }, [name, language]);
+  }, [name, language, online]);
 
   // Stop speech on unmount
   useEffect(() => {
