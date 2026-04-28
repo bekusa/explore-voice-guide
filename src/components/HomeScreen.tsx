@@ -294,37 +294,14 @@ export function HomeScreen() {
 
           <div className="mt-4 flex flex-col gap-3 px-5">
             {PLACES.map((p) => (
-              <article
+              <NearYouCard
                 key={p.id}
-                className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 transition-smooth hover:border-primary/40"
-              >
-                <div className="h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-xl">
-                  <img src={p.img} alt={p.title} className="h-full w-full object-cover" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-[14.5px] font-semibold text-foreground">{p.title}</h3>
-                  <p className="my-1.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                    <Headphones className="h-2.5 w-2.5" /> Audio guide
-                  </p>
-                  <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground">
-                    <span className="inline-flex items-center gap-1">
-                      <Clock className="h-2.5 w-2.5" /> {p.duration}
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-primary">
-                      <Star className="h-2.5 w-2.5 fill-primary" /> {p.rating}
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      <MapPin className="h-2.5 w-2.5" /> {p.distance}
-                    </span>
-                  </div>
-                </div>
-                <button
-                  aria-label={`Play ${p.title}`}
-                  className="grid h-9 w-9 place-items-center rounded-full bg-foreground text-background transition-smooth hover:scale-105"
-                >
-                  <Play className="h-3 w-3 fill-current" />
-                </button>
-              </article>
+                place={p}
+                expanded={expandedId === p.id}
+                onToggle={() =>
+                  setExpandedId((curr) => (curr === p.id ? null : p.id))
+                }
+              />
             ))}
           </div>
         </section>
