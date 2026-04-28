@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as ResultsRouteImport } from './routes/results'
 import { Route as PlayerRouteImport } from './routes/player'
@@ -21,6 +22,11 @@ import { Route as ApiPhotoRouteImport } from './routes/api.photo'
 import { Route as ApiGuideRouteImport } from './routes/api.guide'
 import { Route as ApiAttractionsRouteImport } from './routes/api.attractions'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SavedRoute = SavedRouteImport.update({
   id: '/saved',
   path: '/saved',
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/player': typeof PlayerRoute
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
+  '/settings': typeof SettingsRoute
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/photo': typeof ApiPhotoRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/player': typeof PlayerRoute
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
+  '/settings': typeof SettingsRoute
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/photo': typeof ApiPhotoRoute
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/player': typeof PlayerRoute
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
+  '/settings': typeof SettingsRoute
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/photo': typeof ApiPhotoRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/player'
     | '/results'
     | '/saved'
+    | '/settings'
     | '/api/attractions'
     | '/api/guide'
     | '/api/photo'
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/player'
     | '/results'
     | '/saved'
+    | '/settings'
     | '/api/attractions'
     | '/api/guide'
     | '/api/photo'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/player'
     | '/results'
     | '/saved'
+    | '/settings'
     | '/api/attractions'
     | '/api/guide'
     | '/api/photo'
@@ -167,6 +179,7 @@ export interface RootRouteChildren {
   PlayerRoute: typeof PlayerRoute
   ResultsRoute: typeof ResultsRoute
   SavedRoute: typeof SavedRoute
+  SettingsRoute: typeof SettingsRoute
   ApiAttractionsRoute: typeof ApiAttractionsRoute
   ApiGuideRoute: typeof ApiGuideRoute
   ApiPhotoRoute: typeof ApiPhotoRoute
@@ -175,6 +188,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/saved': {
       id: '/saved'
       path: '/saved'
@@ -263,6 +283,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlayerRoute: PlayerRoute,
   ResultsRoute: ResultsRoute,
   SavedRoute: SavedRoute,
+  SettingsRoute: SettingsRoute,
   ApiAttractionsRoute: ApiAttractionsRoute,
   ApiGuideRoute: ApiGuideRoute,
   ApiPhotoRoute: ApiPhotoRoute,
@@ -271,3 +292,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
