@@ -9,15 +9,22 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SavedRouteImport } from './routes/saved'
 import { Route as ResultsRouteImport } from './routes/results'
 import { Route as PlayerRouteImport } from './routes/player'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AttractionIdRouteImport } from './routes/attraction.$id'
+import { Route as ApiPhotoRouteImport } from './routes/api.photo'
 import { Route as ApiGuideRouteImport } from './routes/api.guide'
 import { Route as ApiAttractionsRouteImport } from './routes/api.attractions'
 
+const SavedRoute = SavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResultsRoute = ResultsRouteImport.update({
   id: '/results',
   path: '/results',
@@ -48,6 +55,11 @@ const AttractionIdRoute = AttractionIdRouteImport.update({
   path: '/attraction/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPhotoRoute = ApiPhotoRouteImport.update({
+  id: '/api/photo',
+  path: '/api/photo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGuideRoute = ApiGuideRouteImport.update({
   id: '/api/guide',
   path: '/api/guide',
@@ -65,8 +77,10 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
   '/results': typeof ResultsRoute
+  '/saved': typeof SavedRoute
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/guide': typeof ApiGuideRoute
+  '/api/photo': typeof ApiPhotoRoute
   '/attraction/$id': typeof AttractionIdRoute
 }
 export interface FileRoutesByTo {
@@ -75,8 +89,10 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
   '/results': typeof ResultsRoute
+  '/saved': typeof SavedRoute
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/guide': typeof ApiGuideRoute
+  '/api/photo': typeof ApiPhotoRoute
   '/attraction/$id': typeof AttractionIdRoute
 }
 export interface FileRoutesById {
@@ -86,8 +102,10 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
   '/results': typeof ResultsRoute
+  '/saved': typeof SavedRoute
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/guide': typeof ApiGuideRoute
+  '/api/photo': typeof ApiPhotoRoute
   '/attraction/$id': typeof AttractionIdRoute
 }
 export interface FileRouteTypes {
@@ -98,8 +116,10 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/player'
     | '/results'
+    | '/saved'
     | '/api/attractions'
     | '/api/guide'
+    | '/api/photo'
     | '/attraction/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -108,8 +128,10 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/player'
     | '/results'
+    | '/saved'
     | '/api/attractions'
     | '/api/guide'
+    | '/api/photo'
     | '/attraction/$id'
   id:
     | '__root__'
@@ -118,8 +140,10 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/player'
     | '/results'
+    | '/saved'
     | '/api/attractions'
     | '/api/guide'
+    | '/api/photo'
     | '/attraction/$id'
   fileRoutesById: FileRoutesById
 }
@@ -129,13 +153,22 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PlayerRoute: typeof PlayerRoute
   ResultsRoute: typeof ResultsRoute
+  SavedRoute: typeof SavedRoute
   ApiAttractionsRoute: typeof ApiAttractionsRoute
   ApiGuideRoute: typeof ApiGuideRoute
+  ApiPhotoRoute: typeof ApiPhotoRoute
   AttractionIdRoute: typeof AttractionIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/saved': {
+      id: '/saved'
+      path: '/saved'
+      fullPath: '/saved'
+      preLoaderRoute: typeof SavedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/results': {
       id: '/results'
       path: '/results'
@@ -178,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AttractionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/photo': {
+      id: '/api/photo'
+      path: '/api/photo'
+      fullPath: '/api/photo'
+      preLoaderRoute: typeof ApiPhotoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/guide': {
       id: '/api/guide'
       path: '/api/guide'
@@ -201,8 +241,10 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PlayerRoute: PlayerRoute,
   ResultsRoute: ResultsRoute,
+  SavedRoute: SavedRoute,
   ApiAttractionsRoute: ApiAttractionsRoute,
   ApiGuideRoute: ApiGuideRoute,
+  ApiPhotoRoute: ApiPhotoRoute,
   AttractionIdRoute: AttractionIdRoute,
 }
 export const routeTree = rootRouteImport
