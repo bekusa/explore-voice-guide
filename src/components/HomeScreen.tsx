@@ -361,10 +361,10 @@ type TabUser = { id: string } | null;
 
 function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void> }) {
   const tabs = [
-    { id: "home", icon: HomeIcon, label: "Home", active: true },
-    { id: "explore", icon: Compass, label: "Explore", active: false },
-    { id: "map", icon: MapPin, label: "Map", active: false },
-    { id: "saved", icon: Bookmark, label: "Saved", active: false },
+    { id: "home", icon: HomeIcon, label: "Home", to: "/" as const, active: true },
+    { id: "explore", icon: Compass, label: "Explore", to: "/" as const, active: false },
+    { id: "map", icon: MapPin, label: "Map", to: "/" as const, active: false },
+    { id: "saved", icon: Bookmark, label: "Saved", to: "/saved" as const, active: false },
   ];
   return (
     <nav className="absolute bottom-0 left-0 right-0 z-40 flex h-[74px] items-start justify-around border-t border-border bg-background/85 px-2 pb-4 pt-2 backdrop-blur-xl">
@@ -373,10 +373,11 @@ function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void>
         return (
           <Link
             key={t.id}
-            to="/"
+            to={t.to}
             className={`flex flex-1 flex-col items-center gap-1 transition-smooth ${
               t.active ? "text-primary" : "text-muted-foreground hover:text-foreground"
             }`}
+            activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
           >
             <Icon className="h-[19px] w-[19px]" />
             <span className="text-[10px] font-medium">{t.label}</span>
