@@ -425,25 +425,89 @@ function SettingsPage() {
           </button>
         </Group>
 
-        {/* Offline */}
-        <Group title="Offline library">
+        {/* Offline mode */}
+        <Group title="Offline mode">
+          <div className="flex items-center gap-3 px-4 py-4">
+            <span
+              className={`grid h-9 w-9 place-items-center rounded-full ${
+                online ? "bg-primary/15 text-primary" : "bg-accent/15 text-accent"
+              }`}
+            >
+              {online ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
+            </span>
+            <div className="flex-1">
+              <div className="text-[13px] font-semibold">
+                {online ? "You're online" : "You're offline"}
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                {online
+                  ? "Download guides now so they keep playing without signal."
+                  : "Cached guides keep working — others will load when you reconnect."}
+              </div>
+            </div>
+          </div>
+          <Divider />
+
           <div className="flex items-center gap-3 px-4 py-4">
             <span className="grid h-9 w-9 place-items-center rounded-full bg-secondary text-foreground">
               <Headphones className="h-4 w-4" />
             </span>
             <div className="flex-1">
               <div className="text-[13px] font-semibold">
-                {saved.length} saved {saved.length === 1 ? "place" : "places"}
+                {saved.length} saved · {cacheStats.count} guide
+                {cacheStats.count === 1 ? "" : "s"} cached
               </div>
               <div className="text-[11px] text-muted-foreground">
-                ~{Math.max(1, Math.round(estimateBytes() / 1024))} KB on this device
+                {language.flag} {language.native} · ~
+                {Math.max(
+                  1,
+                  Math.round((estimateBytes() + cacheStats.bytes) / 1024),
+                )}{" "}
+                KB on this device
               </div>
             </div>
           </div>
           <Divider />
+
+          <button
+            onClick={downloadAllForOffline}
+            disabled={downloading || saved.length === 0 || !online}
+            className="flex w-full items-center gap-3 px-4 py-4 text-left transition-smooth hover:bg-secondary/40 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
+          >
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow">
+              {downloading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : downloadProgress.done > 0 &&
+                downloadProgress.done === downloadProgress.total ? (
+                <CheckCircle2 className="h-4 w-4" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+            </span>
+            <span className="flex-1">
+              <span className="block text-[13px] font-semibold">
+                {downloading
+                  ? `Downloading… ${downloadProgress.done}/${downloadProgress.total}`
+                  : `Download ${saved.length || ""} guide${saved.length === 1 ? "" : "s"} for offline`}
+              </span>
+              <span className="block text-[11px] text-muted-foreground">
+                Caches all saved places in {language.native}
+              </span>
+            </span>
+            {downloading && downloadProgress.total > 0 && (
+              <span className="font-mono text-[10px] text-primary">
+                {Math.round(
+                  (downloadProgress.done / downloadProgress.total) * 100,
+                )}
+                %
+              </span>
+            )}
+          </button>
+          <Divider />
+
           <button
             onClick={clearOffline}
-            disabled={saved.length === 0}
+            disabled={saved.length === 0 && cacheStats.count === 0}
             className="flex w-full items-center gap-3 px-4 py-4 text-left text-destructive transition-smooth hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
           >
             <span className="grid h-9 w-9 place-items-center rounded-full bg-destructive/15">
