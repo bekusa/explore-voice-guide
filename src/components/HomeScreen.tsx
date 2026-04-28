@@ -106,6 +106,7 @@ export function HomeScreen() {
   const [cat, setCat] = useState("all");
   const [playing, setPlaying] = useState(true);
   const [query, setQuery] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   function submitSearch(e: React.FormEvent) {
     e.preventDefault();
