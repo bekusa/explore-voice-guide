@@ -17,9 +17,11 @@ import {
   Home as HomeIcon,
   LogOut,
   Settings as SettingsIcon,
+  WifiOff,
 } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import abanotubaniImg from "@/assets/abanotubani.jpg";
 import samebaImg from "@/assets/sameba.jpg";
 import rustaveliImg from "@/assets/rustaveli.jpg";
