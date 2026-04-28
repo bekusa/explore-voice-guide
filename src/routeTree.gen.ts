@@ -15,6 +15,7 @@ import { Route as ResultsRouteImport } from './routes/results'
 import { Route as PlayerRouteImport } from './routes/player'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MapRouteImport } from './routes/map'
+import { Route as LanguageRouteImport } from './routes/language'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AttractionIdRouteImport } from './routes/attraction.$id'
@@ -52,6 +53,11 @@ const MapRoute = MapRouteImport.update({
   path: '/map',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LanguageRoute = LanguageRouteImport.update({
+  id: '/language',
+  path: '/language',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -86,6 +92,7 @@ const ApiAttractionsRoute = ApiAttractionsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/language': typeof LanguageRoute
   '/map': typeof MapRoute
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
@@ -100,6 +107,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/language': typeof LanguageRoute
   '/map': typeof MapRoute
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/language': typeof LanguageRoute
   '/map': typeof MapRoute
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/language'
     | '/map'
     | '/onboarding'
     | '/player'
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/language'
     | '/map'
     | '/onboarding'
     | '/player'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/language'
     | '/map'
     | '/onboarding'
     | '/player'
@@ -174,6 +186,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  LanguageRoute: typeof LanguageRoute
   MapRoute: typeof MapRoute
   OnboardingRoute: typeof OnboardingRoute
   PlayerRoute: typeof PlayerRoute
@@ -230,6 +243,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MapRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/language': {
+      id: '/language'
+      path: '/language'
+      fullPath: '/language'
+      preLoaderRoute: typeof LanguageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -278,6 +298,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  LanguageRoute: LanguageRoute,
   MapRoute: MapRoute,
   OnboardingRoute: OnboardingRoute,
   PlayerRoute: PlayerRoute,
