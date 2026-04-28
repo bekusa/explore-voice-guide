@@ -1,150 +1,117 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
-  Search,
-  MapPin,
-  Globe,
-  Bell,
-  ChevronDown,
-  Play,
-  Pause,
-  Headphones,
-  Star,
-  Clock,
   ArrowRight,
-  Compass,
+  Bell,
   Bookmark,
-  User as UserIcon,
+  ChevronDown,
+  Compass,
+  Globe,
+  Headphones,
   Home as HomeIcon,
   LogOut,
+  MapPin,
+  Search,
   Settings as SettingsIcon,
+  Sparkles,
+  Star,
+  User as UserIcon,
   WifiOff,
 } from "lucide-react";
-import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useUnreadCount } from "@/hooks/useNotifications";
-import { NearYouCard } from "@/components/NearYouCard";
-import abanotubaniImg from "@/assets/abanotubani.jpg";
-import samebaImg from "@/assets/sameba.jpg";
-import rustaveliImg from "@/assets/rustaveli.jpg";
-import heroImg from "@/assets/tbilisi-hero.jpg";
+import { useSelectedDestination } from "@/hooks/useSelectedDestination";
+import {
+  COLLECTIONS,
+  DESTINATIONS,
+  destinationsByCollection,
+  type Destination,
+} from "@/lib/destinations";
 
 /* ─────────────────────────────────────────────
- * V1 · CINEMATIC HOME
- * Tall hero photo, italic display title, gold CTA,
- * soft category pills, editorial "Near you" list,
- * Spotify-style mini player + tab bar.
+ * UNIVERSAL HOME · Editorial magazine
+ *
+ * - Cinematic rotating hero (selected destination)
+ * - "Where to next?" location chip → destinations browser
+ * - Search bar (any city / landmark / vibe)
+ * - Curated collections strip
+ * - Featured destinations — large editorial cards
+ * - Mini player + tab bar (kept consistent across the app)
  * ───────────────────────────────────────────── */
 
-type Place = {
-  id: string;
-  title: string;
-  subtitle: string;
-  img: string;
-  duration: string;
-  rating: number;
-  stops: number;
-  distance: string;
-  category: string;
-  description: string;
-};
-
-const PLACES: Place[] = [
-  {
-    id: "abano",
-    title: "Abanotubani Steam",
-    subtitle: "Sulfur Baths · Old Town",
-    img: abanotubaniImg,
-    duration: "18 min",
-    rating: 4.92,
-    stops: 6,
-    distance: "0.4 km",
-    category: "Historic",
-    description:
-      "Brick domes hide centuries-old sulfur baths where Pushkin once lingered. The mineral steam, the painted facades, the muezzin's echo from a nearby mosque — Abanotubani is Tbilisi distilled.",
-  },
-  {
-    id: "sameba",
-    title: "Sameba at Dusk",
-    subtitle: "Holy Trinity Cathedral",
-    img: samebaImg,
-    duration: "24 min",
-    rating: 4.88,
-    stops: 8,
-    distance: "1.2 km",
-    category: "Sacred",
-    description:
-      "The largest cathedral in the Caucasus crowns Elia Hill in golden silence. Time the visit for vespers — chants drift through incense as the city lights flicker on below.",
-  },
-  {
-    id: "rustaveli",
-    title: "Rustaveli Reverie",
-    subtitle: "Avenue of Poets",
-    img: rustaveliImg,
-    duration: "31 min",
-    rating: 4.9,
-    stops: 11,
-    distance: "0.8 km",
-    category: "Culture",
-    description:
-      "A grand boulevard lined with opera, theatre, and revolution. Walk it slowly: every facade carries a 20th-century story — and a thousand cups of cardamom coffee.",
-  },
-];
-
-const CATEGORIES = [
-  { id: "all", label: "All" },
-  { id: "historic", label: "Historic" },
-  { id: "sacred", label: "Sacred" },
-  { id: "culinary", label: "Culinary" },
-  { id: "hidden", label: "Hidden" },
-  { id: "fortress", label: "Fortress" },
-];
+const HERO_ROTATION = ["tbilisi", "rome", "kyoto", "lisbon", "marrakech"]
+  .map((slug) => DESTINATIONS.find((d) => d.slug === slug))
+  .filter((d): d is Destination => !!d);
 
 export function HomeScreen() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const online = useOnlineStatus();
   const unread = useUnreadCount();
-  const [cat, setCat] = useState("all");
-  const [playing, setPlaying] = useState(true);
+  const selected = useSelectedDestination();
   const [query, setQuery] = useState("");
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [heroIdx, setHeroIdx] = useState(0);
+  const [mounted, setMounted] = useState(false);
+
+  // Defer client-only state (notifications) until after hydration.
+  useEffect(() => setMounted(true), []);
+
+  // Slow rotation through featured cinematic shots.
+  useEffect(() => {
+    const t = setInterval(
+      () => setHeroIdx((i) => (i + 1) % HERO_ROTATION.length),
+      7000,
+    );
+    return () => clearInterval(t);
+  }, []);
+
+  const heroDest = HERO_ROTATION[heroIdx];
+  const featured = useMemo(() => DESTINATIONS.slice(0, 6), []);
 
   function submitSearch(e: React.FormEvent) {
     e.preventDefault();
     const q = query.trim();
     if (!q) return;
-    navigate({ to: "/results", search: { q } });
+    navigate({ to: "/destinations", search: { q } });
   }
 
   return (
     <div className="relative h-[100dvh] w-full overflow-hidden bg-background text-foreground md:h-[860px]">
       <div className="h-full overflow-y-auto pb-36 scrollbar-hide">
         {/* ─── HERO ─── */}
-        <section className="relative h-[560px] w-full">
-          <img
-            src={heroImg}
-            alt="Tbilisi old town at golden hour"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
+        <section className="relative h-[560px] w-full overflow-hidden">
+          {HERO_ROTATION.map((d, i) => (
+            <img
+              key={d.slug}
+              src={d.hero}
+              alt={`${d.city}, ${d.country}`}
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out ${
+                i === heroIdx ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          ))}
           <div className="absolute inset-0 bg-gradient-hero" />
 
           {/* top bar */}
           <div className="absolute left-5 right-5 top-12 z-[5] flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
-                Currently in
+                Where next?
                 {!online && (
                   <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/15 px-1.5 py-0.5 text-[9px] tracking-[0.16em] text-accent">
                     <WifiOff className="h-2.5 w-2.5" /> Offline
                   </span>
                 )}
               </div>
-              <div className="mt-1 flex items-center gap-1.5 text-[15px] font-medium text-foreground">
+              <Link
+                to="/destinations"
+                className="mt-1 inline-flex items-center gap-1.5 text-[15px] font-medium text-foreground transition-smooth hover:text-primary"
+              >
                 <MapPin className="h-3.5 w-3.5 text-primary" />
-                Tbilisi, Georgia
+                {selected.city}, {selected.country}
                 <ChevronDown className="h-3 w-3 opacity-60" />
-              </div>
+              </Link>
             </div>
             <div className="flex gap-2">
               <Link
@@ -163,11 +130,11 @@ export function HomeScreen() {
               </Link>
               <Link
                 to="/notifications"
-                aria-label={unread > 0 ? `Notifications, ${unread} unread` : "Notifications"}
+                aria-label="Notifications"
                 className="relative grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
               >
                 <Bell className="h-3.5 w-3.5" />
-                {unread > 0 && (
+                {mounted && unread > 0 && (
                   <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[9px] font-bold text-accent-foreground">
                     {unread > 9 ? "9+" : unread}
                   </span>
@@ -179,56 +146,30 @@ export function HomeScreen() {
           {/* hero copy */}
           <div className="absolute bottom-8 left-5 right-5 z-[5]">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-primary backdrop-blur-md">
-              <span className="relative h-1.5 w-1.5">
-                <span className="absolute inset-0 rounded-full bg-primary" />
-                <span className="absolute -inset-0.5 animate-ping rounded-full bg-primary opacity-40" />
-              </span>
-              Featured Tour
+              <Sparkles className="h-2.5 w-2.5" />
+              Featured · {heroDest.country}
             </span>
             <h1
               className="mt-4 text-[40px] font-medium leading-[1.02] tracking-[-0.02em] text-foreground"
               style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
             >
-              Whispers of <span className="italic text-primary">Old Tbilisi</span>
+              {heroDest.tagline.split("|")[0]}{" "}
+              <span className="italic text-primary">
+                {heroDest.tagline.split("|")[1]}
+              </span>
             </h1>
             <p className="mt-3.5 max-w-[300px] text-[13.5px] leading-[1.55] text-foreground/75">
-              From sulfur baths and crooked balconies to the chants of Sioni — a cinematic walk
-              through the soul of the old town.
+              {heroDest.blurb}
             </p>
-            <div className="mt-4 flex items-center gap-3 text-[11px] text-foreground/60">
-              <span className="inline-flex items-center gap-1.5">
-                <Clock className="h-3 w-3" /> 47 min
-              </span>
-              <span className="h-2.5 w-px bg-foreground/20" />
-              <span className="inline-flex items-center gap-1.5 text-primary">
-                <Star className="h-3 w-3 fill-primary" /> 4.96
-              </span>
-              <span className="h-2.5 w-px bg-foreground/20" />
-              <span className="inline-flex items-center gap-1.5">
-                <MapPin className="h-3 w-3" /> 12 stops
-              </span>
-            </div>
+            <Link
+              to="/destination/$slug"
+              params={{ slug: heroDest.slug }}
+              className="mt-5 inline-flex items-center gap-2 rounded-full bg-gradient-gold px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.03]"
+            >
+              Open {heroDest.city}
+              <ArrowRight className="h-3 w-3" />
+            </Link>
           </div>
-        </section>
-
-        {/* ─── CTA ─── */}
-        <section className="relative z-10 -mt-1 px-5">
-          <button className="flex w-full items-center justify-between rounded-2xl bg-gradient-gold px-5 py-3.5 text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01]">
-            <span className="flex items-center gap-3">
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-primary-foreground/15">
-                <Play className="h-3.5 w-3.5 fill-current" />
-              </span>
-              <span className="text-left">
-                <span className="block text-[10px] font-bold uppercase tracking-[0.22em] opacity-70">
-                  Begin journey
-                </span>
-                <span className="block text-[14px] font-semibold">Listen to first chapter</span>
-              </span>
-            </span>
-            <span className="text-[11px] font-bold uppercase tracking-[0.18em] opacity-80">
-              Free · 3 min
-            </span>
-          </button>
         </section>
 
         {/* ─── SEARCH ─── */}
@@ -254,36 +195,68 @@ export function HomeScreen() {
                 Search
               </button>
             ) : (
-              <span className="rounded-md bg-muted px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
-                ⌘K
-              </span>
+              <Link
+                to="/destinations"
+                className="rounded-full border border-border bg-secondary/50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground transition-smooth hover:text-foreground"
+              >
+                Browse
+              </Link>
             )}
           </form>
         </section>
 
-        {/* ─── CATEGORIES ─── */}
-        <section className="mt-5">
-          <div className="flex gap-2 overflow-x-auto px-5 scrollbar-hide">
-            {CATEGORIES.map((c) => {
-              const on = cat === c.id;
+        {/* ─── COLLECTIONS ─── */}
+        <section className="mt-7">
+          <div className="mb-3 flex items-end justify-between px-5">
+            <div>
+              <h2
+                className="text-[22px] font-medium tracking-[-0.02em] text-foreground"
+                style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
+              >
+                Curated <span className="italic text-primary">collections</span>
+              </h2>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                Themes for the way you travel
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
+            {COLLECTIONS.map((c) => {
+              const sample = destinationsByCollection(c.id)[0];
               return (
-                <button
+                <Link
                   key={c.id}
-                  onClick={() => setCat(c.id)}
-                  className={`whitespace-nowrap rounded-full px-4 py-2 text-[11px] font-bold uppercase tracking-[0.14em] transition-smooth ${
-                    on
-                      ? "bg-foreground text-background"
-                      : "border border-border bg-transparent text-muted-foreground hover:text-foreground"
-                  }`}
+                  to="/destinations"
+                  search={{ collection: c.id }}
+                  className="group relative h-[140px] w-[200px] flex-shrink-0 overflow-hidden rounded-2xl border border-border"
                 >
-                  {c.label}
-                </button>
+                  {sample && (
+                    <img
+                      src={sample.hero}
+                      alt={c.label}
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+                  <div className="absolute inset-x-3 bottom-3">
+                    <div
+                      className="text-[15px] font-medium leading-tight text-foreground"
+                      style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
+                    >
+                      {c.label}
+                    </div>
+                    <div className="mt-0.5 text-[10px] text-foreground/65">
+                      {c.tagline}
+                    </div>
+                  </div>
+                </Link>
               );
             })}
           </div>
         </section>
 
-        {/* ─── NEAR YOU ─── */}
+        {/* ─── FEATURED DESTINATIONS ─── */}
         <section className="mt-8">
           <div className="flex items-end justify-between px-5">
             <div>
@@ -291,115 +264,122 @@ export function HomeScreen() {
                 className="text-[26px] font-medium tracking-[-0.02em] text-foreground"
                 style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
               >
-                Near <span className="italic text-primary">you</span>
+                Featured <span className="italic text-primary">cities</span>
               </h2>
               <p className="mt-1 text-[11.5px] text-muted-foreground">
-                Curated stops within walking distance
+                Cinematic walks, narrated by locals
               </p>
             </div>
-            <button className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
+            <Link
+              to="/destinations"
+              className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary"
+            >
               See all <ArrowRight className="h-2.5 w-2.5" />
-            </button>
+            </Link>
           </div>
 
           <div className="mt-4 flex flex-col gap-3 px-5">
-            {PLACES.map((p) => (
-              <NearYouCard
-                key={p.id}
-                place={p}
-                expanded={expandedId === p.id}
-                onToggle={() =>
-                  setExpandedId((curr) => (curr === p.id ? null : p.id))
-                }
-              />
+            {featured.map((d) => (
+              <DestinationCard key={d.slug} dest={d} />
             ))}
           </div>
         </section>
       </div>
 
-      <NowPlaying playing={playing} setPlaying={setPlaying} />
       <TabBar user={user} signOut={signOut} />
     </div>
   );
 }
 
 /* ─────────────────────────────────────────────
- * Mini player — sticky above the tab bar
+ * Editorial destination card
  * ───────────────────────────────────────────── */
-function NowPlaying({
-  playing,
-  setPlaying,
-}: {
-  playing: boolean;
-  setPlaying: (v: boolean) => void;
-}) {
-  const progress = 0.44;
+function DestinationCard({ dest }: { dest: Destination }) {
+  const tours = dest.featured.length;
   return (
-    <div className="absolute bottom-[78px] left-2.5 right-2.5 z-30">
-      <div className="flex items-center gap-2.5 rounded-2xl border border-border bg-card/95 p-2 shadow-elegant backdrop-blur-xl">
-        <div className="h-[42px] w-[42px] flex-shrink-0 overflow-hidden rounded-xl">
-          <img src={abanotubaniImg} alt="" className="h-full w-full object-cover" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-[12.5px] font-semibold text-foreground">
-            Chapter 2 · Sulfur &amp; Stone
-          </div>
-          <div className="mt-1 flex items-center gap-2">
-            <div className="relative h-0.5 flex-1 rounded-full bg-foreground/15">
-              <div
-                className="absolute inset-y-0 left-0 rounded-full bg-primary"
-                style={{ width: `${progress * 100}%` }}
-              />
-            </div>
-            <span className="font-mono text-[10px] text-muted-foreground">4:12</span>
-          </div>
-        </div>
-        <button
-          onClick={() => setPlaying(!playing)}
-          aria-label={playing ? "Pause" : "Play"}
-          className="grid h-9 w-9 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow transition-smooth hover:scale-105"
-        >
-          {playing ? (
-            <Pause className="h-3.5 w-3.5 fill-current" />
-          ) : (
-            <Play className="h-3.5 w-3.5 fill-current" />
-          )}
-        </button>
+    <Link
+      to="/destination/$slug"
+      params={{ slug: dest.slug }}
+      className="group relative block h-[200px] overflow-hidden rounded-2xl border border-border transition-smooth hover:border-primary/50 hover:shadow-elegant"
+    >
+      <img
+        src={dest.hero}
+        alt={`${dest.city}, ${dest.country}`}
+        loading="lazy"
+        className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+
+      <div className="absolute left-4 right-4 top-3 flex items-center justify-between">
+        <span className="rounded-full border border-foreground/15 bg-background/60 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.18em] text-foreground backdrop-blur-md">
+          {dest.country}
+        </span>
+        <span className="inline-flex items-center gap-1 rounded-full border border-foreground/15 bg-background/60 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.16em] text-primary backdrop-blur-md">
+          <Headphones className="h-2.5 w-2.5" /> {tours} tour{tours === 1 ? "" : "s"}
+        </span>
       </div>
-    </div>
+
+      <div className="absolute inset-x-4 bottom-3.5">
+        <h3
+          className="text-[24px] font-medium leading-[1.05] text-foreground"
+          style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
+        >
+          {dest.city}
+        </h3>
+        <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] text-foreground/70">
+          {dest.vibe.slice(0, 3).map((v) => (
+            <span
+              key={v}
+              className="rounded-full border border-foreground/15 bg-background/40 px-2 py-0.5 backdrop-blur-md"
+            >
+              {v}
+            </span>
+          ))}
+        </div>
+      </div>
+    </Link>
   );
 }
 
 /* ─────────────────────────────────────────────
- * Tab bar — 5 tabs, auth-aware Profile slot
+ * Tab bar (universal)
  * ───────────────────────────────────────────── */
 type TabUser = { id: string } | null;
 
 function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void> }) {
-  const tabs = [
-    { id: "home", icon: HomeIcon, label: "Home", to: "/" as const, active: true },
-    { id: "explore", icon: Compass, label: "Explore", to: "/" as const, active: false },
-    { id: "map", icon: MapPin, label: "Map", to: "/map" as const, active: false },
-    { id: "saved", icon: Bookmark, label: "Saved", to: "/saved" as const, active: false },
-  ];
   return (
     <nav className="absolute bottom-0 left-0 right-0 z-40 flex h-[74px] items-start justify-around border-t border-border bg-background/85 px-2 pb-4 pt-2 backdrop-blur-xl">
-      {tabs.map((t) => {
-        const Icon = t.icon;
-        return (
-          <Link
-            key={t.id}
-            to={t.to}
-            className={`flex flex-1 flex-col items-center gap-1 transition-smooth ${
-              t.active ? "text-primary" : "text-muted-foreground hover:text-foreground"
-            }`}
-            activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
-          >
-            <Icon className="h-[19px] w-[19px]" />
-            <span className="text-[10px] font-medium">{t.label}</span>
-          </Link>
-        );
-      })}
+      <Link
+        to="/"
+        className="flex flex-1 flex-col items-center gap-1 text-primary"
+      >
+        <HomeIcon className="h-[19px] w-[19px]" />
+        <span className="text-[10px] font-medium">Home</span>
+      </Link>
+      <Link
+        to="/destinations"
+        className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
+        activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
+      >
+        <Compass className="h-[19px] w-[19px]" />
+        <span className="text-[10px] font-medium">Explore</span>
+      </Link>
+      <Link
+        to="/map"
+        className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
+        activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
+      >
+        <MapPin className="h-[19px] w-[19px]" />
+        <span className="text-[10px] font-medium">Map</span>
+      </Link>
+      <Link
+        to="/saved"
+        className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
+        activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
+      >
+        <Bookmark className="h-[19px] w-[19px]" />
+        <span className="text-[10px] font-medium">Saved</span>
+      </Link>
       {user ? (
         <button
           onClick={() => signOut()}
@@ -420,3 +400,6 @@ function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void>
     </nav>
   );
 }
+
+// Star is imported but unused at module level — keep import lean
+void Star;
