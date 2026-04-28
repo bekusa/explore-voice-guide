@@ -44,6 +44,7 @@ type Place = {
   stops: number;
   distance: string;
   category: string;
+  description: string;
 };
 
 const PLACES: Place[] = [
@@ -57,6 +58,8 @@ const PLACES: Place[] = [
     stops: 6,
     distance: "0.4 km",
     category: "Historic",
+    description:
+      "Brick domes hide centuries-old sulfur baths where Pushkin once lingered. The mineral steam, the painted facades, the muezzin's echo from a nearby mosque — Abanotubani is Tbilisi distilled.",
   },
   {
     id: "sameba",
@@ -68,6 +71,8 @@ const PLACES: Place[] = [
     stops: 8,
     distance: "1.2 km",
     category: "Sacred",
+    description:
+      "The largest cathedral in the Caucasus crowns Elia Hill in golden silence. Time the visit for vespers — chants drift through incense as the city lights flicker on below.",
   },
   {
     id: "rustaveli",
@@ -79,6 +84,8 @@ const PLACES: Place[] = [
     stops: 11,
     distance: "0.8 km",
     category: "Culture",
+    description:
+      "A grand boulevard lined with opera, theatre, and revolution. Walk it slowly: every facade carries a 20th-century story — and a thousand cups of cardamom coffee.",
   },
 ];
 
