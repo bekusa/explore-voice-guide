@@ -8,14 +8,15 @@ import { createFileRoute } from "@tanstack/react-router";
  * directly from our server avoids the SDK entirely — faster (no script
  * load), CSP-safe, and lets us add a Wikipedia fallback.
  *
- * Google Places key: kept in source for now since the JS SDK already
- * exposed it. Move to env var (GOOGLE_MAPS_API_KEY) on Lovable for
- * stronger security. The key MUST have "Places API" enabled in Google
- * Cloud Console (not just Maps JS).
+ * KEY SETUP: This is a *server-side* Google Cloud key, separate from the
+ * referrer-restricted browser key. It is restricted by API only (Places
+ * API), so the worst-case if leaked is someone burning through Places
+ * quota — they can't use it for Maps, Geocoding, etc. Move to env var
+ * (GOOGLE_PLACES_KEY) on Lovable to remove from source entirely.
  */
 const GOOGLE_KEY =
-  (typeof process !== "undefined" && process.env?.GOOGLE_MAPS_API_KEY) ||
-  "AIzaSyD5j2rdYvTOfReGLsar9CfScLegbLipAmg";
+  (typeof process !== "undefined" && process.env?.GOOGLE_PLACES_KEY) ||
+  "AIzaSyCxphS6qlPY55RpWq30UwpNOpwIyavvMJo";
 
 // Per-worker in-memory cache (resets on cold start, but cheap on a hot worker).
 const cache = new Map<string, string | null>();
