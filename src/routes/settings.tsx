@@ -16,6 +16,10 @@ import {
   Trash2,
   User as UserIcon,
   Volume2,
+  Download,
+  WifiOff,
+  Wifi,
+  CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
@@ -28,8 +32,16 @@ import {
   voicesForLanguage,
 } from "@/hooks/useSpeechVoices";
 import { LANGUAGES, getPreviewPhrase, type Language } from "@/lib/languages";
-import { clearAll, getSaved } from "@/lib/savedStore";
+import { clearAll, getSaved, updateItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { fetchGuideFresh } from "@/lib/api";
+import {
+  clearGuideCache,
+  guideCacheCount,
+  guideCacheSize,
+  onGuideCacheChange,
+} from "@/lib/guideCache";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
