@@ -16,12 +16,14 @@ import { MobileFrame } from "@/components/MobileFrame";
 import {
   attractionSlug,
   fetchAttractions,
+  fetchGuide,
   unslugAttraction,
   type Attraction,
 } from "@/lib/api";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
+import { getCachedGuide } from "@/lib/guideCache";
 
 type Search = { name?: string };
 
