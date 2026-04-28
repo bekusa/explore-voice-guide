@@ -22,6 +22,7 @@ import {
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { NearYouCard } from "@/components/NearYouCard";
 import abanotubaniImg from "@/assets/abanotubani.jpg";
 import samebaImg from "@/assets/sameba.jpg";
 import rustaveliImg from "@/assets/rustaveli.jpg";
