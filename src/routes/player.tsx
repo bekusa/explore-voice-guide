@@ -206,6 +206,27 @@ function PlayerPage() {
           <p className="mt-1.5 text-center text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
             {LANGUAGES.find((l) => l.code === langTag)?.name ?? langTag}
           </p>
+          {(fromCache || !online) && (
+            <div className="mt-3 flex justify-center">
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] backdrop-blur-md ${
+                  online
+                    ? "border-primary/30 bg-primary/10 text-primary"
+                    : "border-accent/40 bg-accent/15 text-accent"
+                }`}
+              >
+                {online ? (
+                  <>
+                    <Download className="h-2.5 w-2.5" /> Cached offline
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="h-2.5 w-2.5" /> Offline mode
+                  </>
+                )}
+              </span>
+            </div>
+          )}
         </section>
 
         {/* Wave indicator */}
