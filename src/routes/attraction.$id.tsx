@@ -26,6 +26,7 @@ import {
   attractionSlug,
   fetchAttractions,
   fetchGuideData,
+  fetchPlacePhoto,
   unslugAttraction,
   type Attraction,
   type GuideData,
@@ -75,6 +76,9 @@ function AttractionPage() {
   });
   const [loadingScript, setLoadingScript] = useState(false);
   const script = guide?.script ?? "";
+  // Hero image — n8n's image_url wins; otherwise lazily fetch from
+  // Google Places / Wikipedia, same flow as the result cards.
+  const [heroPhoto, setHeroPhoto] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -125,6 +129,24 @@ function AttractionPage() {
     };
   }, [attraction?.name, fallbackName, language]);
 
+  // Hero photo: prefer n8n's image_url, otherwise lazy-fetch from
+  // Google Places / Wikipedia. Reset when the place changes.
+  useEffect(() => {
+    const name = attraction?.name ?? fallbackName;
+    if (attraction?.image_url) {
+      setHeroPhoto(attraction.image_url);
+      return;
+    }
+    setHeroPhoto(null);
+    let cancelled = false;
+    fetchPlacePhoto(name, language).then((url) => {
+      if (!cancelled && url) setHeroPhoto(url);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [attraction?.name, attraction?.image_url, fallbackName, language]);
+
   const stops = useMemo(() => parseStops(script), [script]);
 
   const startJourney = () => {
@@ -147,10 +169,10 @@ function AttractionPage() {
       <div className="relative min-h-full bg-background pb-32 text-foreground">
         {/* Hero */}
         <section className="relative h-[420px] w-full overflow-hidden">
-          {a?.image_url ? (
+          {heroPhoto ? (
             <img
-              src={a.image_url}
-              alt={a.name}
+              src={heroPhoto}
+              alt={a?.name ?? fallbackName}
               className="absolute inset-0 h-full w-full object-cover"
             />
           ) : (
@@ -379,6 +401,29 @@ function parseStops(script: string): { title: string; preview: string }[] {
   });
 }
 
+/**
+ * Remove TTS direction markers from a narrated script before display.
+ * The narration backend embeds tags like `[PAUSE]`, `[BREAK]`, `[BEAT]`,
+ * `(pause)`, and SSML-style `<break time="500ms"/>` to guide the voice
+ * synthesiser. They're meaningless when the user is reading, so strip
+ * them out and tidy the leftover whitespace.
+ */
+function stripTtsMarkers(script: string): string {
+  if (!script) return "";
+  return (
+    script
+      // `[PAUSE]`, `[BREAK]`, `[BEAT]`, `[silence]` etc. — bracketed cues
+      .replace(/\[\s*(?:pause|break|beat|silence|wait|tone|sfx)[^\]]*\]/gi, "")
+      // `(pause)`, `(beat)` parenthesised cues
+      .replace(/\(\s*(?:pause|break|beat|silence|wait)\s*\)/gi, "")
+      // SSML-ish `<break time="500ms"/>` / `<pause/>`
+      .replace(/<\s*(?:break|pause)[^>]*\/?>/gi, "")
+      // Collapse the double-spaces left behind, but keep paragraph breaks.
+      .replace(/[ \t]{2,}/g, " ")
+      .replace(/[ \t]+\n/g, "\n")
+  );
+}
+
 /* ---------- Lokali rich sections ---------- */
 
 /**
@@ -388,9 +433,11 @@ function parseStops(script: string): { title: string; preview: string }[] {
  */
 function StorySection({ script, loading }: { script: string; loading: boolean }) {
   // Split on blank lines into paragraphs; keep order, drop empties.
+  // Strip TTS direction markers ([PAUSE], [BREAK], [BEAT], (pause), <break/>)
+  // — they're cues for the voice synthesiser, ugly to read on screen.
   const paragraphs = useMemo(
     () =>
-      script
+      stripTtsMarkers(script)
         .split(/\n\s*\n/)
         .map((p) => p.trim())
         .filter(Boolean),
