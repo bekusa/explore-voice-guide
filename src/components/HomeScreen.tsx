@@ -50,6 +50,7 @@ export function HomeScreen() {
   const online = useOnlineStatus();
   const unread = useUnreadCount();
   const selected = useSelectedDestination();
+  const t = useT();
   const [query, setQuery] = useState("");
   const [heroIdx, setHeroIdx] = useState(0);
   const [mounted, setMounted] = useState(false);
@@ -68,6 +69,20 @@ export function HomeScreen() {
 
   const heroDest = HERO_ROTATION[heroIdx];
   const featured = useMemo(() => DESTINATIONS.slice(0, 6), []);
+
+  // Translate the selected destination + hero copy on the fly.
+  const [selectedCity, selectedCountry] = useTranslated([
+    selected.city,
+    selected.country,
+  ]);
+  const taglineParts = heroDest.tagline.split("|");
+  const [heroCountry, heroPart1, heroPart2, heroBlurb, heroCity] = useTranslated([
+    heroDest.country,
+    taglineParts[0] ?? "",
+    taglineParts[1] ?? "",
+    heroDest.blurb,
+    heroDest.city,
+  ]);
 
   function submitSearch(e: React.FormEvent) {
     e.preventDefault();
