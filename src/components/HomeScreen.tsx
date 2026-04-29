@@ -21,6 +21,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useUnreadCount } from "@/hooks/useNotifications";
 import { useSelectedDestination } from "@/hooks/useSelectedDestination";
+import { useT, useTranslated, useTranslatedString } from "@/hooks/useT";
 import {
   COLLECTIONS,
   DESTINATIONS,
@@ -49,6 +50,7 @@ export function HomeScreen() {
   const online = useOnlineStatus();
   const unread = useUnreadCount();
   const selected = useSelectedDestination();
+  const t = useT();
   const [query, setQuery] = useState("");
   const [heroIdx, setHeroIdx] = useState(0);
   const [mounted, setMounted] = useState(false);
@@ -67,6 +69,20 @@ export function HomeScreen() {
 
   const heroDest = HERO_ROTATION[heroIdx];
   const featured = useMemo(() => DESTINATIONS.slice(0, 6), []);
+
+  // Translate the selected destination + hero copy on the fly.
+  const [selectedCity, selectedCountry] = useTranslated([
+    selected.city,
+    selected.country,
+  ]);
+  const taglineParts = heroDest.tagline.split("|");
+  const [heroCountry, heroPart1, heroPart2, heroBlurb, heroCity] = useTranslated([
+    heroDest.country,
+    taglineParts[0] ?? "",
+    taglineParts[1] ?? "",
+    heroDest.blurb,
+    heroDest.city,
+  ]);
 
   function submitSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -96,10 +112,10 @@ export function HomeScreen() {
           <div className="absolute left-5 right-5 top-12 z-[5] flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
-                Where next?
+                {t("home.whereNext")}
                 {!online && (
                   <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/15 px-1.5 py-0.5 text-[9px] tracking-[0.16em] text-accent">
-                    <WifiOff className="h-2.5 w-2.5" /> Offline
+                    <WifiOff className="h-2.5 w-2.5" /> {t("home.offline")}
                   </span>
                 )}
               </div>
@@ -108,28 +124,28 @@ export function HomeScreen() {
                 className="mt-1 inline-flex items-center gap-1.5 text-[15px] font-medium text-foreground transition-smooth hover:text-primary"
               >
                 <MapPin className="h-3.5 w-3.5 text-primary" />
-                {selected.city}, {selected.country}
+                {selectedCity}, {selectedCountry}
                 <ChevronDown className="h-3 w-3 opacity-60" />
               </Link>
             </div>
             <div className="flex gap-2">
               <Link
                 to="/settings"
-                aria-label="Settings"
+                aria-label={t("nav.settings")}
                 className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
               >
                 <SettingsIcon className="h-3.5 w-3.5" />
               </Link>
               <Link
                 to="/language"
-                aria-label="Change language"
+                aria-label={t("nav.language")}
                 className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
               >
                 <Globe className="h-3.5 w-3.5" />
               </Link>
               <Link
                 to="/notifications"
-                aria-label="Notifications"
+                aria-label={t("nav.notifications")}
                 className="relative grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
               >
                 <Bell className="h-3.5 w-3.5" />
@@ -146,26 +162,24 @@ export function HomeScreen() {
           <div className="absolute bottom-8 left-5 right-5 z-[5]">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-primary backdrop-blur-md">
               <Sparkles className="h-2.5 w-2.5" />
-              Featured · {heroDest.country}
+              {t("home.featuredBadge")} · {heroCountry}
             </span>
             <h1
               className="mt-4 text-[40px] font-medium leading-[1.02] tracking-[-0.02em] text-foreground"
               style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
             >
-              {heroDest.tagline.split("|")[0]}{" "}
-              <span className="italic text-primary">
-                {heroDest.tagline.split("|")[1]}
-              </span>
+              {heroPart1}{" "}
+              <span className="italic text-primary">{heroPart2}</span>
             </h1>
             <p className="mt-3.5 max-w-[300px] text-[13.5px] leading-[1.55] text-foreground/75">
-              {heroDest.blurb}
+              {heroBlurb}
             </p>
             <Link
               to="/destination/$slug"
               params={{ slug: heroDest.slug }}
               className="mt-5 inline-flex items-center gap-2 rounded-full bg-gradient-gold px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.03]"
             >
-              Open {heroDest.city}
+              {t("home.openCity", { city: heroCity })}
               <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
@@ -181,7 +195,7 @@ export function HomeScreen() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Country, city, or landmark…"
+              placeholder={t("home.searchPlaceholder")}
               enterKeyHint="search"
               autoComplete="off"
               className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none"
@@ -191,14 +205,14 @@ export function HomeScreen() {
                 type="submit"
                 className="rounded-full bg-gradient-gold px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-primary-foreground transition-smooth hover:scale-105"
               >
-                Search
+                {t("home.search")}
               </button>
             ) : (
               <Link
                 to="/destinations"
                 className="rounded-full border border-border bg-secondary/50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground transition-smooth hover:text-foreground"
               >
-                Browse
+                {t("home.browse")}
               </Link>
             )}
           </form>
@@ -212,46 +226,17 @@ export function HomeScreen() {
                 className="text-[22px] font-medium tracking-[-0.02em] text-foreground"
                 style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
               >
-                Curated <span className="italic text-primary">collections</span>
+                {t("home.collections.title")}
               </h2>
               <p className="mt-0.5 text-[11px] text-muted-foreground">
-                Themes for the way you travel
+                {t("home.collections.sub")}
               </p>
             </div>
           </div>
           <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
-            {COLLECTIONS.map((c) => {
-              const sample = destinationsByCollection(c.id)[0];
-              return (
-                <Link
-                  key={c.id}
-                  to="/destinations"
-                  search={{ collection: c.id }}
-                  className="group relative h-[140px] w-[200px] flex-shrink-0 overflow-hidden rounded-2xl border border-border"
-                >
-                  {sample && (
-                    <img
-                      src={sample.hero}
-                      alt={c.label}
-                      loading="lazy"
-                      className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-                  <div className="absolute inset-x-3 bottom-3">
-                    <div
-                      className="text-[15px] font-medium leading-tight text-foreground"
-                      style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
-                    >
-                      {c.label}
-                    </div>
-                    <div className="mt-0.5 text-[10px] text-foreground/65">
-                      {c.tagline}
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
+            {COLLECTIONS.map((c) => (
+              <CollectionCard key={c.id} collection={c} />
+            ))}
           </div>
         </section>
 
@@ -263,17 +248,17 @@ export function HomeScreen() {
                 className="text-[26px] font-medium tracking-[-0.02em] text-foreground"
                 style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
               >
-                Featured <span className="italic text-primary">cities</span>
+                {t("home.featured.title")}
               </h2>
               <p className="mt-1 text-[11.5px] text-muted-foreground">
-                Cinematic walks, narrated by locals
+                {t("home.featured.sub")}
               </p>
             </div>
             <Link
               to="/destinations"
               className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary"
             >
-              See all <ArrowRight className="h-2.5 w-2.5" />
+              {t("home.seeAll")} <ArrowRight className="h-2.5 w-2.5" />
             </Link>
           </div>
 
@@ -291,10 +276,54 @@ export function HomeScreen() {
 }
 
 /* ─────────────────────────────────────────────
+ * Editorial collection card
+ * ───────────────────────────────────────────── */
+function CollectionCard({
+  collection,
+}: {
+  collection: (typeof COLLECTIONS)[number];
+}) {
+  const sample = destinationsByCollection(collection.id)[0];
+  const [label, tagline] = useTranslated([collection.label, collection.tagline]);
+  return (
+    <Link
+      to="/destinations"
+      search={{ collection: collection.id }}
+      className="group relative h-[140px] w-[200px] flex-shrink-0 overflow-hidden rounded-2xl border border-border"
+    >
+      {sample && (
+        <img
+          src={sample.hero}
+          alt={label}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+      <div className="absolute inset-x-3 bottom-3">
+        <div
+          className="text-[15px] font-medium leading-tight text-foreground"
+          style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
+        >
+          {label}
+        </div>
+        <div className="mt-0.5 text-[10px] text-foreground/65">{tagline}</div>
+      </div>
+    </Link>
+  );
+}
+
+/* ─────────────────────────────────────────────
  * Editorial destination card
  * ───────────────────────────────────────────── */
 function DestinationCard({ dest }: { dest: Destination }) {
+  const t = useT();
   const tours = dest.featured.length;
+  const [city, country, ...vibes] = useTranslated([
+    dest.city,
+    dest.country,
+    ...dest.vibe.slice(0, 3),
+  ]);
   return (
     <Link
       to="/destination/$slug"
@@ -311,10 +340,11 @@ function DestinationCard({ dest }: { dest: Destination }) {
 
       <div className="absolute left-4 right-4 top-3 flex items-center justify-between">
         <span className="rounded-full border border-foreground/15 bg-background/60 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.18em] text-foreground backdrop-blur-md">
-          {dest.country}
+          {country}
         </span>
         <span className="inline-flex items-center gap-1 rounded-full border border-foreground/15 bg-background/60 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.16em] text-primary backdrop-blur-md">
-          <Headphones className="h-2.5 w-2.5" /> {tours} tour{tours === 1 ? "" : "s"}
+          <Headphones className="h-2.5 w-2.5" />{" "}
+          {tours === 1 ? t("home.tours.one", { n: tours }) : t("home.tours.many", { n: tours })}
         </span>
       </div>
 
@@ -323,12 +353,12 @@ function DestinationCard({ dest }: { dest: Destination }) {
           className="text-[24px] font-medium leading-[1.05] text-foreground"
           style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
         >
-          {dest.city}
+          {city}
         </h3>
         <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] text-foreground/70">
-          {dest.vibe.slice(0, 3).map((v) => (
+          {vibes.map((v, i) => (
             <span
-              key={v}
+              key={i}
               className="rounded-full border border-foreground/15 bg-background/40 px-2 py-0.5 backdrop-blur-md"
             >
               {v}
@@ -346,14 +376,12 @@ function DestinationCard({ dest }: { dest: Destination }) {
 type TabUser = { id: string } | null;
 
 function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void> }) {
+  const t = useT();
   return (
     <nav className="absolute bottom-0 left-0 right-0 z-40 flex h-[74px] items-start justify-around border-t border-border bg-background/85 px-2 pb-4 pt-2 backdrop-blur-xl">
-      <Link
-        to="/"
-        className="flex flex-1 flex-col items-center gap-1 text-primary"
-      >
+      <Link to="/" className="flex flex-1 flex-col items-center gap-1 text-primary">
         <HomeIcon className="h-[19px] w-[19px]" />
-        <span className="text-[10px] font-medium">Home</span>
+        <span className="text-[10px] font-medium">{t("nav.home")}</span>
       </Link>
       <Link
         to="/destinations"
@@ -361,7 +389,7 @@ function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void>
         activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
       >
         <Compass className="h-[19px] w-[19px]" />
-        <span className="text-[10px] font-medium">Explore</span>
+        <span className="text-[10px] font-medium">{t("nav.explore")}</span>
       </Link>
       <Link
         to="/map"
@@ -369,7 +397,7 @@ function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void>
         activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
       >
         <MapPin className="h-[19px] w-[19px]" />
-        <span className="text-[10px] font-medium">Map</span>
+        <span className="text-[10px] font-medium">{t("nav.map")}</span>
       </Link>
       <Link
         to="/saved"
@@ -377,7 +405,7 @@ function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void>
         activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
       >
         <Bookmark className="h-[19px] w-[19px]" />
-        <span className="text-[10px] font-medium">Saved</span>
+        <span className="text-[10px] font-medium">{t("nav.saved")}</span>
       </Link>
       {user ? (
         <button
@@ -385,7 +413,7 @@ function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void>
           className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
         >
           <LogOut className="h-[19px] w-[19px]" />
-          <span className="text-[10px] font-medium">Sign out</span>
+          <span className="text-[10px] font-medium">{t("nav.signOut")}</span>
         </button>
       ) : (
         <Link
@@ -393,7 +421,7 @@ function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void>
           className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
         >
           <UserIcon className="h-[19px] w-[19px]" />
-          <span className="text-[10px] font-medium">Sign in</span>
+          <span className="text-[10px] font-medium">{t("nav.signIn")}</span>
         </Link>
       )}
     </nav>

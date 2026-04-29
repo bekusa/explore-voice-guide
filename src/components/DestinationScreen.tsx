@@ -25,29 +25,41 @@ import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { NearYouCard } from "@/components/NearYouCard";
 import type { Destination } from "@/lib/destinations";
 import { setSelectedSlug } from "@/lib/destinationStore";
+import { useT, useTranslated } from "@/hooks/useT";
 
 /* ─────────────────────────────────────────────
  * DESTINATION SCREEN — what used to be the home screen
  * Now scoped to a single city, driven by the destinations catalog.
  * ───────────────────────────────────────────── */
 
-const CATEGORIES = [
-  { id: "all", label: "All" },
-  { id: "historic", label: "Historic" },
-  { id: "sacred", label: "Sacred" },
-  { id: "culinary", label: "Culinary" },
-  { id: "hidden", label: "Hidden" },
-  { id: "fortress", label: "Fortress" },
-];
-
 export function DestinationScreen({ dest }: { dest: Destination }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const online = useOnlineStatus();
+  const t = useT();
   const [cat, setCat] = useState("all");
   const [playing, setPlaying] = useState(true);
   const [query, setQuery] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const CATEGORIES = [
+    { id: "all", label: t("dest.cat.all") },
+    { id: "historic", label: t("dest.cat.historic") },
+    { id: "sacred", label: t("dest.cat.sacred") },
+    { id: "culinary", label: t("dest.cat.culinary") },
+    { id: "hidden", label: t("dest.cat.hidden") },
+    { id: "fortress", label: t("dest.cat.fortress") },
+  ];
+
+  // Translate destination name + blurb on the fly.
+  const headline = dest.tagline.split("|");
+  const [city, country, blurb, headline1, headline2] = useTranslated([
+    dest.city,
+    dest.country,
+    dest.blurb,
+    headline[0] ?? "",
+    headline[1] ?? "",
+  ]);
 
   // When a user lands on a destination page, persist it as their current.
   useEffect(() => {
@@ -61,7 +73,6 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
     navigate({ to: "/results", search: { q } });
   }
 
-  const headline = dest.tagline.split("|");
   const featured = dest.featured[0];
 
   return (
@@ -88,10 +99,10 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
               </Link>
               <div>
                 <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
-                  Currently in
+                  {t("dest.currentlyIn")}
                   {!online && (
                     <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/15 px-1.5 py-0.5 text-[9px] tracking-[0.16em] text-accent">
-                      <WifiOff className="h-2.5 w-2.5" /> Offline
+                      <WifiOff className="h-2.5 w-2.5" /> {t("home.offline")}
                     </span>
                   )}
                 </div>
@@ -100,31 +111,19 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
                   className="mt-1 inline-flex items-center gap-1.5 text-[15px] font-medium text-foreground transition-smooth hover:text-primary"
                 >
                   <MapPin className="h-3.5 w-3.5 text-primary" />
-                  {dest.city}, {dest.country}
+                  {city}, {country}
                   <ChevronDown className="h-3 w-3 opacity-60" />
                 </Link>
               </div>
             </div>
             <div className="flex gap-2">
-              <Link
-                to="/settings"
-                aria-label="Settings"
-                className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
-              >
+              <Link to="/settings" aria-label={t("nav.settings")} className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60">
                 <SettingsIcon className="h-3.5 w-3.5" />
               </Link>
-              <Link
-                to="/language"
-                aria-label="Change language"
-                className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
-              >
+              <Link to="/language" aria-label={t("nav.language")} className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60">
                 <Globe className="h-3.5 w-3.5" />
               </Link>
-              <Link
-                to="/notifications"
-                aria-label="Notifications"
-                className="relative grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
-              >
+              <Link to="/notifications" aria-label={t("nav.notifications")} className="relative grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60">
                 <Bell className="h-3.5 w-3.5" />
               </Link>
             </div>
@@ -137,16 +136,16 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
                 <span className="absolute inset-0 rounded-full bg-primary" />
                 <span className="absolute -inset-0.5 animate-ping rounded-full bg-primary opacity-40" />
               </span>
-              Featured Tour
+              {t("dest.featuredTour")}
             </span>
             <h1
               className="mt-4 text-[40px] font-medium leading-[1.02] tracking-[-0.02em] text-foreground"
               style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
             >
-              {headline[0]} <span className="italic text-primary">{headline[1]}</span>
+              {headline1} <span className="italic text-primary">{headline2}</span>
             </h1>
             <p className="mt-3.5 max-w-[300px] text-[13.5px] leading-[1.55] text-foreground/75">
-              {dest.blurb}
+              {blurb}
             </p>
             {featured && (
               <div className="mt-4 flex items-center gap-3 text-[11px] text-foreground/60">
@@ -159,7 +158,7 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
                 </span>
                 <span className="h-2.5 w-px bg-foreground/20" />
                 <span className="inline-flex items-center gap-1.5">
-                  <MapPin className="h-3 w-3" /> {featured.stops} stops
+                  <MapPin className="h-3 w-3" /> {t("card.stops", { n: featured.stops })}
                 </span>
               </div>
             )}
@@ -180,13 +179,13 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
                 </span>
                 <span className="text-left">
                   <span className="block text-[10px] font-bold uppercase tracking-[0.22em] opacity-70">
-                    Begin journey
+                    {t("dest.beginJourney")}
                   </span>
-                  <span className="block text-[14px] font-semibold">Listen to first chapter</span>
+                  <span className="block text-[14px] font-semibold">{t("dest.firstChapter")}</span>
                 </span>
               </span>
               <span className="text-[11px] font-bold uppercase tracking-[0.18em] opacity-80">
-                Free · 3 min
+                {t("dest.freeMin")}
               </span>
             </Link>
           </section>
@@ -202,7 +201,7 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={`Search ${dest.city}…`}
+              placeholder={t("dest.searchIn", { city })}
               enterKeyHint="search"
               autoComplete="off"
               className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none"
@@ -212,7 +211,7 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
                 type="submit"
                 className="rounded-full bg-gradient-gold px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-primary-foreground transition-smooth hover:scale-105"
               >
-                Search
+                {t("home.search")}
               </button>
             )}
           </form>

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { LANGUAGES, type Language } from "@/lib/languages";
+import { setStoredLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/language")({
   head: () => ({
@@ -78,6 +79,7 @@ function LanguagePage() {
         if (error) throw error;
       }
       setActive(lang.code);
+      setStoredLang(lang.code);
       toast.success("Language updated", {
         description: `${lang.flag} ${lang.native}`,
       });
