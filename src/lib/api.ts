@@ -5,6 +5,12 @@
 export type Attraction = {
   name: string;
   description?: string;
+  /** New n8n workflow shape: short factual outside-view description. */
+  outside_desc?: string;
+  /** New n8n workflow shape: longer "what a local would tell you" view. */
+  insider_desc?: string;
+  /** New n8n workflow shape: e.g. "პარკი / სანაპირო", "მუზეუმი". */
+  type?: string;
   lat?: number;
   lng?: number;
   rating?: number;

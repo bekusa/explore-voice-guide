@@ -17,6 +17,8 @@ import {
   Coffee,
   Shirt,
   Timer,
+  BookOpen,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
@@ -234,28 +236,15 @@ function AttractionPage() {
           </button>
         </section>
 
-        {/* Description */}
-        <section className="mt-8 px-6">
-          <h2 className="font-display text-[20px] text-foreground">
-            About <span className="italic text-primary">this place</span>
-          </h2>
-          <div className="mt-4">
-            {loading && !a?.description ? (
-              <div className="space-y-2">
-                <div className="h-3 w-full animate-pulse rounded bg-secondary" />
-                <div className="h-3 w-11/12 animate-pulse rounded bg-secondary" />
-                <div className="h-3 w-9/12 animate-pulse rounded bg-secondary/70" />
-                <div className="h-3 w-10/12 animate-pulse rounded bg-secondary/60" />
-              </div>
-            ) : a?.description ? (
-              <p className="text-[13.5px] leading-relaxed text-foreground/80">{a.description}</p>
-            ) : (
-              <p className="text-[13px] text-muted-foreground">
-                Tap “Begin journey” to hear the narrated story of this place.
-              </p>
-            )}
-          </div>
-        </section>
+        {/* The story — main narrated body, rendered as flowing paragraphs.
+            This is the core Lokali content the user came for. */}
+        <StorySection script={script} loading={loadingScript} />
+
+        {/* About — outside-view short description (n8n: outside_desc). */}
+        <AboutSection loading={loading} aboutText={a?.outside_desc ?? a?.description ?? ""} />
+
+        {/* Insider's view — what a local would tell you (n8n: insider_desc). */}
+        <InsiderSection insiderText={a?.insider_desc} />
 
         {/* Key facts — emerald chips */}
         <ChipsSection
@@ -391,6 +380,113 @@ function parseStops(script: string): { title: string; preview: string }[] {
 }
 
 /* ---------- Lokali rich sections ---------- */
+
+/**
+ * Main narrated body — the heart of the audio guide, in readable form.
+ * Renders the Claude-generated script as flowing paragraphs so the user
+ * can read the story instead of (or alongside) listening.
+ */
+function StorySection({ script, loading }: { script: string; loading: boolean }) {
+  // Split on blank lines into paragraphs; keep order, drop empties.
+  const paragraphs = useMemo(
+    () =>
+      script
+        .split(/\n\s*\n/)
+        .map((p) => p.trim())
+        .filter(Boolean),
+    [script],
+  );
+
+  // While the guide is fetching with no cached fallback, show a tall skeleton
+  // so the page doesn't jump when the text arrives.
+  if (loading && paragraphs.length === 0) {
+    return (
+      <section className="mt-8 px-6">
+        <h2 className="font-display text-[20px] text-foreground">
+          The <span className="italic text-primary">story</span>
+        </h2>
+        <div className="mt-4 space-y-2.5">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div
+              key={i}
+              className="h-3 animate-pulse rounded bg-secondary"
+              style={{ width: `${88 + ((i * 13) % 12)}%` }}
+            />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (paragraphs.length === 0) return null;
+
+  return (
+    <section className="mt-8 px-6">
+      <div className="flex items-center gap-2">
+        <BookOpen className="h-4 w-4 text-primary" />
+        <h2 className="font-display text-[20px] text-foreground">
+          The <span className="italic text-primary">story</span>
+        </h2>
+      </div>
+      <div className="mt-4 space-y-3.5 text-[14px] leading-[1.7] text-foreground/85">
+        {paragraphs.map((p, i) => (
+          <p key={i}>{p}</p>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/**
+ * About — short outside-view description (n8n: outside_desc).
+ * Hidden when there is nothing useful to show.
+ */
+function AboutSection({ loading, aboutText }: { loading: boolean; aboutText: string }) {
+  if (loading && !aboutText) {
+    return (
+      <section className="mt-8 px-6">
+        <h2 className="font-display text-[20px] text-foreground">
+          About <span className="italic text-primary">this place</span>
+        </h2>
+        <div className="mt-4 space-y-2">
+          <div className="h-3 w-full animate-pulse rounded bg-secondary" />
+          <div className="h-3 w-11/12 animate-pulse rounded bg-secondary/70" />
+          <div className="h-3 w-9/12 animate-pulse rounded bg-secondary/60" />
+        </div>
+      </section>
+    );
+  }
+  if (!aboutText) return null;
+  return (
+    <section className="mt-8 px-6">
+      <h2 className="font-display text-[20px] text-foreground">
+        About <span className="italic text-primary">this place</span>
+      </h2>
+      <p className="mt-4 text-[13.5px] leading-relaxed text-foreground/80">{aboutText}</p>
+    </section>
+  );
+}
+
+/**
+ * Insider's view — the "what a local would tell you" pull quote.
+ * Distinguished visually from About so it reads as a tip from someone there.
+ */
+function InsiderSection({ insiderText }: { insiderText?: string }) {
+  if (!insiderText || !insiderText.trim()) return null;
+  return (
+    <section className="mt-8 px-6">
+      <div className="flex items-center gap-2">
+        <Sparkles className="h-3.5 w-3.5 text-primary" />
+        <h2 className="font-display text-[20px] text-foreground">
+          The <span className="italic text-primary">insider's view</span>
+        </h2>
+      </div>
+      <blockquote className="mt-4 rounded-2xl border border-primary/25 bg-primary/5 px-4 py-3.5 text-[13.5px] leading-relaxed text-foreground/85">
+        {insiderText}
+      </blockquote>
+    </section>
+  );
+}
 
 const TONE_CLASSES: Record<string, string> = {
   emerald: "border-emerald-400/30 bg-emerald-500/10 text-emerald-200",
