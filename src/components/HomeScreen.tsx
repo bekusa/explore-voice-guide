@@ -234,38 +234,9 @@ export function HomeScreen() {
             </div>
           </div>
           <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
-            {COLLECTIONS.map((c) => {
-              const sample = destinationsByCollection(c.id)[0];
-              return (
-                <Link
-                  key={c.id}
-                  to="/destinations"
-                  search={{ collection: c.id }}
-                  className="group relative h-[140px] w-[200px] flex-shrink-0 overflow-hidden rounded-2xl border border-border"
-                >
-                  {sample && (
-                    <img
-                      src={sample.hero}
-                      alt={c.label}
-                      loading="lazy"
-                      className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-                  <div className="absolute inset-x-3 bottom-3">
-                    <div
-                      className="text-[15px] font-medium leading-tight text-foreground"
-                      style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
-                    >
-                      {c.label}
-                    </div>
-                    <div className="mt-0.5 text-[10px] text-foreground/65">
-                      {c.tagline}
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
+            {COLLECTIONS.map((c) => (
+              <CollectionCard key={c.id} collection={c} />
+            ))}
           </div>
         </section>
 
