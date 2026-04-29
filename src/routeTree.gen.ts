@@ -22,6 +22,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DestinationSlugRouteImport } from './routes/destination.$slug'
 import { Route as AttractionIdRouteImport } from './routes/attraction.$id'
+import { Route as ApiTranslateRouteImport } from './routes/api.translate'
 import { Route as ApiPhotoRouteImport } from './routes/api.photo'
 import { Route as ApiGuideRouteImport } from './routes/api.guide'
 import { Route as ApiAttractionsRouteImport } from './routes/api.attractions'
@@ -91,6 +92,11 @@ const AttractionIdRoute = AttractionIdRouteImport.update({
   path: '/attraction/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTranslateRoute = ApiTranslateRouteImport.update({
+  id: '/api/translate',
+  path: '/api/translate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPhotoRoute = ApiPhotoRouteImport.update({
   id: '/api/photo',
   path: '/api/photo',
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/photo': typeof ApiPhotoRoute
+  '/api/translate': typeof ApiTranslateRoute
   '/attraction/$id': typeof AttractionIdRoute
   '/destination/$slug': typeof DestinationSlugRoute
 }
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/photo': typeof ApiPhotoRoute
+  '/api/translate': typeof ApiTranslateRoute
   '/attraction/$id': typeof AttractionIdRoute
   '/destination/$slug': typeof DestinationSlugRoute
 }
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/photo': typeof ApiPhotoRoute
+  '/api/translate': typeof ApiTranslateRoute
   '/attraction/$id': typeof AttractionIdRoute
   '/destination/$slug': typeof DestinationSlugRoute
 }
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/api/attractions'
     | '/api/guide'
     | '/api/photo'
+    | '/api/translate'
     | '/attraction/$id'
     | '/destination/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/api/attractions'
     | '/api/guide'
     | '/api/photo'
+    | '/api/translate'
     | '/attraction/$id'
     | '/destination/$slug'
   id:
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/api/attractions'
     | '/api/guide'
     | '/api/photo'
+    | '/api/translate'
     | '/attraction/$id'
     | '/destination/$slug'
   fileRoutesById: FileRoutesById
@@ -234,6 +246,7 @@ export interface RootRouteChildren {
   ApiAttractionsRoute: typeof ApiAttractionsRoute
   ApiGuideRoute: typeof ApiGuideRoute
   ApiPhotoRoute: typeof ApiPhotoRoute
+  ApiTranslateRoute: typeof ApiTranslateRoute
   AttractionIdRoute: typeof AttractionIdRoute
   DestinationSlugRoute: typeof DestinationSlugRoute
 }
@@ -331,6 +344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AttractionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/translate': {
+      id: '/api/translate'
+      path: '/api/translate'
+      fullPath: '/api/translate'
+      preLoaderRoute: typeof ApiTranslateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/photo': {
       id: '/api/photo'
       path: '/api/photo'
@@ -370,18 +390,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAttractionsRoute: ApiAttractionsRoute,
   ApiGuideRoute: ApiGuideRoute,
   ApiPhotoRoute: ApiPhotoRoute,
+  ApiTranslateRoute: ApiTranslateRoute,
   AttractionIdRoute: AttractionIdRoute,
   DestinationSlugRoute: DestinationSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
