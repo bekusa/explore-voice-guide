@@ -112,10 +112,10 @@ export function HomeScreen() {
           <div className="absolute left-5 right-5 top-12 z-[5] flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
-                Where next?
+                {t("home.whereNext")}
                 {!online && (
                   <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/15 px-1.5 py-0.5 text-[9px] tracking-[0.16em] text-accent">
-                    <WifiOff className="h-2.5 w-2.5" /> Offline
+                    <WifiOff className="h-2.5 w-2.5" /> {t("home.offline")}
                   </span>
                 )}
               </div>
@@ -124,28 +124,28 @@ export function HomeScreen() {
                 className="mt-1 inline-flex items-center gap-1.5 text-[15px] font-medium text-foreground transition-smooth hover:text-primary"
               >
                 <MapPin className="h-3.5 w-3.5 text-primary" />
-                {selected.city}, {selected.country}
+                {selectedCity}, {selectedCountry}
                 <ChevronDown className="h-3 w-3 opacity-60" />
               </Link>
             </div>
             <div className="flex gap-2">
               <Link
                 to="/settings"
-                aria-label="Settings"
+                aria-label={t("nav.settings")}
                 className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
               >
                 <SettingsIcon className="h-3.5 w-3.5" />
               </Link>
               <Link
                 to="/language"
-                aria-label="Change language"
+                aria-label={t("nav.language")}
                 className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
               >
                 <Globe className="h-3.5 w-3.5" />
               </Link>
               <Link
                 to="/notifications"
-                aria-label="Notifications"
+                aria-label={t("nav.notifications")}
                 className="relative grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
               >
                 <Bell className="h-3.5 w-3.5" />
@@ -162,26 +162,24 @@ export function HomeScreen() {
           <div className="absolute bottom-8 left-5 right-5 z-[5]">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-primary backdrop-blur-md">
               <Sparkles className="h-2.5 w-2.5" />
-              Featured · {heroDest.country}
+              {t("home.featuredBadge")} · {heroCountry}
             </span>
             <h1
               className="mt-4 text-[40px] font-medium leading-[1.02] tracking-[-0.02em] text-foreground"
               style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
             >
-              {heroDest.tagline.split("|")[0]}{" "}
-              <span className="italic text-primary">
-                {heroDest.tagline.split("|")[1]}
-              </span>
+              {heroPart1}{" "}
+              <span className="italic text-primary">{heroPart2}</span>
             </h1>
             <p className="mt-3.5 max-w-[300px] text-[13.5px] leading-[1.55] text-foreground/75">
-              {heroDest.blurb}
+              {heroBlurb}
             </p>
             <Link
               to="/destination/$slug"
               params={{ slug: heroDest.slug }}
               className="mt-5 inline-flex items-center gap-2 rounded-full bg-gradient-gold px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.03]"
             >
-              Open {heroDest.city}
+              {t("home.openCity", { city: heroCity })}
               <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
@@ -197,7 +195,7 @@ export function HomeScreen() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Country, city, or landmark…"
+              placeholder={t("home.searchPlaceholder")}
               enterKeyHint="search"
               autoComplete="off"
               className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none"
@@ -207,14 +205,14 @@ export function HomeScreen() {
                 type="submit"
                 className="rounded-full bg-gradient-gold px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-primary-foreground transition-smooth hover:scale-105"
               >
-                Search
+                {t("home.search")}
               </button>
             ) : (
               <Link
                 to="/destinations"
                 className="rounded-full border border-border bg-secondary/50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground transition-smooth hover:text-foreground"
               >
-                Browse
+                {t("home.browse")}
               </Link>
             )}
           </form>
@@ -228,10 +226,10 @@ export function HomeScreen() {
                 className="text-[22px] font-medium tracking-[-0.02em] text-foreground"
                 style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
               >
-                Curated <span className="italic text-primary">collections</span>
+                {t("home.collections.title")}
               </h2>
               <p className="mt-0.5 text-[11px] text-muted-foreground">
-                Themes for the way you travel
+                {t("home.collections.sub")}
               </p>
             </div>
           </div>
