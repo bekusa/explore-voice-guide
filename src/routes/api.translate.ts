@@ -1,7 +1,7 @@
 /**
  * POST /api/translate
  *
- * Body: { texts: string[]; target: string /* lang code */ }
+ * Body: { texts: string[]; target: string }   // target = BCP-47 / ISO lang code
  * Returns: { translations: string[] } in same order.
  *
  * Uses the Lovable AI Gateway. Falls back to source on any error so the
