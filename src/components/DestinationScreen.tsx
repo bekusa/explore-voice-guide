@@ -32,15 +32,6 @@ import { useT, useTranslated } from "@/hooks/useT";
  * Now scoped to a single city, driven by the destinations catalog.
  * ───────────────────────────────────────────── */
 
-const CATEGORIES = [
-  { id: "all", label: "All" },
-  { id: "historic", label: "Historic" },
-  { id: "sacred", label: "Sacred" },
-  { id: "culinary", label: "Culinary" },
-  { id: "hidden", label: "Hidden" },
-  { id: "fortress", label: "Fortress" },
-];
-
 export function DestinationScreen({ dest }: { dest: Destination }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
