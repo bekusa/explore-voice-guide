@@ -21,6 +21,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useUnreadCount } from "@/hooks/useNotifications";
 import { useSelectedDestination } from "@/hooks/useSelectedDestination";
+import { useT, useTranslated, useTranslatedString } from "@/hooks/useT";
 import {
   COLLECTIONS,
   DESTINATIONS,
