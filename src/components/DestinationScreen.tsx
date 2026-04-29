@@ -25,6 +25,7 @@ import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { NearYouCard } from "@/components/NearYouCard";
 import type { Destination } from "@/lib/destinations";
 import { setSelectedSlug } from "@/lib/destinationStore";
+import { useT, useTranslated } from "@/hooks/useT";
 
 /* ─────────────────────────────────────────────
  * DESTINATION SCREEN — what used to be the home screen
@@ -44,10 +45,30 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const online = useOnlineStatus();
+  const t = useT();
   const [cat, setCat] = useState("all");
   const [playing, setPlaying] = useState(true);
   const [query, setQuery] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const CATEGORIES = [
+    { id: "all", label: t("dest.cat.all") },
+    { id: "historic", label: t("dest.cat.historic") },
+    { id: "sacred", label: t("dest.cat.sacred") },
+    { id: "culinary", label: t("dest.cat.culinary") },
+    { id: "hidden", label: t("dest.cat.hidden") },
+    { id: "fortress", label: t("dest.cat.fortress") },
+  ];
+
+  // Translate destination name + blurb on the fly.
+  const headline = dest.tagline.split("|");
+  const [city, country, blurb, headline1, headline2] = useTranslated([
+    dest.city,
+    dest.country,
+    dest.blurb,
+    headline[0] ?? "",
+    headline[1] ?? "",
+  ]);
 
   // When a user lands on a destination page, persist it as their current.
   useEffect(() => {
@@ -61,7 +82,6 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
     navigate({ to: "/results", search: { q } });
   }
 
-  const headline = dest.tagline.split("|");
   const featured = dest.featured[0];
 
   return (
