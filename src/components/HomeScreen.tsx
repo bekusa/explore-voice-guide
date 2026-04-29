@@ -60,10 +60,7 @@ export function HomeScreen() {
 
   // Slow rotation through featured cinematic shots.
   useEffect(() => {
-    const t = setInterval(
-      () => setHeroIdx((i) => (i + 1) % HERO_ROTATION.length),
-      7000,
-    );
+    const t = setInterval(() => setHeroIdx((i) => (i + 1) % HERO_ROTATION.length), 7000);
     return () => clearInterval(t);
   }, []);
 
@@ -71,10 +68,7 @@ export function HomeScreen() {
   const featured = useMemo(() => DESTINATIONS.slice(0, 6), []);
 
   // Translate the selected destination + hero copy on the fly.
-  const [selectedCity, selectedCountry] = useTranslated([
-    selected.city,
-    selected.country,
-  ]);
+  const [selectedCity, selectedCountry] = useTranslated([selected.city, selected.country]);
   const taglineParts = heroDest.tagline.split("|");
   const [heroCountry, heroPart1, heroPart2, heroBlurb, heroCity] = useTranslated([
     heroDest.country,
@@ -88,7 +82,9 @@ export function HomeScreen() {
     e.preventDefault();
     const q = query.trim();
     if (!q) return;
-    navigate({ to: "/destinations", search: { q } });
+    // Send the query straight to the n8n-backed /results page so any city,
+    // country or landmark resolves through the Lokali Attractions workflow.
+    navigate({ to: "/results", search: { q } });
   }
 
   return (
@@ -168,8 +164,7 @@ export function HomeScreen() {
               className="mt-4 text-[40px] font-medium leading-[1.02] tracking-[-0.02em] text-foreground"
               style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
             >
-              {heroPart1}{" "}
-              <span className="italic text-primary">{heroPart2}</span>
+              {heroPart1} <span className="italic text-primary">{heroPart2}</span>
             </h1>
             <p className="mt-3.5 max-w-[300px] text-[13.5px] leading-[1.55] text-foreground/75">
               {heroBlurb}
@@ -250,9 +245,7 @@ export function HomeScreen() {
               >
                 {t("home.featured.title")}
               </h2>
-              <p className="mt-1 text-[11.5px] text-muted-foreground">
-                {t("home.featured.sub")}
-              </p>
+              <p className="mt-1 text-[11.5px] text-muted-foreground">{t("home.featured.sub")}</p>
             </div>
             <Link
               to="/destinations"
@@ -278,11 +271,7 @@ export function HomeScreen() {
 /* ─────────────────────────────────────────────
  * Editorial collection card
  * ───────────────────────────────────────────── */
-function CollectionCard({
-  collection,
-}: {
-  collection: (typeof COLLECTIONS)[number];
-}) {
+function CollectionCard({ collection }: { collection: (typeof COLLECTIONS)[number] }) {
   const sample = destinationsByCollection(collection.id)[0];
   const [label, tagline] = useTranslated([collection.label, collection.tagline]);
   return (
@@ -427,4 +416,3 @@ function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void>
     </nav>
   );
 }
-
