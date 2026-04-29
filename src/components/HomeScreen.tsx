@@ -376,14 +376,12 @@ function DestinationCard({ dest }: { dest: Destination }) {
 type TabUser = { id: string } | null;
 
 function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void> }) {
+  const t = useT();
   return (
     <nav className="absolute bottom-0 left-0 right-0 z-40 flex h-[74px] items-start justify-around border-t border-border bg-background/85 px-2 pb-4 pt-2 backdrop-blur-xl">
-      <Link
-        to="/"
-        className="flex flex-1 flex-col items-center gap-1 text-primary"
-      >
+      <Link to="/" className="flex flex-1 flex-col items-center gap-1 text-primary">
         <HomeIcon className="h-[19px] w-[19px]" />
-        <span className="text-[10px] font-medium">Home</span>
+        <span className="text-[10px] font-medium">{t("nav.home")}</span>
       </Link>
       <Link
         to="/destinations"
@@ -391,7 +389,7 @@ function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void>
         activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
       >
         <Compass className="h-[19px] w-[19px]" />
-        <span className="text-[10px] font-medium">Explore</span>
+        <span className="text-[10px] font-medium">{t("nav.explore")}</span>
       </Link>
       <Link
         to="/map"
@@ -399,7 +397,7 @@ function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void>
         activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
       >
         <MapPin className="h-[19px] w-[19px]" />
-        <span className="text-[10px] font-medium">Map</span>
+        <span className="text-[10px] font-medium">{t("nav.map")}</span>
       </Link>
       <Link
         to="/saved"
@@ -407,7 +405,7 @@ function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void>
         activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
       >
         <Bookmark className="h-[19px] w-[19px]" />
-        <span className="text-[10px] font-medium">Saved</span>
+        <span className="text-[10px] font-medium">{t("nav.saved")}</span>
       </Link>
       {user ? (
         <button
@@ -415,7 +413,7 @@ function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void>
           className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
         >
           <LogOut className="h-[19px] w-[19px]" />
-          <span className="text-[10px] font-medium">Sign out</span>
+          <span className="text-[10px] font-medium">{t("nav.signOut")}</span>
         </button>
       ) : (
         <Link
@@ -423,7 +421,7 @@ function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void>
           className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
         >
           <UserIcon className="h-[19px] w-[19px]" />
-          <span className="text-[10px] font-medium">Sign in</span>
+          <span className="text-[10px] font-medium">{t("nav.signIn")}</span>
         </Link>
       )}
     </nav>
