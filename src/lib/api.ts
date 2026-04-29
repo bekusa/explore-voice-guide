@@ -22,6 +22,22 @@ export type GuideResponse = {
   script: string;
 };
 
+/**
+ * Full guide payload (Lokali shape). The n8n /guide workflow returns
+ * `script` plus a few optional rich fields that the attraction page
+ * renders as chips/lists. Only `script` is guaranteed; UI must
+ * tolerate any subset of the others being missing.
+ */
+export type GuideData = {
+  title?: string;
+  script: string;
+  estimated_duration_seconds?: number;
+  key_facts?: string[];
+  tips?: string[];
+  look_for?: string[];
+  nearby_suggestions?: string[];
+};
+
 // Same-origin proxy routes (avoid n8n CORS by relaying through our server).
 const ATTRACTIONS_URL = "/api/attractions";
 const GUIDE_URL = "/api/guide";
@@ -152,9 +168,7 @@ function tolerantParse<T>(text: string): T {
   // Diagnostic — first 200 chars of what we got, so the user can copy it.
   const preview = trimmed.slice(0, 200).replace(/\s+/g, " ");
   throw new Error(
-    `Could not parse response as JSON. Got: ${preview}${
-      trimmed.length > 200 ? "…" : ""
-    }`,
+    `Could not parse response as JSON. Got: ${preview}${trimmed.length > 200 ? "…" : ""}`,
   );
 }
 
@@ -171,61 +185,85 @@ async function postJSON<T>(url: string, body: unknown): Promise<T> {
   return tolerantParse<T>(text);
 }
 
-export async function fetchAttractions(
-  query: string,
-  language = "ka",
-): Promise<Attraction[]> {
+export async function fetchAttractions(query: string, language = "ka"): Promise<Attraction[]> {
   // n8n workflow reads body.city / body.country (it triages LANDMARK / COUNTRY
   // / CITY mode based on the contents). Send both `query` (legacy) and
   // `city` / `country` so it works whichever shape the workflow expects.
-  const data = await postJSON<AttractionsResponse | Attraction[]>(
-    ATTRACTIONS_URL,
-    {
-      query,
-      city: query,
-      country: "",
-      language,
-    },
-  );
+  const data = await postJSON<AttractionsResponse | Attraction[]>(ATTRACTIONS_URL, {
+    query,
+    city: query,
+    country: "",
+    language,
+  });
   // Tolerate both wrapped and bare-array shapes
   if (Array.isArray(data)) return data;
   return data.attractions ?? [];
 }
 
-export async function fetchGuide(
-  attraction: string,
-  language = "ka",
-): Promise<string> {
+/**
+ * Coerce a raw n8n response into a GuideData with safe defaults.
+ * Tolerates: a bare string (uses it as script), a partial object
+ * (fills in only what's present), or noise (returns empty script).
+ */
+function normalizeGuide(raw: unknown, fallbackTitle: string): GuideData {
+  if (typeof raw === "string") return { title: fallbackTitle, script: raw };
+  if (!raw || typeof raw !== "object") {
+    return { title: fallbackTitle, script: "" };
+  }
+  const obj = raw as Record<string, unknown>;
+  const asStringArray = (v: unknown): string[] | undefined =>
+    Array.isArray(v)
+      ? v.filter((x): x is string => typeof x === "string" && x.trim().length > 0)
+      : undefined;
+  return {
+    title: typeof obj.title === "string" ? obj.title : fallbackTitle,
+    script: typeof obj.script === "string" ? obj.script : "",
+    estimated_duration_seconds:
+      typeof obj.estimated_duration_seconds === "number"
+        ? obj.estimated_duration_seconds
+        : undefined,
+    key_facts: asStringArray(obj.key_facts),
+    tips: asStringArray(obj.tips),
+    look_for: asStringArray(obj.look_for),
+    nearby_suggestions: asStringArray(obj.nearby_suggestions),
+  };
+}
+
+export async function fetchGuide(attraction: string, language = "ka"): Promise<string> {
+  // Back-compat wrapper — the rest of the app expects just a string.
+  // New rich callers should use fetchGuideData() instead.
+  const data = await fetchGuideData(attraction, language);
+  return data.script;
+}
+
+/**
+ * Rich Lokali-shape fetch. Returns the full GuideData object
+ * (script + optional key_facts/tips/look_for/nearby_suggestions).
+ * Cache-first, then network. Persists the full object so chips
+ * survive offline.
+ */
+export async function fetchGuideData(attraction: string, language = "ka"): Promise<GuideData> {
   // Lazy import — keeps SSR clean (guideCache touches localStorage)
-  const { getCachedGuide, setCachedGuide } = await import("./guideCache");
+  const { getCachedGuideData, setCachedGuideData } = await import("./guideCache");
 
   // 1. Cache hit → instant offline-friendly result
-  const cached = getCachedGuide(attraction, language);
-  if (cached) return cached;
+  const cached = getCachedGuideData(attraction, language);
+  if (cached && cached.script) return cached;
 
   // 2. Network — and persist for next time
-  const data = await postJSON<GuideResponse | { script?: string }>(
-    GUIDE_URL,
-    { attraction, language },
-  );
-  const script = data.script ?? "";
-  if (script) setCachedGuide(attraction, language, script);
-  return script;
+  const raw = await postJSON<unknown>(GUIDE_URL, { attraction, language });
+  const data = normalizeGuide(raw, attraction);
+  if (data.script) setCachedGuideData(attraction, language, data);
+  return data;
 }
 
 /** Network-only variant: bypass cache + always refresh. Used by the bulk download. */
-export async function fetchGuideFresh(
-  attraction: string,
-  language = "ka",
-): Promise<string> {
-  const { setCachedGuide } = await import("./guideCache");
-  const data = await postJSON<GuideResponse | { script?: string }>(
-    GUIDE_URL,
-    { attraction, language },
-  );
-  const script = data.script ?? "";
-  if (script) setCachedGuide(attraction, language, script);
-  return script;
+export async function fetchGuideFresh(attraction: string, language = "ka"): Promise<string> {
+  const { setCachedGuideData } = await import("./guideCache");
+  const raw = await postJSON<unknown>(GUIDE_URL, { attraction, language });
+  const data = normalizeGuide(raw, attraction);
+  if (data.script) setCachedGuideData(attraction, language, data);
+  return data.script;
 }
 
 /**
@@ -258,9 +296,7 @@ export async function fetchPlacePhoto(
   if (photoCache.has(cacheKey)) return photoCache.get(cacheKey) ?? null;
 
   try {
-    const cityParam = cleanCity
-      ? `&city=${encodeURIComponent(cleanCity)}`
-      : "";
+    const cityParam = cleanCity ? `&city=${encodeURIComponent(cleanCity)}` : "";
     const res = await fetch(
       `/api/photo?q=${encodeURIComponent(cleaned)}&lang=${encodeURIComponent(language)}${cityParam}`,
     );

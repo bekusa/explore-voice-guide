@@ -10,20 +10,28 @@ import {
   Loader2,
   Bookmark,
   BookmarkCheck,
+  Lightbulb,
+  Eye,
+  Compass,
+  Camera,
+  Coffee,
+  Shirt,
+  Timer,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
 import {
   attractionSlug,
   fetchAttractions,
-  fetchGuide,
+  fetchGuideData,
   unslugAttraction,
   type Attraction,
+  type GuideData,
 } from "@/lib/api";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
-import { getCachedGuide } from "@/lib/guideCache";
+import { getCachedGuideData } from "@/lib/guideCache";
 
 type Search = { name?: string };
 
@@ -57,10 +65,14 @@ function AttractionPage() {
   );
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
-  const [script, setScript] = useState<string>(() =>
-    getCachedGuide(fallbackName, language) ?? "",
-  );
+  // Full guide payload (script + key_facts/tips/look_for/nearby).
+  // Initialized from cache for instant first paint when revisiting a place.
+  const [guide, setGuide] = useState<GuideData | null>(() => {
+    const cached = getCachedGuideData(fallbackName, language);
+    return cached && cached.script ? cached : null;
+  });
   const [loadingScript, setLoadingScript] = useState(false);
+  const script = guide?.script ?? "";
 
   useEffect(() => {
     let cancelled = false;
@@ -69,8 +81,7 @@ function AttractionPage() {
       .then((list) => {
         if (cancelled) return;
         const exact =
-          list.find((a) => a.name.toLowerCase() === fallbackName.toLowerCase()) ??
-          list[0];
+          list.find((a) => a.name.toLowerCase() === fallbackName.toLowerCase()) ?? list[0];
         if (exact) setAttraction(exact);
       })
       .catch((err: unknown) => {
@@ -87,22 +98,22 @@ function AttractionPage() {
     };
   }, [fallbackName, language]);
 
-  // Fetch the narrated guide (cache-first) so we can show the stops outline.
+  // Fetch the rich guide (cache-first) so we can show stops + chips.
   useEffect(() => {
     const name = attraction?.name ?? fallbackName;
-    const cached = getCachedGuide(name, language);
-    if (cached) {
-      setScript(cached);
+    const cached = getCachedGuideData(name, language);
+    if (cached && cached.script) {
+      setGuide(cached);
       return;
     }
     let cancelled = false;
     setLoadingScript(true);
-    fetchGuide(name, language)
-      .then((s) => {
-        if (!cancelled) setScript(s);
+    fetchGuideData(name, language)
+      .then((data) => {
+        if (!cancelled) setGuide(data);
       })
       .catch(() => {
-        /* silent — stops are optional */
+        /* silent — chips/stops are optional, "Begin journey" still works */
       })
       .finally(() => {
         if (!cancelled) setLoadingScript(false);
@@ -124,6 +135,10 @@ function AttractionPage() {
   };
 
   const a = attraction;
+  // "~12 min" badge — prefer the n8n-supplied duration estimate
+  const estMins = guide?.estimated_duration_seconds
+    ? Math.round(guide.estimated_duration_seconds / 60)
+    : null;
 
   return (
     <MobileFrame>
@@ -165,9 +180,10 @@ function AttractionPage() {
               {a?.name ?? fallbackName}
             </h1>
             <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px] text-foreground/75">
-              {a?.duration && (
+              {(estMins || a?.duration) && (
                 <span className="flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5" /> {a.duration}
+                  <Clock className="h-3.5 w-3.5" />
+                  {estMins ? `~${estMins} min` : a?.duration}
                 </span>
               )}
               {typeof a?.rating === "number" && (
@@ -211,9 +227,7 @@ function AttractionPage() {
                 <span className="block text-[10px] font-semibold uppercase tracking-[0.22em] opacity-70">
                   Begin journey
                 </span>
-                <span className="block text-[14px] font-semibold">
-                  Listen to narrated guide
-                </span>
+                <span className="block text-[14px] font-semibold">Listen to narrated guide</span>
               </span>
             </span>
             <Headphones className="h-4 w-4 opacity-80" />
@@ -234,9 +248,7 @@ function AttractionPage() {
                 <div className="h-3 w-10/12 animate-pulse rounded bg-secondary/60" />
               </div>
             ) : a?.description ? (
-              <p className="text-[13.5px] leading-relaxed text-foreground/80">
-                {a.description}
-              </p>
+              <p className="text-[13.5px] leading-relaxed text-foreground/80">{a.description}</p>
             ) : (
               <p className="text-[13px] text-muted-foreground">
                 Tap “Begin journey” to hear the narrated story of this place.
@@ -244,6 +256,33 @@ function AttractionPage() {
             )}
           </div>
         </section>
+
+        {/* Key facts — emerald chips */}
+        <ChipsSection
+          title="Key facts"
+          icon={<Lightbulb className="h-3 w-3" />}
+          tone="emerald"
+          items={guide?.key_facts}
+        />
+
+        {/* What to look for — sky chips */}
+        <ChipsSection
+          title="What to look for"
+          icon={<Eye className="h-3 w-3" />}
+          tone="sky"
+          items={guide?.look_for}
+        />
+
+        {/* Tips — list with rotating icons */}
+        <TipsSection items={guide?.tips} />
+
+        {/* Nearby suggestions — amber chips */}
+        <ChipsSection
+          title="Nearby"
+          icon={<Compass className="h-3 w-3" />}
+          tone="amber"
+          items={guide?.nearby_suggestions}
+        />
 
         {/* Stops */}
         <section className="mt-8 px-6">
@@ -282,9 +321,7 @@ function AttractionPage() {
                     {i + 1}
                   </span>
                   <div className="flex-1">
-                    <h3 className="text-[13px] font-semibold text-foreground">
-                      {stop.title}
-                    </h3>
+                    <h3 className="text-[13px] font-semibold text-foreground">{stop.title}</h3>
                     {stop.preview && (
                       <p className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-muted-foreground">
                         {stop.preview}
@@ -320,9 +357,7 @@ function parseStops(script: string): { title: string; preview: string }[] {
   if (numbered.length >= 2) {
     return numbered.slice(0, 12).map((block) => {
       const [first, ...rest] = block.split("\n");
-      const title = first
-        .replace(/^\s*(?:Stop\s+\d+\s*[—:.\-]?\s*|\d+[.)]\s*)/i, "")
-        .trim();
+      const title = first.replace(/^\s*(?:Stop\s+\d+\s*[—:.\-]?\s*|\d+[.)]\s*)/i, "").trim();
       return {
         title: title || first.trim(),
         preview: rest.join(" ").trim(),
@@ -349,12 +384,77 @@ function parseStops(script: string): { title: string; preview: string }[] {
   return paragraphs.slice(0, 8).map((p, i) => {
     const sentences = p.split(/(?<=[.!?])\s+/);
     const title =
-      sentences[0].length > 80
-        ? `Chapter ${i + 1}`
-        : sentences[0].replace(/[.!?]+$/, "");
+      sentences[0].length > 80 ? `Chapter ${i + 1}` : sentences[0].replace(/[.!?]+$/, "");
     const preview = sentences.slice(1).join(" ") || sentences[0];
     return { title, preview };
   });
+}
+
+/* ---------- Lokali rich sections ---------- */
+
+const TONE_CLASSES: Record<string, string> = {
+  emerald: "border-emerald-400/30 bg-emerald-500/10 text-emerald-200",
+  sky: "border-sky-400/30 bg-sky-500/10 text-sky-200",
+  amber: "border-amber-400/30 bg-amber-500/10 text-amber-200",
+};
+
+function ChipsSection({
+  title,
+  icon,
+  tone,
+  items,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  tone: "emerald" | "sky" | "amber";
+  items?: string[];
+}) {
+  if (!items || items.length === 0) return null;
+  return (
+    <section className="mt-8 px-6">
+      <h2 className="font-display text-[20px] text-foreground">{title}</h2>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {items.map((item, i) => (
+          <span
+            key={i}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11.5px] leading-tight ${TONE_CLASSES[tone]}`}
+          >
+            {icon}
+            {item}
+          </span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+const TIP_ICONS = [Clock, Camera, Coffee, Shirt, Timer];
+
+function TipsSection({ items }: { items?: string[] }) {
+  if (!items || items.length === 0) return null;
+  return (
+    <section className="mt-8 px-6">
+      <h2 className="font-display text-[20px] text-foreground">
+        Practical <span className="italic text-primary">tips</span>
+      </h2>
+      <ul className="mt-4 flex flex-col gap-2.5">
+        {items.map((tip, i) => {
+          const Icon = TIP_ICONS[i % TIP_ICONS.length];
+          return (
+            <li
+              key={i}
+              className="flex items-start gap-3 rounded-xl border border-border/60 bg-card px-3.5 py-3"
+            >
+              <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+                <Icon className="h-3.5 w-3.5" />
+              </span>
+              <span className="text-[12.5px] leading-relaxed text-foreground/85">{tip}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
 }
 
 function SaveToggle({
