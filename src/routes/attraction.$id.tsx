@@ -6,10 +6,10 @@ import {
   Star,
   Clock,
   Play,
-  Headphones,
   Loader2,
   Bookmark,
   BookmarkCheck,
+  Download,
   Lightbulb,
   Eye,
   Compass,
@@ -26,6 +26,7 @@ import {
   attractionSlug,
   fetchAttractions,
   fetchGuideData,
+  fetchGuideFresh,
   fetchPlacePhoto,
   unslugAttraction,
   type Attraction,
@@ -34,7 +35,8 @@ import {
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
-import { getCachedGuideData } from "@/lib/guideCache";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { getCachedGuide, getCachedGuideData, onGuideCacheChange } from "@/lib/guideCache";
 
 type Search = { name?: string };
 
@@ -147,8 +149,6 @@ function AttractionPage() {
     };
   }, [attraction?.name, attraction?.image_url, fallbackName, language]);
 
-  const stops = useMemo(() => parseStops(script), [script]);
-
   const startJourney = () => {
     if (starting) return;
     setStarting(true);
@@ -189,7 +189,8 @@ function AttractionPage() {
             >
               <ArrowLeft className="h-4 w-4" />
             </Link>
-            <SaveToggle name={a?.name ?? fallbackName} attraction={a} language={language} />
+            {/* Save / Download / Play live in the ActionRow below the hero
+                so the user has one consolidated place to act. */}
           </header>
 
           <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-7 animate-float-up">
@@ -232,38 +233,24 @@ function AttractionPage() {
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="px-6 -mt-2 relative z-20">
-          <button
-            onClick={startJourney}
-            disabled={starting}
-            className="group flex w-full items-center justify-between rounded-2xl bg-gradient-gold px-5 py-4 text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01] disabled:opacity-80"
-          >
-            <span className="flex items-center gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-full bg-primary-foreground/15">
-                {starting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Play className="h-4 w-4 translate-x-[1px] fill-current" />
-                )}
-              </span>
-              <span className="text-left">
-                <span className="block text-[10px] font-semibold uppercase tracking-[0.22em] opacity-70">
-                  Begin journey
-                </span>
-                <span className="block text-[14px] font-semibold">Listen to narrated guide</span>
-              </span>
-            </span>
-            <Headphones className="h-4 w-4 opacity-80" />
-          </button>
-        </section>
+        {/* Action row — Save / Download / Play, all in one place
+            so the user always knows where to find them. */}
+        <ActionRow
+          name={a?.name ?? fallbackName}
+          attraction={a}
+          language={language}
+          starting={starting}
+          onPlay={startJourney}
+        />
+
+        {/* About — outside-view short description (n8n: outside_desc).
+            Shown FIRST so the reader gets the at-a-glance summary
+            before diving into the long narrated story. */}
+        <AboutSection loading={loading} aboutText={a?.outside_desc ?? a?.description ?? ""} />
 
         {/* The story — main narrated body, rendered as flowing paragraphs.
             This is the core Lokali content the user came for. */}
         <StorySection script={script} loading={loadingScript} />
-
-        {/* About — outside-view short description (n8n: outside_desc). */}
-        <AboutSection loading={loading} aboutText={a?.outside_desc ?? a?.description ?? ""} />
 
         {/* Insider's view — what a local would tell you (n8n: insider_desc). */}
         <InsiderSection insiderText={a?.insider_desc} />
@@ -294,111 +281,168 @@ function AttractionPage() {
           tone="amber"
           items={guide?.nearby_suggestions}
         />
-
-        {/* Stops */}
-        <section className="mt-8 px-6">
-          <div className="flex items-baseline justify-between">
-            <h2 className="font-display text-[20px] text-foreground">
-              The <span className="italic text-primary">stops</span>
-            </h2>
-            {stops.length > 0 && (
-              <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                {stops.length} chapters
-              </span>
-            )}
-          </div>
-
-          <ol className="mt-4 space-y-3">
-            {loadingScript && stops.length === 0 ? (
-              Array.from({ length: 3 }).map((_, i) => (
-                <li
-                  key={i}
-                  className="flex gap-3 rounded-2xl border border-border/40 bg-card/40 p-4"
-                >
-                  <div className="h-7 w-7 shrink-0 animate-pulse rounded-full bg-secondary" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-3 w-1/2 animate-pulse rounded bg-secondary" />
-                    <div className="h-3 w-11/12 animate-pulse rounded bg-secondary/70" />
-                  </div>
-                </li>
-              ))
-            ) : stops.length > 0 ? (
-              stops.map((stop, i) => (
-                <li
-                  key={i}
-                  className="group flex gap-3 rounded-2xl border border-border/40 bg-card/40 p-4 transition-smooth hover:border-primary/40"
-                >
-                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary/15 text-[11px] font-semibold text-primary">
-                    {i + 1}
-                  </span>
-                  <div className="flex-1">
-                    <h3 className="text-[13px] font-semibold text-foreground">{stop.title}</h3>
-                    {stop.preview && (
-                      <p className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-muted-foreground">
-                        {stop.preview}
-                      </p>
-                    )}
-                  </div>
-                </li>
-              ))
-            ) : (
-              <li className="rounded-2xl border border-dashed border-border/50 bg-card/30 p-4 text-[12px] text-muted-foreground">
-                Stops appear once the narrated guide is generated.
-              </li>
-            )}
-          </ol>
-        </section>
       </div>
     </MobileFrame>
   );
 }
 
 /**
- * Derive a list of "stops" from a narrated guide script.
- * Tries numbered headings, then markdown headings, then paragraph chunks.
+ * One consolidated row of actions — Save, Download, Play — so the
+ * user always knows where to find them. Play is the primary gold
+ * button (the headline action); Save and Download are secondary
+ * outline buttons. Mirrors the pattern in NearYouCard so users see
+ * the same controls everywhere they meet a guide.
  */
-function parseStops(script: string): { title: string; preview: string }[] {
-  if (!script || !script.trim()) return [];
-  const text = script.trim();
+function ActionRow({
+  name,
+  attraction,
+  language,
+  starting,
+  onPlay,
+}: {
+  name: string;
+  attraction: Attraction | null;
+  language: string;
+  starting: boolean;
+  onPlay: () => void;
+}) {
+  const online = useOnlineStatus();
+  const items = useSavedItems();
+  const id = useMemo(() => attractionSlug(name), [name]);
+  const saved = items.some((s) => s.id === id) || isSaved(id);
 
-  const numbered = text
-    .split(/\n(?=\s*(?:Stop\s+\d+|\d+[.)])\s)/i)
-    .map((b) => b.trim())
-    .filter(Boolean);
-  if (numbered.length >= 2) {
-    return numbered.slice(0, 12).map((block) => {
-      const [first, ...rest] = block.split("\n");
-      const title = first.replace(/^\s*(?:Stop\s+\d+\s*[—:.\-]?\s*|\d+[.)]\s*)/i, "").trim();
-      return {
-        title: title || first.trim(),
-        preview: rest.join(" ").trim(),
-      };
+  // Live cache state — re-renders when a download finishes / cache clears
+  const [cached, setCached] = useState(false);
+  useEffect(() => {
+    const refresh = () => setCached(!!getCachedGuide(name, language));
+    refresh();
+    return onGuideCacheChange(refresh);
+  }, [name, language]);
+
+  const [downloading, setDownloading] = useState(false);
+
+  const toggleSave = () => {
+    if (saved) {
+      removeItem(id);
+      toast("Removed from Saved");
+      return;
+    }
+    saveItem({
+      id,
+      name,
+      language,
+      savedAt: Date.now(),
+      attraction: attraction ?? { name },
     });
-  }
-
-  const mdHeadings = [...text.matchAll(/^#{1,3}\s+(.+)$/gm)];
-  if (mdHeadings.length >= 2) {
-    return mdHeadings.slice(0, 12).map((m, i) => {
-      const start = (m.index ?? 0) + m[0].length;
-      const end = mdHeadings[i + 1]?.index ?? text.length;
-      return {
-        title: m[1].trim(),
-        preview: text.slice(start, end).trim().replace(/\s+/g, " "),
-      };
+    toast.success("Saved for offline", {
+      description: "Find it in the Saved tab — works without a connection.",
     });
-  }
+  };
 
-  const paragraphs = text
-    .split(/\n\s*\n/)
-    .map((p) => p.trim())
-    .filter((p) => p.length > 40);
-  return paragraphs.slice(0, 8).map((p, i) => {
-    const sentences = p.split(/(?<=[.!?])\s+/);
-    const title =
-      sentences[0].length > 80 ? `Chapter ${i + 1}` : sentences[0].replace(/[.!?]+$/, "");
-    const preview = sentences.slice(1).join(" ") || sentences[0];
-    return { title, preview };
-  });
+  const downloadOffline = async () => {
+    if (cached) {
+      toast.info("Already downloaded", {
+        description: "This guide plays offline.",
+      });
+      return;
+    }
+    if (!online) {
+      toast.error("You're offline", {
+        description: "Connect once to download the guide.",
+      });
+      return;
+    }
+    setDownloading(true);
+    try {
+      const script = await fetchGuideFresh(name, language);
+      if (script) {
+        toast.success("Downloaded for offline", { description: name });
+        setCached(true);
+      } else {
+        toast.error("No guide returned");
+      }
+    } catch (err) {
+      toast.error("Download failed", {
+        description: err instanceof Error ? err.message : "Try again later.",
+      });
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  return (
+    <section className="px-6 -mt-2 relative z-20">
+      <div className="flex items-stretch gap-2.5">
+        {/* Play — primary, large, gold. The headline action. */}
+        <button
+          onClick={onPlay}
+          disabled={starting}
+          aria-label="Begin journey"
+          className="group flex flex-1 items-center justify-center gap-2.5 rounded-2xl bg-gradient-gold px-5 py-3.5 text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01] disabled:opacity-80"
+        >
+          <span className="grid h-9 w-9 place-items-center rounded-full bg-primary-foreground/15">
+            {starting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Play className="h-4 w-4 translate-x-[1px] fill-current" />
+            )}
+          </span>
+          <span className="text-left">
+            <span className="block text-[9px] font-semibold uppercase tracking-[0.22em] opacity-70">
+              Begin
+            </span>
+            <span className="block text-[13px] font-semibold leading-tight">Listen</span>
+          </span>
+        </button>
+
+        {/* Save — secondary outline */}
+        <button
+          onClick={toggleSave}
+          aria-label={saved ? "Remove from saved" : "Save for offline"}
+          aria-pressed={saved}
+          className={`grid w-[64px] place-items-center rounded-2xl border px-2 transition-smooth ${
+            saved
+              ? "border-primary/60 bg-primary/15 text-primary"
+              : "border-border/70 bg-card text-foreground hover:border-primary/40"
+          }`}
+        >
+          <span className="flex flex-col items-center gap-1">
+            {saved ? (
+              <BookmarkCheck className="h-4 w-4 fill-current" />
+            ) : (
+              <Bookmark className="h-4 w-4" />
+            )}
+            <span className="text-[10px] font-semibold uppercase tracking-[0.12em]">
+              {saved ? "Saved" : "Save"}
+            </span>
+          </span>
+        </button>
+
+        {/* Download — secondary outline (or filled when already cached) */}
+        <button
+          onClick={downloadOffline}
+          disabled={downloading}
+          aria-label={cached ? "Already downloaded" : "Download for offline"}
+          className={`grid w-[64px] place-items-center rounded-2xl border px-2 transition-smooth disabled:opacity-80 ${
+            cached
+              ? "border-emerald-400/50 bg-emerald-500/10 text-emerald-200"
+              : "border-border/70 bg-card text-foreground hover:border-primary/40"
+          }`}
+        >
+          <span className="flex flex-col items-center gap-1">
+            {downloading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
+            <span className="text-[10px] font-semibold uppercase tracking-[0.12em]">
+              {downloading ? "Saving" : cached ? "Offline" : "Get"}
+            </span>
+          </span>
+        </button>
+      </div>
+    </section>
+  );
 }
 
 /**
@@ -597,56 +641,5 @@ function TipsSection({ items }: { items?: string[] }) {
         })}
       </ul>
     </section>
-  );
-}
-
-function SaveToggle({
-  name,
-  attraction,
-  language,
-}: {
-  name: string;
-  attraction: Attraction | null;
-  language: string;
-}) {
-  const items = useSavedItems();
-  const id = useMemo(() => attractionSlug(name), [name]);
-  const saved = items.some((s) => s.id === id) || isSaved(id);
-
-  const toggle = () => {
-    if (saved) {
-      removeItem(id);
-      toast("Removed from Saved");
-      return;
-    }
-    saveItem({
-      id,
-      name,
-      language,
-      savedAt: Date.now(),
-      attraction: attraction ?? { name },
-    });
-    toast.success("Saved for offline", {
-      description: "Find it in the Saved tab — works without a connection.",
-    });
-  };
-
-  return (
-    <button
-      onClick={toggle}
-      aria-label={saved ? "Remove from saved" : "Save for offline"}
-      aria-pressed={saved}
-      className={`grid h-10 w-10 place-items-center rounded-full border backdrop-blur-md transition-smooth ${
-        saved
-          ? "border-primary/60 bg-primary/20 text-primary"
-          : "border-foreground/20 bg-background/30 text-foreground hover:bg-background/50"
-      }`}
-    >
-      {saved ? (
-        <BookmarkCheck className="h-4 w-4 fill-current" />
-      ) : (
-        <Bookmark className="h-4 w-4" />
-      )}
-    </button>
   );
 }
