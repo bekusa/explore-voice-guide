@@ -79,6 +79,7 @@ function LanguagePage() {
         if (error) throw error;
       }
       setActive(lang.code);
+      setStoredLang(lang.code);
       toast.success("Language updated", {
         description: `${lang.flag} ${lang.native}`,
       });
