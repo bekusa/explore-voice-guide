@@ -248,17 +248,17 @@ export function HomeScreen() {
                 className="text-[26px] font-medium tracking-[-0.02em] text-foreground"
                 style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
               >
-                Featured <span className="italic text-primary">cities</span>
+                {t("home.featured.title")}
               </h2>
               <p className="mt-1 text-[11.5px] text-muted-foreground">
-                Cinematic walks, narrated by locals
+                {t("home.featured.sub")}
               </p>
             </div>
             <Link
               to="/destinations"
               className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary"
             >
-              See all <ArrowRight className="h-2.5 w-2.5" />
+              {t("home.seeAll")} <ArrowRight className="h-2.5 w-2.5" />
             </Link>
           </div>
 
@@ -276,10 +276,54 @@ export function HomeScreen() {
 }
 
 /* ─────────────────────────────────────────────
+ * Editorial collection card
+ * ───────────────────────────────────────────── */
+function CollectionCard({
+  collection,
+}: {
+  collection: (typeof COLLECTIONS)[number];
+}) {
+  const sample = destinationsByCollection(collection.id)[0];
+  const [label, tagline] = useTranslated([collection.label, collection.tagline]);
+  return (
+    <Link
+      to="/destinations"
+      search={{ collection: collection.id }}
+      className="group relative h-[140px] w-[200px] flex-shrink-0 overflow-hidden rounded-2xl border border-border"
+    >
+      {sample && (
+        <img
+          src={sample.hero}
+          alt={label}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+      <div className="absolute inset-x-3 bottom-3">
+        <div
+          className="text-[15px] font-medium leading-tight text-foreground"
+          style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
+        >
+          {label}
+        </div>
+        <div className="mt-0.5 text-[10px] text-foreground/65">{tagline}</div>
+      </div>
+    </Link>
+  );
+}
+
+/* ─────────────────────────────────────────────
  * Editorial destination card
  * ───────────────────────────────────────────── */
 function DestinationCard({ dest }: { dest: Destination }) {
+  const t = useT();
   const tours = dest.featured.length;
+  const [city, country, ...vibes] = useTranslated([
+    dest.city,
+    dest.country,
+    ...dest.vibe.slice(0, 3),
+  ]);
   return (
     <Link
       to="/destination/$slug"
@@ -296,10 +340,11 @@ function DestinationCard({ dest }: { dest: Destination }) {
 
       <div className="absolute left-4 right-4 top-3 flex items-center justify-between">
         <span className="rounded-full border border-foreground/15 bg-background/60 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.18em] text-foreground backdrop-blur-md">
-          {dest.country}
+          {country}
         </span>
         <span className="inline-flex items-center gap-1 rounded-full border border-foreground/15 bg-background/60 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.16em] text-primary backdrop-blur-md">
-          <Headphones className="h-2.5 w-2.5" /> {tours} tour{tours === 1 ? "" : "s"}
+          <Headphones className="h-2.5 w-2.5" />{" "}
+          {tours === 1 ? t("home.tours.one", { n: tours }) : t("home.tours.many", { n: tours })}
         </span>
       </div>
 
@@ -308,12 +353,12 @@ function DestinationCard({ dest }: { dest: Destination }) {
           className="text-[24px] font-medium leading-[1.05] text-foreground"
           style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
         >
-          {dest.city}
+          {city}
         </h3>
         <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] text-foreground/70">
-          {dest.vibe.slice(0, 3).map((v) => (
+          {vibes.map((v, i) => (
             <span
-              key={v}
+              key={i}
               className="rounded-full border border-foreground/15 bg-background/40 px-2 py-0.5 backdrop-blur-md"
             >
               {v}
