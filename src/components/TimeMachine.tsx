@@ -586,16 +586,20 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
                             </button>
                           </div>
 
-                          {/* Begin journey */}
+                          {/* Begin journey — opens role panel and triggers n8n if role chosen */}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedId(a.id);
+                              if (role) {
+                                // role already chosen → fire n8n flow immediately
+                                setTimeout(() => handleStart(), 0);
+                              }
                             }}
-                            className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-[11px] font-semibold text-foreground transition-smooth hover:border-primary/40"
+                            className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-gold px-3 py-2.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01]"
                           >
-                            <Play className="h-3 w-3 fill-current text-primary" />
-                            Begin journey
+                            <Play className="h-3 w-3 fill-current" />
+                            {role ? "Begin journey" : "Choose role & begin"}
                           </button>
 
                           {isSelected && (
