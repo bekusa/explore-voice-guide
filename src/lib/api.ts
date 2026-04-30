@@ -194,7 +194,11 @@ async function postJSON<T>(url: string, body: unknown): Promise<T> {
 export type AttractionFilters = {
   /** User-selected interest tags, e.g. ["history", "couples"]. */
   interests?: string[];
-  /** Trip-length preference: "short" | "medium" | "long". */
+  /**
+   * Preferred audio-guide narration length: "short" | "medium" | "long".
+   * NOTE: this is how long the spoken guide should run, not how long
+   * the user will spend walking the route on the ground.
+   */
   duration?: string;
 };
 

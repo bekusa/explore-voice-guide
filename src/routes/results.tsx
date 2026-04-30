@@ -83,14 +83,15 @@ const INTERESTS: { id: string; label: string; emoji: string }[] = [
 ];
 
 /**
- * Three trip-length presets — also a Lokali classic. The id goes to
- * n8n; the helper text reminds the user roughly how long the curated
- * route would feel on the ground.
+ * Three audio-guide length presets — also a Lokali classic. NOTE: this
+ * is the *narration* length (how long the user will be listening), not
+ * how long it takes to walk the route. The id goes to n8n; the helper
+ * text reminds the user roughly how long the spoken guide will run.
  */
 const DURATIONS: { id: "short" | "medium" | "long"; label: string; hint: string }[] = [
-  { id: "short", label: "Short", hint: "~ 15–30 min" },
-  { id: "medium", label: "Medium", hint: "~ 30–60 min" },
-  { id: "long", label: "Long", hint: "60 min +" },
+  { id: "short", label: "Short", hint: "~ 3–7 min" },
+  { id: "medium", label: "Medium", hint: "~ 8–15 min" },
+  { id: "long", label: "Long", hint: "15–30 min" },
 ];
 
 function ResultsPage() {
@@ -330,7 +331,7 @@ function FiltersBar({
       </div>
 
       <div className="mt-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-        Length
+        Guide length
       </div>
       <div className="mt-2 grid grid-cols-3 gap-2">
         {DURATIONS.map((d) => {
