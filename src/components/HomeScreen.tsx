@@ -229,6 +229,7 @@ export function HomeScreen() {
             </div>
           </div>
           <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
+            <TimeMachineCollectionCard />
             {COLLECTIONS.map((c) => (
               <CollectionCard key={c.id} collection={c} />
             ))}
