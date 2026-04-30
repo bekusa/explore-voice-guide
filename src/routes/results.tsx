@@ -6,6 +6,7 @@ import {
   Bookmark,
   BookmarkCheck,
   CheckCircle2,
+  ChevronDown,
   Clock,
   Download,
   Headphones,
@@ -13,7 +14,6 @@ import {
   MapPin,
   Search,
   Star,
-  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
@@ -34,12 +34,15 @@ import { useT } from "@/hooks/useT";
 import type { UiKey } from "@/lib/i18n";
 
 /**
- * Interest chips offered on the results page. Each ID is the lowercase
- * ASCII key we ship to n8n in `interests: string[]`. The matching
- * UI_STRINGS key (`filters.int.<id>`) is auto-translated by useT, so we
- * never hard-code a localized label here. Adding a new interest = add
- * the row below + the matching key to UI_STRINGS in src/lib/i18n.ts +
- * update the n8n prompt's interest-bias block.
+ * Interest catalogue. Used both as URL-state vocabulary (n8n payload
+ * accepts these IDs) and as a label/emoji lookup for the per-card
+ * interest chip. Beka removed the in-page filter UI but the chip
+ * itself still hangs off each card so users see the bias under which
+ * the list was generated.
+ *
+ * Adding a new interest: add a row here, add `filters.int.<id>` to
+ * UI_STRINGS in src/lib/i18n.ts, and update the n8n prompt's interest
+ * dictionary block.
  */
 const INTERESTS: { id: string; key: UiKey; emoji: string }[] = [
   { id: "history", key: "filters.int.history", emoji: "🏛️" },
@@ -56,13 +59,21 @@ const INTERESTS: { id: string; key: UiKey; emoji: string }[] = [
   { id: "nightlife", key: "filters.int.nightlife", emoji: "🌙" },
 ];
 
+const INTERESTS_BY_ID = new Map(INTERESTS.map((x) => [x.id, x]));
 const VALID_INTEREST_IDS = new Set(INTERESTS.map((x) => x.id));
+
+/** Beka's product call: every search defaults to History bias if the
+ *  user (or some old shared link) didn't specify otherwise. Lokali's
+ *  audience skews heritage-tourist, so this is the safer fallback than
+ *  unbiased generic results. */
+const DEFAULT_INTEREST = "history";
 
 type Search = {
   q: string;
   /** Comma-separated interest IDs from INTERESTS, e.g. "history,couples". */
   interests?: string;
-  /** "short" | "medium" | "long". */
+  /** "short" | "medium" | "long". UI is hidden for now (see commit
+   *  history); kept on the URL so previously-shared links don't break. */
   duration?: string;
 };
 
@@ -97,20 +108,24 @@ function ResultsPage() {
   // or all punctuation.
   const language = detectQueryLanguage(q, preferredLanguage);
 
-  // Decode URL-state. Only known interest IDs survive — sanitises old
-  // shared links / URL tampering. Duration is preserved on the URL but
-  // we don't render UI for it any more (Beka asked to hold off — the
-  // n8n workflow treats absent/medium as the default narration length).
-  const selectedInterests = useMemo<string[]>(
-    () =>
-      (interestsParam ?? "")
-        .split(",")
-        .map((s: string) => s.trim())
-        .filter((s: string) => VALID_INTEREST_IDS.has(s)),
-    [interestsParam],
-  );
+  // URL-state → request payload. Filter UI was removed (Beka asked for
+  // a cleaner results page) so in practice `interestsParam` is empty,
+  // which falls back to DEFAULT_INTEREST. URL-tampered values that
+  // aren't in our catalogue are dropped.
+  const selectedInterests = useMemo<string[]>(() => {
+    const fromUrl = (interestsParam ?? "")
+      .split(",")
+      .map((s: string) => s.trim())
+      .filter((s: string) => VALID_INTEREST_IDS.has(s));
+    return fromUrl.length > 0 ? fromUrl : [DEFAULT_INTEREST];
+  }, [interestsParam]);
   const interestsKey = selectedInterests.join(",");
   const duration = durationParam ?? "";
+
+  // The interest we render as a chip on every card — first selected,
+  // because (today) we only ever ship one bias. If we re-introduce a
+  // multi-pick filter, this should become a per-attraction lookup.
+  const primaryInterest = INTERESTS_BY_ID.get(selectedInterests[0]) ?? null;
 
   const [results, setResults] = useState<Attraction[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -144,10 +159,6 @@ function ResultsPage() {
     };
   }, [q, language, interestsKey, duration]);
 
-  // Update the URL whenever the user toggles a filter chip — the fetch
-  // effect above re-runs because interestsKey / duration are derived
-  // from the URL. Going through the URL means back/forward and shared
-  // links keep the user's filter set intact.
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const next = query.trim();
@@ -155,29 +166,6 @@ function ResultsPage() {
     navigate({
       to: "/results",
       search: { q: next, interests: interestsKey, duration },
-    });
-  };
-
-  const toggleInterest = (id: string) => {
-    const set = new Set(selectedInterests);
-    if (set.has(id)) set.delete(id);
-    else set.add(id);
-    // Preserve INTERESTS declaration order so the URL is stable
-    // regardless of click order — easier to share / debug.
-    const nextInterests = INTERESTS.filter((x) => set.has(x.id))
-      .map((x) => x.id)
-      .join(",");
-    navigate({
-      to: "/results",
-      search: { q, interests: nextInterests, duration },
-    });
-  };
-
-  const clearInterests = () => {
-    if (selectedInterests.length === 0) return;
-    navigate({
-      to: "/results",
-      search: { q, interests: "", duration },
     });
   };
 
@@ -216,19 +204,6 @@ function ResultsPage() {
           </p>
         </header>
 
-        {/* Interests filter — chips live above the results so users can
-            narrow the n8n suggestion set without leaving the page. The
-            "Guide length" chip set is intentionally hidden for now —
-            Beka asked to default to medium narration until we wire it
-            into the n8n prompt. URL state for `duration` is preserved
-            so previously shared links still work. */}
-        <FiltersBar
-          t={t}
-          selected={selectedInterests}
-          onToggle={toggleInterest}
-          onClear={clearInterests}
-        />
-
         {/* Body */}
         <section className="px-6 pt-4">
           {loading && <SkeletonList />}
@@ -236,7 +211,7 @@ function ResultsPage() {
           {!loading && results && results.length === 0 && <EmptyState query={q} />}
 
           {!loading && results && results.length > 0 && (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               {results.map((a, i) => (
                 <ResultCard
                   key={`${a.name}-${i}`}
@@ -244,6 +219,8 @@ function ResultsPage() {
                   index={i}
                   language={language}
                   cityContext={q}
+                  interest={primaryInterest}
+                  interestLabel={primaryInterest ? t(primaryInterest.key) : null}
                 />
               ))}
             </div>
@@ -255,20 +232,24 @@ function ResultsPage() {
 }
 
 /**
- * Rich, always-expanded result card modelled on the home page's
- * NearYouCard. Beka asked for the result list to use the same fuller
- * format he sees under "Inside Tbilisi" so search results read as
- * curated guides rather than lean rows. Three actions live at the
- * bottom — Save, Offline (download), Details — and tapping Details
- * opens the attraction page. The bottom "Play narrated guide" button
- * from NearYouCard is intentionally omitted: Beka doesn't want users
- * starting playback straight from the result list.
+ * Result card modeled on the Time Machine cards (TimeMachine.tsx). The
+ * collapsed row is a compact image + title + meta strip; tapping the
+ * row (or the chevron) reveals chips, a short story-style blurb, the
+ * full description, and three actions: Save, Download, Details. The
+ * Details button is a real Link → /attraction/$id (opens the rich
+ * narrated page); Save/Download mutate local state.
+ *
+ * The score progress bar from Time Machine is intentionally omitted —
+ * Beka asked for a calmer card now that the per-attraction "appeal
+ * score" isn't shown anywhere else in the product.
  */
 function ResultCard({
   attraction,
   index,
   language,
   cityContext,
+  interest,
+  interestLabel,
 }: {
   attraction: Attraction;
   index: number;
@@ -276,11 +257,19 @@ function ResultCard({
   // The user's original search query (e.g. "Batumi"). Passed to Google
   // Places to disambiguate generic attraction names.
   cityContext: string;
+  // Search-level interest bias rendered as a chip on every card. Null
+  // if the URL somehow ended up with an unknown ID.
+  interest: { id: string; key: UiKey; emoji: string } | null;
+  // Pre-translated label so we don't run useT() per card (the hook
+  // would re-render every result on lang flip).
+  interestLabel: string | null;
 }) {
   const slug = useMemo(() => attractionSlug(attraction.name), [attraction.name]);
   const online = useOnlineStatus();
   const savedItems = useSavedItems();
   const isFav = savedItems.some((s) => s.id === slug) || isSaved(slug);
+
+  const [open, setOpen] = useState(false);
 
   // n8n-supplied image_url wins; otherwise lazily fetch from Google/Wikipedia.
   const [photo, setPhoto] = useState<string | null>(attraction.image_url ?? null);
@@ -324,7 +313,7 @@ function ResultCard({
       attraction: { ...attraction, image_url: photo ?? attraction.image_url },
     });
     toast.success("Saved", {
-      description: "Tap Offline to keep the guide for offline.",
+      description: "Tap Download to keep the guide for offline.",
     });
   };
 
@@ -357,24 +346,48 @@ function ResultCard({
     }
   };
 
-  // Short description preference: insider_desc > description > outside_desc.
-  const description =
+  // Story-style teaser preference: insider_desc → outside_desc → "".
+  // Long-form description preference: description → outside_desc.
+  // We split them so the italic teaser at the top reads like a vivid
+  // first-line and the regular paragraph below carries the facts.
+  const teaser =
     (typeof attraction.insider_desc === "string" && attraction.insider_desc) ||
-    attraction.description ||
     (typeof attraction.outside_desc === "string" && attraction.outside_desc) ||
     "";
+  const description =
+    attraction.description ||
+    (typeof attraction.outside_desc === "string" &&
+      attraction.outside_desc !== teaser &&
+      attraction.outside_desc) ||
+    "";
 
-  const subtitleChip =
-    (typeof attraction.type === "string" && attraction.type) || cityContext || "";
+  const typeChip = typeof attraction.type === "string" && attraction.type ? attraction.type : null;
+  const cityChip = cityContext || null;
 
   return (
     <article
-      className="overflow-hidden rounded-2xl border border-border bg-card transition-smooth hover:border-primary/40"
+      className={`relative overflow-hidden rounded-2xl border bg-card transition-smooth ${
+        open ? "border-primary/60 shadow-glow" : "border-border hover:border-primary/40"
+      }`}
       style={{ animation: `float-up 0.5s ${index * 0.06 + 0.05}s var(--transition-smooth) both` }}
     >
-      {/* Header — image + title + meta */}
-      <div className="flex items-start gap-3 p-3">
-        <div className="relative h-[78px] w-[78px] shrink-0 overflow-hidden rounded-xl bg-secondary">
+      {/* Collapsed header — tap anywhere to expand. We use div+role so
+          the expanded body's <button>s aren't nested inside another
+          <button> (invalid HTML, breaks click handling in some browsers). */}
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => setOpen((v) => !v)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setOpen((v) => !v);
+          }
+        }}
+        aria-expanded={open}
+        className="flex w-full cursor-pointer items-center gap-3 p-3 text-left"
+      >
+        <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-xl bg-secondary">
           {photo ? (
             <img
               src={photo}
@@ -390,7 +403,13 @@ function ResultCard({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-[14.5px] font-semibold leading-tight text-foreground">
+          <h3
+            className="truncate text-[15px] font-semibold leading-tight text-foreground"
+            style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
+          >
+            {typeof attraction.icon === "string" && attraction.icon && (
+              <span className="mr-1">{attraction.icon}</span>
+            )}
             {attraction.name}
           </h3>
           <p className="my-1.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -412,189 +431,139 @@ function ResultCard({
                 <Star className="h-2.5 w-2.5 fill-primary" /> {attraction.rating.toFixed(2)}
               </span>
             )}
-            {typeof attraction.lat === "number" && typeof attraction.lng === "number" && (
+            {cityChip && (
               <span className="inline-flex items-center gap-1">
-                <MapPin className="h-2.5 w-2.5" /> {attraction.lat.toFixed(2)},{" "}
-                {attraction.lng.toFixed(2)}
+                <MapPin className="h-2.5 w-2.5" /> {cityChip}
               </span>
             )}
           </div>
         </div>
+        <span
+          className={`grid h-9 w-9 place-items-center rounded-full bg-foreground text-background transition-smooth ${
+            open ? "rotate-180" : ""
+          }`}
+          aria-hidden
+        >
+          <ChevronDown className="h-3.5 w-3.5" />
+        </span>
       </div>
 
-      {/* Body — chips + description + 3 actions */}
-      <div className="border-t border-border px-4 pb-4 pt-4">
-        {/* Category / type / city chips */}
-        {(attraction.category || subtitleChip) && (
-          <div className="flex flex-wrap items-center gap-2">
-            {attraction.category && (
-              <span className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.18em] text-primary">
-                {attraction.category}
-              </span>
+      {/* Expanded body. The CSS-grid trick (`grid-rows-[0fr]` ↔ `1fr`)
+          gives a smooth height animation without needing JS to measure
+          content height. */}
+      <div
+        className={`grid transition-all duration-300 ease-out ${
+          open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="border-t border-border px-4 pb-4 pt-4">
+            {/* Chips: search interest bias + attraction type + search city.
+                Same shape as Time Machine's MVP / year / era row. */}
+            {(interest || typeChip || cityChip) && (
+              <div className="flex flex-wrap items-center gap-2">
+                {interest && interestLabel && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.18em] text-primary">
+                    <span aria-hidden>{interest.emoji}</span>
+                    {interestLabel}
+                  </span>
+                )}
+                {typeChip && (
+                  <span className="rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    {typeChip}
+                  </span>
+                )}
+                {cityChip && (
+                  <span className="rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    {cityChip}
+                  </span>
+                )}
+              </div>
             )}
-            {subtitleChip && (
-              <span className="rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                {subtitleChip}
-              </span>
+
+            {teaser && (
+              <p className="mt-3 text-[12.5px] italic leading-[1.55] text-foreground/80">
+                {teaser}
+              </p>
             )}
+            {description && (
+              <p className="mt-2 text-[12px] leading-[1.55] text-muted-foreground">{description}</p>
+            )}
+
+            {/* Actions — Save / Download / Details (no Play; that lives
+                on the attraction page). */}
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              <button
+                onClick={toggleSave}
+                aria-pressed={isFav}
+                className={`flex flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] transition-smooth ${
+                  isFav
+                    ? "border-primary/60 bg-primary/15 text-primary"
+                    : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                }`}
+              >
+                {isFav ? (
+                  <BookmarkCheck className="h-4 w-4 fill-current" />
+                ) : (
+                  <Bookmark className="h-4 w-4" />
+                )}
+                {isFav ? "Saved" : "Save"}
+              </button>
+
+              <button
+                onClick={downloadOffline}
+                disabled={downloading}
+                className={`flex flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] transition-smooth ${
+                  cached
+                    ? "border-primary/60 bg-primary/15 text-primary"
+                    : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                } disabled:cursor-wait disabled:opacity-70`}
+              >
+                {downloading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : cached ? (
+                  <CheckCircle2 className="h-4 w-4" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                {downloading ? "Saving" : cached ? "Offline" : "Download"}
+              </button>
+
+              <Link
+                to="/attraction/$id"
+                params={{ id: slug }}
+                search={{ name: attraction.name }}
+                onClick={(e) => e.stopPropagation()}
+                className="flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-gold px-2 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02]"
+              >
+                <ArrowRight className="h-4 w-4" />
+                Details
+              </Link>
+            </div>
           </div>
-        )}
-
-        {description && (
-          <p className="mt-3 text-[12.5px] leading-[1.55] text-foreground/75 line-clamp-4">
-            {description}
-          </p>
-        )}
-
-        {/* Save / Offline / Details — three action grid */}
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          <button
-            onClick={toggleSave}
-            aria-pressed={isFav}
-            className={`flex flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] transition-smooth ${
-              isFav
-                ? "border-primary/60 bg-primary/15 text-primary"
-                : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
-            }`}
-          >
-            {isFav ? (
-              <BookmarkCheck className="h-4 w-4 fill-current" />
-            ) : (
-              <Bookmark className="h-4 w-4" />
-            )}
-            {isFav ? "Saved" : "Save"}
-          </button>
-
-          <button
-            onClick={downloadOffline}
-            disabled={downloading}
-            className={`flex flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] transition-smooth ${
-              cached
-                ? "border-primary/60 bg-primary/15 text-primary"
-                : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
-            } disabled:cursor-wait disabled:opacity-70`}
-          >
-            {downloading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : cached ? (
-              <CheckCircle2 className="h-4 w-4" />
-            ) : (
-              <Download className="h-4 w-4" />
-            )}
-            {downloading ? "Saving" : cached ? "Offline" : "Download"}
-          </button>
-
-          <Link
-            to="/attraction/$id"
-            params={{ id: slug }}
-            search={{ name: attraction.name }}
-            className="flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-gold px-2 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02]"
-          >
-            <ArrowRight className="h-4 w-4" />
-            Details
-          </Link>
         </div>
       </div>
     </article>
   );
 }
 
-/**
- * Horizontally-scrollable interest chips. State lives in the URL —
- * tapping a chip navigates instead of mutating component state — so
- * back/forward and shared links work the way Beka expects. The "Clear"
- * affordance only appears when at least one chip is active so the bar
- * stays calm when there's nothing to clear.
- */
-function FiltersBar({
-  t,
-  selected,
-  onToggle,
-  onClear,
-}: {
-  t: (key: UiKey, vars?: Record<string, string | number>) => string;
-  selected: string[];
-  onToggle: (id: string) => void;
-  onClear: () => void;
-}) {
-  const selectedSet = useMemo(() => new Set(selected), [selected]);
-  return (
-    <section className="border-b border-border/60 bg-background/60 px-6 py-3">
-      <div className="flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-          {t("filters.interests")}
-          {selected.length > 0 && (
-            <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] tracking-[0.14em] text-primary">
-              {selected.length}
-            </span>
-          )}
-        </span>
-        {selected.length > 0 && (
-          <button
-            onClick={onClear}
-            className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground transition-smooth hover:border-primary/40 hover:text-foreground"
-          >
-            <X className="h-3 w-3" /> {t("filters.clear")}
-          </button>
-        )}
-      </div>
-      <div className="mt-2.5 -mx-6 overflow-x-auto px-6 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div className="flex w-max gap-2">
-          {INTERESTS.map(({ id, key, emoji }) => {
-            const active = selectedSet.has(id);
-            return (
-              <button
-                key={id}
-                onClick={() => onToggle(id)}
-                aria-pressed={active}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-smooth ${
-                  active
-                    ? "border-primary/60 bg-primary/15 text-primary"
-                    : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
-                }`}
-              >
-                <span aria-hidden>{emoji}</span>
-                {t(key)}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function SkeletonList() {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {[0, 1, 2, 3].map((i) => (
         <div
           key={i}
           className="overflow-hidden rounded-2xl border border-border/60 bg-card"
           style={{ animation: `float-up 0.4s ${i * 0.06}s var(--transition-smooth) both` }}
         >
-          <div className="flex items-start gap-3 p-3">
-            <div className="h-[78px] w-[78px] shrink-0 animate-pulse rounded-xl bg-secondary" />
+          <div className="flex items-center gap-3 p-3">
+            <div className="h-[72px] w-[72px] shrink-0 animate-pulse rounded-xl bg-secondary" />
             <div className="flex flex-1 flex-col gap-2 pt-1">
               <div className="h-3.5 w-3/5 animate-pulse rounded bg-secondary" />
               <div className="h-3 w-2/5 animate-pulse rounded bg-secondary/70" />
               <div className="h-3 w-4/5 animate-pulse rounded bg-secondary/50" />
             </div>
-          </div>
-          <div className="border-t border-border px-4 pb-4 pt-4">
-            <div className="flex gap-2">
-              <div className="h-5 w-20 animate-pulse rounded-full bg-secondary/60" />
-              <div className="h-5 w-24 animate-pulse rounded-full bg-secondary/40" />
-            </div>
-            <div className="mt-3 space-y-1.5">
-              <div className="h-3 w-full animate-pulse rounded bg-secondary/50" />
-              <div className="h-3 w-11/12 animate-pulse rounded bg-secondary/40" />
-            </div>
-            <div className="mt-4 grid grid-cols-3 gap-2">
-              <div className="h-11 animate-pulse rounded-xl bg-secondary/50" />
-              <div className="h-11 animate-pulse rounded-xl bg-secondary/50" />
-              <div className="h-11 animate-pulse rounded-xl bg-secondary/70" />
-            </div>
+            <div className="h-9 w-9 shrink-0 animate-pulse rounded-full bg-secondary/70" />
           </div>
         </div>
       ))}
