@@ -235,6 +235,7 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
   const [loading, setLoading] = useState(false);
   const [stage, setStage] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<{ title: string; body: string } | null>(null);
 
   const toggleSave = (id: string) =>
     setSaved((s) => {
@@ -305,8 +306,17 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
         }),
       });
       if (!res.ok) throw new Error(`Request failed (${res.status})`);
-      const data = await res.json().catch(() => ({}));
+      const data = await res.json().catch(() => ({} as Record<string, unknown>));
       onResult?.(data);
+      // Show whatever the n8n flow returns. Try common keys, fall back to JSON.
+      const d = data as Record<string, unknown>;
+      const body =
+        (typeof d.story === "string" && d.story) ||
+        (typeof d.text === "string" && d.text) ||
+        (typeof d.output === "string" && d.output) ||
+        (typeof d.message === "string" && d.message) ||
+        JSON.stringify(data, null, 2);
+      setResult({ title: `${selected.name} · ${ROLES.find((r) => r.value === role)?.label ?? role}`, body });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
     } finally {
@@ -417,13 +427,23 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
                     }`}
                   >
                     {/* ── Collapsed header (tap to expand) ── */}
-                    <button
-                      type="button"
+                    {/* Use div+role instead of <button> because the expanded body
+                        contains action buttons — nesting <button> inside <button>
+                        is invalid HTML and breaks click handling in browsers. */}
+                    <div
+                      role="button"
+                      tabIndex={0}
                       onClick={() =>
                         setExpanded((m) => ({ ...m, [a.id]: !m[a.id] }))
                       }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setExpanded((m) => ({ ...m, [a.id]: !m[a.id] }));
+                        }
+                      }}
                       aria-expanded={isOpen}
-                      className="flex w-full items-center gap-3 p-3 text-left"
+                      className="flex w-full cursor-pointer items-center gap-3 p-3 text-left"
                     >
                       <div className="relative h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-xl">
                         <img
@@ -473,7 +493,7 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
                       >
                         <ChevronDown className="h-3.5 w-3.5" />
                       </span>
-                    </button>
+                    </div>
 
                     {/* ── Expanded body ── */}
                     <div
@@ -576,16 +596,20 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
                             </button>
                           </div>
 
-                          {/* Begin journey */}
+                          {/* Begin journey — opens role panel and triggers n8n if role chosen */}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedId(a.id);
+                              if (role) {
+                                // role already chosen → fire n8n flow immediately
+                                setTimeout(() => handleStart(), 0);
+                              }
                             }}
-                            className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-[11px] font-semibold text-foreground transition-smooth hover:border-primary/40"
+                            className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-gold px-3 py-2.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01]"
                           >
-                            <Play className="h-3 w-3 fill-current text-primary" />
-                            Begin journey
+                            <Play className="h-3 w-3 fill-current" />
+                            {role ? "Begin journey" : "Choose role & begin"}
                           </button>
 
                           {isSelected && (
@@ -678,6 +702,30 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
             )}
           </div>
         </div>
+
+        {/* ─── RESULT OVERLAY (n8n response) ─── */}
+        {result && !loading && (
+          <div className="absolute inset-0 z-50 flex flex-col bg-background">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <div
+                className="truncate text-[16px] font-medium text-primary"
+                style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
+              >
+                {result.title}
+              </div>
+              <button
+                onClick={() => setResult(null)}
+                aria-label="Close"
+                className="grid h-8 w-8 place-items-center rounded-full border border-border bg-card hover:border-primary/50"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-5 py-5 text-[13px] leading-[1.65] text-foreground/90 whitespace-pre-wrap scrollbar-hide">
+              {result.body}
+            </div>
+          </div>
+        )}
 
         {/* ─── LOADING OVERLAY ─── */}
         {loading && (
