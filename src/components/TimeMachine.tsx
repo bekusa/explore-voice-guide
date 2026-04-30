@@ -410,76 +410,191 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
                 return (
                   <article
                     key={a.id}
-                    onClick={() => setSelectedId((cur) => (cur === a.id ? null : a.id))}
-                    className={`group relative cursor-pointer overflow-hidden rounded-2xl border bg-card transition-smooth hover:shadow-elegant ${
+                    className={`relative overflow-hidden rounded-2xl border bg-card transition-smooth ${
                       isSelected
                         ? "border-primary shadow-glow"
                         : "border-border hover:border-primary/40"
                     }`}
                   >
-                    {isSelected && (
-                      <div className="absolute right-2.5 top-2.5 z-10 grid h-7 w-7 place-items-center rounded-full bg-gradient-gold text-[12px] font-bold text-primary-foreground shadow-glow">
-                        ✓
+                    {/* ── Collapsed header (tap to expand) ── */}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpanded((m) => ({ ...m, [a.id]: !m[a.id] }))
+                      }
+                      aria-expanded={isOpen}
+                      className="flex w-full items-center gap-3 p-3 text-left"
+                    >
+                      <div className="relative h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-xl">
+                        <img
+                          src={a.image}
+                          alt={a.name}
+                          loading="lazy"
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).style.display = "none";
+                          }}
+                        />
                       </div>
-                    )}
-                    <div className="relative h-[150px] overflow-hidden">
-                      <img
-                        src={a.image}
-                        alt={a.name}
-                        loading="lazy"
-                        className="h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).style.display = "none";
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
-                      <span className="absolute left-2.5 top-2.5 rounded-full bg-background/70 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-md">
-                        {a.tier}
-                      </span>
-                    </div>
-
-                    <div className="p-4">
-                      <h3
-                        className="text-[18px] font-medium leading-tight tracking-[-0.01em]"
-                        style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
-                      >
-                        <span className="mr-1.5">{a.emoji}</span>
-                        {a.name}
-                      </h3>
-                      <div className="mt-1.5 text-[9.5px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                        {a.country} · {a.year} · {a.era}
-                      </div>
-                      <p className="mt-3 text-[12.5px] italic leading-[1.55] text-foreground/80">
-                        {a.situation}
-                      </p>
-
-                      <div className="mt-3.5">
-                        <div className="mb-1 flex justify-between text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                          <span>Score</span>
-                          <span>{a.score} / 50</span>
-                        </div>
-                        <div className="h-1 overflow-hidden rounded-full bg-secondary">
-                          <div
-                            className="h-full bg-gradient-gold"
-                            style={{ width: `${(a.score / 50) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setExpanded((m) => ({ ...m, [a.id]: !m[a.id] }));
-                        }}
-                        className="mt-3 text-[10px] font-bold uppercase tracking-[0.22em] text-primary transition-smooth hover:opacity-80"
-                      >
-                        {isOpen ? "▲ Less" : "▼ More"}
-                      </button>
-                      {isOpen && (
-                        <p className="mt-2.5 border-t border-border pt-2.5 text-[12px] leading-[1.55] text-muted-foreground">
-                          {a.desc}
+                      <div className="min-w-0 flex-1">
+                        <h3
+                          className="truncate text-[15px] font-semibold leading-tight text-foreground"
+                          style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
+                        >
+                          <span className="mr-1">{a.emoji}</span>
+                          {a.name}
+                        </h3>
+                        <p className="my-1.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                          <Hourglass className="h-2.5 w-2.5" /> Time Machine
+                          {cached.has(a.id) && (
+                            <span className="ml-1 inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[8.5px] tracking-[0.12em] text-primary">
+                              <Download className="h-2 w-2" /> Offline
+                            </span>
+                          )}
                         </p>
-                      )}
+                        <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground">
+                          <span className="inline-flex items-center gap-1">
+                            <Clock className="h-2.5 w-2.5" /> 10 min
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-primary">
+                            <Star className="h-2.5 w-2.5 fill-primary" />{" "}
+                            {(a.score / 10).toFixed(2)}
+                          </span>
+                          <span className="inline-flex items-center gap-1">
+                            <MapPin className="h-2.5 w-2.5" /> {a.country}
+                          </span>
+                        </div>
+                      </div>
+                      <span
+                        className={`grid h-9 w-9 place-items-center rounded-full bg-foreground text-background transition-smooth ${
+                          isOpen ? "rotate-180" : ""
+                        }`}
+                        aria-hidden
+                      >
+                        <ChevronDown className="h-3.5 w-3.5" />
+                      </span>
+                    </button>
+
+                    {/* ── Expanded body ── */}
+                    <div
+                      className={`grid transition-all duration-300 ease-out ${
+                        isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                      }`}
+                    >
+                      <div className="overflow-hidden">
+                        <div className="border-t border-border px-4 pb-4 pt-4">
+                          {/* Meta chips */}
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.18em] text-primary">
+                              {a.tier}
+                            </span>
+                            <span className="rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                              {a.year}
+                            </span>
+                            <span className="rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                              {a.era}
+                            </span>
+                          </div>
+
+                          {/* Situation / description */}
+                          <p className="mt-3 text-[12.5px] italic leading-[1.55] text-foreground/80">
+                            {a.situation}
+                          </p>
+                          <p className="mt-2 text-[12px] leading-[1.55] text-muted-foreground">
+                            {a.desc}
+                          </p>
+
+                          {/* Score bar */}
+                          <div className="mt-3.5">
+                            <div className="mb-1 flex justify-between text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                              <span>Score</span>
+                              <span>{a.score} / 50</span>
+                            </div>
+                            <div className="h-1 overflow-hidden rounded-full bg-secondary">
+                              <div
+                                className="h-full bg-gradient-gold"
+                                style={{ width: `${(a.score / 50) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Action buttons (Save / Download / Details) */}
+                          <div className="mt-4 grid grid-cols-3 gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleSave(a.id);
+                              }}
+                              aria-pressed={saved.has(a.id)}
+                              className={`flex flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] transition-smooth ${
+                                saved.has(a.id)
+                                  ? "border-primary/60 bg-primary/15 text-primary"
+                                  : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                              }`}
+                            >
+                              {saved.has(a.id) ? (
+                                <BookmarkCheck className="h-4 w-4 fill-current" />
+                              ) : (
+                                <Bookmark className="h-4 w-4" />
+                              )}
+                              {saved.has(a.id) ? "Saved" : "Save"}
+                            </button>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                downloadOffline(a.id);
+                              }}
+                              disabled={downloading === a.id}
+                              className={`flex flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] transition-smooth ${
+                                cached.has(a.id)
+                                  ? "border-primary/60 bg-primary/15 text-primary"
+                                  : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                              } disabled:cursor-wait disabled:opacity-70`}
+                            >
+                              {cached.has(a.id) ? (
+                                <CheckCircle2 className="h-4 w-4" />
+                              ) : (
+                                <Download className="h-4 w-4" />
+                              )}
+                              {downloading === a.id
+                                ? "Saving"
+                                : cached.has(a.id)
+                                  ? "Offline"
+                                  : "Download"}
+                            </button>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedId(a.id);
+                              }}
+                              className="flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-gold px-2 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02]"
+                            >
+                              <ArrowRight className="h-4 w-4" />
+                              Details
+                            </button>
+                          </div>
+
+                          {/* Begin journey */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedId(a.id);
+                            }}
+                            className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-[11px] font-semibold text-foreground transition-smooth hover:border-primary/40"
+                          >
+                            <Play className="h-3 w-3 fill-current text-primary" />
+                            Begin journey
+                          </button>
+
+                          {isSelected && (
+                            <p className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                              <Sparkles className="h-2.5 w-2.5" /> Selected — choose role below
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </article>
                 );
