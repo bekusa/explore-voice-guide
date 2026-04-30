@@ -483,7 +483,7 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
                       >
                         <ChevronDown className="h-3.5 w-3.5" />
                       </span>
-                    </button>
+                    </div>
 
                     {/* ── Expanded body ── */}
                     <div
