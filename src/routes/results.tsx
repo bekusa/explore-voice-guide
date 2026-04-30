@@ -58,41 +58,6 @@ export const Route = createFileRoute("/results")({
   component: ResultsPage,
 });
 
-/**
- * Curated interest tags shown as filter chips above the results.
- * Beka asked us to bring back the "interests" picker from the original
- * Lokali app and explicitly include "Couples" (წყვილები). The id is what
- * we send to n8n — keep it stable and ASCII so the workflow can prompt
- * Claude with a clean, predictable token. The label is what the user
- * sees; emoji are intentional — they read warmer and more universal
- * than any single language label across Lokali's 37+ supported tongues.
- */
-const INTERESTS: { id: string; label: string; emoji: string }[] = [
-  { id: "history", label: "History", emoji: "🏛️" },
-  { id: "art", label: "Art", emoji: "🎨" },
-  { id: "food", label: "Food", emoji: "🍽️" },
-  { id: "nature", label: "Nature", emoji: "🌿" },
-  { id: "architecture", label: "Architecture", emoji: "🏰" },
-  { id: "spirituality", label: "Spirituality", emoji: "🛐" },
-  { id: "family", label: "Family", emoji: "👨‍👩‍👧" },
-  { id: "couples", label: "Couples", emoji: "💑" },
-  { id: "photography", label: "Photography", emoji: "📷" },
-  { id: "adventure", label: "Adventure", emoji: "🥾" },
-  { id: "local", label: "Local culture", emoji: "✨" },
-  { id: "nightlife", label: "Nightlife", emoji: "🌙" },
-];
-
-/**
- * Three audio-guide length presets — also a Lokali classic. NOTE: this
- * is the *narration* length (how long the user will be listening), not
- * how long it takes to walk the route. The id goes to n8n; the helper
- * text reminds the user roughly how long the spoken guide will run.
- */
-const DURATIONS: { id: "short" | "medium" | "long"; label: string; hint: string }[] = [
-  { id: "short", label: "Short", hint: "~ 3–7 min" },
-  { id: "medium", label: "Medium", hint: "~ 8–15 min" },
-  { id: "long", label: "Long", hint: "15–30 min" },
-];
 
 function ResultsPage() {
   const { q, interests: interestsParam, duration: durationParam } = Route.useSearch();
