@@ -703,6 +703,30 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
           </div>
         </div>
 
+        {/* ─── RESULT OVERLAY (n8n response) ─── */}
+        {result && !loading && (
+          <div className="absolute inset-0 z-50 flex flex-col bg-background">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <div
+                className="truncate text-[16px] font-medium text-primary"
+                style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
+              >
+                {result.title}
+              </div>
+              <button
+                onClick={() => setResult(null)}
+                aria-label="Close"
+                className="grid h-8 w-8 place-items-center rounded-full border border-border bg-card hover:border-primary/50"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-5 py-5 text-[13px] leading-[1.65] text-foreground/90 whitespace-pre-wrap scrollbar-hide">
+              {result.body}
+            </div>
+          </div>
+        )}
+
         {/* ─── LOADING OVERLAY ─── */}
         {loading && (
           <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/90 backdrop-blur-md">
