@@ -533,15 +533,18 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
                                         setRoles((m) => ({ ...m, [a.id]: r.value }));
                                         setOpenRoleFor(null);
                                       }}
-                                      className={`flex w-full flex-col items-start gap-0.5 rounded-lg px-2.5 py-2 text-left transition-smooth ${
+                                      className={`flex w-full items-start gap-2 rounded-lg px-2.5 py-2 text-left transition-smooth ${
                                         active
                                           ? "bg-primary/15 text-primary"
                                           : "text-foreground hover:bg-secondary/60"
                                       }`}
                                     >
-                                      <span className="text-[12px] font-semibold">{r.label}</span>
-                                      <span className="text-[10px] italic text-muted-foreground">
-                                        {r.hint}
+                                      <span className="text-base leading-tight">{r.emoji}</span>
+                                      <span className="flex flex-col items-start gap-0.5">
+                                        <span className="text-[12px] font-semibold">{r.label}</span>
+                                        <span className="text-[10px] italic text-muted-foreground">
+                                          {r.hint}
+                                        </span>
                                       </span>
                                     </button>
                                   );
