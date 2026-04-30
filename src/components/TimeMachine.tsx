@@ -229,8 +229,28 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [saved, setSaved] = useState<Set<string>>(new Set());
+  const [cached, setCached] = useState<Set<string>>(new Set());
+  const [downloading, setDownloading] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [stage, setStage] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+
+  const toggleSave = (id: string) =>
+    setSaved((s) => {
+      const next = new Set(s);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+
+  const downloadOffline = (id: string) => {
+    if (cached.has(id) || downloading) return;
+    setDownloading(id);
+    setTimeout(() => {
+      setCached((c) => new Set(c).add(id));
+      setDownloading(null);
+    }, 900);
+  };
   const [error, setError] = useState<string | null>(null);
 
   const counts = useMemo(() => ({
