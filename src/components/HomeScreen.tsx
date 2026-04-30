@@ -304,6 +304,46 @@ function CollectionCard({ collection }: { collection: (typeof COLLECTIONS)[numbe
 }
 
 /* ─────────────────────────────────────────────
+ * Time Machine — featured collection card
+ * Distinguished gold/dark editorial tile that opens the immersive
+ * historical simulation experience at /time-machine.
+ * ───────────────────────────────────────────── */
+function TimeMachineCollectionCard() {
+  const t = useT();
+  const [label, tagline] = useTranslated([
+    "Time Machine",
+    "Step inside history — 34 immersive moments",
+  ]);
+  return (
+    <Link
+      to="/time-machine"
+      className="group relative h-[140px] w-[220px] flex-shrink-0 overflow-hidden rounded-2xl border border-primary/50 shadow-glow"
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-[oklch(0.18_0.04_60)] via-[oklch(0.12_0.02_60)] to-black" />
+      <div
+        aria-hidden
+        className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-gold opacity-30 blur-2xl transition-opacity group-hover:opacity-50"
+      />
+      <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-primary/50 bg-background/40 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-primary backdrop-blur-md">
+        <Sparkles className="h-2.5 w-2.5" /> New
+      </div>
+      <div className="absolute inset-x-3 bottom-3">
+        <div
+          className="text-[15px] font-medium leading-tight text-primary"
+          style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
+        >
+          {label}
+        </div>
+        <div className="mt-0.5 line-clamp-2 text-[10px] text-foreground/70">{tagline}</div>
+      </div>
+      <ArrowRight className="absolute bottom-3 right-3 h-3.5 w-3.5 text-primary opacity-0 transition-opacity group-hover:opacity-100" />
+      {/* suppress unused t */}
+      <span className="hidden">{t("home.collections.title")}</span>
+    </Link>
+  );
+}
+
+/* ─────────────────────────────────────────────
  * Editorial destination card
  * ───────────────────────────────────────────── */
 function DestinationCard({ dest }: { dest: Destination }) {
