@@ -330,3 +330,36 @@ export function attractionSlug(name: string): string {
 export function unslugAttraction(slug: string): string {
   return decodeURIComponent(slug).replace(/-/g, " ");
 }
+
+/**
+ * Detect the language of a search query / place name from its script,
+ * so the n8n workflow returns results in the same language the user
+ * typed. Without this, anonymous users (no Supabase profile) always
+ * fell back to "ka" and got Georgian results even when searching
+ * "Batumi" or "Paris" in English.
+ *
+ * Heuristic: pick the script of the majority of letter characters.
+ * Falls back to the supplied default (usually the user's preferred
+ * UI language) when the input is empty or all whitespace/punctuation.
+ */
+export function detectQueryLanguage(text: string, fallback = "en"): string {
+  if (!text) return fallback;
+  const counts: Record<string, number> = { ka: 0, ru: 0, ar: 0, zh: 0, ja: 0, ko: 0, latin: 0 };
+  for (const ch of text) {
+    const code = ch.codePointAt(0);
+    if (!code) continue;
+    if (code >= 0x10a0 && code <= 0x10ff) counts.ka++;
+    else if (code >= 0x0400 && code <= 0x04ff) counts.ru++;
+    else if (code >= 0x0600 && code <= 0x06ff) counts.ar++;
+    else if (code >= 0x4e00 && code <= 0x9fff) counts.zh++;
+    else if (code >= 0x3040 && code <= 0x30ff) counts.ja++;
+    else if (code >= 0xac00 && code <= 0xd7af) counts.ko++;
+    else if ((code >= 0x41 && code <= 0x5a) || (code >= 0x61 && code <= 0x7a)) counts.latin++;
+  }
+  // Pick the script with the most hits; ties go to the explicit
+  // (non-Latin) script if any is non-zero, otherwise English.
+  const ranked = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const [top, topCount] = ranked[0];
+  if (!topCount) return fallback;
+  return top === "latin" ? "en" : top;
+}

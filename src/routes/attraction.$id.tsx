@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
 import {
   attractionSlug,
+  detectQueryLanguage,
   fetchAttractions,
   fetchGuideData,
   fetchGuideFresh,
@@ -62,9 +63,13 @@ function AttractionPage() {
   const { id } = Route.useParams();
   const { name: searchName } = Route.useSearch();
   const navigate = useNavigate();
-  const language = usePreferredLanguage();
+  const preferredLanguage = usePreferredLanguage();
 
   const fallbackName = searchName ?? unslugAttraction(id);
+  // Detect language from the place name itself so the n8n guide comes
+  // back in the same language the user was browsing in. Falls back to
+  // the user's preferred UI language when the name has no script hint.
+  const language = detectQueryLanguage(fallbackName, preferredLanguage);
   const [attraction, setAttraction] = useState<Attraction | null>(
     searchName ? { name: searchName } : null,
   );
@@ -524,7 +529,7 @@ function StorySection({ storyText }: { storyText?: string }) {
           The <span className="italic text-primary">story</span>
         </h2>
       </div>
-      <div className="mt-4 space-y-3 text-[13.5px] leading-relaxed text-foreground/85">
+      <div className="mt-4 space-y-4 text-[15.5px] leading-[1.75] text-foreground/90">
         {paragraphs.map((p, i) => (
           <p key={i}>{p}</p>
         ))}

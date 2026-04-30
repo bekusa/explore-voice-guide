@@ -7,6 +7,7 @@ import {
   fetchAttractions,
   fetchPlacePhoto,
   attractionSlug,
+  detectQueryLanguage,
   type Attraction,
 } from "@/lib/api";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
@@ -29,7 +30,12 @@ export const Route = createFileRoute("/results")({
 function ResultsPage() {
   const { q } = Route.useSearch();
   const navigate = useNavigate();
-  const language = usePreferredLanguage();
+  const preferredLanguage = usePreferredLanguage();
+  // Auto-detect from the query itself so "Batumi" → en, "ბათუმი" → ka.
+  // Without this, anonymous users fell back to Georgian regardless of
+  // what they typed. Preferred language is used when the query is empty
+  // or all punctuation.
+  const language = detectQueryLanguage(q, preferredLanguage);
   const [results, setResults] = useState<Attraction[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState(q);
@@ -79,7 +85,10 @@ function ResultsPage() {
             >
               <ArrowLeft className="h-4 w-4" />
             </Link>
-            <form onSubmit={submit} className="flex flex-1 items-center gap-3 rounded-full border border-border bg-card px-4 py-2.5 shadow-soft">
+            <form
+              onSubmit={submit}
+              className="flex flex-1 items-center gap-3 rounded-full border border-border bg-card px-4 py-2.5 shadow-soft"
+            >
               <Search className="h-4 w-4 text-muted-foreground" strokeWidth={2.2} />
               <input
                 value={query}
@@ -102,9 +111,7 @@ function ResultsPage() {
         <section className="px-6 pt-6">
           {loading && <SkeletonList />}
 
-          {!loading && results && results.length === 0 && (
-            <EmptyState query={q} />
-          )}
+          {!loading && results && results.length === 0 && <EmptyState query={q} />}
 
           {!loading && results && results.length > 0 && (
             <div className="flex flex-col gap-3">
@@ -228,11 +235,10 @@ function EmptyState({ query }: { query: string }) {
       <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-card">
         <Search className="h-5 w-5 text-muted-foreground" />
       </div>
-      <h2 className="mt-5 font-display text-[22px] text-foreground">
-        Nothing found
-      </h2>
+      <h2 className="mt-5 font-display text-[22px] text-foreground">Nothing found</h2>
       <p className="mt-2 px-6 text-[12.5px] text-muted-foreground">
-        We couldn't find places matching “{query}”. Try a different word — a place, a feeling, or an era.
+        We couldn't find places matching “{query}”. Try a different word — a place, a feeling, or an
+        era.
       </p>
       <Link
         to="/"
