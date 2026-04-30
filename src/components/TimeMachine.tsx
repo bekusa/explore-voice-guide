@@ -227,7 +227,8 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
   const [query, setQuery] = useState("");
   const [tierFilter, setTierFilter] = useState<"ALL" | Tier>("ALL");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [role, setRole] = useState<string | null>(null);
+  const [roles, setRoles] = useState<Record<string, string>>({});
+  const [openRoleFor, setOpenRoleFor] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [saved, setSaved] = useState<Set<string>>(new Set());
   const [cached, setCached] = useState<Set<string>>(new Set());
