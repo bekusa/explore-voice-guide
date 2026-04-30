@@ -227,7 +227,8 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
   const [query, setQuery] = useState("");
   const [tierFilter, setTierFilter] = useState<"ALL" | Tier>("ALL");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [role, setRole] = useState<string | null>(null);
+  const [roles, setRoles] = useState<Record<string, string>>({});
+  const [openRoleFor, setOpenRoleFor] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [saved, setSaved] = useState<Set<string>>(new Set());
   const [cached, setCached] = useState<Set<string>>(new Set());
@@ -283,24 +284,22 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
     return () => clearInterval(id);
   }, [loading]);
 
-  const canStart = !!selected && !!role && !loading;
-
-  const handleStart = async () => {
-    if (!selected || !role) return;
+  const handleStart = async (attraction: Attraction, roleValue: string) => {
     setError(null);
+    setSelectedId(attraction.id);
     setLoading(true);
     try {
       const res = await fetch(webhookUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          place_id: selected.id,
-          place_name: selected.name,
-          country: selected.country,
-          era: selected.era,
-          year: selected.year,
-          situation: selected.situation,
-          character_role: role,
+          place_id: attraction.id,
+          place_name: attraction.name,
+          country: attraction.country,
+          era: attraction.era,
+          year: attraction.year,
+          situation: attraction.situation,
+          character_role: roleValue,
           language,
           duration_minutes: 10,
         }),
@@ -308,7 +307,6 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
       if (!res.ok) throw new Error(`Request failed (${res.status})`);
       const data = await res.json().catch(() => ({} as Record<string, unknown>));
       onResult?.(data);
-      // Show whatever the n8n flow returns. Try common keys, fall back to JSON.
       const d = data as Record<string, unknown>;
       const body =
         (typeof d.story === "string" && d.story) ||
@@ -316,7 +314,10 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
         (typeof d.output === "string" && d.output) ||
         (typeof d.message === "string" && d.message) ||
         JSON.stringify(data, null, 2);
-      setResult({ title: `${selected.name} · ${ROLES.find((r) => r.value === role)?.label ?? role}`, body });
+      setResult({
+        title: `${attraction.name} · ${ROLES.find((r) => r.value === roleValue)?.label ?? roleValue}`,
+        body,
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
     } finally {
@@ -538,8 +539,70 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
                             </div>
                           </div>
 
-                          {/* Action buttons (Save / Download / Details) */}
-                          <div className="mt-4 grid grid-cols-3 gap-2">
+                          {/* Inline ROLE dropdown — sits right above the action row */}
+                          <div className="mt-4">
+                            <div className="mb-1.5 flex items-center justify-between">
+                              <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-primary">
+                                Choose your role *
+                              </span>
+                              {roles[a.id] && (
+                                <span className="text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
+                                  {ROLES.find((r) => r.value === roles[a.id])?.hint}
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenRoleFor((cur) => (cur === a.id ? null : a.id));
+                              }}
+                              aria-expanded={openRoleFor === a.id}
+                              className="flex w-full items-center justify-between rounded-xl border border-border bg-card px-3 py-2.5 text-left text-[12px] font-semibold text-foreground transition-smooth hover:border-primary/50"
+                            >
+                              <span className={roles[a.id] ? "text-foreground" : "text-muted-foreground"}>
+                                {roles[a.id]
+                                  ? ROLES.find((r) => r.value === roles[a.id])?.label
+                                  : "Select a character…"}
+                              </span>
+                              <ChevronDown
+                                className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${
+                                  openRoleFor === a.id ? "rotate-180" : ""
+                                }`}
+                              />
+                            </button>
+                            {openRoleFor === a.id && (
+                              <div className="mt-1.5 max-h-56 overflow-y-auto rounded-xl border border-border bg-card p-1 shadow-lg scrollbar-hide">
+                                {ROLES.map((r) => {
+                                  const active = roles[a.id] === r.value;
+                                  return (
+                                    <button
+                                      key={r.value}
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setRoles((m) => ({ ...m, [a.id]: r.value }));
+                                        setOpenRoleFor(null);
+                                      }}
+                                      className={`flex w-full flex-col items-start gap-0.5 rounded-lg px-2.5 py-2 text-left transition-smooth ${
+                                        active
+                                          ? "bg-primary/15 text-primary"
+                                          : "text-foreground hover:bg-secondary/60"
+                                      }`}
+                                    >
+                                      <span className="text-[12px] font-semibold">{r.label}</span>
+                                      <span className="text-[10px] italic text-muted-foreground">
+                                        {r.hint}
+                                      </span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Action buttons (Save / Download / Details→Start) */}
+                          <div className="mt-3 grid grid-cols-3 gap-2">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -577,46 +640,31 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
                               ) : (
                                 <Download className="h-4 w-4" />
                               )}
-                              {downloading === a.id
-                                ? "Saving"
-                                : cached.has(a.id)
-                                  ? "Offline"
-                                  : "Download"}
+                              {downloading === a.id ? "Saving" : cached.has(a.id) ? "Offline" : "Download"}
                             </button>
 
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSelectedId(a.id);
+                                const r = roles[a.id];
+                                if (!r) {
+                                  setOpenRoleFor(a.id);
+                                  return;
+                                }
+                                handleStart(a, r);
                               }}
-                              className="flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-gold px-2 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02]"
+                              disabled={loading}
+                              className={`flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] shadow-glow transition-smooth disabled:opacity-60 ${
+                                roles[a.id]
+                                  ? "bg-gradient-gold text-primary-foreground hover:scale-[1.02]"
+                                  : "border border-border bg-card text-muted-foreground"
+                              }`}
+                              title={roles[a.id] ? "Start simulation" : "Choose a role first"}
                             >
-                              <ArrowRight className="h-4 w-4" />
+                              <Play className="h-4 w-4 fill-current" />
                               Details
                             </button>
                           </div>
-
-                          {/* Begin journey — opens role panel and triggers n8n if role chosen */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedId(a.id);
-                              if (role) {
-                                // role already chosen → fire n8n flow immediately
-                                setTimeout(() => handleStart(), 0);
-                              }
-                            }}
-                            className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-gold px-3 py-2.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01]"
-                          >
-                            <Play className="h-3 w-3 fill-current" />
-                            {role ? "Begin journey" : "Choose role & begin"}
-                          </button>
-
-                          {isSelected && (
-                            <p className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-                              <Sparkles className="h-2.5 w-2.5" /> Selected — choose role below
-                            </p>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -625,82 +673,6 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
               })}
             </div>
           </section>
-        </div>
-
-        {/* ─── STICKY BOTTOM PANEL ─── */}
-        <div
-          className={`absolute inset-x-0 bottom-0 z-40 transition-transform duration-500 ${
-            selected ? "translate-y-0" : "translate-y-full"
-          }`}
-        >
-          <div className="border-t border-primary/40 bg-background/95 px-5 pb-5 pt-4 backdrop-blur-xl">
-            {selected && (
-              <>
-                <button
-                  onClick={() => {
-                    setSelectedId(null);
-                    setRole(null);
-                  }}
-                  className="absolute right-3 top-3 grid h-7 w-7 place-items-center rounded-full border border-border bg-card text-muted-foreground transition-smooth hover:text-foreground"
-                  aria-label="Dismiss"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-
-                <div className="flex items-center gap-2.5">
-                  <div className="text-[24px]">{selected.emoji}</div>
-                  <div className="min-w-0">
-                    <div
-                      className="truncate text-[15px] font-medium leading-tight"
-                      style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
-                    >
-                      {selected.name}
-                    </div>
-                    <div className="text-[9.5px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      {selected.country} · {selected.year}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-3 text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
-                  Choose your role *
-                </div>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {ROLES.map((r) => {
-                    const active = role === r.value;
-                    return (
-                      <button
-                        key={r.value}
-                        onClick={() => setRole(r.value)}
-                        title={r.hint}
-                        className={`rounded-full px-2.5 py-1 text-[10.5px] font-semibold transition-smooth ${
-                          active
-                            ? "bg-gradient-gold text-primary-foreground shadow-glow"
-                            : "border border-border bg-card text-foreground/80 hover:border-primary/40"
-                        }`}
-                      >
-                        {r.label}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <button
-                  onClick={handleStart}
-                  disabled={!canStart}
-                  className={`mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-[11px] font-bold uppercase tracking-[0.18em] transition-smooth ${
-                    canStart
-                      ? "bg-gradient-gold text-primary-foreground shadow-glow hover:scale-[1.02]"
-                      : "cursor-not-allowed bg-secondary text-muted-foreground"
-                  }`}
-                >
-                  <Hourglass className="h-3 w-3" />
-                  Start simulation
-                  <Sparkles className="h-3 w-3" />
-                </button>
-              </>
-            )}
-          </div>
         </div>
 
         {/* ─── RESULT OVERLAY (n8n response) ─── */}
