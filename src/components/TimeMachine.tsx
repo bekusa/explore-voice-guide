@@ -39,17 +39,18 @@ interface Role {
   value: string;
   label: string;
   hint: string;
+  emoji: string;
 }
 
 const ROLES: Role[] = [
-  { value: "merchant", label: "Merchant", hint: "Trades everywhere, moves freely" },
-  { value: "soldier", label: "Soldier / Guard", hint: "Present at every gate, every era" },
-  { value: "servant", label: "Servant", hint: "Sees everything, says little" },
-  { value: "foreigner", label: "Foreign Traveler", hint: "Questions are natural, nothing ordinary" },
-  { value: "child", label: "Child", hint: "Sees everything for the first time" },
-  { value: "healer", label: "Healer", hint: "Needed in war and peace alike" },
-  { value: "spy", label: "Spy / Informant", hint: "Trusts no one, notices everything" },
-  { value: "survivor", label: "Survivor", hint: "Escaped disaster, war, or the road" },
+  { value: "merchant", label: "Merchant", hint: "Trades everywhere, moves freely", emoji: "💰" },
+  { value: "soldier", label: "Soldier / Guard", hint: "Present at every gate, every era", emoji: "⚔️" },
+  { value: "servant", label: "Servant", hint: "Sees everything, says little", emoji: "🧹" },
+  { value: "foreigner", label: "Foreign Traveler", hint: "Questions are natural, nothing ordinary", emoji: "🧭" },
+  { value: "child", label: "Child", hint: "Sees everything for the first time", emoji: "🧒" },
+  { value: "healer", label: "Healer", hint: "Needed in war and peace alike", emoji: "🌿" },
+  { value: "spy", label: "Spy / Informant", hint: "Trusts no one, notices everything", emoji: "🕵️" },
+  { value: "survivor", label: "Survivor", hint: "Escaped disaster, war, or the road", emoji: "🩹" },
 ];
 
 // Themed photos via LoremFlickr (keyword-matched, deterministic with lock seed)
