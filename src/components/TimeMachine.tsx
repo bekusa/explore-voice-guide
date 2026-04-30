@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { ArrowLeft, Search, Sparkles, X, Hourglass } from "lucide-react";
+import { MobileFrame } from "@/components/MobileFrame";
 
 type Tier = "MVP" | "TOP 10" | "TOP 20";
 
@@ -276,249 +279,218 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
   };
 
   return (
-    <div
-      className="min-h-screen text-white"
-      style={{
-        background:
-          "radial-gradient(1200px 600px at 50% -200px, #1a1730 0%, #0f0e1a 45%, #07060e 100%)",
-        fontFamily: "'Cormorant Garamond', 'Playfair Display', Georgia, serif",
-      }}
-    >
-      {/* HERO */}
-      <section className="px-6 pt-16 pb-10 max-w-6xl mx-auto text-center">
-        <div
-          className="text-xs tracking-[0.35em] mb-4"
-          style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "#c9972a" }}
-        >
-          LOKALI · TIME MACHINE
-        </div>
-        <h1
-          className="text-5xl md:text-7xl font-semibold leading-tight"
-          style={{
-            backgroundImage: "linear-gradient(90deg,#f6c560 0%,#c9972a 45%,#a83c1e 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            fontFamily: "'Playfair Display', Georgia, serif",
-          }}
-        >
-          Travel Through Time
-        </h1>
-        <p className="mt-5 text-lg md:text-xl text-white/70 italic max-w-3xl mx-auto">
-          {counts.total} immersive simulations — step inside the moment, become the witness
-        </p>
-
-        <div
-          className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto"
-          style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}
-        >
-          {[
-            { k: "TOTAL", v: counts.total },
-            { k: "MVP", v: counts.mvp },
-            { k: "TOP 10", v: counts.top10 },
-            { k: "TOP 20", v: counts.top20 },
-          ].map((s) => (
-            <div
-              key={s.k}
-              className="rounded-xl border border-white/10 bg-white/[0.03] py-4"
-            >
-              <div className="text-3xl font-semibold text-[#c9972a]">{s.v}</div>
-              <div className="text-[10px] tracking-[0.3em] text-white/50 mt-1">{s.k}</div>
+    <MobileFrame>
+      <div className="relative h-[100dvh] w-full overflow-hidden bg-background text-foreground md:h-[860px]">
+        <div className="h-full overflow-y-auto pb-44 scrollbar-hide">
+          {/* ─── HERO ─── */}
+          <section className="relative px-5 pb-6 pt-12">
+            <div className="flex items-center gap-2">
+              <Link
+                to="/"
+                aria-label="Back to home"
+                className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card transition-smooth hover:border-primary/50"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+              </Link>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
+                Lokali · Time Machine
+              </div>
             </div>
-          ))}
-        </div>
-      </section>
 
-      {/* STICKY CONTROLS */}
-      <div
-        className="sticky top-0 z-30 backdrop-blur-md border-y border-white/10"
-        style={{ background: "rgba(7,6,14,0.85)" }}
-      >
-        <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col md:flex-row gap-3 md:items-center">
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name, country, era…"
-            className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-[#c9972a]/60"
-          />
-          <div
-            className="flex gap-2"
-            style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}
-          >
-            {(["ALL", "MVP", "TOP 10", "TOP 20"] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTierFilter(t)}
-                className={`px-3 py-1.5 rounded-md text-[11px] tracking-[0.2em] border transition ${
-                  tierFilter === t
-                    ? "bg-[#c9972a] text-black border-[#c9972a]"
-                    : "border-white/15 text-white/70 hover:border-white/30"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-          <div
-            className="text-[11px] tracking-[0.2em] text-white/50 md:ml-2"
-            style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}
-          >
-            SHOWING {filtered.length} OF {counts.total}
-          </div>
-        </div>
-        {error && (
-          <div className="max-w-6xl mx-auto px-6 pb-3 text-sm text-red-400">{error}</div>
-        )}
-      </div>
-
-      {/* CARD GRID */}
-      <section className="max-w-6xl mx-auto px-6 py-10 pb-48">
-        <div
-          className="grid gap-6"
-          style={{ gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}
-        >
-          {filtered.map((a) => {
-            const isSelected = selectedId === a.id;
-            const isOpen = !!expanded[a.id];
-            return (
-              <article
-                key={a.id}
-                onClick={() =>
-                  setSelectedId((cur) => (cur === a.id ? null : a.id))
-                }
-                className={`group relative cursor-pointer rounded-2xl overflow-hidden border bg-[#0f0e1a]/80 transition-all duration-300 hover:-translate-y-[3px] ${
-                  isSelected
-                    ? "border-[#c9972a] shadow-[0_0_0_1px_#c9972a,0_20px_50px_-20px_rgba(201,151,42,0.5)]"
-                    : "border-white/10 hover:border-white/25"
-                }`}
-              >
-                {isSelected && (
-                  <div className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-[#c9972a] text-black flex items-center justify-center font-bold text-sm shadow-lg">
-                    ✓
-                  </div>
-                )}
-                <div className="relative h-[180px] overflow-hidden">
-                  <img
-                    src={a.image}
-                    alt={a.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.display = "none";
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f0e1a] via-[#0f0e1a]/30 to-transparent" />
-                  <span
-                    className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] tracking-[0.2em] font-bold ${TIER_STYLE[a.tier]}`}
-                    style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}
-                  >
-                    {a.tier}
-                  </span>
-                </div>
-
-                <div className="p-5">
-                  <h3
-                    className="text-2xl font-semibold leading-snug"
-                    style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-                  >
-                    <span className="mr-2">{a.emoji}</span>
-                    {a.name}
-                  </h3>
-                  <div
-                    className="mt-2 text-[10px] tracking-[0.2em] text-white/50 uppercase"
-                    style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}
-                  >
-                    {a.country} · {a.year} · {a.era}
-                  </div>
-                  <p className="mt-4 italic text-white/80 text-[15px] leading-relaxed">
-                    {a.situation}
-                  </p>
-
-                  <div className="mt-5">
-                    <div
-                      className="flex justify-between text-[10px] tracking-[0.2em] text-white/40 mb-1.5"
-                      style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}
-                    >
-                      <span>SCORE</span>
-                      <span>{a.score} / 50</span>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
-                      <div
-                        className={`h-full ${SCORE_COLOR[a.tier]}`}
-                        style={{ width: `${(a.score / 50) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setExpanded((m) => ({ ...m, [a.id]: !m[a.id] }));
-                    }}
-                    className="mt-4 text-[11px] tracking-[0.25em] text-[#c9972a] hover:text-amber-300 transition"
-                    style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}
-                  >
-                    {isOpen ? "▲ LESS" : "▼ MORE"}
-                  </button>
-                  {isOpen && (
-                    <p className="mt-3 text-sm text-white/65 leading-relaxed border-t border-white/10 pt-3">
-                      {a.desc}
-                    </p>
-                  )}
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* STICKY BOTTOM PANEL */}
-      <div
-        className={`fixed bottom-0 inset-x-0 z-40 transition-transform duration-500 ${
-          selected ? "translate-y-0" : "translate-y-full"
-        }`}
-      >
-        <div
-          className="border-t border-[#c9972a]/30 backdrop-blur-xl"
-          style={{ background: "rgba(7,6,14,0.95)" }}
-        >
-          <div className="max-w-6xl mx-auto px-6 py-5 relative">
-            <button
-              onClick={() => {
-                setSelectedId(null);
-                setRole(null);
-              }}
-              className="absolute top-3 right-4 text-white/50 hover:text-white text-xl"
-              aria-label="Dismiss"
+            <h1
+              className="mt-4 text-[34px] font-medium leading-[1.05] tracking-[-0.02em]"
+              style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
             >
-              ✕
-            </button>
+              Travel through <span className="italic text-primary">time</span>
+            </h1>
+            <p className="mt-2.5 text-[12.5px] italic leading-[1.55] text-muted-foreground">
+              {counts.total} immersive simulations — step inside the moment, become the witness.
+            </p>
+
+            {/* stat tiles */}
+            <div className="mt-5 grid grid-cols-4 gap-2">
+              {[
+                { k: "Total", v: counts.total },
+                { k: "MVP", v: counts.mvp },
+                { k: "Top 10", v: counts.top10 },
+                { k: "Top 20", v: counts.top20 },
+              ].map((s) => (
+                <div
+                  key={s.k}
+                  className="rounded-xl border border-border bg-card px-2 py-2.5 text-center"
+                >
+                  <div className="text-[18px] font-semibold text-primary">{s.v}</div>
+                  <div className="mt-0.5 text-[8.5px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                    {s.k}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ─── STICKY CONTROLS ─── */}
+          <div className="sticky top-0 z-20 border-y border-border bg-background/85 px-5 py-3 backdrop-blur-xl">
+            <div className="flex items-center gap-2.5 rounded-full border border-border bg-card px-3.5 py-2.5 transition-smooth focus-within:border-primary/60">
+              <Search className="h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search by name, country, era…"
+                className="flex-1 bg-transparent text-[12.5px] text-foreground placeholder:text-muted-foreground focus:outline-none"
+              />
+            </div>
+            <div className="mt-2.5 flex gap-2 overflow-x-auto scrollbar-hide">
+              {(["ALL", "MVP", "TOP 10", "TOP 20"] as const).map((tf) => {
+                const on = tierFilter === tf;
+                return (
+                  <button
+                    key={tf}
+                    onClick={() => setTierFilter(tf)}
+                    className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] transition-smooth ${
+                      on
+                        ? "bg-foreground text-background"
+                        : "border border-border bg-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {tf}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              Showing {filtered.length} of {counts.total}
+            </p>
+            {error && (
+              <p className="mt-1.5 text-[11px] text-destructive">{error}</p>
+            )}
+          </div>
+
+          {/* ─── CARDS GRID (single column on mobile frame) ─── */}
+          <section className="px-5 pt-4">
+            <div className="flex flex-col gap-3">
+              {filtered.map((a) => {
+                const isSelected = selectedId === a.id;
+                const isOpen = !!expanded[a.id];
+                return (
+                  <article
+                    key={a.id}
+                    onClick={() => setSelectedId((cur) => (cur === a.id ? null : a.id))}
+                    className={`group relative cursor-pointer overflow-hidden rounded-2xl border bg-card transition-smooth hover:shadow-elegant ${
+                      isSelected
+                        ? "border-primary shadow-glow"
+                        : "border-border hover:border-primary/40"
+                    }`}
+                  >
+                    {isSelected && (
+                      <div className="absolute right-2.5 top-2.5 z-10 grid h-7 w-7 place-items-center rounded-full bg-gradient-gold text-[12px] font-bold text-primary-foreground shadow-glow">
+                        ✓
+                      </div>
+                    )}
+                    <div className="relative h-[150px] overflow-hidden">
+                      <img
+                        src={a.image}
+                        alt={a.name}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
+                      <span className="absolute left-2.5 top-2.5 rounded-full bg-background/70 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-md">
+                        {a.tier}
+                      </span>
+                    </div>
+
+                    <div className="p-4">
+                      <h3
+                        className="text-[18px] font-medium leading-tight tracking-[-0.01em]"
+                        style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
+                      >
+                        <span className="mr-1.5">{a.emoji}</span>
+                        {a.name}
+                      </h3>
+                      <div className="mt-1.5 text-[9.5px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                        {a.country} · {a.year} · {a.era}
+                      </div>
+                      <p className="mt-3 text-[12.5px] italic leading-[1.55] text-foreground/80">
+                        {a.situation}
+                      </p>
+
+                      <div className="mt-3.5">
+                        <div className="mb-1 flex justify-between text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                          <span>Score</span>
+                          <span>{a.score} / 50</span>
+                        </div>
+                        <div className="h-1 overflow-hidden rounded-full bg-secondary">
+                          <div
+                            className="h-full bg-gradient-gold"
+                            style={{ width: `${(a.score / 50) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExpanded((m) => ({ ...m, [a.id]: !m[a.id] }));
+                        }}
+                        className="mt-3 text-[10px] font-bold uppercase tracking-[0.22em] text-primary transition-smooth hover:opacity-80"
+                      >
+                        {isOpen ? "▲ Less" : "▼ More"}
+                      </button>
+                      {isOpen && (
+                        <p className="mt-2.5 border-t border-border pt-2.5 text-[12px] leading-[1.55] text-muted-foreground">
+                          {a.desc}
+                        </p>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        </div>
+
+        {/* ─── STICKY BOTTOM PANEL ─── */}
+        <div
+          className={`absolute inset-x-0 bottom-0 z-40 transition-transform duration-500 ${
+            selected ? "translate-y-0" : "translate-y-full"
+          }`}
+        >
+          <div className="border-t border-primary/40 bg-background/95 px-5 pb-5 pt-4 backdrop-blur-xl">
             {selected && (
               <>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="text-3xl">{selected.emoji}</div>
-                  <div>
+                <button
+                  onClick={() => {
+                    setSelectedId(null);
+                    setRole(null);
+                  }}
+                  className="absolute right-3 top-3 grid h-7 w-7 place-items-center rounded-full border border-border bg-card text-muted-foreground transition-smooth hover:text-foreground"
+                  aria-label="Dismiss"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+
+                <div className="flex items-center gap-2.5">
+                  <div className="text-[24px]">{selected.emoji}</div>
+                  <div className="min-w-0">
                     <div
-                      className="text-lg font-semibold"
-                      style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                      className="truncate text-[15px] font-medium leading-tight"
+                      style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
                     >
                       {selected.name}
                     </div>
-                    <div
-                      className="text-[10px] tracking-[0.2em] text-white/50"
-                      style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}
-                    >
+                    <div className="text-[9.5px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                       {selected.country} · {selected.year}
                     </div>
                   </div>
                 </div>
 
-                <div
-                  className="text-[11px] tracking-[0.3em] text-[#c9972a] mb-2"
-                  style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}
-                >
-                  CHOOSE YOUR ROLE *
+                <div className="mt-3 text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
+                  Choose your role *
                 </div>
-                <div className="flex flex-wrap gap-2 mb-5">
+                <div className="mt-2 flex flex-wrap gap-1.5">
                   {ROLES.map((r) => {
                     const active = role === r.value;
                     return (
@@ -526,10 +498,10 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
                         key={r.value}
                         onClick={() => setRole(r.value)}
                         title={r.hint}
-                        className={`px-3.5 py-1.5 rounded-full text-sm border transition ${
+                        className={`rounded-full px-2.5 py-1 text-[10.5px] font-semibold transition-smooth ${
                           active
-                            ? "bg-[#c9972a] text-black border-[#c9972a]"
-                            : "bg-white/[0.04] text-white/80 border-white/15 hover:border-white/35"
+                            ? "bg-gradient-gold text-primary-foreground shadow-glow"
+                            : "border border-border bg-card text-foreground/80 hover:border-primary/40"
                         }`}
                       >
                         {r.label}
@@ -541,43 +513,44 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
                 <button
                   onClick={handleStart}
                   disabled={!canStart}
-                  className={`w-full md:w-auto px-8 py-3 rounded-xl text-base font-semibold tracking-wide transition ${
+                  className={`mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-[11px] font-bold uppercase tracking-[0.18em] transition-smooth ${
                     canStart
-                      ? "bg-gradient-to-r from-[#f6c560] via-[#c9972a] to-[#a83c1e] text-black hover:brightness-110 cursor-pointer shadow-lg shadow-[#c9972a]/30"
-                      : "bg-white/10 text-white/40 cursor-not-allowed"
+                      ? "bg-gradient-gold text-primary-foreground shadow-glow hover:scale-[1.02]"
+                      : "cursor-not-allowed bg-secondary text-muted-foreground"
                   }`}
                 >
-                  ⌛ Start Simulation
+                  <Hourglass className="h-3 w-3" />
+                  Start simulation
+                  <Sparkles className="h-3 w-3" />
                 </button>
               </>
             )}
           </div>
         </div>
+
+        {/* ─── LOADING OVERLAY ─── */}
+        {loading && (
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/90 backdrop-blur-md">
+            <div className="mb-5 text-[56px] animate-spin-slow">
+              {LOADING_STAGES[stage].emoji}
+            </div>
+            <div
+              className="px-6 text-center text-[22px] font-medium text-primary"
+              style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
+            >
+              {LOADING_STAGES[stage].title}
+            </div>
+            <div className="mt-2 px-6 text-center text-[12.5px] italic text-muted-foreground">
+              {LOADING_STAGES[stage].sub}
+            </div>
+          </div>
+        )}
+
+        <style>{`
+          @keyframes spin-slow { from { transform: rotate(0deg);} to { transform: rotate(360deg);} }
+          .animate-spin-slow { animation: spin-slow 3.5s linear infinite; }
+        `}</style>
       </div>
-
-      {/* LOADING OVERLAY */}
-      {loading && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center backdrop-blur-md"
-          style={{ background: "rgba(7,6,14,0.85)" }}
-        >
-          <div className="text-7xl animate-spin-slow mb-6">
-            {LOADING_STAGES[stage].emoji}
-          </div>
-          <div
-            className="text-2xl md:text-3xl text-[#c9972a]"
-            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-          >
-            {LOADING_STAGES[stage].title}
-          </div>
-          <div className="mt-2 text-white/60 italic">{LOADING_STAGES[stage].sub}</div>
-        </div>
-      )}
-
-      <style>{`
-        @keyframes spin-slow { from { transform: rotate(0deg);} to { transform: rotate(360deg);} }
-        .animate-spin-slow { animation: spin-slow 3.5s linear infinite; }
-      `}</style>
-    </div>
+    </MobileFrame>
   );
 }
