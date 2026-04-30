@@ -169,6 +169,25 @@ function ResultsPage() {
     });
   };
 
+  /**
+   * Single-select interest picker. Tap a chip → it becomes the sole bias
+   * for the next n8n call. History is shown as active when the URL has
+   * no explicit `interests` (because `selectedInterests` falls back to
+   * [DEFAULT_INTEREST]). Multi-select would re-introduce the
+   * "deselect-default" quirk (clicking the highlighted History chip would
+   * empty the URL but History would stay highlighted via the fallback),
+   * so we keep this radio-style.
+   */
+  const pickInterest = (id: string) => {
+    if (!VALID_INTEREST_IDS.has(id)) return;
+    // Clicking the chip that's already the active sole bias → no-op.
+    if (selectedInterests.length === 1 && selectedInterests[0] === id) return;
+    navigate({
+      to: "/results",
+      search: { q, interests: id, duration },
+    });
+  };
+
   return (
     <MobileFrame>
       <div className="relative min-h-full bg-background pb-16 text-foreground">
@@ -194,6 +213,39 @@ function ResultsPage() {
                 className="flex-1 bg-transparent text-[13px] placeholder:text-muted-foreground focus:outline-none"
               />
             </form>
+          </div>
+          {/* Interest chip row — single-select, History default. The row
+              scrolls horizontally on small screens; we hide the scrollbar
+              chrome to keep the header calm. The active chip uses the
+              same primary fill we use elsewhere for chosen state. */}
+          <div className="-mx-6 mt-3 overflow-x-auto px-6 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex items-center gap-2">
+              <span
+                className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground"
+                aria-hidden
+              >
+                {t("filters.interests")}
+              </span>
+              {INTERESTS.map((it) => {
+                const active = selectedInterests.includes(it.id);
+                return (
+                  <button
+                    key={it.id}
+                    type="button"
+                    onClick={() => pickInterest(it.id)}
+                    aria-pressed={active}
+                    className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.16em] transition-smooth ${
+                      active
+                        ? "border-primary/60 bg-primary/15 text-primary shadow-soft"
+                        : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                    }`}
+                  >
+                    <span aria-hidden>{it.emoji}</span>
+                    {t(it.key)}
+                  </button>
+                );
+              })}
+            </div>
           </div>
           <p className="mt-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
             {loading
@@ -407,9 +459,6 @@ function ResultCard({
             className="truncate text-[15px] font-semibold leading-tight text-foreground"
             style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
           >
-            {typeof attraction.icon === "string" && attraction.icon && (
-              <span className="mr-1">{attraction.icon}</span>
-            )}
             {attraction.name}
           </h3>
           <p className="my-1.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
