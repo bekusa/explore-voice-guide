@@ -284,24 +284,22 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
     return () => clearInterval(id);
   }, [loading]);
 
-  const canStart = !!selected && !!role && !loading;
-
-  const handleStart = async () => {
-    if (!selected || !role) return;
+  const handleStart = async (attraction: Attraction, roleValue: string) => {
     setError(null);
+    setSelectedId(attraction.id);
     setLoading(true);
     try {
       const res = await fetch(webhookUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          place_id: selected.id,
-          place_name: selected.name,
-          country: selected.country,
-          era: selected.era,
-          year: selected.year,
-          situation: selected.situation,
-          character_role: role,
+          place_id: attraction.id,
+          place_name: attraction.name,
+          country: attraction.country,
+          era: attraction.era,
+          year: attraction.year,
+          situation: attraction.situation,
+          character_role: roleValue,
           language,
           duration_minutes: 10,
         }),
@@ -309,7 +307,6 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
       if (!res.ok) throw new Error(`Request failed (${res.status})`);
       const data = await res.json().catch(() => ({} as Record<string, unknown>));
       onResult?.(data);
-      // Show whatever the n8n flow returns. Try common keys, fall back to JSON.
       const d = data as Record<string, unknown>;
       const body =
         (typeof d.story === "string" && d.story) ||
@@ -317,7 +314,10 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
         (typeof d.output === "string" && d.output) ||
         (typeof d.message === "string" && d.message) ||
         JSON.stringify(data, null, 2);
-      setResult({ title: `${selected.name} · ${ROLES.find((r) => r.value === role)?.label ?? role}`, body });
+      setResult({
+        title: `${attraction.name} · ${ROLES.find((r) => r.value === roleValue)?.label ?? roleValue}`,
+        body,
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
     } finally {
