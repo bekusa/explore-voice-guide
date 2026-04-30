@@ -3,18 +3,13 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
   Bell,
-  Bookmark,
   ChevronDown,
-  Compass,
   Globe,
   Headphones,
-  Home as HomeIcon,
-  LogOut,
   MapPin,
   Search,
   Settings as SettingsIcon,
   Sparkles,
-  User as UserIcon,
   WifiOff,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
