@@ -12,7 +12,7 @@ import {
   Sparkles,
   WifiOff,
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useUnreadCount } from "@/hooks/useNotifications";
 import { useSelectedDestination } from "@/hooks/useSelectedDestination";
