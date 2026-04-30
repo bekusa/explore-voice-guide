@@ -351,28 +351,8 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
               Travel through <span className="italic text-primary">time</span>
             </h1>
             <p className="mt-2.5 text-[12.5px] italic leading-[1.55] text-muted-foreground">
-              {counts.total} immersive simulations — step inside the moment, become the witness.
+              Immersive simulations — step inside the moment, become the witness.
             </p>
-
-            {/* stat tiles */}
-            <div className="mt-5 grid grid-cols-4 gap-2">
-              {[
-                { k: "Total", v: counts.total },
-                { k: "MVP", v: counts.mvp },
-                { k: "Top 10", v: counts.top10 },
-                { k: "Top 20", v: counts.top20 },
-              ].map((s) => (
-                <div
-                  key={s.k}
-                  className="rounded-xl border border-border bg-card px-2 py-2.5 text-center"
-                >
-                  <div className="text-[18px] font-semibold text-primary">{s.v}</div>
-                  <div className="mt-0.5 text-[8.5px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                    {s.k}
-                  </div>
-                </div>
-              ))}
-            </div>
           </section>
 
           {error && (
