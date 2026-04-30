@@ -40,7 +40,6 @@ const HERO_ROTATION = ["tbilisi", "rome", "kyoto", "lisbon", "marrakech"]
   .filter((d): d is Destination => !!d);
 
 export function HomeScreen() {
-  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const online = useOnlineStatus();
   const unread = useUnreadCount();
