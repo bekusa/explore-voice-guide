@@ -18,7 +18,6 @@ import {
   X,
 } from "lucide-react";
 import { MobileFrame } from "@/components/MobileFrame";
-import { TabBar } from "@/components/TabBar";
 
 type Tier = "MVP" | "TOP 10" | "TOP 20";
 
@@ -674,8 +673,6 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
           @keyframes spin-slow { from { transform: rotate(0deg);} to { transform: rotate(360deg);} }
           .animate-spin-slow { animation: spin-slow 3.5s linear infinite; }
         `}</style>
-
-        <TabBar />
       </div>
     </MobileFrame>
   );

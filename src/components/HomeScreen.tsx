@@ -3,21 +3,16 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
   Bell,
-  Bookmark,
   ChevronDown,
-  Compass,
   Globe,
   Headphones,
-  Home as HomeIcon,
-  LogOut,
   MapPin,
   Search,
   Settings as SettingsIcon,
   Sparkles,
-  User as UserIcon,
   WifiOff,
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useUnreadCount } from "@/hooks/useNotifications";
 import { useSelectedDestination } from "@/hooks/useSelectedDestination";
@@ -45,7 +40,6 @@ const HERO_ROTATION = ["tbilisi", "rome", "kyoto", "lisbon", "marrakech"]
   .filter((d): d is Destination => !!d);
 
 export function HomeScreen() {
-  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const online = useOnlineStatus();
   const unread = useUnreadCount();
@@ -263,8 +257,6 @@ export function HomeScreen() {
           </div>
         </section>
       </div>
-
-      <TabBar user={user} signOut={signOut} />
     </div>
   );
 }
@@ -400,60 +392,3 @@ function DestinationCard({ dest }: { dest: Destination }) {
   );
 }
 
-/* ─────────────────────────────────────────────
- * Tab bar (universal)
- * ───────────────────────────────────────────── */
-type TabUser = { id: string } | null;
-
-function TabBar({ user, signOut }: { user: TabUser; signOut: () => Promise<void> }) {
-  const t = useT();
-  return (
-    <nav className="absolute bottom-0 left-0 right-0 z-40 flex h-[74px] items-start justify-around border-t border-border bg-background/85 px-2 pb-4 pt-2 backdrop-blur-xl">
-      <Link to="/" className="flex flex-1 flex-col items-center gap-1 text-primary">
-        <HomeIcon className="h-[19px] w-[19px]" />
-        <span className="text-[10px] font-medium">{t("nav.home")}</span>
-      </Link>
-      <Link
-        to="/destinations"
-        className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
-        activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
-      >
-        <Compass className="h-[19px] w-[19px]" />
-        <span className="text-[10px] font-medium">{t("nav.explore")}</span>
-      </Link>
-      <Link
-        to="/map"
-        className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
-        activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
-      >
-        <MapPin className="h-[19px] w-[19px]" />
-        <span className="text-[10px] font-medium">{t("nav.map")}</span>
-      </Link>
-      <Link
-        to="/saved"
-        className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
-        activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
-      >
-        <Bookmark className="h-[19px] w-[19px]" />
-        <span className="text-[10px] font-medium">{t("nav.saved")}</span>
-      </Link>
-      {user ? (
-        <button
-          onClick={() => signOut()}
-          className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
-        >
-          <LogOut className="h-[19px] w-[19px]" />
-          <span className="text-[10px] font-medium">{t("nav.signOut")}</span>
-        </button>
-      ) : (
-        <Link
-          to="/auth"
-          className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
-        >
-          <UserIcon className="h-[19px] w-[19px]" />
-          <span className="text-[10px] font-medium">{t("nav.signIn")}</span>
-        </Link>
-      )}
-    </nav>
-  );
-}

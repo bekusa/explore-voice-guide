@@ -173,7 +173,7 @@ function PlayerPage() {
   };
 
   return (
-    <MobileFrame>
+    <MobileFrame hideTabBar>
       <div className="relative min-h-full bg-background text-foreground">
         {/* Backdrop glow */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[360px] bg-gradient-card opacity-80" />
