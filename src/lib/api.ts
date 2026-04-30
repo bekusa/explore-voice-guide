@@ -191,15 +191,31 @@ async function postJSON<T>(url: string, body: unknown): Promise<T> {
   return tolerantParse<T>(text);
 }
 
-export async function fetchAttractions(query: string, language = "ka"): Promise<Attraction[]> {
+export type AttractionFilters = {
+  /** User-selected interest tags, e.g. ["history", "couples"]. */
+  interests?: string[];
+  /** Trip-length preference: "short" | "medium" | "long". */
+  duration?: string;
+};
+
+export async function fetchAttractions(
+  query: string,
+  language = "ka",
+  filters: AttractionFilters = {},
+): Promise<Attraction[]> {
   // n8n workflow reads body.city / body.country (it triages LANDMARK / COUNTRY
   // / CITY mode based on the contents). Send both `query` (legacy) and
   // `city` / `country` so it works whichever shape the workflow expects.
+  // Filters (`interests`, `duration`) are extra hints the n8n prompt can
+  // use to bias the curated list — empty / undefined means "no preference".
+  const interests = (filters.interests ?? []).filter(Boolean);
   const data = await postJSON<AttractionsResponse | Attraction[]>(ATTRACTIONS_URL, {
     query,
     city: query,
     country: "",
     language,
+    interests,
+    duration: filters.duration ?? "",
   });
   // Tolerate both wrapped and bare-array shapes
   if (Array.isArray(data)) return data;

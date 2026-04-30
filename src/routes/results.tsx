@@ -30,12 +30,25 @@ import { useSavedItems } from "@/hooks/useSavedItems";
 import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
 import { getCachedGuide, onGuideCacheChange } from "@/lib/guideCache";
 
-type Search = { q: string };
+type Search = {
+  q: string;
+  /** Comma-separated interest IDs from INTERESTS, e.g. "history,couples". */
+  interests?: string;
+  /** "short" | "medium" | "long". */
+  duration?: string;
+};
+
+const VALID_DURATIONS = new Set(["short", "medium", "long"]);
 
 export const Route = createFileRoute("/results")({
-  validateSearch: (search: Record<string, unknown>): Search => ({
-    q: typeof search.q === "string" ? search.q : "",
-  }),
+  validateSearch: (search: Record<string, unknown>): Search => {
+    const duration = typeof search.duration === "string" ? search.duration : "";
+    return {
+      q: typeof search.q === "string" ? search.q : "",
+      interests: typeof search.interests === "string" ? search.interests : "",
+      duration: VALID_DURATIONS.has(duration) ? duration : "",
+    };
+  },
   head: () => ({
     meta: [
       { title: "Search results — Whispers of Old Tbilisi" },
@@ -45,8 +58,43 @@ export const Route = createFileRoute("/results")({
   component: ResultsPage,
 });
 
+/**
+ * Curated interest tags shown as filter chips above the results.
+ * Beka asked us to bring back the "interests" picker from the original
+ * Lokali app and explicitly include "Couples" (წყვილები). The id is what
+ * we send to n8n — keep it stable and ASCII so the workflow can prompt
+ * Claude with a clean, predictable token. The label is what the user
+ * sees; emoji are intentional — they read warmer and more universal
+ * than any single language label across Lokali's 37+ supported tongues.
+ */
+const INTERESTS: { id: string; label: string; emoji: string }[] = [
+  { id: "history", label: "History", emoji: "🏛️" },
+  { id: "art", label: "Art", emoji: "🎨" },
+  { id: "food", label: "Food", emoji: "🍽️" },
+  { id: "nature", label: "Nature", emoji: "🌿" },
+  { id: "architecture", label: "Architecture", emoji: "🏰" },
+  { id: "spirituality", label: "Spirituality", emoji: "🛐" },
+  { id: "family", label: "Family", emoji: "👨‍👩‍👧" },
+  { id: "couples", label: "Couples", emoji: "💑" },
+  { id: "photography", label: "Photography", emoji: "📷" },
+  { id: "adventure", label: "Adventure", emoji: "🥾" },
+  { id: "local", label: "Local culture", emoji: "✨" },
+  { id: "nightlife", label: "Nightlife", emoji: "🌙" },
+];
+
+/**
+ * Three trip-length presets — also a Lokali classic. The id goes to
+ * n8n; the helper text reminds the user roughly how long the curated
+ * route would feel on the ground.
+ */
+const DURATIONS: { id: "short" | "medium" | "long"; label: string; hint: string }[] = [
+  { id: "short", label: "Short", hint: "~ 15–30 min" },
+  { id: "medium", label: "Medium", hint: "~ 30–60 min" },
+  { id: "long", label: "Long", hint: "60 min +" },
+];
+
 function ResultsPage() {
-  const { q } = Route.useSearch();
+  const { q, interests: interestsParam, duration: durationParam } = Route.useSearch();
   const navigate = useNavigate();
   const preferredLanguage = usePreferredLanguage();
   // Auto-detect from the query itself so "Batumi" → en, "ბათუმი" → ka.
@@ -54,6 +102,20 @@ function ResultsPage() {
   // what they typed. Preferred language is used when the query is empty
   // or all punctuation.
   const language = detectQueryLanguage(q, preferredLanguage);
+
+  // Decode URL-state into the working sets used by the chip rows.
+  // Memoize so the fetch effect's dep array stays stable across renders.
+  const selectedInterests = useMemo<string[]>(
+    () =>
+      (interestsParam ?? "")
+        .split(",")
+        .map((s: string) => s.trim())
+        .filter((s: string) => INTERESTS.some((i) => i.id === s)),
+    [interestsParam],
+  );
+  const interestsKey = selectedInterests.join(",");
+  const duration = durationParam ?? "";
+
   const [results, setResults] = useState<Attraction[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState(q);
@@ -63,7 +125,10 @@ function ResultsPage() {
     let cancelled = false;
     setLoading(true);
     setResults(null);
-    fetchAttractions(q, language)
+    fetchAttractions(q, language, {
+      interests: interestsKey ? interestsKey.split(",") : [],
+      duration,
+    })
       .then((data) => {
         if (cancelled) return;
         setResults(data);
@@ -81,13 +146,52 @@ function ResultsPage() {
     return () => {
       cancelled = true;
     };
-  }, [q, language]);
+  }, [q, language, interestsKey, duration]);
+
+  // Update the URL whenever the user toggles a filter chip — the fetch
+  // effect above re-runs because interestsKey / duration are derived
+  // from the URL. Going through the URL means back/forward and shared
+  // links keep the user's filter set intact.
+  const updateFilters = (next: { interests?: string[]; duration?: string }) => {
+    const interestsCsv =
+      next.interests !== undefined
+        ? next.interests.filter(Boolean).join(",")
+        : selectedInterests.join(",");
+    const dur = next.duration !== undefined ? next.duration : duration;
+    navigate({
+      to: "/results",
+      search: { q, interests: interestsCsv, duration: dur },
+      replace: true,
+    });
+  };
+
+  const toggleInterest = (id: string) => {
+    const has = selectedInterests.includes(id);
+    const nextList = has
+      ? selectedInterests.filter((x: string) => x !== id)
+      : [...selectedInterests, id];
+    updateFilters({ interests: nextList });
+  };
+
+  const setDuration = (id: string) => {
+    // Tap the active chip again to clear the filter.
+    updateFilters({ duration: duration === id ? "" : id });
+  };
+
+  const clearFilters = () => {
+    navigate({ to: "/results", search: { q, interests: "", duration: "" }, replace: true });
+  };
+
+  const filtersActive = selectedInterests.length > 0 || !!duration;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const next = query.trim();
     if (!next) return;
-    navigate({ to: "/results", search: { q: next } });
+    navigate({
+      to: "/results",
+      search: { q: next, interests: interestsKey, duration },
+    });
   };
 
   return (
@@ -125,8 +229,20 @@ function ResultsPage() {
           </p>
         </header>
 
+        {/* Filters — interests + length. Tapping a chip updates the URL,
+            which re-runs the fetch with `interests` / `duration` payload
+            so the n8n prompt can bias the curated list. */}
+        <FiltersBar
+          selectedInterests={selectedInterests}
+          onToggleInterest={toggleInterest}
+          duration={duration}
+          onSetDuration={setDuration}
+          filtersActive={filtersActive}
+          onClear={clearFilters}
+        />
+
         {/* Body */}
-        <section className="px-6 pt-6">
+        <section className="px-6 pt-4">
           {loading && <SkeletonList />}
 
           {!loading && results && results.length === 0 && <EmptyState query={q} />}
@@ -147,6 +263,102 @@ function ResultsPage() {
         </section>
       </div>
     </MobileFrame>
+  );
+}
+
+/**
+ * Two stacked rows of filter chips — interests on top, trip length on
+ * bottom. Designed to feel light: no headings, no extra borders, and
+ * the rows scroll horizontally on small screens so the page never has
+ * to grow tall just to show the filters. A "Clear" link appears once
+ * any chip is active, so the user can always step back to the raw
+ * search result list.
+ */
+function FiltersBar({
+  selectedInterests,
+  onToggleInterest,
+  duration,
+  onSetDuration,
+  filtersActive,
+  onClear,
+}: {
+  selectedInterests: string[];
+  onToggleInterest: (id: string) => void;
+  duration: string;
+  onSetDuration: (id: string) => void;
+  filtersActive: boolean;
+  onClear: () => void;
+}) {
+  return (
+    <section className="px-6 pt-4">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+          Interests
+        </span>
+        {filtersActive && (
+          <button
+            onClick={onClear}
+            className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary transition-smooth hover:text-foreground"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+      <div className="-mx-6 mt-2 overflow-x-auto scrollbar-hide">
+        <div className="flex gap-2 px-6">
+          {INTERESTS.map((it) => {
+            const active = selectedInterests.includes(it.id);
+            return (
+              <button
+                key={it.id}
+                onClick={() => onToggleInterest(it.id)}
+                aria-pressed={active}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11.5px] font-semibold leading-tight transition-smooth ${
+                  active
+                    ? "border-primary/60 bg-primary/15 text-primary"
+                    : "border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                }`}
+              >
+                <span aria-hidden className="text-[13px] leading-none">
+                  {it.emoji}
+                </span>
+                {it.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="mt-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+        Length
+      </div>
+      <div className="mt-2 grid grid-cols-3 gap-2">
+        {DURATIONS.map((d) => {
+          const active = duration === d.id;
+          return (
+            <button
+              key={d.id}
+              onClick={() => onSetDuration(d.id)}
+              aria-pressed={active}
+              className={`flex flex-col items-center justify-center gap-0.5 rounded-2xl border px-2 py-2.5 transition-smooth ${
+                active
+                  ? "border-primary/60 bg-primary/15 text-primary"
+                  : "border-border bg-card text-foreground hover:border-primary/40"
+              }`}
+            >
+              <span className="text-[12px] font-semibold leading-tight">{d.label}</span>
+              <span
+                className={`text-[10px] leading-tight ${
+                  active ? "text-primary/80" : "text-muted-foreground"
+                }`}
+              >
+                {d.hint}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
