@@ -302,7 +302,7 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
           Travel Through Time
         </h1>
         <p className="mt-5 text-lg md:text-xl text-white/70 italic max-w-3xl mx-auto">
-          34 immersive simulations — step inside the moment, become the witness
+          {counts.total} immersive simulations — step inside the moment, become the witness
         </p>
 
         <div
