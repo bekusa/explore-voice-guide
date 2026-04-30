@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import "leaflet/dist/leaflet.css";
 import {
   ArrowLeft,
   MapPin,
@@ -323,9 +324,10 @@ function AttractionPage() {
             wandering-from-place-to-place experience. */}
         <NearbyLinks items={guide?.nearby_suggestions} />
 
-        {/* Map — pinned at the very bottom. OSM iframe + Google Maps
-            handoff for directions from the user's location. */}
-        <MapSection lat={a?.lat} lng={a?.lng} name={a?.name ?? fallbackName} />
+        {/* Map — pinned at the very bottom. Leaflet (same stack as
+            /map) so the visual matches the Saved-places map; secondary
+            pins drop for any saved place within ~5 km of this one. */}
+        <MapSection lat={a?.lat} lng={a?.lng} name={a?.name ?? fallbackName} currentSlug={id} />
       </div>
     </MobileFrame>
   );
@@ -854,26 +856,192 @@ function NearbyLinks({ items }: { items?: string[] }) {
 }
 
 /**
- * Map — pinned at the bottom of the page. Uses OpenStreetMap's free
- * embed iframe (no API key, no JS SDK, no quota), with a single marker
- * at the attraction's coords. The "Open in Google Maps" link below the
- * iframe deep-links to the Maps app on mobile so the user gets
- * directions from their current location automatically — that's our
- * "show me here" affordance, since we don't ask for geolocation
- * permission ourselves.
+ * Map — pinned at the bottom of the page. Uses Leaflet with the same
+ * dark CARTO basemap as the dedicated /map page so the visual sits in
+ * the same family as the user's "Saved" map. The current attraction
+ * is the primary gold pin; any saved place within ~5 km drops as a
+ * secondary outlined pin (tap → navigate to that attraction). The
+ * "Open in Google Maps" handoff below the canvas deep-links to the
+ * Maps app for turn-by-turn directions from the user's location —
+ * we deliberately don't ask for geolocation permission ourselves.
  *
  * Hidden when n8n didn't ship coords (older attractions or LLM dropout).
  */
-function MapSection({ lat, lng, name }: { lat?: number; lng?: number; name: string }) {
+function MapSection({
+  lat,
+  lng,
+  name,
+  currentSlug,
+}: {
+  lat?: number;
+  lng?: number;
+  name: string;
+  currentSlug: string;
+}) {
+  const navigate = useNavigate();
+  const saved = useSavedItems();
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<unknown>(null);
+  const markersRef = useRef<unknown[]>([]);
+  const [ready, setReady] = useState(false);
+
+  // Saved places within ~5 km of the current attraction (excluding
+  // the place itself). 5 km matches "next-stop walking radius" for a
+  // city wander — close enough that surfacing them as pins is useful,
+  // far enough that we don't hide a saved place a metro stop away.
+  const nearby = useMemo(() => {
+    if (typeof lat !== "number" || typeof lng !== "number") return [];
+    return saved
+      .filter((s) => s.id !== currentSlug)
+      .filter((s) => typeof s.attraction.lat === "number" && typeof s.attraction.lng === "number")
+      .map((s) => ({
+        item: s,
+        distanceKm: haversineKm(lat, lng, s.attraction.lat as number, s.attraction.lng as number),
+      }))
+      .filter((p) => p.distanceKm <= 5)
+      .sort((a, b) => a.distanceKm - b.distanceKm);
+  }, [saved, lat, lng, currentSlug]);
+
+  // Initialise the Leaflet map once we have coords. Re-mounts if the
+  // attraction's coords change (e.g. user navigates between places).
+  useEffect(() => {
+    if (typeof lat !== "number" || typeof lng !== "number") return;
+    let cancelled = false;
+    (async () => {
+      const L = (await import("leaflet")).default;
+      if (cancelled || !containerRef.current) return;
+
+      const map = L.map(containerRef.current, {
+        center: [lat, lng],
+        zoom: 15,
+        zoomControl: true,
+        attributionControl: false,
+        // Embedded inside a scrolling page — disable wheel zoom so the
+        // user doesn't accidentally zoom the map while scrolling past.
+        scrollWheelZoom: false,
+      });
+      L.control.attribution({ position: "bottomleft", prefix: false }).addTo(map);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+        attribution: "© OpenStreetMap · © CARTO",
+        maxZoom: 19,
+      }).addTo(map);
+
+      mapRef.current = map;
+      setReady(true);
+    })();
+    return () => {
+      cancelled = true;
+      const map = mapRef.current as { remove?: () => void } | null;
+      map?.remove?.();
+      mapRef.current = null;
+      markersRef.current = [];
+      setReady(false);
+    };
+  }, [lat, lng]);
+
+  // Render markers (primary attraction + nearby saved places). Re-runs
+  // when the saved-list mutates so freshly-saved places show up live.
+  useEffect(() => {
+    if (!ready) return;
+    if (typeof lat !== "number" || typeof lng !== "number") return;
+    let cancelled = false;
+    (async () => {
+      const L = (await import("leaflet")).default;
+      if (cancelled) return;
+      const map = mapRef.current as L.Map | null;
+      if (!map) return;
+
+      // Wipe any previous markers before re-rendering.
+      markersRef.current.forEach((m) => (m as L.Marker).remove());
+      markersRef.current = [];
+
+      // Primary marker — bigger gold pin with a strong ping so the
+      // user can spot "I'm here" at a glance.
+      const primaryIcon = L.divIcon({
+        className: "tg-pin-primary",
+        html: `
+          <div class="relative flex items-center justify-center">
+            <span class="absolute h-10 w-10 rounded-full bg-primary/40 animate-ping"></span>
+            <span class="relative grid h-9 w-9 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow border-2 border-primary-foreground/40">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>
+            </span>
+          </div>`,
+        iconSize: [40, 40],
+        iconAnchor: [20, 36],
+      });
+      const primary = L.marker([lat, lng], {
+        icon: primaryIcon,
+        zIndexOffset: 500,
+      }).addTo(map);
+      primary.bindTooltip(name, {
+        direction: "top",
+        offset: [0, -30],
+        className: "tg-tooltip",
+      });
+      markersRef.current.push(primary);
+
+      // Secondary markers for nearby saved places — smaller, outlined,
+      // clickable to dive into that attraction's guide.
+      nearby.forEach(({ item }) => {
+        const sLat = item.attraction.lat as number;
+        const sLng = item.attraction.lng as number;
+        const icon = L.divIcon({
+          className: "tg-pin-saved",
+          html: `
+            <div class="relative flex items-center justify-center">
+              <span class="relative grid h-6 w-6 place-items-center rounded-full bg-card text-primary border border-primary/60 shadow-soft">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M6 3a2 2 0 0 0-2 2v16l8-5 8 5V5a2 2 0 0 0-2-2H6z"/></svg>
+              </span>
+            </div>`,
+          iconSize: [24, 24],
+          iconAnchor: [12, 22],
+        });
+        const marker = L.marker([sLat, sLng], { icon }).addTo(map);
+        marker.bindTooltip(item.name, {
+          direction: "top",
+          offset: [0, -20],
+          className: "tg-tooltip",
+        });
+        marker.on("click", () => {
+          navigate({
+            to: "/attraction/$id",
+            params: { id: attractionSlug(item.name) },
+            search: { name: item.name },
+          });
+        });
+        markersRef.current.push(marker);
+      });
+
+      // Frame the view: if there are nearby pins, fit them all; else
+      // just centre on the primary at a comfortable street zoom.
+      if (nearby.length > 0) {
+        const bounds = L.latLngBounds([
+          [lat, lng] as [number, number],
+          ...nearby.map(
+            (n) =>
+              [n.item.attraction.lat as number, n.item.attraction.lng as number] as [
+                number,
+                number,
+              ],
+          ),
+        ]);
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 });
+      } else {
+        map.setView([lat, lng], 15, { animate: false });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, lat, lng, name, nearby, navigate]);
+
   if (typeof lat !== "number" || typeof lng !== "number") return null;
-  // ~0.6 km box around the marker — close enough to read street
-  // context, wide enough that the pin isn't hugging the edge.
-  const span = 0.005;
-  const bbox = [lng - span, lat - span, lng + span, lat + span].join(",");
-  const osmSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(
-    bbox,
-  )}&layer=mapnik&marker=${lat},${lng}`;
   const gmapsHref = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  const nearbyHint =
+    nearby.length > 0
+      ? `${nearby.length} saved ${nearby.length === 1 ? "place" : "places"} nearby — tap a pin to open.`
+      : "Tap to open directions from your current location.";
+
   return (
     <section className="mt-8 px-6">
       <h2 className="font-display text-[20px] text-foreground">
@@ -883,12 +1051,10 @@ function MapSection({ lat, lng, name }: { lat?: number; lng?: number; name: stri
         On the <span className="italic text-primary">map</span>
       </h2>
       <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
-        <iframe
-          title={`Map of ${name}`}
-          src={osmSrc}
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          className="h-[260px] w-full border-0"
+        <div
+          ref={containerRef}
+          aria-label={`Map of ${name}`}
+          className="h-[260px] w-full bg-secondary"
         />
         <a
           href={gmapsHref}
@@ -905,11 +1071,25 @@ function MapSection({ lat, lng, name }: { lat?: number; lng?: number; name: stri
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </a>
       </div>
-      <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
-        Tap to open directions from your current location.
-      </p>
+      <p className="mt-2 text-[11px] leading-snug text-muted-foreground">{nearbyHint}</p>
     </section>
   );
+}
+
+/**
+ * Great-circle distance between two lat/lng points in kilometres.
+ * Plain Haversine — accurate enough for "is this saved place nearby?"
+ * radius checks; we never need sub-metre precision here.
+ */
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
 }
 
 const TIP_ICONS = [Clock, Camera, Coffee, Shirt, Timer];
