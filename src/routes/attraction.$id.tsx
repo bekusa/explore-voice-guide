@@ -19,6 +19,7 @@ import {
   Timer,
   BookOpen,
   Sparkles,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
@@ -282,13 +283,11 @@ function AttractionPage() {
         {/* Tips — list with rotating icons */}
         <TipsSection items={guide?.tips} />
 
-        {/* Nearby suggestions — amber chips */}
-        <ChipsSection
-          title="Nearby"
-          icon={<Compass className="h-3 w-3" />}
-          tone="amber"
-          items={guide?.nearby_suggestions}
-        />
+        {/* Nearby — clickable links to nearby attractions. Tapping
+            navigates to /attraction/$id for that place, which kicks off
+            the same n8n fetch flow and gives the user a continuous
+            wandering-from-place-to-place experience. */}
+        <NearbyLinks items={guide?.nearby_suggestions} />
       </div>
     </MobileFrame>
   );
@@ -637,6 +636,52 @@ function ChipsSection({
             {item}
           </span>
         ))}
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Nearby — renders nearby_suggestions as clickable links to each
+ * place's own attraction page. Each tap routes to /attraction/$id with
+ * the raw place name in search params, so the destination page can
+ * skip slug-guessing and fetch the n8n guide directly. Visually keeps
+ * the amber tone of the old chips so the section still reads as
+ * "places around you", but the chevron + hover state communicates
+ * that they're tappable.
+ */
+function NearbyLinks({ items }: { items?: string[] }) {
+  if (!items || items.length === 0) return null;
+  return (
+    <section className="mt-8 px-6">
+      <div className="flex items-center gap-2">
+        <Compass className="h-4 w-4 text-primary" />
+        <h2 className="font-display text-[20px] text-foreground">
+          <span className="italic text-primary">Nearby</span> places
+        </h2>
+      </div>
+      <div className="mt-4 flex flex-col gap-2">
+        {items.map((name, i) => {
+          const trimmed = name.trim();
+          if (!trimmed) return null;
+          return (
+            <Link
+              key={`${trimmed}-${i}`}
+              to="/attraction/$id"
+              params={{ id: attractionSlug(trimmed) }}
+              search={{ name: trimmed }}
+              className="group flex items-center justify-between gap-3 rounded-2xl border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-amber-100 transition-smooth hover:border-amber-300/60 hover:bg-amber-500/15"
+            >
+              <span className="flex items-center gap-2.5">
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-amber-400/20 text-amber-200">
+                  <MapPin className="h-3.5 w-3.5" />
+                </span>
+                <span className="text-[13px] font-medium leading-tight">{trimmed}</span>
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-amber-200/70 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          );
+        })}
       </div>
     </section>
   );
