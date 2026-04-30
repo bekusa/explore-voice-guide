@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -7,24 +7,34 @@ import {
   ChevronDown,
   Clock,
   Globe,
+  Loader2,
   MapPin,
-  Pause,
-  Play,
   Search,
   Settings as SettingsIcon,
   Star,
   WifiOff,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
-import { NearYouCard } from "@/components/NearYouCard";
+import { NearYouCard, type NearPlace } from "@/components/NearYouCard";
 import type { Destination } from "@/lib/destinations";
 import { setSelectedSlug } from "@/lib/destinationStore";
 import { useT, useTranslated } from "@/hooks/useT";
+import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
+import {
+  attractionSlug,
+  detectQueryLanguage,
+  fetchAttractions,
+  type Attraction,
+} from "@/lib/api";
 
 /* ─────────────────────────────────────────────
  * DESTINATION SCREEN — what used to be the home screen
  * Now scoped to a single city, driven by the destinations catalog.
+ * "Inside {city}" pulls top attractions live from the n8n
+ * /attractions workflow, with the static `dest.featured` list
+ * used only as a fallback while loading or on failure.
  * ───────────────────────────────────────────── */
 
 export function DestinationScreen({ dest }: { dest: Destination }) {
@@ -32,8 +42,8 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
   const navigate = useNavigate();
   const online = useOnlineStatus();
   const t = useT();
+  const preferredLanguage = usePreferredLanguage();
   const [cat, setCat] = useState("all");
-  const [playing, setPlaying] = useState(true);
   const [query, setQuery] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -61,6 +71,68 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
     setSelectedSlug(dest.slug);
   }, [dest.slug]);
 
+  // ── Live "Inside {city}" list, sourced from the n8n /attractions
+  // workflow. We query for the destination's English city name (the
+  // workflow handles translation downstream via `language`). While the
+  // request is in flight or if it fails, we fall back to the static
+  // curated list shipped in destinations.ts so the screen never feels
+  // empty.
+  const language = detectQueryLanguage(dest.city, preferredLanguage);
+  const [liveAttractions, setLiveAttractions] = useState<Attraction[] | null>(null);
+  const [loadingAttractions, setLoadingAttractions] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingAttractions(true);
+    setLiveAttractions(null);
+    fetchAttractions(dest.city, language)
+      .then((data) => {
+        if (cancelled) return;
+        setLiveAttractions(data);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        toast.error("Couldn't load attractions", {
+          description: err instanceof Error ? err.message : "Showing curated picks instead.",
+        });
+        setLiveAttractions([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingAttractions(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [dest.city, language]);
+
+  // Adapt n8n Attraction → NearYouCard's NearPlace shape.
+  const placesFromLive: NearPlace[] = useMemo(
+    () =>
+      (liveAttractions ?? []).map((a, i): NearPlace => {
+        const description =
+          (typeof a.insider_desc === "string" && a.insider_desc) ||
+          a.description ||
+          (typeof a.outside_desc === "string" && a.outside_desc) ||
+          "";
+        return {
+          id: attractionSlug(a.name) || `live-${i}`,
+          title: a.name,
+          subtitle: (typeof a.type === "string" && a.type) || dest.city,
+          img: a.image_url || dest.featured[i % dest.featured.length]?.img || dest.hero,
+          duration: a.duration || "10–20 min",
+          rating: typeof a.rating === "number" ? a.rating : 4.8,
+          stops: 1,
+          distance: dest.city,
+          category: (typeof a.category === "string" && a.category) || "Audio guide",
+          description,
+        };
+      }),
+    [liveAttractions, dest.city, dest.featured, dest.hero],
+  );
+
+  const places: NearPlace[] =
+    placesFromLive.length > 0 ? placesFromLive : dest.featured;
+
   function submitSearch(e: React.FormEvent) {
     e.preventDefault();
     const q = query.trim();
@@ -68,11 +140,9 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
     navigate({ to: "/results", search: { q } });
   }
 
-  const featured = dest.featured[0];
-
   return (
     <div className="relative h-[100dvh] w-full overflow-hidden bg-background text-foreground md:h-[860px]">
-      <div className="h-full overflow-y-auto pb-36 scrollbar-hide">
+      <div className="h-full overflow-y-auto pb-24 scrollbar-hide">
         {/* ─── HERO ─── */}
         <section className="relative h-[560px] w-full">
           <img
@@ -142,52 +212,11 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
             <p className="mt-3.5 max-w-[300px] text-[13.5px] leading-[1.55] text-foreground/75">
               {blurb}
             </p>
-            {featured && (
-              <div className="mt-4 flex items-center gap-3 text-[11px] text-foreground/60">
-                <span className="inline-flex items-center gap-1.5">
-                  <Clock className="h-3 w-3" /> {featured.duration}
-                </span>
-                <span className="h-2.5 w-px bg-foreground/20" />
-                <span className="inline-flex items-center gap-1.5 text-primary">
-                  <Star className="h-3 w-3 fill-primary" /> {featured.rating}
-                </span>
-                <span className="h-2.5 w-px bg-foreground/20" />
-                <span className="inline-flex items-center gap-1.5">
-                  <MapPin className="h-3 w-3" /> {t("card.stops", { n: featured.stops })}
-                </span>
-              </div>
-            )}
           </div>
         </section>
 
-        {/* ─── CTA ─── */}
-        {featured && (
-          <section className="relative z-10 -mt-1 px-5">
-            <Link
-              to="/player"
-              search={{ name: featured.title }}
-              className="flex w-full items-center justify-between rounded-2xl bg-gradient-gold px-5 py-3.5 text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01]"
-            >
-              <span className="flex items-center gap-3">
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-primary-foreground/15">
-                  <Play className="h-3.5 w-3.5 fill-current" />
-                </span>
-                <span className="text-left">
-                  <span className="block text-[10px] font-bold uppercase tracking-[0.22em] opacity-70">
-                    {t("dest.beginJourney")}
-                  </span>
-                  <span className="block text-[14px] font-semibold">{t("dest.firstChapter")}</span>
-                </span>
-              </span>
-              <span className="text-[11px] font-bold uppercase tracking-[0.18em] opacity-80">
-                {t("dest.freeMin")}
-              </span>
-            </Link>
-          </section>
-        )}
-
         {/* ─── SEARCH ─── */}
-        <section className="mt-5 px-5">
+        <section className="mt-6 px-5">
           <form
             onSubmit={submitSearch}
             className="flex items-center gap-2.5 rounded-full border border-border bg-card px-4 py-3 transition-smooth focus-within:border-primary/60"
@@ -234,7 +263,7 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
           </div>
         </section>
 
-        {/* ─── NEAR YOU ─── */}
+        {/* ─── INSIDE {city} — top attractions from n8n ─── */}
         <section className="mt-8">
           <div className="flex items-end justify-between px-5">
             <div>
@@ -245,7 +274,11 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
                 Inside <span className="italic text-primary">{dest.city}</span>
               </h2>
               <p className="mt-1 text-[11.5px] text-muted-foreground">
-                Curated stops, narrated by locals
+                {loadingAttractions
+                  ? "Loading top attractions…"
+                  : liveAttractions && liveAttractions.length > 0
+                    ? "Top picks, narrated by locals"
+                    : "Curated stops, narrated by locals"}
               </p>
             </div>
             <Link
@@ -257,68 +290,31 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
           </div>
 
           <div className="mt-4 flex flex-col gap-3 px-5">
-            {dest.featured.map((p) => (
-              <NearYouCard
-                key={p.id}
-                place={p}
-                expanded={expandedId === p.id}
-                onToggle={() =>
-                  setExpandedId((curr) => (curr === p.id ? null : p.id))
-                }
-              />
-            ))}
+            {loadingAttractions && placesFromLive.length === 0 ? (
+              <div className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-card px-4 py-8 text-[12px] text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Loading top attractions…
+              </div>
+            ) : (
+              places.map((p) => (
+                <NearYouCard
+                  key={p.id}
+                  place={p}
+                  expanded={expandedId === p.id}
+                  onToggle={() =>
+                    setExpandedId((curr) => (curr === p.id ? null : p.id))
+                  }
+                />
+              ))
+            )}
           </div>
         </section>
       </div>
-
-      {featured && <NowPlaying playing={playing} setPlaying={setPlaying} img={featured.img} />}
     </div>
   );
 }
 
-function NowPlaying({
-  playing,
-  setPlaying,
-  img,
-}: {
-  playing: boolean;
-  setPlaying: (v: boolean) => void;
-  img: string;
-}) {
-  const progress = 0.44;
-  return (
-    <div className="absolute bottom-[78px] left-2.5 right-2.5 z-30">
-      <div className="flex items-center gap-2.5 rounded-2xl border border-border bg-card/95 p-2 shadow-elegant backdrop-blur-xl">
-        <div className="h-[42px] w-[42px] flex-shrink-0 overflow-hidden rounded-xl">
-          <img src={img} alt="" className="h-full w-full object-cover" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-[12.5px] font-semibold text-foreground">
-            Chapter 2 · Sulfur &amp; Stone
-          </div>
-          <div className="mt-1 flex items-center gap-2">
-            <div className="relative h-0.5 flex-1 rounded-full bg-foreground/15">
-              <div
-                className="absolute inset-y-0 left-0 rounded-full bg-primary"
-                style={{ width: `${progress * 100}%` }}
-              />
-            </div>
-            <span className="font-mono text-[10px] text-muted-foreground">4:12</span>
-          </div>
-        </div>
-        <button
-          onClick={() => setPlaying(!playing)}
-          aria-label={playing ? "Pause" : "Play"}
-          className="grid h-9 w-9 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow transition-smooth hover:scale-105"
-        >
-          {playing ? (
-            <Pause className="h-3.5 w-3.5 fill-current" />
-          ) : (
-            <Play className="h-3.5 w-3.5 fill-current" />
-          )}
-        </button>
-      </div>
-    </div>
-  );
-}
-
+// Featured-tour stat strip in the hero used to surface duration/rating/stops
+// from `dest.featured[0]`. It was tied to the now-removed "Begin Journey"
+// CTA, so we drop it together with the CTA — the page focuses on the live
+// attractions list below the search instead.
