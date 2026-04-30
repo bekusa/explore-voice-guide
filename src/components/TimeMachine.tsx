@@ -511,7 +511,7 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
                             >
                               <span className={roles[a.id] ? "text-foreground" : "text-muted-foreground"}>
                                 {roles[a.id]
-                                  ? ROLES.find((r) => r.value === roles[a.id])?.label
+                                  ? `${ROLES.find((r) => r.value === roles[a.id])?.emoji}  ${ROLES.find((r) => r.value === roles[a.id])?.label}`
                                   : "Select a character…"}
                               </span>
                               <ChevronDown
