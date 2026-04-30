@@ -251,7 +251,7 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
       setDownloading(null);
     }, 900);
   };
-  const [error, setError] = useState<string | null>(null);
+
 
   const counts = useMemo(() => ({
     total: ATTRACTIONS.length,
