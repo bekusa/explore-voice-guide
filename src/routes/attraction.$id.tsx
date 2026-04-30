@@ -243,10 +243,21 @@ function AttractionPage() {
               {typeof a?.lat === "number" && typeof a?.lng === "number" && (
                 <>
                   <span className="h-3 w-px bg-foreground/25" />
-                  <span className="flex items-center gap-1.5">
+                  {/* Tap → Google Maps. Uses the search-with-query URL
+                      so on mobile this hands off to the Maps app and the
+                      user gets directions from their current location
+                      automatically. `?api=1` is Google's documented
+                      cross-platform deep-link format. */}
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${a.lat},${a.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 underline-offset-4 hover:text-primary hover:underline"
+                    aria-label={`Open ${a?.name ?? "this place"} in Google Maps`}
+                  >
                     <MapPin className="h-3.5 w-3.5" />
                     {a.lat.toFixed(3)}, {a.lng.toFixed(3)}
-                  </span>
+                  </a>
                 </>
               )}
             </div>
@@ -288,6 +299,7 @@ function AttractionPage() {
         {/* Key facts — emerald chips */}
         <ChipsSection
           title="Key facts"
+          emoji="💡"
           icon={<Lightbulb className="h-3 w-3" />}
           tone="emerald"
           items={guide?.key_facts}
@@ -296,6 +308,7 @@ function AttractionPage() {
         {/* What to look for — sky chips */}
         <ChipsSection
           title="What to look for"
+          emoji="👀"
           icon={<Eye className="h-3 w-3" />}
           tone="sky"
           items={guide?.look_for}
@@ -309,6 +322,10 @@ function AttractionPage() {
             the same n8n fetch flow and gives the user a continuous
             wandering-from-place-to-place experience. */}
         <NearbyLinks items={guide?.nearby_suggestions} />
+
+        {/* Map — pinned at the very bottom. OSM iframe + Google Maps
+            handoff for directions from the user's location. */}
+        <MapSection lat={a?.lat} lng={a?.lng} name={a?.name ?? fallbackName} />
       </div>
     </MobileFrame>
   );
@@ -583,6 +600,36 @@ function InterestPicker({
  * FIRST in the body. Hidden when there is nothing useful to show.
  */
 function AboutSection({ loading, aboutText }: { loading: boolean; aboutText: string }) {
+  // Split into readable paragraphs. n8n sometimes returns a single
+  // unbroken sentence-pile, sometimes proper paragraphs separated by
+  // blank lines. Strategy:
+  //   1. If the text already has blank-line breaks, use them.
+  //   2. Otherwise, group every ~2 sentences into a paragraph so the
+  //      block doesn't read like a wall.
+  // Falls back to the original text if nothing splits.
+  const paragraphs = useMemo(() => {
+    const trimmed = aboutText.trim();
+    if (!trimmed) return [];
+    const byBlank = trimmed
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+    if (byBlank.length > 1) return byBlank;
+    // No blank lines — split on sentence boundaries (handles . ! ?
+    // followed by a space + capital/Georgian letter, plus the
+    // Armenian/CJK full stops just in case).
+    const sentences = trimmed
+      .split(/(?<=[.!?。！？])\s+(?=[A-ZА-ЯႠ-ჿ\u10D0-\u10FF])/u)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (sentences.length <= 2) return [trimmed];
+    const out: string[] = [];
+    for (let i = 0; i < sentences.length; i += 2) {
+      out.push(sentences.slice(i, i + 2).join(" "));
+    }
+    return out;
+  }, [aboutText]);
+
   if (loading && !aboutText) {
     return (
       <section className="mt-8 px-6">
@@ -597,13 +644,17 @@ function AboutSection({ loading, aboutText }: { loading: boolean; aboutText: str
       </section>
     );
   }
-  if (!aboutText) return null;
+  if (paragraphs.length === 0) return null;
   return (
     <section className="mt-8 px-6">
       <h2 className="font-display text-[20px] text-foreground">
         About <span className="italic text-primary">this place</span>
       </h2>
-      <p className="mt-4 text-[13.5px] leading-relaxed text-foreground/80">{aboutText}</p>
+      <div className="mt-4 space-y-3 text-[13.5px] leading-relaxed text-foreground/80">
+        {paragraphs.map((p, i) => (
+          <p key={i}>{p}</p>
+        ))}
+      </div>
     </section>
   );
 }
@@ -714,11 +765,16 @@ const TONE_CLASSES: Record<string, string> = {
 
 function ChipsSection({
   title,
+  emoji,
   icon,
   tone,
   items,
 }: {
   title: string;
+  // Section-header emoji prefix. Beka asked for warmth on the
+  // facts/look-for/tips/nearby titles — emoji reads friendlier than
+  // a stripped lucide glyph in the heading position.
+  emoji?: string;
   icon: React.ReactNode;
   tone: "emerald" | "sky" | "amber";
   items?: string[];
@@ -726,7 +782,14 @@ function ChipsSection({
   if (!items || items.length === 0) return null;
   return (
     <section className="mt-8 px-6">
-      <h2 className="font-display text-[20px] text-foreground">{title}</h2>
+      <h2 className="font-display text-[20px] text-foreground">
+        {emoji && (
+          <span className="mr-2" aria-hidden>
+            {emoji}
+          </span>
+        )}
+        {title}
+      </h2>
       <div className="mt-4 flex flex-wrap gap-2">
         {items.map((item, i) => (
           <span
@@ -756,8 +819,10 @@ function NearbyLinks({ items }: { items?: string[] }) {
   return (
     <section className="mt-8 px-6">
       <div className="flex items-center gap-2">
-        <Compass className="h-4 w-4 text-primary" />
         <h2 className="font-display text-[20px] text-foreground">
+          <span className="mr-2" aria-hidden>
+            📍
+          </span>
           <span className="italic text-primary">Nearby</span> places
         </h2>
       </div>
@@ -788,6 +853,65 @@ function NearbyLinks({ items }: { items?: string[] }) {
   );
 }
 
+/**
+ * Map — pinned at the bottom of the page. Uses OpenStreetMap's free
+ * embed iframe (no API key, no JS SDK, no quota), with a single marker
+ * at the attraction's coords. The "Open in Google Maps" link below the
+ * iframe deep-links to the Maps app on mobile so the user gets
+ * directions from their current location automatically — that's our
+ * "show me here" affordance, since we don't ask for geolocation
+ * permission ourselves.
+ *
+ * Hidden when n8n didn't ship coords (older attractions or LLM dropout).
+ */
+function MapSection({ lat, lng, name }: { lat?: number; lng?: number; name: string }) {
+  if (typeof lat !== "number" || typeof lng !== "number") return null;
+  // ~0.6 km box around the marker — close enough to read street
+  // context, wide enough that the pin isn't hugging the edge.
+  const span = 0.005;
+  const bbox = [lng - span, lat - span, lng + span, lat + span].join(",");
+  const osmSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(
+    bbox,
+  )}&layer=mapnik&marker=${lat},${lng}`;
+  const gmapsHref = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  return (
+    <section className="mt-8 px-6">
+      <h2 className="font-display text-[20px] text-foreground">
+        <span className="mr-2" aria-hidden>
+          🗺️
+        </span>
+        On the <span className="italic text-primary">map</span>
+      </h2>
+      <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
+        <iframe
+          title={`Map of ${name}`}
+          src={osmSrc}
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          className="h-[260px] w-full border-0"
+        />
+        <a
+          href={gmapsHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-between gap-3 border-t border-border px-4 py-3 text-foreground transition-smooth hover:bg-secondary"
+        >
+          <span className="flex items-center gap-2.5">
+            <span className="grid h-7 w-7 place-items-center rounded-full bg-primary/10 text-primary">
+              <Compass className="h-3.5 w-3.5" />
+            </span>
+            <span className="text-[12.5px] font-semibold leading-tight">Open in Google Maps</span>
+          </span>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </a>
+      </div>
+      <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
+        Tap to open directions from your current location.
+      </p>
+    </section>
+  );
+}
+
 const TIP_ICONS = [Clock, Camera, Coffee, Shirt, Timer];
 
 function TipsSection({ items }: { items?: string[] }) {
@@ -795,6 +919,9 @@ function TipsSection({ items }: { items?: string[] }) {
   return (
     <section className="mt-8 px-6">
       <h2 className="font-display text-[20px] text-foreground">
+        <span className="mr-2" aria-hidden>
+          🎒
+        </span>
         Practical <span className="italic text-primary">tips</span>
       </h2>
       <ul className="mt-4 flex flex-col gap-2.5">
