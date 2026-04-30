@@ -24,12 +24,12 @@ import {
 export const Route = createFileRoute("/notifications")({
   head: () => ({
     meta: [
-      { title: "Notifications — Whispers of Old Tbilisi" },
+      { title: "Notifications — Voices of Old Tbilisi" },
       {
         name: "description",
         content: "Tips, updates, and offline status for your audio journeys.",
       },
-      { property: "og:title", content: "Notifications — Whispers of Old Tbilisi" },
+      { property: "og:title", content: "Notifications — Voices of Old Tbilisi" },
       {
         property: "og:description",
         content: "Tips, updates, and offline status for your audio journeys.",

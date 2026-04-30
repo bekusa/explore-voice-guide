@@ -12,12 +12,12 @@ import { setStoredLang } from "@/lib/i18n";
 export const Route = createFileRoute("/language")({
   head: () => ({
     meta: [
-      { title: "Language — Whispers of Old Tbilisi" },
+      { title: "Language — Voices of Old Tbilisi" },
       {
         name: "description",
         content: "Switch the language of your audio guides at any time.",
       },
-      { property: "og:title", content: "Language — Whispers of Old Tbilisi" },
+      { property: "og:title", content: "Language — Voices of Old Tbilisi" },
       {
         property: "og:description",
         content: "Switch the language of your audio guides.",

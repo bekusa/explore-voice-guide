@@ -1,5 +1,5 @@
 /**
- * i18n core for Whispers.
+ * i18n core for Voices.
  *
  * Two layers:
  *  1) UI chrome dictionary (static keys → English source strings).

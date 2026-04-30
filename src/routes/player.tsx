@@ -20,7 +20,7 @@ export const Route = createFileRoute("/player")({
   }),
   head: () => ({
     meta: [
-      { title: "Audio guide — Whispers of Old Tbilisi" },
+      { title: "Audio guide — Voices of Old Tbilisi" },
       { name: "description", content: "Listen to a cinematic narrated audio guide." },
     ],
   }),

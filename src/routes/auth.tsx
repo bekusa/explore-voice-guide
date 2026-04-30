@@ -8,7 +8,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in · Whispers of Old Tbilisi" },
+      { title: "Sign in · Voices of Old Tbilisi" },
       { name: "description", content: "Sign in or create an account to save audio tours." },
     ],
   }),

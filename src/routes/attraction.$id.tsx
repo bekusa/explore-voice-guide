@@ -50,9 +50,9 @@ export const Route = createFileRoute("/attraction/$id")({
     const title = unslugAttraction(params.id);
     return {
       meta: [
-        { title: `${title} — Whispers of Old Tbilisi` },
+        { title: `${title} — Voices of Old Tbilisi` },
         { name: "description", content: `A cinematic audio guide to ${title} in Tbilisi.` },
-        { property: "og:title", content: `${title} — Whispers of Old Tbilisi` },
+        { property: "og:title", content: `${title} — Voices of Old Tbilisi` },
         { property: "og:description", content: `A cinematic audio guide to ${title}.` },
       ],
     };

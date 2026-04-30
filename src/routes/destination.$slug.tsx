@@ -13,18 +13,18 @@ export const Route = createFileRoute("/destination/$slug")({
     loaderData
       ? {
           meta: [
-            { title: `${loaderData.dest.city}, ${loaderData.dest.country} — Whispers Audio Guides` },
+            { title: `${loaderData.dest.city}, ${loaderData.dest.country} — Voices Audio Guides` },
             {
               name: "description",
               content: loaderData.dest.blurb,
             },
-            { property: "og:title", content: `Whispers of ${loaderData.dest.city}` },
+            { property: "og:title", content: `Voices of ${loaderData.dest.city}` },
             { property: "og:description", content: loaderData.dest.blurb },
             { property: "og:image", content: loaderData.dest.hero },
             { property: "twitter:image", content: loaderData.dest.hero },
           ],
         }
-      : { meta: [{ title: "Destination — Whispers" }] },
+      : { meta: [{ title: "Destination — Voices" }] },
   errorComponent: ({ error }) => (
     <div className="grid min-h-screen place-items-center bg-background p-6 text-center text-foreground">
       <div>
