@@ -244,16 +244,19 @@ function AttractionPage() {
         />
 
         {/* About — outside-view short description (n8n: outside_desc).
-            Shown FIRST so the reader gets the at-a-glance summary
-            before diving into the long narrated story. */}
+            FIRST: at-a-glance factual summary. */}
         <AboutSection loading={loading} aboutText={a?.outside_desc ?? a?.description ?? ""} />
 
-        {/* The story — main narrated body, rendered as flowing paragraphs.
-            This is the core Lokali content the user came for. */}
-        <StorySection script={script} loading={loadingScript} />
+        {/* The story — what a local would tell you (n8n: insider_desc).
+            SECOND: longer, story-shaped intro before the audio guide
+            content itself. */}
+        <StorySection storyText={a?.insider_desc} />
 
-        {/* Insider's view — what a local would tell you (n8n: insider_desc). */}
-        <InsiderSection insiderText={a?.insider_desc} />
+        {/* The stops — the full narrated audio-guide content (n8n: script).
+            THIRD: rendered as flowing prose, with no chapter cards or
+            numbering — Beka's request was to keep the content but drop
+            the divisions. */}
+        <StopsSection script={script} loading={loadingScript} />
 
         {/* Key facts — emerald chips */}
         <ChipsSection
@@ -471,66 +474,8 @@ function stripTtsMarkers(script: string): string {
 /* ---------- Lokali rich sections ---------- */
 
 /**
- * Main narrated body — the heart of the audio guide, in readable form.
- * Renders the Claude-generated script as flowing paragraphs so the user
- * can read the story instead of (or alongside) listening.
- */
-function StorySection({ script, loading }: { script: string; loading: boolean }) {
-  // Split on blank lines into paragraphs; keep order, drop empties.
-  // Strip TTS direction markers ([PAUSE], [BREAK], [BEAT], (pause), <break/>)
-  // — they're cues for the voice synthesiser, ugly to read on screen.
-  const paragraphs = useMemo(
-    () =>
-      stripTtsMarkers(script)
-        .split(/\n\s*\n/)
-        .map((p) => p.trim())
-        .filter(Boolean),
-    [script],
-  );
-
-  // While the guide is fetching with no cached fallback, show a tall skeleton
-  // so the page doesn't jump when the text arrives.
-  if (loading && paragraphs.length === 0) {
-    return (
-      <section className="mt-8 px-6">
-        <h2 className="font-display text-[20px] text-foreground">
-          The <span className="italic text-primary">story</span>
-        </h2>
-        <div className="mt-4 space-y-2.5">
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <div
-              key={i}
-              className="h-3 animate-pulse rounded bg-secondary"
-              style={{ width: `${88 + ((i * 13) % 12)}%` }}
-            />
-          ))}
-        </div>
-      </section>
-    );
-  }
-
-  if (paragraphs.length === 0) return null;
-
-  return (
-    <section className="mt-8 px-6">
-      <div className="flex items-center gap-2">
-        <BookOpen className="h-4 w-4 text-primary" />
-        <h2 className="font-display text-[20px] text-foreground">
-          The <span className="italic text-primary">story</span>
-        </h2>
-      </div>
-      <div className="mt-4 space-y-3.5 text-[14px] leading-[1.7] text-foreground/85">
-        {paragraphs.map((p, i) => (
-          <p key={i}>{p}</p>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-/**
  * About — short outside-view description (n8n: outside_desc).
- * Hidden when there is nothing useful to show.
+ * FIRST in the body. Hidden when there is nothing useful to show.
  */
 function AboutSection({ loading, aboutText }: { loading: boolean; aboutText: string }) {
   if (loading && !aboutText) {
@@ -559,22 +504,99 @@ function AboutSection({ loading, aboutText }: { loading: boolean; aboutText: str
 }
 
 /**
- * Insider's view — the "what a local would tell you" pull quote.
- * Distinguished visually from About so it reads as a tip from someone there.
+ * The story — the local's-view longer narrative (n8n: insider_desc).
+ * Renders as readable prose with a Sparkles glyph so it reads warmer
+ * than the factual "About" block above. Hidden when n8n didn't ship one.
  */
-function InsiderSection({ insiderText }: { insiderText?: string }) {
-  if (!insiderText || !insiderText.trim()) return null;
+function StorySection({ storyText }: { storyText?: string }) {
+  if (!storyText || !storyText.trim()) return null;
+  // insider_desc may arrive as one long line or as paragraphs — split
+  // on blank lines so multi-paragraph stories stay readable.
+  const paragraphs = storyText
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
   return (
     <section className="mt-8 px-6">
       <div className="flex items-center gap-2">
-        <Sparkles className="h-3.5 w-3.5 text-primary" />
+        <Sparkles className="h-4 w-4 text-primary" />
         <h2 className="font-display text-[20px] text-foreground">
-          The <span className="italic text-primary">insider's view</span>
+          The <span className="italic text-primary">story</span>
         </h2>
       </div>
-      <blockquote className="mt-4 rounded-2xl border border-primary/25 bg-primary/5 px-4 py-3.5 text-[13.5px] leading-relaxed text-foreground/85">
-        {insiderText}
-      </blockquote>
+      <div className="mt-4 space-y-3 text-[13.5px] leading-relaxed text-foreground/85">
+        {paragraphs.map((p, i) => (
+          <p key={i}>{p}</p>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/**
+ * The stops — the full narrated audio-guide content (n8n: script).
+ * Rendered as continuous flowing paragraphs with NO chapter cards
+ * or stop numbers — Beka's request was to keep all the content but
+ * drop the divisions/chapters. TTS markers like [PAUSE] are stripped
+ * via stripTtsMarkers so the on-screen text stays clean.
+ */
+function StopsSection({ script, loading }: { script: string; loading: boolean }) {
+  const paragraphs = useMemo(
+    () =>
+      stripTtsMarkers(script)
+        .split(/\n\s*\n/)
+        .map((p) => p.trim())
+        // Drop short stand-alone lines that look like stop headings
+        // (e.g. "Stop 1", "1.", "## Welcome") so we end up with prose
+        // only, no leftover chapter scaffolding.
+        .filter(
+          (p) =>
+            p.length > 0 &&
+            !/^#{1,3}\s+/.test(p) &&
+            !/^\s*(?:stop\s*\d+|\d+\s*[.)])\s*[:\-—]?\s*[^\n]{0,40}$/i.test(p),
+        ),
+    [script],
+  );
+
+  // Tall skeleton while we wait for the script — keeps the page from
+  // jumping when the text lands.
+  if (loading && paragraphs.length === 0) {
+    return (
+      <section className="mt-8 px-6">
+        <div className="flex items-center gap-2">
+          <BookOpen className="h-4 w-4 text-primary" />
+          <h2 className="font-display text-[20px] text-foreground">
+            The <span className="italic text-primary">stops</span>
+          </h2>
+        </div>
+        <div className="mt-4 space-y-2.5">
+          {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+            <div
+              key={i}
+              className="h-3 animate-pulse rounded bg-secondary"
+              style={{ width: `${86 + ((i * 11) % 14)}%` }}
+            />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (paragraphs.length === 0) return null;
+
+  return (
+    <section className="mt-8 px-6">
+      <div className="flex items-center gap-2">
+        <BookOpen className="h-4 w-4 text-primary" />
+        <h2 className="font-display text-[20px] text-foreground">
+          The <span className="italic text-primary">stops</span>
+        </h2>
+      </div>
+      <div className="mt-4 space-y-3.5 text-[14px] leading-[1.7] text-foreground/85">
+        {paragraphs.map((p, i) => (
+          <p key={i}>{p}</p>
+        ))}
+      </div>
     </section>
   );
 }
