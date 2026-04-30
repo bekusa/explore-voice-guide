@@ -306,8 +306,17 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
         }),
       });
       if (!res.ok) throw new Error(`Request failed (${res.status})`);
-      const data = await res.json().catch(() => ({}));
+      const data = await res.json().catch(() => ({} as Record<string, unknown>));
       onResult?.(data);
+      // Show whatever the n8n flow returns. Try common keys, fall back to JSON.
+      const d = data as Record<string, unknown>;
+      const body =
+        (typeof d.story === "string" && d.story) ||
+        (typeof d.text === "string" && d.text) ||
+        (typeof d.output === "string" && d.output) ||
+        (typeof d.message === "string" && d.message) ||
+        JSON.stringify(data, null, 2);
+      setResult({ title: `${selected.name} · ${ROLES.find((r) => r.value === role)?.label ?? role}`, body });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
     } finally {
