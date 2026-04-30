@@ -13,6 +13,7 @@ import {
   MapPin,
   Search,
   Star,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
@@ -29,6 +30,33 @@ import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
 import { getCachedGuide, onGuideCacheChange } from "@/lib/guideCache";
+import { useT } from "@/hooks/useT";
+import type { UiKey } from "@/lib/i18n";
+
+/**
+ * Interest chips offered on the results page. Each ID is the lowercase
+ * ASCII key we ship to n8n in `interests: string[]`. The matching
+ * UI_STRINGS key (`filters.int.<id>`) is auto-translated by useT, so we
+ * never hard-code a localized label here. Adding a new interest = add
+ * the row below + the matching key to UI_STRINGS in src/lib/i18n.ts +
+ * update the n8n prompt's interest-bias block.
+ */
+const INTERESTS: { id: string; key: UiKey; emoji: string }[] = [
+  { id: "history", key: "filters.int.history", emoji: "🏛️" },
+  { id: "art", key: "filters.int.art", emoji: "🎨" },
+  { id: "food", key: "filters.int.food", emoji: "🍽️" },
+  { id: "nature", key: "filters.int.nature", emoji: "🌿" },
+  { id: "architecture", key: "filters.int.architecture", emoji: "🏗️" },
+  { id: "spirituality", key: "filters.int.spirituality", emoji: "🕯️" },
+  { id: "family", key: "filters.int.family", emoji: "👨‍👩‍👧" },
+  { id: "couples", key: "filters.int.couples", emoji: "💞" },
+  { id: "photography", key: "filters.int.photography", emoji: "📸" },
+  { id: "adventure", key: "filters.int.adventure", emoji: "🧗" },
+  { id: "local", key: "filters.int.local", emoji: "🏘️" },
+  { id: "nightlife", key: "filters.int.nightlife", emoji: "🌙" },
+];
+
+const VALID_INTEREST_IDS = new Set(INTERESTS.map((x) => x.id));
 
 type Search = {
   q: string;
@@ -58,25 +86,27 @@ export const Route = createFileRoute("/results")({
   component: ResultsPage,
 });
 
-
 function ResultsPage() {
   const { q, interests: interestsParam, duration: durationParam } = Route.useSearch();
   const navigate = useNavigate();
   const preferredLanguage = usePreferredLanguage();
+  const t = useT();
   // Auto-detect from the query itself so "Batumi" → en, "ბათუმი" → ka.
   // Without this, anonymous users fell back to Georgian regardless of
   // what they typed. Preferred language is used when the query is empty
   // or all punctuation.
   const language = detectQueryLanguage(q, preferredLanguage);
 
-  // Decode URL-state. Filters live on the attraction page now, so we
-  // simply forward whatever the URL carries to the n8n payload.
+  // Decode URL-state. Only known interest IDs survive — sanitises old
+  // shared links / URL tampering. Duration is preserved on the URL but
+  // we don't render UI for it any more (Beka asked to hold off — the
+  // n8n workflow treats absent/medium as the default narration length).
   const selectedInterests = useMemo<string[]>(
     () =>
       (interestsParam ?? "")
         .split(",")
         .map((s: string) => s.trim())
-        .filter((s: string) => s.length > 0),
+        .filter((s: string) => VALID_INTEREST_IDS.has(s)),
     [interestsParam],
   );
   const interestsKey = selectedInterests.join(",");
@@ -128,6 +158,29 @@ function ResultsPage() {
     });
   };
 
+  const toggleInterest = (id: string) => {
+    const set = new Set(selectedInterests);
+    if (set.has(id)) set.delete(id);
+    else set.add(id);
+    // Preserve INTERESTS declaration order so the URL is stable
+    // regardless of click order — easier to share / debug.
+    const nextInterests = INTERESTS.filter((x) => set.has(x.id))
+      .map((x) => x.id)
+      .join(",");
+    navigate({
+      to: "/results",
+      search: { q, interests: nextInterests, duration },
+    });
+  };
+
+  const clearInterests = () => {
+    if (selectedInterests.length === 0) return;
+    navigate({
+      to: "/results",
+      search: { q, interests: "", duration },
+    });
+  };
+
   return (
     <MobileFrame>
       <div className="relative min-h-full bg-background pb-16 text-foreground">
@@ -163,9 +216,18 @@ function ResultsPage() {
           </p>
         </header>
 
-        {/* Interests / Guide-length filters intentionally removed from
-            the results list — they live inside an individual attraction
-            screen instead. */}
+        {/* Interests filter — chips live above the results so users can
+            narrow the n8n suggestion set without leaving the page. The
+            "Guide length" chip set is intentionally hidden for now —
+            Beka asked to default to medium narration until we wire it
+            into the n8n prompt. URL state for `duration` is preserved
+            so previously shared links still work. */}
+        <FiltersBar
+          t={t}
+          selected={selectedInterests}
+          onToggle={toggleInterest}
+          onClear={clearInterests}
+        />
 
         {/* Body */}
         <section className="px-6 pt-4">
@@ -434,6 +496,71 @@ function ResultCard({
         </div>
       </div>
     </article>
+  );
+}
+
+/**
+ * Horizontally-scrollable interest chips. State lives in the URL —
+ * tapping a chip navigates instead of mutating component state — so
+ * back/forward and shared links work the way Beka expects. The "Clear"
+ * affordance only appears when at least one chip is active so the bar
+ * stays calm when there's nothing to clear.
+ */
+function FiltersBar({
+  t,
+  selected,
+  onToggle,
+  onClear,
+}: {
+  t: (key: UiKey, vars?: Record<string, string | number>) => string;
+  selected: string[];
+  onToggle: (id: string) => void;
+  onClear: () => void;
+}) {
+  const selectedSet = useMemo(() => new Set(selected), [selected]);
+  return (
+    <section className="border-b border-border/60 bg-background/60 px-6 py-3">
+      <div className="flex items-center justify-between gap-3">
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+          {t("filters.interests")}
+          {selected.length > 0 && (
+            <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] tracking-[0.14em] text-primary">
+              {selected.length}
+            </span>
+          )}
+        </span>
+        {selected.length > 0 && (
+          <button
+            onClick={onClear}
+            className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground transition-smooth hover:border-primary/40 hover:text-foreground"
+          >
+            <X className="h-3 w-3" /> {t("filters.clear")}
+          </button>
+        )}
+      </div>
+      <div className="mt-2.5 -mx-6 overflow-x-auto px-6 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex w-max gap-2">
+          {INTERESTS.map(({ id, key, emoji }) => {
+            const active = selectedSet.has(id);
+            return (
+              <button
+                key={id}
+                onClick={() => onToggle(id)}
+                aria-pressed={active}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-smooth ${
+                  active
+                    ? "border-primary/60 bg-primary/15 text-primary"
+                    : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                }`}
+              >
+                <span aria-hidden>{emoji}</span>
+                {t(key)}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </section>
   );
 }
 

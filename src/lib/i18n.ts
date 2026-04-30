@@ -134,7 +134,8 @@ export const UI_STRINGS = {
   "card.saving": "Saving",
   "card.details": "Details",
   "card.play": "Play narrated guide",
-  "card.fallbackDesc": "A curated walk through {title}. Tap “Open details” for the full narrated guide and stop-by-stop story.",
+  "card.fallbackDesc":
+    "A curated walk through {title}. Tap “Open details” for the full narrated guide and stop-by-stop story.",
 
   // Attraction page
   "attr.aboutThis": "About this place",
@@ -144,6 +145,22 @@ export const UI_STRINGS = {
   "attr.listenNarrated": "Listen to narrated guide",
   "attr.tapBegin": "Tap “Begin journey” to hear the narrated story of this place.",
   "attr.stopsAppear": "Stops appear once the narrated guide is generated.",
+
+  // Results filters
+  "filters.interests": "Interests",
+  "filters.clear": "Clear",
+  "filters.int.history": "History",
+  "filters.int.art": "Art",
+  "filters.int.food": "Food",
+  "filters.int.nature": "Nature",
+  "filters.int.architecture": "Architecture",
+  "filters.int.spirituality": "Spirituality",
+  "filters.int.family": "Family",
+  "filters.int.couples": "Couples",
+  "filters.int.photography": "Photography",
+  "filters.int.adventure": "Adventure",
+  "filters.int.local": "Local culture",
+  "filters.int.nightlife": "Nightlife",
 
   // Toasts
   "toast.removedFromSaved": "Removed from Saved",
@@ -179,10 +196,7 @@ function writeCache(map: CacheShape) {
   if (!isBrowser()) return;
   try {
     // crude trim to avoid blowing 5MB budget
-    const flatCount = Object.values(map).reduce(
-      (n, byLang) => n + Object.keys(byLang).length,
-      0,
-    );
+    const flatCount = Object.values(map).reduce((n, byLang) => n + Object.keys(byLang).length, 0);
     if (flatCount > MAX_CACHE_ENTRIES) {
       // drop the language with the most entries until under cap
       const sorted = Object.entries(map).sort(
@@ -190,10 +204,8 @@ function writeCache(map: CacheShape) {
       );
       while (
         sorted.length > 0 &&
-        Object.values(Object.fromEntries(sorted)).reduce(
-          (n, b) => n + Object.keys(b).length,
-          0,
-        ) > MAX_CACHE_ENTRIES
+        Object.values(Object.fromEntries(sorted)).reduce((n, b) => n + Object.keys(b).length, 0) >
+          MAX_CACHE_ENTRIES
       ) {
         sorted.shift();
       }
@@ -212,10 +224,7 @@ export function getCachedTranslation(text: string, lang: string): string | null 
   return map[l]?.[text] ?? null;
 }
 
-export function setCachedTranslations(
-  pairs: { source: string; text: string }[],
-  lang: string,
-) {
+export function setCachedTranslations(pairs: { source: string; text: string }[], lang: string) {
   const l = normalizeLang(lang);
   if (l === "en") return;
   const map = readCache();
@@ -230,10 +239,7 @@ export function setCachedTranslations(
 
 const inflight = new Map<string, Promise<string[]>>();
 
-export async function translateBatch(
-  texts: string[],
-  lang: string,
-): Promise<string[]> {
+export async function translateBatch(texts: string[], lang: string): Promise<string[]> {
   const l = normalizeLang(lang);
   if (l === "en" || texts.length === 0) return texts;
 
@@ -269,7 +275,5 @@ export async function translateBatch(
 
 export function format(template: string, vars?: Record<string, string | number>): string {
   if (!vars) return template;
-  return template.replace(/\{(\w+)\}/g, (_, k) =>
-    k in vars ? String(vars[k]) : `{${k}}`,
-  );
+  return template.replace(/\{(\w+)\}/g, (_, k) => (k in vars ? String(vars[k]) : `{${k}}`));
 }
