@@ -235,6 +235,7 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
   const [loading, setLoading] = useState(false);
   const [stage, setStage] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<{ title: string; body: string } | null>(null);
 
   const toggleSave = (id: string) =>
     setSaved((s) => {
