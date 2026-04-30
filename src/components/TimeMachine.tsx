@@ -33,9 +33,9 @@ const ROLES: Role[] = [
   { value: "survivor", label: "Survivor", hint: "Escaped disaster, war, or the road" },
 ];
 
-// Unsplash Source: deterministic photo by search keywords (no flaky IDs)
-const img = (keywords: string) =>
-  `https://source.unsplash.com/900x600/?${encodeURIComponent(keywords)}`;
+// Deterministic placeholder via Picsum (seeded — same id always returns the same photo)
+const img = (seed: string) =>
+  `https://picsum.photos/seed/${encodeURIComponent("tm-" + seed)}/900/540`;
 
 const ATTRACTIONS: Attraction[] = [
   // MVP
