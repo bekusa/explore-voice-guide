@@ -539,8 +539,70 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
                             </div>
                           </div>
 
-                          {/* Action buttons (Save / Download / Details) */}
-                          <div className="mt-4 grid grid-cols-3 gap-2">
+                          {/* Inline ROLE dropdown — sits right above the action row */}
+                          <div className="mt-4">
+                            <div className="mb-1.5 flex items-center justify-between">
+                              <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-primary">
+                                Choose your role *
+                              </span>
+                              {roles[a.id] && (
+                                <span className="text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
+                                  {ROLES.find((r) => r.value === roles[a.id])?.hint}
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenRoleFor((cur) => (cur === a.id ? null : a.id));
+                              }}
+                              aria-expanded={openRoleFor === a.id}
+                              className="flex w-full items-center justify-between rounded-xl border border-border bg-card px-3 py-2.5 text-left text-[12px] font-semibold text-foreground transition-smooth hover:border-primary/50"
+                            >
+                              <span className={roles[a.id] ? "text-foreground" : "text-muted-foreground"}>
+                                {roles[a.id]
+                                  ? ROLES.find((r) => r.value === roles[a.id])?.label
+                                  : "Select a character…"}
+                              </span>
+                              <ChevronDown
+                                className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${
+                                  openRoleFor === a.id ? "rotate-180" : ""
+                                }`}
+                              />
+                            </button>
+                            {openRoleFor === a.id && (
+                              <div className="mt-1.5 max-h-56 overflow-y-auto rounded-xl border border-border bg-card p-1 shadow-lg scrollbar-hide">
+                                {ROLES.map((r) => {
+                                  const active = roles[a.id] === r.value;
+                                  return (
+                                    <button
+                                      key={r.value}
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setRoles((m) => ({ ...m, [a.id]: r.value }));
+                                        setOpenRoleFor(null);
+                                      }}
+                                      className={`flex w-full flex-col items-start gap-0.5 rounded-lg px-2.5 py-2 text-left transition-smooth ${
+                                        active
+                                          ? "bg-primary/15 text-primary"
+                                          : "text-foreground hover:bg-secondary/60"
+                                      }`}
+                                    >
+                                      <span className="text-[12px] font-semibold">{r.label}</span>
+                                      <span className="text-[10px] italic text-muted-foreground">
+                                        {r.hint}
+                                      </span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Action buttons (Save / Download / Details→Start) */}
+                          <div className="mt-3 grid grid-cols-3 gap-2">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -578,46 +640,31 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
                               ) : (
                                 <Download className="h-4 w-4" />
                               )}
-                              {downloading === a.id
-                                ? "Saving"
-                                : cached.has(a.id)
-                                  ? "Offline"
-                                  : "Download"}
+                              {downloading === a.id ? "Saving" : cached.has(a.id) ? "Offline" : "Download"}
                             </button>
 
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSelectedId(a.id);
+                                const r = roles[a.id];
+                                if (!r) {
+                                  setOpenRoleFor(a.id);
+                                  return;
+                                }
+                                handleStart(a, r);
                               }}
-                              className="flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-gold px-2 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02]"
+                              disabled={loading}
+                              className={`flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] shadow-glow transition-smooth disabled:opacity-60 ${
+                                roles[a.id]
+                                  ? "bg-gradient-gold text-primary-foreground hover:scale-[1.02]"
+                                  : "border border-border bg-card text-muted-foreground"
+                              }`}
+                              title={roles[a.id] ? "Start simulation" : "Choose a role first"}
                             >
-                              <ArrowRight className="h-4 w-4" />
+                              <Play className="h-4 w-4 fill-current" />
                               Details
                             </button>
                           </div>
-
-                          {/* Begin journey — opens role panel and triggers n8n if role chosen */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedId(a.id);
-                              if (role) {
-                                // role already chosen → fire n8n flow immediately
-                                setTimeout(() => handleStart(), 0);
-                              }
-                            }}
-                            className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-gold px-3 py-2.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01]"
-                          >
-                            <Play className="h-3 w-3 fill-current" />
-                            {role ? "Begin journey" : "Choose role & begin"}
-                          </button>
-
-                          {isSelected && (
-                            <p className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-                              <Sparkles className="h-2.5 w-2.5" /> Selected — choose role below
-                            </p>
-                          )}
                         </div>
                       </div>
                     </div>
