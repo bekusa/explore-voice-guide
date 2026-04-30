@@ -58,41 +58,6 @@ export const Route = createFileRoute("/results")({
   component: ResultsPage,
 });
 
-/**
- * Curated interest tags shown as filter chips above the results.
- * Beka asked us to bring back the "interests" picker from the original
- * Lokali app and explicitly include "Couples" (წყვილები). The id is what
- * we send to n8n — keep it stable and ASCII so the workflow can prompt
- * Claude with a clean, predictable token. The label is what the user
- * sees; emoji are intentional — they read warmer and more universal
- * than any single language label across Lokali's 37+ supported tongues.
- */
-const INTERESTS: { id: string; label: string; emoji: string }[] = [
-  { id: "history", label: "History", emoji: "🏛️" },
-  { id: "art", label: "Art", emoji: "🎨" },
-  { id: "food", label: "Food", emoji: "🍽️" },
-  { id: "nature", label: "Nature", emoji: "🌿" },
-  { id: "architecture", label: "Architecture", emoji: "🏰" },
-  { id: "spirituality", label: "Spirituality", emoji: "🛐" },
-  { id: "family", label: "Family", emoji: "👨‍👩‍👧" },
-  { id: "couples", label: "Couples", emoji: "💑" },
-  { id: "photography", label: "Photography", emoji: "📷" },
-  { id: "adventure", label: "Adventure", emoji: "🥾" },
-  { id: "local", label: "Local culture", emoji: "✨" },
-  { id: "nightlife", label: "Nightlife", emoji: "🌙" },
-];
-
-/**
- * Three audio-guide length presets — also a Lokali classic. NOTE: this
- * is the *narration* length (how long the user will be listening), not
- * how long it takes to walk the route. The id goes to n8n; the helper
- * text reminds the user roughly how long the spoken guide will run.
- */
-const DURATIONS: { id: "short" | "medium" | "long"; label: string; hint: string }[] = [
-  { id: "short", label: "Short", hint: "~ 3–7 min" },
-  { id: "medium", label: "Medium", hint: "~ 8–15 min" },
-  { id: "long", label: "Long", hint: "15–30 min" },
-];
 
 function ResultsPage() {
   const { q, interests: interestsParam, duration: durationParam } = Route.useSearch();
@@ -104,14 +69,14 @@ function ResultsPage() {
   // or all punctuation.
   const language = detectQueryLanguage(q, preferredLanguage);
 
-  // Decode URL-state into the working sets used by the chip rows.
-  // Memoize so the fetch effect's dep array stays stable across renders.
+  // Decode URL-state. Filters live on the attraction page now, so we
+  // simply forward whatever the URL carries to the n8n payload.
   const selectedInterests = useMemo<string[]>(
     () =>
       (interestsParam ?? "")
         .split(",")
         .map((s: string) => s.trim())
-        .filter((s: string) => INTERESTS.some((i) => i.id === s)),
+        .filter((s: string) => s.length > 0),
     [interestsParam],
   );
   const interestsKey = selectedInterests.join(",");
@@ -153,38 +118,6 @@ function ResultsPage() {
   // effect above re-runs because interestsKey / duration are derived
   // from the URL. Going through the URL means back/forward and shared
   // links keep the user's filter set intact.
-  const updateFilters = (next: { interests?: string[]; duration?: string }) => {
-    const interestsCsv =
-      next.interests !== undefined
-        ? next.interests.filter(Boolean).join(",")
-        : selectedInterests.join(",");
-    const dur = next.duration !== undefined ? next.duration : duration;
-    navigate({
-      to: "/results",
-      search: { q, interests: interestsCsv, duration: dur },
-      replace: true,
-    });
-  };
-
-  const toggleInterest = (id: string) => {
-    const has = selectedInterests.includes(id);
-    const nextList = has
-      ? selectedInterests.filter((x: string) => x !== id)
-      : [...selectedInterests, id];
-    updateFilters({ interests: nextList });
-  };
-
-  const setDuration = (id: string) => {
-    // Tap the active chip again to clear the filter.
-    updateFilters({ duration: duration === id ? "" : id });
-  };
-
-  const clearFilters = () => {
-    navigate({ to: "/results", search: { q, interests: "", duration: "" }, replace: true });
-  };
-
-  const filtersActive = selectedInterests.length > 0 || !!duration;
-
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const next = query.trim();
@@ -230,17 +163,9 @@ function ResultsPage() {
           </p>
         </header>
 
-        {/* Filters — interests + length. Tapping a chip updates the URL,
-            which re-runs the fetch with `interests` / `duration` payload
-            so the n8n prompt can bias the curated list. */}
-        <FiltersBar
-          selectedInterests={selectedInterests}
-          onToggleInterest={toggleInterest}
-          duration={duration}
-          onSetDuration={setDuration}
-          filtersActive={filtersActive}
-          onClear={clearFilters}
-        />
+        {/* Interests / Guide-length filters intentionally removed from
+            the results list — they live inside an individual attraction
+            screen instead. */}
 
         {/* Body */}
         <section className="px-6 pt-4">
@@ -264,102 +189,6 @@ function ResultsPage() {
         </section>
       </div>
     </MobileFrame>
-  );
-}
-
-/**
- * Two stacked rows of filter chips — interests on top, trip length on
- * bottom. Designed to feel light: no headings, no extra borders, and
- * the rows scroll horizontally on small screens so the page never has
- * to grow tall just to show the filters. A "Clear" link appears once
- * any chip is active, so the user can always step back to the raw
- * search result list.
- */
-function FiltersBar({
-  selectedInterests,
-  onToggleInterest,
-  duration,
-  onSetDuration,
-  filtersActive,
-  onClear,
-}: {
-  selectedInterests: string[];
-  onToggleInterest: (id: string) => void;
-  duration: string;
-  onSetDuration: (id: string) => void;
-  filtersActive: boolean;
-  onClear: () => void;
-}) {
-  return (
-    <section className="px-6 pt-4">
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-          Interests
-        </span>
-        {filtersActive && (
-          <button
-            onClick={onClear}
-            className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary transition-smooth hover:text-foreground"
-          >
-            Clear
-          </button>
-        )}
-      </div>
-      <div className="-mx-6 mt-2 overflow-x-auto scrollbar-hide">
-        <div className="flex gap-2 px-6">
-          {INTERESTS.map((it) => {
-            const active = selectedInterests.includes(it.id);
-            return (
-              <button
-                key={it.id}
-                onClick={() => onToggleInterest(it.id)}
-                aria-pressed={active}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11.5px] font-semibold leading-tight transition-smooth ${
-                  active
-                    ? "border-primary/60 bg-primary/15 text-primary"
-                    : "border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground"
-                }`}
-              >
-                <span aria-hidden className="text-[13px] leading-none">
-                  {it.emoji}
-                </span>
-                {it.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="mt-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-        Guide length
-      </div>
-      <div className="mt-2 grid grid-cols-3 gap-2">
-        {DURATIONS.map((d) => {
-          const active = duration === d.id;
-          return (
-            <button
-              key={d.id}
-              onClick={() => onSetDuration(d.id)}
-              aria-pressed={active}
-              className={`flex flex-col items-center justify-center gap-0.5 rounded-2xl border px-2 py-2.5 transition-smooth ${
-                active
-                  ? "border-primary/60 bg-primary/15 text-primary"
-                  : "border-border bg-card text-foreground hover:border-primary/40"
-              }`}
-            >
-              <span className="text-[12px] font-semibold leading-tight">{d.label}</span>
-              <span
-                className={`text-[10px] leading-tight ${
-                  active ? "text-primary/80" : "text-muted-foreground"
-                }`}
-              >
-                {d.hint}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </section>
   );
 }
 
