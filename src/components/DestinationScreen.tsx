@@ -4,20 +4,15 @@ import {
   ArrowLeft,
   ArrowRight,
   Bell,
-  Bookmark,
   ChevronDown,
   Clock,
-  Compass,
   Globe,
-  Home as HomeIcon,
-  LogOut,
   MapPin,
   Pause,
   Play,
   Search,
   Settings as SettingsIcon,
   Star,
-  User as UserIcon,
   WifiOff,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,7 +28,7 @@ import { useT, useTranslated } from "@/hooks/useT";
  * ───────────────────────────────────────────── */
 
 export function DestinationScreen({ dest }: { dest: Destination }) {
-  const { user, signOut } = useAuth();
+  useAuth();
   const navigate = useNavigate();
   const online = useOnlineStatus();
   const t = useT();
