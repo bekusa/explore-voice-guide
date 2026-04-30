@@ -230,17 +230,9 @@ function ResultsPage() {
           </p>
         </header>
 
-        {/* Filters — interests + length. Tapping a chip updates the URL,
-            which re-runs the fetch with `interests` / `duration` payload
-            so the n8n prompt can bias the curated list. */}
-        <FiltersBar
-          selectedInterests={selectedInterests}
-          onToggleInterest={toggleInterest}
-          duration={duration}
-          onSetDuration={setDuration}
-          filtersActive={filtersActive}
-          onClear={clearFilters}
-        />
+        {/* Interests / Guide-length filters intentionally removed from
+            the results list — they live inside an individual attraction
+            screen instead. */}
 
         {/* Body */}
         <section className="px-6 pt-4">
