@@ -69,14 +69,14 @@ function ResultsPage() {
   // or all punctuation.
   const language = detectQueryLanguage(q, preferredLanguage);
 
-  // Decode URL-state into the working sets used by the chip rows.
-  // Memoize so the fetch effect's dep array stays stable across renders.
+  // Decode URL-state. Filters live on the attraction page now, so we
+  // simply forward whatever the URL carries to the n8n payload.
   const selectedInterests = useMemo<string[]>(
     () =>
       (interestsParam ?? "")
         .split(",")
         .map((s: string) => s.trim())
-        .filter((s: string) => INTERESTS.some((i) => i.id === s)),
+        .filter((s: string) => s.length > 0),
     [interestsParam],
   );
   const interestsKey = selectedInterests.join(",");
