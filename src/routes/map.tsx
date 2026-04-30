@@ -9,13 +9,13 @@ import "leaflet/dist/leaflet.css";
 export const Route = createFileRoute("/map")({
   head: () => ({
     meta: [
-      { title: "Map — Whispers of Old Tbilisi" },
+      { title: "Map — Voices of Old Tbilisi" },
       {
         name: "description",
         content:
           "Explore your saved places on the map. Tap a pin to open its narrated guide.",
       },
-      { property: "og:title", content: "Map — Whispers of Old Tbilisi" },
+      { property: "og:title", content: "Map — Voices of Old Tbilisi" },
       {
         property: "og:description",
         content: "Explore your saved places on an interactive map.",

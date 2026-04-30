@@ -79,7 +79,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "tbilisi",
     city: "Tbilisi",
     country: "Georgia",
-    tagline: "Whispers of|Old Tbilisi",
+    tagline: "Voices of|Old Tbilisi",
     blurb:
       "From sulfur baths and crooked balconies to the chants of Sioni — a cinematic walk through the soul of the old town.",
     hero: tbilisiHero,
@@ -133,7 +133,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "rome",
     city: "Rome",
     country: "Italy",
-    tagline: "Whispers of|Eternal Rome",
+    tagline: "Voices of|Eternal Rome",
     blurb:
       "Through the Forum's ghosts, baroque fountains and trastevere supper tables — the city that never quite stops being itself.",
     hero: romeImg,
@@ -174,7 +174,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "istanbul",
     city: "Istanbul",
     country: "Türkiye",
-    tagline: "Whispers of|the Bosphorus",
+    tagline: "Voices of|the Bosphorus",
     blurb:
       "Two continents, three empires, a thousand minarets — Istanbul drifts between sea, prayer, and bazaar.",
     hero: istanbulImg,
@@ -202,7 +202,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "kyoto",
     city: "Kyoto",
     country: "Japan",
-    tagline: "Whispers of|Old Kyoto",
+    tagline: "Voices of|Old Kyoto",
     blurb:
       "Lantern-lit alleys of Gion, mossy temples, and the ten thousand vermillion gates of Fushimi — Japan's quiet old soul.",
     hero: kyotoImg,
@@ -230,7 +230,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "lisbon",
     city: "Lisbon",
     country: "Portugal",
-    tagline: "Whispers of|the Tagus",
+    tagline: "Voices of|the Tagus",
     blurb:
       "Saudade, fado, and tile-clad hills tipping toward the Atlantic — Lisbon sings its melancholy in azulejo blue.",
     hero: lisbonImg,
@@ -258,7 +258,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "marrakech",
     city: "Marrakech",
     country: "Morocco",
-    tagline: "Whispers of|the Red City",
+    tagline: "Voices of|the Red City",
     blurb:
       "Lantern-lit medinas, riad courtyards, and the trance-drum theatre of Jemaa el-Fnaa — sensory overload, in the best way.",
     hero: marrakechImg,
@@ -286,7 +286,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "cusco",
     city: "Cusco",
     country: "Peru",
-    tagline: "Whispers of|the Andes",
+    tagline: "Voices of|the Andes",
     blurb:
       "Inca foundations under colonial arches, terracotta rooftops cascading down the valley — the gateway to the Sacred Valley.",
     hero: cuscoImg,
@@ -314,7 +314,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "prague",
     city: "Prague",
     country: "Czechia",
-    tagline: "Whispers of|the Vltava",
+    tagline: "Voices of|the Vltava",
     blurb:
       "Gothic spires, baroque alleys, and the alchemists' lane in the castle's shadow — a city that wears every century at once.",
     hero: pragueImg,
@@ -342,7 +342,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "cairo",
     city: "Cairo",
     country: "Egypt",
-    tagline: "Whispers of|the Nile",
+    tagline: "Voices of|the Nile",
     blurb:
       "Pyramids on the desert edge, Fatimid minarets in the old city, the Nile carrying the centuries — Cairo is a thousand cities stacked.",
     hero: cairoImg,
@@ -370,7 +370,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "athens",
     city: "Athens",
     country: "Greece",
-    tagline: "Whispers of|the Acropolis",
+    tagline: "Voices of|the Acropolis",
     blurb:
       "Marble columns above a tangle of neoclassical streets — the city that invented the very idea of a city.",
     hero: athensImg,
@@ -398,7 +398,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "edinburgh",
     city: "Edinburgh",
     country: "Scotland",
-    tagline: "Whispers of|the Royal Mile",
+    tagline: "Voices of|the Royal Mile",
     blurb:
       "A volcano, a castle, and a literary capital wrapped in misty cobblestones — the most theatrical city in the British Isles.",
     hero: edinburghImg,
@@ -426,7 +426,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "varanasi",
     city: "Varanasi",
     country: "India",
-    tagline: "Whispers of|the Ganges",
+    tagline: "Voices of|the Ganges",
     blurb:
       "The world's oldest continuously lived-in city. Ghats, pyres, sitar drift, and dawn boats — life and death in plain view.",
     hero: varanasiImg,

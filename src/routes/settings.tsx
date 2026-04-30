@@ -46,13 +46,13 @@ import {
 export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
-      { title: "Settings — Whispers of Old Tbilisi" },
+      { title: "Settings — Voices of Old Tbilisi" },
       {
         name: "description",
         content:
           "Configure your language, narrator voice, theme, and offline library.",
       },
-      { property: "og:title", content: "Settings — Whispers of Old Tbilisi" },
+      { property: "og:title", content: "Settings — Voices of Old Tbilisi" },
       {
         property: "og:description",
         content: "Configure language, voice, theme and offline data.",
@@ -533,7 +533,7 @@ function SettingsPage() {
         )}
 
         <p className="px-6 pt-6 text-center text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-          Whispers of Old Tbilisi · v1.0
+          Voices of Old Tbilisi · v1.0
         </p>
       </div>
     </MobileFrame>

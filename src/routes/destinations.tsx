@@ -17,13 +17,13 @@ export const Route = createFileRoute("/destinations")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
-      { title: "Explore destinations — Whispers Audio Guides" },
+      { title: "Explore destinations — Voices Audio Guides" },
       {
         name: "description",
         content:
           "Browse cinematic, locally narrated audio walks across cities around the world — from Tbilisi to Kyoto, Rome to Marrakech.",
       },
-      { property: "og:title", content: "Explore destinations — Whispers" },
+      { property: "og:title", content: "Explore destinations — Voices" },
       {
         property: "og:description",
         content: "Cinematic audio walks for cities around the world.",
