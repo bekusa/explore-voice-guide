@@ -33,9 +33,9 @@ const ROLES: Role[] = [
   { value: "survivor", label: "Survivor", hint: "Escaped disaster, war, or the road" },
 ];
 
-// Unsplash photo IDs chosen to fit each scene
-const img = (id: string) =>
-  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=900&q=70`;
+// Unsplash Source: deterministic photo by search keywords (no flaky IDs)
+const img = (keywords: string) =>
+  `https://source.unsplash.com/900x600/?${encodeURIComponent(keywords)}`;
 
 const ATTRACTIONS: Attraction[] = [
   // MVP
