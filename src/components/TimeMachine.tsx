@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { ArrowLeft, Search, Sparkles, X, Hourglass } from "lucide-react";
+import { MobileFrame } from "@/components/MobileFrame";
 
 type Tier = "MVP" | "TOP 10" | "TOP 20";
 
