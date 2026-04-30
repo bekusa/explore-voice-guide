@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { MobileFrame } from "@/components/MobileFrame";
+import { TabBar } from "@/components/TabBar";
 
 type Tier = "MVP" | "TOP 10" | "TOP 20";
 
