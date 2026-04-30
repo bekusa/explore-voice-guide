@@ -263,8 +263,6 @@ export function HomeScreen() {
           </div>
         </section>
       </div>
-
-      <TabBar user={user} signOut={signOut} />
     </div>
   );
 }
