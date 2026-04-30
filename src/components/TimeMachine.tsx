@@ -375,42 +375,10 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
             </div>
           </section>
 
-          {/* ─── STICKY CONTROLS ─── */}
-          <div className="sticky top-0 z-20 border-y border-border bg-background/85 px-5 py-3 backdrop-blur-xl">
-            <div className="flex items-center gap-2.5 rounded-full border border-border bg-card px-3.5 py-2.5 transition-smooth focus-within:border-primary/60">
-              <Search className="h-3.5 w-3.5 text-muted-foreground" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search by name, country, era…"
-                className="flex-1 bg-transparent text-[12.5px] text-foreground placeholder:text-muted-foreground focus:outline-none"
-              />
-            </div>
-            <div className="mt-2.5 flex gap-2 overflow-x-auto scrollbar-hide">
-              {(["ALL", "MVP", "TOP 10", "TOP 20"] as const).map((tf) => {
-                const on = tierFilter === tf;
-                return (
-                  <button
-                    key={tf}
-                    onClick={() => setTierFilter(tf)}
-                    className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] transition-smooth ${
-                      on
-                        ? "bg-foreground text-background"
-                        : "border border-border bg-transparent text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {tf}
-                  </button>
-                );
-              })}
-            </div>
-            <p className="mt-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              Showing {filtered.length} of {counts.total}
-            </p>
-            {error && (
-              <p className="mt-1.5 text-[11px] text-destructive">{error}</p>
-            )}
-          </div>
+          {error && (
+            <p className="px-5 pt-2 text-[11px] text-destructive">{error}</p>
+          )}
+
 
           {/* ─── CARDS GRID (single column on mobile frame) ─── */}
           <section className="px-5 pt-4">
