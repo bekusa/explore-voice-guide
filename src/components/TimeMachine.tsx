@@ -417,13 +417,23 @@ export default function TimeMachine({ language, webhookUrl, onResult }: TimeMach
                     }`}
                   >
                     {/* ── Collapsed header (tap to expand) ── */}
-                    <button
-                      type="button"
+                    {/* Use div+role instead of <button> because the expanded body
+                        contains action buttons — nesting <button> inside <button>
+                        is invalid HTML and breaks click handling in browsers. */}
+                    <div
+                      role="button"
+                      tabIndex={0}
                       onClick={() =>
                         setExpanded((m) => ({ ...m, [a.id]: !m[a.id] }))
                       }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setExpanded((m) => ({ ...m, [a.id]: !m[a.id] }));
+                        }
+                      }}
                       aria-expanded={isOpen}
-                      className="flex w-full items-center gap-3 p-3 text-left"
+                      className="flex w-full cursor-pointer items-center gap-3 p-3 text-left"
                     >
                       <div className="relative h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-xl">
                         <img
