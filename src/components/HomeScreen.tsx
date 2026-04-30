@@ -263,7 +263,7 @@ function CollectionCard({ collection }: { collection: (typeof COLLECTIONS)[numbe
     <Link
       to="/destinations"
       search={{ collection: collection.id }}
-      className="group relative h-[140px] w-[200px] flex-shrink-0 overflow-hidden rounded-2xl border border-border"
+      className="group relative h-[150px] w-[210px] flex-shrink-0 overflow-hidden rounded-2xl border border-border transition-smooth hover:border-primary/50 active:scale-[0.98]"
     >
       {sample && (
         <img
@@ -274,14 +274,11 @@ function CollectionCard({ collection }: { collection: (typeof COLLECTIONS)[numbe
         />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-      <div className="absolute inset-x-3 bottom-3">
-        <div
-          className="text-[15px] font-medium leading-tight text-foreground"
-          style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
-        >
+      <div className="absolute inset-x-3.5 bottom-3.5">
+        <div className="font-display text-[16px] font-medium leading-tight text-foreground">
           {label}
         </div>
-        <div className="mt-0.5 text-[10px] text-foreground/65">{tagline}</div>
+        <div className="mt-1 text-[10.5px] leading-snug text-foreground/65">{tagline}</div>
       </div>
     </Link>
   );
@@ -289,8 +286,6 @@ function CollectionCard({ collection }: { collection: (typeof COLLECTIONS)[numbe
 
 /* ─────────────────────────────────────────────
  * Time Machine — featured collection card
- * Distinguished gold/dark editorial tile that opens the immersive
- * historical simulation experience at /time-machine.
  * ───────────────────────────────────────────── */
 function TimeMachineCollectionCard() {
   const t = useT();
@@ -301,27 +296,23 @@ function TimeMachineCollectionCard() {
   return (
     <Link
       to="/time-machine"
-      className="group relative h-[140px] w-[220px] flex-shrink-0 overflow-hidden rounded-2xl border border-primary/50 shadow-glow"
+      className="group relative h-[150px] w-[230px] flex-shrink-0 overflow-hidden rounded-2xl border border-primary/50 shadow-glow transition-smooth active:scale-[0.98]"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-[oklch(0.18_0.04_60)] via-[oklch(0.12_0.02_60)] to-black" />
       <div
         aria-hidden
         className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-gold opacity-30 blur-2xl transition-opacity group-hover:opacity-50"
       />
-      <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-primary/50 bg-background/40 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-primary backdrop-blur-md">
+      <div className="absolute left-3.5 top-3.5 inline-flex items-center gap-1 rounded-full border border-primary/50 bg-background/40 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-md">
         <Sparkles className="h-2.5 w-2.5" /> New
       </div>
-      <div className="absolute inset-x-3 bottom-3">
-        <div
-          className="text-[15px] font-medium leading-tight text-primary"
-          style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
-        >
+      <div className="absolute inset-x-3.5 bottom-3.5">
+        <div className="font-display text-[16px] font-medium leading-tight text-primary">
           {label}
         </div>
-        <div className="mt-0.5 line-clamp-2 text-[10px] text-foreground/70">{tagline}</div>
+        <div className="mt-1 line-clamp-2 text-[10.5px] leading-snug text-foreground/70">{tagline}</div>
       </div>
-      <ArrowRight className="absolute bottom-3 right-3 h-3.5 w-3.5 text-primary opacity-0 transition-opacity group-hover:opacity-100" />
-      {/* suppress unused t */}
+      <ArrowRight className="absolute bottom-3.5 right-3.5 h-3.5 w-3.5 text-primary opacity-0 transition-opacity group-hover:opacity-100" />
       <span className="hidden">{t("home.collections.title")}</span>
     </Link>
   );
@@ -342,7 +333,7 @@ function DestinationCard({ dest }: { dest: Destination }) {
     <Link
       to="/destination/$slug"
       params={{ slug: dest.slug }}
-      className="group relative block h-[200px] overflow-hidden rounded-2xl border border-border transition-smooth hover:border-primary/50 hover:shadow-elegant"
+      className="group relative block h-[210px] overflow-hidden rounded-3xl border border-border transition-smooth hover:border-primary/50 hover:shadow-elegant active:scale-[0.99]"
     >
       <img
         src={dest.hero}
@@ -352,7 +343,7 @@ function DestinationCard({ dest }: { dest: Destination }) {
       />
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
 
-      <div className="absolute left-4 right-4 top-3 flex items-center justify-between">
+      <div className="absolute left-4 right-4 top-3.5 flex items-center justify-between">
         <span className="rounded-full border border-foreground/15 bg-background/60 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.18em] text-foreground backdrop-blur-md">
           {country}
         </span>
@@ -362,11 +353,8 @@ function DestinationCard({ dest }: { dest: Destination }) {
         </span>
       </div>
 
-      <div className="absolute inset-x-4 bottom-3.5">
-        <h3
-          className="text-[24px] font-medium leading-[1.05] text-foreground"
-          style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
-        >
+      <div className="absolute inset-x-4 bottom-4">
+        <h3 className="font-display text-[26px] font-medium leading-[1.05] text-foreground">
           {city}
         </h3>
         <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] text-foreground/70">
