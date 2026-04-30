@@ -33,9 +33,11 @@ const ROLES: Role[] = [
   { value: "survivor", label: "Survivor", hint: "Escaped disaster, war, or the road" },
 ];
 
-// Deterministic placeholder via Picsum (seeded — same id always returns the same photo)
-const img = (seed: string) =>
-  `https://picsum.photos/seed/${encodeURIComponent("tm-" + seed)}/900/540`;
+// Themed photos via LoremFlickr (keyword-matched, deterministic with lock seed)
+const img = (keywords: string) => {
+  const seed = Math.abs([...keywords].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0));
+  return `https://loremflickr.com/900/540/${encodeURIComponent(keywords)}?lock=${seed}`;
+};
 
 const ATTRACTIONS: Attraction[] = [
   // MVP
