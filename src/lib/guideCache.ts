@@ -45,8 +45,36 @@ function isBrowser() {
   return typeof window !== "undefined" && typeof localStorage !== "undefined";
 }
 
-function makeKey(name: string, language: string) {
-  return `${language.toLowerCase()}::${name.trim().toLowerCase()}`;
+/**
+ * Cache key. Format: `<lang>::<interest>::<name>`.
+ *
+ * The `interest` segment namespaces by user-chosen bias so a
+ * photography-tilted Narikala doesn't overwrite the history-tilted one.
+ * When callers don't pass an interest, we look up the current global
+ * preference (defaults to History). Anonymous-mode cache entries
+ * written before this scheme become orphaned — that's acceptable for
+ * Beka's user base; they re-fetch on next visit.
+ */
+function makeKey(name: string, language: string, interest?: string) {
+  // Lazy require to avoid circulars: interestPreference depends on i18n
+  // which is tiny but we still keep this self-contained.
+  const eff = (interest ?? readCurrentInterest()).toLowerCase();
+  return `${language.toLowerCase()}::${eff}::${name.trim().toLowerCase()}`;
+}
+
+/**
+ * Read the current global interest preference without importing the
+ * interestPreference module (avoids any chance of an import cycle and
+ * keeps this file usable in plain non-React contexts). Mirrors the
+ * key/default used by lib/interestPreference.ts.
+ */
+function readCurrentInterest(): string {
+  if (!isBrowser()) return "history";
+  try {
+    return (localStorage.getItem("tg.interest.v1") || "history").toLowerCase();
+  } catch {
+    return "history";
+  }
 }
 
 function read(): CacheMap {
@@ -85,16 +113,16 @@ function write(map: CacheMap) {
   }
 }
 
-export function getCachedGuide(name: string, language: string): string | null {
+export function getCachedGuide(name: string, language: string, interest?: string): string | null {
   const map = read();
-  const entry = map[makeKey(name, language)];
+  const entry = map[makeKey(name, language, interest)];
   return entry?.text ?? null;
 }
 
-export function setCachedGuide(name: string, language: string, text: string) {
+export function setCachedGuide(name: string, language: string, text: string, interest?: string) {
   if (!text) return;
   const map = read();
-  const key = makeKey(name, language);
+  const key = makeKey(name, language, interest);
   // Preserve any existing rich fields on the entry — only update text.
   const prev = map[key];
   map[key] = { ...prev, text, cachedAt: Date.now() };
@@ -105,9 +133,13 @@ export function setCachedGuide(name: string, language: string, text: string) {
  * Read full GuideData (script + optional rich fields) from cache.
  * Returns null if no entry exists.
  */
-export function getCachedGuideData(name: string, language: string): CachedGuideData | null {
+export function getCachedGuideData(
+  name: string,
+  language: string,
+  interest?: string,
+): CachedGuideData | null {
   const map = read();
-  const entry = map[makeKey(name, language)];
+  const entry = map[makeKey(name, language, interest)];
   if (!entry) return null;
   return {
     title: entry.title,
@@ -124,10 +156,15 @@ export function getCachedGuideData(name: string, language: string): CachedGuideD
  * Persist full GuideData (script + rich fields) to cache.
  * Use this from fetchGuideData() so chips survive offline.
  */
-export function setCachedGuideData(name: string, language: string, data: CachedGuideData) {
+export function setCachedGuideData(
+  name: string,
+  language: string,
+  data: CachedGuideData,
+  interest?: string,
+) {
   if (!data.script) return;
   const map = read();
-  map[makeKey(name, language)] = {
+  map[makeKey(name, language, interest)] = {
     text: data.script,
     cachedAt: Date.now(),
     title: data.title,
@@ -140,9 +177,9 @@ export function setCachedGuideData(name: string, language: string, data: CachedG
   write(map);
 }
 
-export function removeCachedGuide(name: string, language: string) {
+export function removeCachedGuide(name: string, language: string, interest?: string) {
   const map = read();
-  delete map[makeKey(name, language)];
+  delete map[makeKey(name, language, interest)];
   write(map);
 }
 

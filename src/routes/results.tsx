@@ -30,50 +30,17 @@ import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
 import { getCachedGuide, onGuideCacheChange } from "@/lib/guideCache";
-import { useT } from "@/hooks/useT";
-import type { UiKey } from "@/lib/i18n";
 
 /**
- * Interest catalogue. Used both as URL-state vocabulary (n8n payload
- * accepts these IDs) and as a label/emoji lookup for the per-card
- * interest chip. Beka removed the in-page filter UI but the chip
- * itself still hangs off each card so users see the bias under which
- * the list was generated.
- *
- * Adding a new interest: add a row here, add `filters.int.<id>` to
- * UI_STRINGS in src/lib/i18n.ts, and update the n8n prompt's interest
- * dictionary block.
+ * URL state. Interest filtering moved to the attraction page (the bias
+ * lives on the per-place guide, not the discovery list), so we no
+ * longer surface it here. The `interests` and `duration` keys are kept
+ * in the URL schema so old shared links don't crash validation, but
+ * they're ignored on this page.
  */
-const INTERESTS: { id: string; key: UiKey; emoji: string }[] = [
-  { id: "history", key: "filters.int.history", emoji: "🏛️" },
-  { id: "art", key: "filters.int.art", emoji: "🎨" },
-  { id: "food", key: "filters.int.food", emoji: "🍽️" },
-  { id: "nature", key: "filters.int.nature", emoji: "🌿" },
-  { id: "architecture", key: "filters.int.architecture", emoji: "🏗️" },
-  { id: "spirituality", key: "filters.int.spirituality", emoji: "🕯️" },
-  { id: "family", key: "filters.int.family", emoji: "👨‍👩‍👧" },
-  { id: "couples", key: "filters.int.couples", emoji: "💞" },
-  { id: "photography", key: "filters.int.photography", emoji: "📸" },
-  { id: "adventure", key: "filters.int.adventure", emoji: "🧗" },
-  { id: "local", key: "filters.int.local", emoji: "🏘️" },
-  { id: "nightlife", key: "filters.int.nightlife", emoji: "🌙" },
-];
-
-const INTERESTS_BY_ID = new Map(INTERESTS.map((x) => [x.id, x]));
-const VALID_INTEREST_IDS = new Set(INTERESTS.map((x) => x.id));
-
-/** Beka's product call: every search defaults to History bias if the
- *  user (or some old shared link) didn't specify otherwise. Lokali's
- *  audience skews heritage-tourist, so this is the safer fallback than
- *  unbiased generic results. */
-const DEFAULT_INTEREST = "history";
-
 type Search = {
   q: string;
-  /** Comma-separated interest IDs from INTERESTS, e.g. "history,couples". */
   interests?: string;
-  /** "short" | "medium" | "long". UI is hidden for now (see commit
-   *  history); kept on the URL so previously-shared links don't break. */
   duration?: string;
 };
 
@@ -98,34 +65,14 @@ export const Route = createFileRoute("/results")({
 });
 
 function ResultsPage() {
-  const { q, interests: interestsParam, duration: durationParam } = Route.useSearch();
+  const { q } = Route.useSearch();
   const navigate = useNavigate();
   const preferredLanguage = usePreferredLanguage();
-  const t = useT();
   // Auto-detect from the query itself so "Batumi" → en, "ბათუმი" → ka.
   // Without this, anonymous users fell back to Georgian regardless of
   // what they typed. Preferred language is used when the query is empty
   // or all punctuation.
   const language = detectQueryLanguage(q, preferredLanguage);
-
-  // URL-state → request payload. Filter UI was removed (Beka asked for
-  // a cleaner results page) so in practice `interestsParam` is empty,
-  // which falls back to DEFAULT_INTEREST. URL-tampered values that
-  // aren't in our catalogue are dropped.
-  const selectedInterests = useMemo<string[]>(() => {
-    const fromUrl = (interestsParam ?? "")
-      .split(",")
-      .map((s: string) => s.trim())
-      .filter((s: string) => VALID_INTEREST_IDS.has(s));
-    return fromUrl.length > 0 ? fromUrl : [DEFAULT_INTEREST];
-  }, [interestsParam]);
-  const interestsKey = selectedInterests.join(",");
-  const duration = durationParam ?? "";
-
-  // The interest we render as a chip on every card — first selected,
-  // because (today) we only ever ship one bias. If we re-introduce a
-  // multi-pick filter, this should become a per-attraction lookup.
-  const primaryInterest = INTERESTS_BY_ID.get(selectedInterests[0]) ?? null;
 
   const [results, setResults] = useState<Attraction[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -136,10 +83,9 @@ function ResultsPage() {
     let cancelled = false;
     setLoading(true);
     setResults(null);
-    fetchAttractions(q, language, {
-      interests: interestsKey ? interestsKey.split(",") : [],
-      duration,
-    })
+    // Discovery list is unbiased — interest tilts only the per-place
+    // guide on /attraction/$id. So no `interests` payload from here.
+    fetchAttractions(q, language)
       .then((data) => {
         if (cancelled) return;
         setResults(data);
@@ -157,7 +103,7 @@ function ResultsPage() {
     return () => {
       cancelled = true;
     };
-  }, [q, language, interestsKey, duration]);
+  }, [q, language]);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,26 +111,7 @@ function ResultsPage() {
     if (!next) return;
     navigate({
       to: "/results",
-      search: { q: next, interests: interestsKey, duration },
-    });
-  };
-
-  /**
-   * Single-select interest picker. Tap a chip → it becomes the sole bias
-   * for the next n8n call. History is shown as active when the URL has
-   * no explicit `interests` (because `selectedInterests` falls back to
-   * [DEFAULT_INTEREST]). Multi-select would re-introduce the
-   * "deselect-default" quirk (clicking the highlighted History chip would
-   * empty the URL but History would stay highlighted via the fallback),
-   * so we keep this radio-style.
-   */
-  const pickInterest = (id: string) => {
-    if (!VALID_INTEREST_IDS.has(id)) return;
-    // Clicking the chip that's already the active sole bias → no-op.
-    if (selectedInterests.length === 1 && selectedInterests[0] === id) return;
-    navigate({
-      to: "/results",
-      search: { q, interests: id, duration },
+      search: { q: next },
     });
   };
 
@@ -214,39 +141,6 @@ function ResultsPage() {
               />
             </form>
           </div>
-          {/* Interest chip row — single-select, History default. The row
-              scrolls horizontally on small screens; we hide the scrollbar
-              chrome to keep the header calm. The active chip uses the
-              same primary fill we use elsewhere for chosen state. */}
-          <div className="-mx-6 mt-3 overflow-x-auto px-6 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <div className="flex items-center gap-2">
-              <span
-                className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground"
-                aria-hidden
-              >
-                {t("filters.interests")}
-              </span>
-              {INTERESTS.map((it) => {
-                const active = selectedInterests.includes(it.id);
-                return (
-                  <button
-                    key={it.id}
-                    type="button"
-                    onClick={() => pickInterest(it.id)}
-                    aria-pressed={active}
-                    className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.16em] transition-smooth ${
-                      active
-                        ? "border-primary/60 bg-primary/15 text-primary shadow-soft"
-                        : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
-                    }`}
-                  >
-                    <span aria-hidden>{it.emoji}</span>
-                    {t(it.key)}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
           <p className="mt-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
             {loading
               ? "Searching…"
@@ -271,8 +165,6 @@ function ResultsPage() {
                   index={i}
                   language={language}
                   cityContext={q}
-                  interest={primaryInterest}
-                  interestLabel={primaryInterest ? t(primaryInterest.key) : null}
                 />
               ))}
             </div>
@@ -300,8 +192,6 @@ function ResultCard({
   index,
   language,
   cityContext,
-  interest,
-  interestLabel,
 }: {
   attraction: Attraction;
   index: number;
@@ -309,12 +199,6 @@ function ResultCard({
   // The user's original search query (e.g. "Batumi"). Passed to Google
   // Places to disambiguate generic attraction names.
   cityContext: string;
-  // Search-level interest bias rendered as a chip on every card. Null
-  // if the URL somehow ended up with an unknown ID.
-  interest: { id: string; key: UiKey; emoji: string } | null;
-  // Pre-translated label so we don't run useT() per card (the hook
-  // would re-render every result on lang flip).
-  interestLabel: string | null;
 }) {
   const slug = useMemo(() => attractionSlug(attraction.name), [attraction.name]);
   const online = useOnlineStatus();
@@ -507,16 +391,11 @@ function ResultCard({
       >
         <div className="overflow-hidden">
           <div className="border-t border-border px-4 pb-4 pt-4">
-            {/* Chips: search interest bias + attraction type + search city.
-                Same shape as Time Machine's MVP / year / era row. */}
-            {(interest || typeChip || cityChip) && (
+            {/* Chips: attraction type + search city. Interest bias chip
+                removed — that decision now lives on the attraction page,
+                not here. */}
+            {(typeChip || cityChip) && (
               <div className="flex flex-wrap items-center gap-2">
-                {interest && interestLabel && (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.18em] text-primary">
-                    <span aria-hidden>{interest.emoji}</span>
-                    {interestLabel}
-                  </span>
-                )}
                 {typeChip && (
                   <span className="rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     {typeChip}

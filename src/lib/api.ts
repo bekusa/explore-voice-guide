@@ -257,7 +257,8 @@ function normalizeGuide(raw: unknown, fallbackTitle: string): GuideData {
 
 export async function fetchGuide(attraction: string, language = "ka"): Promise<string> {
   // Back-compat wrapper — the rest of the app expects just a string.
-  // New rich callers should use fetchGuideData() instead.
+  // New rich callers should use fetchGuideData() instead. Reads the
+  // global interest preference inside fetchGuideData().
   const data = await fetchGuideData(attraction, language);
   return data.script;
 }
@@ -267,28 +268,60 @@ export async function fetchGuide(attraction: string, language = "ka"): Promise<s
  * (script + optional key_facts/tips/look_for/nearby_suggestions).
  * Cache-first, then network. Persists the full object so chips
  * survive offline.
+ *
+ * The optional `interest` arg tilts the n8n /webhook/guide content
+ * towards a topic (e.g. "photography" → more on framing/light, less
+ * on dates). When omitted, falls back to the global interest
+ * preference (which itself defaults to History). The interest is sent
+ * to n8n in the payload AND mixed into the cache key so different
+ * biases don't overwrite each other offline.
  */
-export async function fetchGuideData(attraction: string, language = "ka"): Promise<GuideData> {
-  // Lazy import — keeps SSR clean (guideCache touches localStorage)
+export async function fetchGuideData(
+  attraction: string,
+  language = "ka",
+  interest?: string,
+): Promise<GuideData> {
+  // Lazy import — keeps SSR clean (guideCache + prefs touch localStorage)
   const { getCachedGuideData, setCachedGuideData } = await import("./guideCache");
+  const { getInterest } = await import("./interestPreference");
+  const { normalizeInterest } = await import("./interests");
+  const effectiveInterest = normalizeInterest(interest ?? getInterest());
 
   // 1. Cache hit → instant offline-friendly result
-  const cached = getCachedGuideData(attraction, language);
+  const cached = getCachedGuideData(attraction, language, effectiveInterest);
   if (cached && cached.script) return cached;
 
   // 2. Network — and persist for next time
-  const raw = await postJSON<unknown>(GUIDE_URL, { attraction, language });
+  const raw = await postJSON<unknown>(GUIDE_URL, {
+    attraction,
+    language,
+    interest: effectiveInterest,
+    // Send as array too for forward-compat if we ever ship multi-pick.
+    interests: [effectiveInterest],
+  });
   const data = normalizeGuide(raw, attraction);
-  if (data.script) setCachedGuideData(attraction, language, data);
+  if (data.script) setCachedGuideData(attraction, language, data, effectiveInterest);
   return data;
 }
 
 /** Network-only variant: bypass cache + always refresh. Used by the bulk download. */
-export async function fetchGuideFresh(attraction: string, language = "ka"): Promise<string> {
+export async function fetchGuideFresh(
+  attraction: string,
+  language = "ka",
+  interest?: string,
+): Promise<string> {
   const { setCachedGuideData } = await import("./guideCache");
-  const raw = await postJSON<unknown>(GUIDE_URL, { attraction, language });
+  const { getInterest } = await import("./interestPreference");
+  const { normalizeInterest } = await import("./interests");
+  const effectiveInterest = normalizeInterest(interest ?? getInterest());
+  const raw = await postJSON<unknown>(GUIDE_URL, {
+    attraction,
+    language,
+    interest: effectiveInterest,
+    interests: [effectiveInterest],
+  });
   const data = normalizeGuide(raw, attraction);
-  if (data.script) setCachedGuideData(attraction, language, data);
+  if (data.script) setCachedGuideData(attraction, language, data, effectiveInterest);
   return data.script;
 }
 

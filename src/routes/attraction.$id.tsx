@@ -39,6 +39,9 @@ import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { getCachedGuide, getCachedGuideData, onGuideCacheChange } from "@/lib/guideCache";
+import { setInterest, useInterest } from "@/lib/interestPreference";
+import { INTERESTS } from "@/lib/interests";
+import { useT } from "@/hooks/useT";
 
 type Search = { name?: string };
 
@@ -71,6 +74,11 @@ function AttractionPage() {
   // back in the same language the user was browsing in. Falls back to
   // the user's preferred UI language when the name has no script hint.
   const language = detectQueryLanguage(fallbackName, preferredLanguage);
+  // Global per-user interest preference (single-select, persisted in
+  // localStorage). Tilts the n8n guide toward a topic — e.g.
+  // "photography" gets more on framing, light, materials than dates.
+  // Defaults to History when unset (Lokali's heritage-tourist baseline).
+  const interest = useInterest();
   const [attraction, setAttraction] = useState<Attraction | null>(
     searchName ? { name: searchName } : null,
   );
@@ -79,7 +87,7 @@ function AttractionPage() {
   // Full guide payload (script + key_facts/tips/look_for/nearby).
   // Initialized from cache for instant first paint when revisiting a place.
   const [guide, setGuide] = useState<GuideData | null>(() => {
-    const cached = getCachedGuideData(fallbackName, language);
+    const cached = getCachedGuideData(fallbackName, language, interest);
     return cached && cached.script ? cached : null;
   });
   const [loadingScript, setLoadingScript] = useState(false);
@@ -113,16 +121,22 @@ function AttractionPage() {
   }, [fallbackName, language]);
 
   // Fetch the rich guide (cache-first) so we can show stops + chips.
+  // Re-runs when `interest` flips: each interest namespace caches
+  // separately, so swapping pulls a different (or fetches a fresh)
+  // bias-tilted guide.
   useEffect(() => {
     const name = attraction?.name ?? fallbackName;
-    const cached = getCachedGuideData(name, language);
+    const cached = getCachedGuideData(name, language, interest);
     if (cached && cached.script) {
       setGuide(cached);
       return;
     }
+    // Clear stale guide so the previous interest's content doesn't
+    // linger on screen while the new one is in flight.
+    setGuide(null);
     let cancelled = false;
     setLoadingScript(true);
-    fetchGuideData(name, language)
+    fetchGuideData(name, language, interest)
       .then((data) => {
         if (!cancelled) setGuide(data);
       })
@@ -135,7 +149,7 @@ function AttractionPage() {
     return () => {
       cancelled = true;
     };
-  }, [attraction?.name, fallbackName, language]);
+  }, [attraction?.name, fallbackName, language, interest]);
 
   // Hero photo: prefer n8n's image_url, otherwise lazy-fetch from
   // Google Places / Wikipedia. Reset when the place changes.
@@ -245,9 +259,16 @@ function AttractionPage() {
           name={a?.name ?? fallbackName}
           attraction={a}
           language={language}
+          interest={interest}
           starting={starting}
           onPlay={startJourney}
         />
+
+        {/* Interest picker — Beka's product call: bias the *guide* (not
+            the discovery list) by user interest. Tap a chip → re-fetches
+            the n8n /webhook/guide with that interest, and the script /
+            chips come back tilted toward it. History default. */}
+        <InterestPicker current={interest} onPick={setInterest} loading={loadingScript} />
 
         {/* About — outside-view short description (n8n: outside_desc).
             FIRST: at-a-glance factual summary. */}
@@ -304,12 +325,17 @@ function ActionRow({
   name,
   attraction,
   language,
+  interest,
   starting,
   onPlay,
 }: {
   name: string;
   attraction: Attraction | null;
   language: string;
+  // Current interest bias — drives both the cache lookup (so the
+  // "Offline" pill reflects whether THIS interest's guide is cached,
+  // not just any version) and the download fetch.
+  interest: string;
   starting: boolean;
   onPlay: () => void;
 }) {
@@ -318,13 +344,15 @@ function ActionRow({
   const id = useMemo(() => attractionSlug(name), [name]);
   const saved = items.some((s) => s.id === id) || isSaved(id);
 
-  // Live cache state — re-renders when a download finishes / cache clears
+  // Live cache state — re-renders when a download finishes / cache clears.
+  // Re-runs on interest swap so a freshly-picked bias starts as
+  // "Get" again until that bias is downloaded.
   const [cached, setCached] = useState(false);
   useEffect(() => {
-    const refresh = () => setCached(!!getCachedGuide(name, language));
+    const refresh = () => setCached(!!getCachedGuide(name, language, interest));
     refresh();
     return onGuideCacheChange(refresh);
-  }, [name, language]);
+  }, [name, language, interest]);
 
   const [downloading, setDownloading] = useState(false);
 
@@ -361,7 +389,7 @@ function ActionRow({
     }
     setDownloading(true);
     try {
-      const script = await fetchGuideFresh(name, language);
+      const script = await fetchGuideFresh(name, language, interest);
       if (script) {
         toast.success("Downloaded for offline", { description: name });
         setCached(true);
@@ -476,6 +504,79 @@ function stripTtsMarkers(script: string): string {
 }
 
 /* ---------- Lokali rich sections ---------- */
+
+/**
+ * Interest picker — single-select chip row. Tapping a chip writes to
+ * the global interest preference (lib/interestPreference.ts), which in
+ * turn re-fetches the n8n guide with that bias in the payload.
+ *
+ * Why it lives here (and not on /results): the interest tilts content
+ * generation — the per-place narrated guide — not the discovery list.
+ * Beka: "მაგის მიხედვით დამიგენერიროს კონტენქტი, … თუ ფოტოგრაფია
+ * მაინტერესებს მეტი ინფორმაცია მომცეს ფოტოგრაფიაზე ვიდრე ისტორიაზე."
+ *
+ * `loading` flips the row's appearance subtly so the user sees the
+ * picker is still responsive while the new bias is in flight.
+ */
+function InterestPicker({
+  current,
+  onPick,
+  loading,
+}: {
+  current: string;
+  onPick: (id: string) => void;
+  loading: boolean;
+}) {
+  const t = useT();
+  return (
+    <section className="mt-6 px-6">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-display text-[16px] text-foreground">
+          Tilt the <span className="italic text-primary">guide</span>
+        </h2>
+        {loading && (
+          <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Updating
+          </span>
+        )}
+      </div>
+      <p className="mt-1 text-[12px] leading-snug text-muted-foreground">
+        {t("filters.interests")}: pick what to focus on.
+      </p>
+      <div
+        className="-mx-6 mt-3 overflow-x-auto px-6 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        role="radiogroup"
+        aria-label="Interest"
+      >
+        <div className="flex items-center gap-2">
+          {INTERESTS.map((it) => {
+            const active = current === it.id;
+            return (
+              <button
+                key={it.id}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => {
+                  if (!active) onPick(it.id);
+                }}
+                className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] transition-smooth ${
+                  active
+                    ? "border-primary/60 bg-primary/15 text-primary shadow-soft"
+                    : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                }`}
+              >
+                <span aria-hidden>{it.emoji}</span>
+                {t(it.key)}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 /**
  * About — short outside-view description (n8n: outside_desc).
