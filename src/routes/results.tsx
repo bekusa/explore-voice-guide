@@ -153,38 +153,6 @@ function ResultsPage() {
   // effect above re-runs because interestsKey / duration are derived
   // from the URL. Going through the URL means back/forward and shared
   // links keep the user's filter set intact.
-  const updateFilters = (next: { interests?: string[]; duration?: string }) => {
-    const interestsCsv =
-      next.interests !== undefined
-        ? next.interests.filter(Boolean).join(",")
-        : selectedInterests.join(",");
-    const dur = next.duration !== undefined ? next.duration : duration;
-    navigate({
-      to: "/results",
-      search: { q, interests: interestsCsv, duration: dur },
-      replace: true,
-    });
-  };
-
-  const toggleInterest = (id: string) => {
-    const has = selectedInterests.includes(id);
-    const nextList = has
-      ? selectedInterests.filter((x: string) => x !== id)
-      : [...selectedInterests, id];
-    updateFilters({ interests: nextList });
-  };
-
-  const setDuration = (id: string) => {
-    // Tap the active chip again to clear the filter.
-    updateFilters({ duration: duration === id ? "" : id });
-  };
-
-  const clearFilters = () => {
-    navigate({ to: "/results", search: { q, interests: "", duration: "" }, replace: true });
-  };
-
-  const filtersActive = selectedInterests.length > 0 || !!duration;
-
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const next = query.trim();
