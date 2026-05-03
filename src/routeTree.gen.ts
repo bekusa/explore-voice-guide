@@ -23,6 +23,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DestinationSlugRouteImport } from './routes/destination.$slug'
 import { Route as AttractionIdRouteImport } from './routes/attraction.$id'
+import { Route as ApiTtsRouteImport } from './routes/api.tts'
 import { Route as ApiTranslateRouteImport } from './routes/api.translate'
 import { Route as ApiPhotoRouteImport } from './routes/api.photo'
 import { Route as ApiGuideRouteImport } from './routes/api.guide'
@@ -98,6 +99,11 @@ const AttractionIdRoute = AttractionIdRouteImport.update({
   path: '/attraction/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTtsRoute = ApiTtsRouteImport.update({
+  id: '/api/tts',
+  path: '/api/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiTranslateRoute = ApiTranslateRouteImport.update({
   id: '/api/translate',
   path: '/api/translate',
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/api/guide': typeof ApiGuideRoute
   '/api/photo': typeof ApiPhotoRoute
   '/api/translate': typeof ApiTranslateRoute
+  '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
   '/destination/$slug': typeof DestinationSlugRoute
 }
@@ -156,6 +163,7 @@ export interface FileRoutesByTo {
   '/api/guide': typeof ApiGuideRoute
   '/api/photo': typeof ApiPhotoRoute
   '/api/translate': typeof ApiTranslateRoute
+  '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
   '/destination/$slug': typeof DestinationSlugRoute
 }
@@ -177,6 +185,7 @@ export interface FileRoutesById {
   '/api/guide': typeof ApiGuideRoute
   '/api/photo': typeof ApiPhotoRoute
   '/api/translate': typeof ApiTranslateRoute
+  '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
   '/destination/$slug': typeof DestinationSlugRoute
 }
@@ -199,6 +208,7 @@ export interface FileRouteTypes {
     | '/api/guide'
     | '/api/photo'
     | '/api/translate'
+    | '/api/tts'
     | '/attraction/$id'
     | '/destination/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -219,6 +229,7 @@ export interface FileRouteTypes {
     | '/api/guide'
     | '/api/photo'
     | '/api/translate'
+    | '/api/tts'
     | '/attraction/$id'
     | '/destination/$slug'
   id:
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/api/guide'
     | '/api/photo'
     | '/api/translate'
+    | '/api/tts'
     | '/attraction/$id'
     | '/destination/$slug'
   fileRoutesById: FileRoutesById
@@ -260,6 +272,7 @@ export interface RootRouteChildren {
   ApiGuideRoute: typeof ApiGuideRoute
   ApiPhotoRoute: typeof ApiPhotoRoute
   ApiTranslateRoute: typeof ApiTranslateRoute
+  ApiTtsRoute: typeof ApiTtsRoute
   AttractionIdRoute: typeof AttractionIdRoute
   DestinationSlugRoute: typeof DestinationSlugRoute
 }
@@ -364,6 +377,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AttractionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/tts': {
+      id: '/api/tts'
+      path: '/api/tts'
+      fullPath: '/api/tts'
+      preLoaderRoute: typeof ApiTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/translate': {
       id: '/api/translate'
       path: '/api/translate'
@@ -412,6 +432,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGuideRoute: ApiGuideRoute,
   ApiPhotoRoute: ApiPhotoRoute,
   ApiTranslateRoute: ApiTranslateRoute,
+  ApiTtsRoute: ApiTtsRoute,
   AttractionIdRoute: AttractionIdRoute,
   DestinationSlugRoute: DestinationSlugRoute,
 }

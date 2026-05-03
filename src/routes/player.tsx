@@ -119,15 +119,18 @@ function PlayerPage() {
     });
     setPlaying(false);
     setPaused(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [script, langTag]);
 
-  // Cleanup blob URL on unmount + stop any ongoing playback
+  // Cleanup blob URL on unmount + stop any ongoing playback. Snapshot
+  // audioRef.current at effect-mount time — by the time the cleanup
+  // runs the ref may already point at a new node (or null), and React
+  // warns about that pattern.
   useEffect(() => {
+    const audio = audioRef.current;
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = "";
+      if (audio) {
+        audio.pause();
+        audio.src = "";
       }
       setAudioUrl((prev) => {
         if (prev) URL.revokeObjectURL(prev);
