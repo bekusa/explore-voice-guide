@@ -4,6 +4,7 @@ import { ArrowLeft, MapPin, Navigation, Bookmark, Layers, Loader2 } from "lucide
 import { MobileFrame } from "@/components/MobileFrame";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { attractionSlug } from "@/lib/api";
+import { useT } from "@/hooks/useT";
 import "leaflet/dist/leaflet.css";
 
 export const Route = createFileRoute("/map")({
@@ -12,8 +13,7 @@ export const Route = createFileRoute("/map")({
       { title: "Map — Voices of Old Tbilisi" },
       {
         name: "description",
-        content:
-          "Explore your saved places on the map. Tap a pin to open its narrated guide.",
+        content: "Explore your saved places on the map. Tap a pin to open its narrated guide.",
       },
       { property: "og:title", content: "Map — Voices of Old Tbilisi" },
       {
@@ -40,6 +40,7 @@ type Pin = {
 function MapPage() {
   const saved = useSavedItems();
   const navigate = useNavigate();
+  const t = useT();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<unknown>(null);
   const markersRef = useRef<unknown[]>([]);
@@ -50,11 +51,7 @@ function MapPage() {
 
   const pins = useMemo<Pin[]>(() => {
     return saved
-      .filter(
-        (s) =>
-          typeof s.attraction.lat === "number" &&
-          typeof s.attraction.lng === "number",
-      )
+      .filter((s) => typeof s.attraction.lat === "number" && typeof s.attraction.lng === "number")
       .map((s) => ({
         id: s.id,
         name: s.name,
@@ -104,13 +101,10 @@ function MapPage() {
       });
       const tiles =
         style === "dark"
-          ? L.tileLayer(
-              "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-              {
-                attribution: "© OpenStreetMap · © CARTO",
-                maxZoom: 19,
-              },
-            )
+          ? L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+              attribution: "© OpenStreetMap · © CARTO",
+              maxZoom: 19,
+            })
           : L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
               attribution: "© OpenStreetMap",
               maxZoom: 19,
@@ -225,22 +219,24 @@ function MapPage() {
         <header className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between px-5 pt-12">
           <Link
             to="/"
-            aria-label="Back"
+            aria-label={t("nav.back")}
             className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-border bg-background/80 text-foreground backdrop-blur-md transition-smooth hover:bg-background"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div className="pointer-events-auto rounded-full border border-border bg-background/80 px-4 py-2 text-center backdrop-blur-md">
             <div className="text-[9px] font-bold uppercase tracking-[0.22em] text-primary">
-              On the map
+              {t("map.title")}
             </div>
             <div className="text-[12px] font-semibold">
-              {pins.length} saved {pins.length === 1 ? "place" : "places"}
+              {pins.length === 1
+                ? t("map.savedOne", { n: pins.length })
+                : t("map.savedMany", { n: pins.length })}
             </div>
           </div>
           <button
             onClick={() => setStyle((s) => (s === "dark" ? "streets" : "dark"))}
-            aria-label="Toggle map style"
+            aria-label={t("map.toggleStyle")}
             className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-border bg-background/80 text-foreground backdrop-blur-md transition-smooth hover:bg-background"
           >
             <Layers className="h-4 w-4" />
@@ -251,7 +247,7 @@ function MapPage() {
         <button
           onClick={locate}
           disabled={locating}
-          aria-label="Center on my location"
+          aria-label={t("map.centerLoc")}
           className="absolute right-5 top-[180px] z-20 grid h-11 w-11 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow transition-smooth hover:scale-105 disabled:opacity-70"
         >
           {locating ? (
@@ -268,17 +264,16 @@ function MapPage() {
               <Bookmark className="h-4 w-4" />
             </div>
             <h2 className="mt-3 font-display text-[18px]">
-              No pins <span className="italic text-primary">yet</span>
+              {t("map.empty")} <span className="italic text-primary">{t("map.emptyYet")}</span>
             </h2>
             <p className="mt-1.5 text-[12px] leading-[1.5] text-muted-foreground">
-              Save a place from the home or results screen and it'll drop a pin
-              here.
+              {t("map.emptyHelp")}
             </p>
             <Link
               to="/"
               className="pointer-events-auto mt-4 inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-background transition-smooth hover:scale-[1.02]"
             >
-              <MapPin className="h-3 w-3" /> Find places
+              <MapPin className="h-3 w-3" /> {t("map.findCta")}
             </Link>
           </div>
         )}
@@ -287,7 +282,7 @@ function MapPage() {
         {!ready && (
           <div className="absolute inset-0 z-10 grid place-items-center">
             <div className="flex items-center gap-2 rounded-full border border-border bg-card/80 px-4 py-2 text-[12px] text-muted-foreground backdrop-blur-md">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading map…
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t("map.loading")}
             </div>
           </div>
         )}

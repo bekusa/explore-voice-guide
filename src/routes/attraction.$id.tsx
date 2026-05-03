@@ -69,6 +69,7 @@ function AttractionPage() {
   const { name: searchName } = Route.useSearch();
   const navigate = useNavigate();
   const preferredLanguage = usePreferredLanguage();
+  const t = useT();
 
   const fallbackName = searchName ?? unslugAttraction(id);
   // Detect language from the place name itself so the n8n guide comes
@@ -109,8 +110,8 @@ function AttractionPage() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        toast.error("Couldn't load this place", {
-          description: err instanceof Error ? err.message : "Please try again.",
+        toast.error(t("attr.couldNotLoadPlace"), {
+          description: err instanceof Error ? err.message : t("toast.tryAgainPlease"),
         });
       })
       .finally(() => {
@@ -119,6 +120,7 @@ function AttractionPage() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fallbackName, language]);
 
   // Fetch the rich guide (cache-first) so we can show stops + chips.
@@ -205,7 +207,7 @@ function AttractionPage() {
             <Link
               to="/results"
               search={{ q: fallbackName }}
-              aria-label="Back"
+              aria-label={t("nav.back")}
               className="grid h-10 w-10 place-items-center rounded-full border border-foreground/20 bg-background/30 backdrop-blur-md transition-smooth hover:bg-background/50"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -254,7 +256,7 @@ function AttractionPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 underline-offset-4 hover:text-primary hover:underline"
-                    aria-label={`Open ${a?.name ?? "this place"} in Google Maps`}
+                    aria-label={t("attr.openInGmapsAria", { name: a?.name ?? fallbackName })}
                   >
                     <MapPin className="h-3.5 w-3.5" />
                     {a.lat.toFixed(3)}, {a.lng.toFixed(3)}
@@ -299,7 +301,7 @@ function AttractionPage() {
 
         {/* Key facts — emerald chips */}
         <ChipsSection
-          title="Key facts"
+          title={t("attr.keyFactsTitle")}
           emoji="💡"
           icon={<Lightbulb className="h-3 w-3" />}
           tone="emerald"
@@ -308,7 +310,7 @@ function AttractionPage() {
 
         {/* What to look for — sky chips */}
         <ChipsSection
-          title="What to look for"
+          title={t("attr.whatToLook")}
           emoji="👀"
           icon={<Eye className="h-3 w-3" />}
           tone="sky"
@@ -360,6 +362,7 @@ function ActionRow({
 }) {
   const online = useOnlineStatus();
   const items = useSavedItems();
+  const t = useT();
   const id = useMemo(() => attractionSlug(name), [name]);
   const saved = items.some((s) => s.id === id) || isSaved(id);
 
@@ -378,7 +381,7 @@ function ActionRow({
   const toggleSave = () => {
     if (saved) {
       removeItem(id);
-      toast("Removed from Saved");
+      toast(t("toast.removedFromSaved"));
       return;
     }
     saveItem({
@@ -388,21 +391,21 @@ function ActionRow({
       savedAt: Date.now(),
       attraction: attraction ?? { name },
     });
-    toast.success("Saved for offline", {
-      description: "Find it in the Saved tab — works without a connection.",
+    toast.success(t("attr.savedForOffline"), {
+      description: t("attr.findInSaved"),
     });
   };
 
   const downloadOffline = async () => {
     if (cached) {
-      toast.info("Already downloaded", {
-        description: "This guide plays offline.",
+      toast.info(t("attr.alreadyDownloaded"), {
+        description: t("toast.alreadyCachedDesc"),
       });
       return;
     }
     if (!online) {
-      toast.error("You're offline", {
-        description: "Connect once to download the guide.",
+      toast.error(t("toast.youreOffline"), {
+        description: t("toast.youreOfflineDesc"),
       });
       return;
     }
@@ -410,14 +413,14 @@ function ActionRow({
     try {
       const script = await fetchGuideFresh(name, language, interest);
       if (script) {
-        toast.success("Downloaded for offline", { description: name });
+        toast.success(t("toast.downloaded"), { description: name });
         setCached(true);
       } else {
-        toast.error("No guide returned");
+        toast.error(t("toast.noGuide"));
       }
     } catch (err) {
-      toast.error("Download failed", {
-        description: err instanceof Error ? err.message : "Try again later.",
+      toast.error(t("toast.downloadFailed"), {
+        description: err instanceof Error ? err.message : t("toast.tryAgain"),
       });
     } finally {
       setDownloading(false);
@@ -431,7 +434,7 @@ function ActionRow({
         <button
           onClick={onPlay}
           disabled={starting}
-          aria-label="Begin journey"
+          aria-label={t("attr.beginJourney")}
           className="group flex flex-1 items-center justify-center gap-2.5 rounded-2xl bg-gradient-gold px-5 py-3.5 text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01] disabled:opacity-80"
         >
           <span className="grid h-9 w-9 place-items-center rounded-full bg-primary-foreground/15">
@@ -443,16 +446,18 @@ function ActionRow({
           </span>
           <span className="text-left">
             <span className="block text-[9px] font-semibold uppercase tracking-[0.22em] opacity-70">
-              Begin
+              {t("attr.begin")}
             </span>
-            <span className="block text-[13px] font-semibold leading-tight">Listen</span>
+            <span className="block text-[13px] font-semibold leading-tight">
+              {t("attr.listen")}
+            </span>
           </span>
         </button>
 
         {/* Save — secondary outline */}
         <button
           onClick={toggleSave}
-          aria-label={saved ? "Remove from saved" : "Save for offline"}
+          aria-label={saved ? t("attr.removeFromSaved") : t("attr.saveForOffline")}
           aria-pressed={saved}
           className={`grid w-[64px] place-items-center rounded-2xl border px-2 transition-smooth ${
             saved
@@ -467,7 +472,7 @@ function ActionRow({
               <Bookmark className="h-4 w-4" />
             )}
             <span className="text-[10px] font-semibold uppercase tracking-[0.12em]">
-              {saved ? "Saved" : "Save"}
+              {saved ? t("card.saved") : t("card.save")}
             </span>
           </span>
         </button>
@@ -476,7 +481,7 @@ function ActionRow({
         <button
           onClick={downloadOffline}
           disabled={downloading}
-          aria-label={cached ? "Already downloaded" : "Download for offline"}
+          aria-label={cached ? t("attr.alreadyDownloaded") : t("card.download")}
           className={`grid w-[64px] place-items-center rounded-2xl border px-2 transition-smooth disabled:opacity-80 ${
             cached
               ? "border-emerald-400/50 bg-emerald-500/10 text-emerald-200"
@@ -490,7 +495,7 @@ function ActionRow({
               <Download className="h-4 w-4" />
             )}
             <span className="text-[10px] font-semibold uppercase tracking-[0.12em]">
-              {downloading ? "Saving" : cached ? "Offline" : "Get"}
+              {downloading ? t("card.saving") : cached ? t("card.offline") : t("attr.get")}
             </span>
           </span>
         </button>
@@ -551,22 +556,22 @@ function InterestPicker({
     <section className="mt-6 px-6">
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-display text-[16px] text-foreground">
-          Tilt the <span className="italic text-primary">guide</span>
+          {t("attr.tilt")} <span className="italic text-primary">{t("attr.guide")}</span>
         </h2>
         {loading && (
           <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
             <Loader2 className="h-3 w-3 animate-spin" />
-            Updating
+            {t("attr.updating")}
           </span>
         )}
       </div>
       <p className="mt-1 text-[12px] leading-snug text-muted-foreground">
-        {t("filters.interests")}: pick what to focus on.
+        {t("filters.interests")}: {t("attr.pickFocus")}
       </p>
       <div
         className="-mx-6 mt-3 overflow-x-auto px-6 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         role="radiogroup"
-        aria-label="Interest"
+        aria-label={t("filters.interests")}
       >
         <div className="flex items-center gap-2">
           {INTERESTS.map((it) => {
@@ -602,6 +607,7 @@ function InterestPicker({
  * FIRST in the body. Hidden when there is nothing useful to show.
  */
 function AboutSection({ loading, aboutText }: { loading: boolean; aboutText: string }) {
+  const t = useT();
   // Split into readable paragraphs. n8n sometimes returns a single
   // unbroken sentence-pile, sometimes proper paragraphs separated by
   // blank lines. Strategy:
@@ -636,7 +642,7 @@ function AboutSection({ loading, aboutText }: { loading: boolean; aboutText: str
     return (
       <section className="mt-8 px-6">
         <h2 className="font-display text-[20px] text-foreground">
-          About <span className="italic text-primary">this place</span>
+          {t("attr.aboutWord")} <span className="italic text-primary">{t("attr.thisPlace")}</span>
         </h2>
         <div className="mt-4 space-y-2">
           <div className="h-3 w-full animate-pulse rounded bg-secondary" />
@@ -650,7 +656,7 @@ function AboutSection({ loading, aboutText }: { loading: boolean; aboutText: str
   return (
     <section className="mt-8 px-6">
       <h2 className="font-display text-[20px] text-foreground">
-        About <span className="italic text-primary">this place</span>
+        {t("attr.aboutWord")} <span className="italic text-primary">{t("attr.thisPlace")}</span>
       </h2>
       <div className="mt-4 space-y-3 text-[13.5px] leading-relaxed text-foreground/80">
         {paragraphs.map((p, i) => (
@@ -667,6 +673,7 @@ function AboutSection({ loading, aboutText }: { loading: boolean; aboutText: str
  * than the factual "About" block above. Hidden when n8n didn't ship one.
  */
 function StorySection({ storyText }: { storyText?: string }) {
+  const t = useT();
   if (!storyText || !storyText.trim()) return null;
   // insider_desc may arrive as one long line or as paragraphs — split
   // on blank lines so multi-paragraph stories stay readable.
@@ -679,7 +686,7 @@ function StorySection({ storyText }: { storyText?: string }) {
       <div className="flex items-center gap-2">
         <Sparkles className="h-4 w-4 text-primary" />
         <h2 className="font-display text-[20px] text-foreground">
-          The <span className="italic text-primary">story</span>
+          {t("attr.theWord")} <span className="italic text-primary">{t("attr.story")}</span>
         </h2>
       </div>
       <div className="mt-4 space-y-4 text-[15.5px] leading-[1.75] text-foreground/90">
@@ -699,6 +706,7 @@ function StorySection({ storyText }: { storyText?: string }) {
  * via stripTtsMarkers so the on-screen text stays clean.
  */
 function StopsSection({ script, loading }: { script: string; loading: boolean }) {
+  const t = useT();
   const paragraphs = useMemo(
     () =>
       stripTtsMarkers(script)
@@ -724,7 +732,7 @@ function StopsSection({ script, loading }: { script: string; loading: boolean })
         <div className="flex items-center gap-2">
           <BookOpen className="h-4 w-4 text-primary" />
           <h2 className="font-display text-[20px] text-foreground">
-            The <span className="italic text-primary">stops</span>
+            {t("attr.theWord")} <span className="italic text-primary">{t("attr.stopsWord")}</span>
           </h2>
         </div>
         <div className="mt-4 space-y-2.5">
@@ -747,7 +755,7 @@ function StopsSection({ script, loading }: { script: string; loading: boolean })
       <div className="flex items-center gap-2">
         <BookOpen className="h-4 w-4 text-primary" />
         <h2 className="font-display text-[20px] text-foreground">
-          The <span className="italic text-primary">stops</span>
+          {t("attr.theWord")} <span className="italic text-primary">{t("attr.stopsWord")}</span>
         </h2>
       </div>
       <div className="mt-4 space-y-3.5 text-[14px] leading-[1.7] text-foreground/85">
@@ -817,6 +825,7 @@ function ChipsSection({
  * that they're tappable.
  */
 function NearbyLinks({ items }: { items?: string[] }) {
+  const t = useT();
   if (!items || items.length === 0) return null;
   return (
     <section className="mt-8 px-6">
@@ -825,7 +834,7 @@ function NearbyLinks({ items }: { items?: string[] }) {
           <span className="mr-2" aria-hidden>
             📍
           </span>
-          <span className="italic text-primary">Nearby</span> places
+          <span className="italic text-primary">{t("attr.nearbyWord")}</span> {t("attr.places")}
         </h2>
       </div>
       <div className="mt-4 flex flex-col gap-2">
@@ -880,6 +889,7 @@ function MapSection({
 }) {
   const navigate = useNavigate();
   const saved = useSavedItems();
+  const t = useT();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<unknown>(null);
   const markersRef = useRef<unknown[]>([]);
@@ -1019,14 +1029,14 @@ function MapSection({
         const safeName = item.name.replace(/&/g, "&amp;").replace(/</g, "&lt;");
         const distLabel =
           distanceKm < 1
-            ? `${Math.round(distanceKm * 1000)} m away`
-            : `${distanceKm.toFixed(1)} km away`;
+            ? t("attr.metersAway", { n: Math.round(distanceKm * 1000) })
+            : t("attr.kmAway", { n: distanceKm.toFixed(1) });
         marker.bindPopup(
           `<div style="font-family: inherit; min-width: 140px;">
             <div style="font-weight: 600; font-size: 13px; line-height: 1.3;">${safeName}</div>
             <div style="font-size: 10.5px; opacity: 0.65; margin-top: 2px;">${distLabel}</div>
             <a href="#" class="tg-popup-open" style="display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font-size: 11px; font-weight: 700; text-decoration: none; color: inherit;">
-              Open guide <span style="font-size: 13px; line-height: 1;">→</span>
+              ${t("attr.openGuide")} <span style="font-size: 13px; line-height: 1;">→</span>
             </a>
           </div>`,
           { closeButton: false, offset: [0, -10] },
@@ -1068,14 +1078,16 @@ function MapSection({
     return () => {
       cancelled = true;
     };
-  }, [ready, lat, lng, name, nearby, navigate]);
+  }, [ready, lat, lng, name, nearby, navigate, t]);
 
   if (typeof lat !== "number" || typeof lng !== "number") return null;
   const gmapsHref = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
   const nearbyHint =
     nearby.length > 0
-      ? `${nearby.length} saved ${nearby.length === 1 ? "place" : "places"} nearby — tap a pin to open.`
-      : "Tap to open directions from your current location.";
+      ? nearby.length === 1
+        ? t("attr.savedNearbyOne", { n: nearby.length })
+        : t("attr.savedNearbyMany", { n: nearby.length })
+      : t("attr.tapDirections");
 
   return (
     <section className="mt-8 px-6">
@@ -1083,12 +1095,12 @@ function MapSection({
         <span className="mr-2" aria-hidden>
           🗺️
         </span>
-        On the <span className="italic text-primary">map</span>
+        {t("attr.onTheMap")} <span className="italic text-primary">{t("attr.mapWord")}</span>
       </h2>
       <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
         <div
           ref={containerRef}
-          aria-label={`Map of ${name}`}
+          aria-label={t("attr.mapOf", { name })}
           className="h-[260px] w-full bg-secondary"
         />
         <a
@@ -1101,7 +1113,9 @@ function MapSection({
             <span className="grid h-7 w-7 place-items-center rounded-full bg-primary/10 text-primary">
               <Compass className="h-3.5 w-3.5" />
             </span>
-            <span className="text-[12.5px] font-semibold leading-tight">Open in Google Maps</span>
+            <span className="text-[12.5px] font-semibold leading-tight">
+              {t("attr.openInGmaps")}
+            </span>
           </span>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </a>
@@ -1130,6 +1144,7 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
 const TIP_ICONS = [Clock, Camera, Coffee, Shirt, Timer];
 
 function TipsSection({ items }: { items?: string[] }) {
+  const t = useT();
   if (!items || items.length === 0) return null;
   return (
     <section className="mt-8 px-6">
@@ -1137,7 +1152,7 @@ function TipsSection({ items }: { items?: string[] }) {
         <span className="mr-2" aria-hidden>
           🎒
         </span>
-        Practical <span className="italic text-primary">tips</span>
+        {t("attr.practical")} <span className="italic text-primary">{t("attr.tips")}</span>
       </h2>
       <ul className="mt-4 flex flex-col gap-2.5">
         {items.map((tip, i) => {

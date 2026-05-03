@@ -34,17 +34,37 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Lokali" },
-      { name: "description", content: "Lokali is an AI-powered global audio guide for tourists, offering personalized tours in 37 languages." },
+      {
+        name: "description",
+        content:
+          "Lokali is an AI-powered global audio guide for tourists, offering personalized tours in 37 languages.",
+      },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "Lokali" },
-      { property: "og:description", content: "Lokali is an AI-powered global audio guide for tourists, offering personalized tours in 37 languages." },
+      {
+        property: "og:description",
+        content:
+          "Lokali is an AI-powered global audio guide for tourists, offering personalized tours in 37 languages.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Lokali" },
-      { name: "twitter:description", content: "Lokali is an AI-powered global audio guide for tourists, offering personalized tours in 37 languages." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2c6124de-a910-4e7f-a9a8-f1f9c6aa86ed/id-preview-5e507a33--f618b725-5654-4e69-89f1-a620cf4ed64f.lovable.app-1777193546368.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2c6124de-a910-4e7f-a9a8-f1f9c6aa86ed/id-preview-5e507a33--f618b725-5654-4e69-89f1-a620cf4ed64f.lovable.app-1777193546368.png" },
+      {
+        name: "twitter:description",
+        content:
+          "Lokali is an AI-powered global audio guide for tourists, offering personalized tours in 37 languages.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2c6124de-a910-4e7f-a9a8-f1f9c6aa86ed/id-preview-5e507a33--f618b725-5654-4e69-89f1-a620cf4ed64f.lovable.app-1777193546368.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2c6124de-a910-4e7f-a9a8-f1f9c6aa86ed/id-preview-5e507a33--f618b725-5654-4e69-89f1-a620cf4ed64f.lovable.app-1777193546368.png",
+      },
     ],
     links: [
       {

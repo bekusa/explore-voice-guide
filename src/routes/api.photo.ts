@@ -43,10 +43,7 @@ type WikiSummaryResponse = {
  * Georgian name often misses, but adding the city ("ბოტანიკური ბაღი
  * Batumi") usually disambiguates well.
  */
-async function googlePhoto(
-  q: string,
-  city: string | null,
-): Promise<string | null> {
+async function googlePhoto(q: string, city: string | null): Promise<string | null> {
   // Build query variants in priority order. If city is provided AND the
   // name doesn't already contain it, try "name + city" first.
   const variants: string[] = [];
@@ -90,10 +87,7 @@ async function googlePhoto(
  *
  * Tries the user's language first, then English (much wider coverage).
  */
-async function wikipediaPhoto(
-  q: string,
-  lang: string,
-): Promise<string | null> {
+async function wikipediaPhoto(q: string, lang: string): Promise<string | null> {
   const langs = lang === "en" ? ["en"] : [lang, "en"];
 
   for (const l of langs) {
@@ -111,15 +105,11 @@ async function wikipediaPhoto(
 
       // Step 2 — get summary with thumbnail
       const summaryUrl =
-        `https://${l}.wikipedia.org/api/rest_v1/page/summary/` +
-        encodeURIComponent(title);
+        `https://${l}.wikipedia.org/api/rest_v1/page/summary/` + encodeURIComponent(title);
       const summaryRes = await fetch(summaryUrl);
       if (!summaryRes.ok) continue;
       const summaryData = (await summaryRes.json()) as WikiSummaryResponse;
-      const src =
-        summaryData.thumbnail?.source ??
-        summaryData.originalimage?.source ??
-        null;
+      const src = summaryData.thumbnail?.source ?? summaryData.originalimage?.source ?? null;
       if (src) return src;
     } catch {
       // try next language
@@ -147,10 +137,9 @@ export const Route = createFileRoute("/api/photo")({
 
         const cacheKey = `${lang}:${city ?? ""}:${q}`;
         if (cache.has(cacheKey)) {
-          return new Response(
-            JSON.stringify({ url: cache.get(cacheKey) ?? null }),
-            { headers: { "Content-Type": "application/json" } },
-          );
+          return new Response(JSON.stringify({ url: cache.get(cacheKey) ?? null }), {
+            headers: { "Content-Type": "application/json" },
+          });
         }
 
         let photoUrl: string | null = null;

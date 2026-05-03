@@ -30,6 +30,7 @@ import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
 import { getCachedGuide, onGuideCacheChange } from "@/lib/guideCache";
+import { useT } from "@/hooks/useT";
 
 /**
  * URL state. Interest filtering moved to the attraction page (the bias
@@ -67,6 +68,7 @@ export const Route = createFileRoute("/results")({
 function ResultsPage() {
   const { q } = Route.useSearch();
   const navigate = useNavigate();
+  const t = useT();
   const preferredLanguage = usePreferredLanguage();
   // Auto-detect from the query itself so "Batumi" → en, "ბათუმი" → ka.
   // Without this, anonymous users fell back to Georgian regardless of
@@ -92,8 +94,8 @@ function ResultsPage() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        toast.error("Couldn't load attractions", {
-          description: err instanceof Error ? err.message : "Please try again.",
+        toast.error(t("toast.couldNotLoadAttractions"), {
+          description: err instanceof Error ? err.message : t("toast.tryAgainPlease"),
         });
         setResults([]);
       })
@@ -103,6 +105,7 @@ function ResultsPage() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, language]);
 
   const submit = (e: React.FormEvent) => {
@@ -123,7 +126,7 @@ function ResultsPage() {
           <div className="flex items-center gap-3">
             <Link
               to="/"
-              aria-label="Back"
+              aria-label={t("nav.back")}
               className="grid h-10 w-10 place-items-center rounded-full border border-border bg-card transition-smooth hover:bg-secondary"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -136,16 +139,20 @@ function ResultsPage() {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Country, city, or landmark…"
+                placeholder={t("results.placeholder")}
                 className="flex-1 bg-transparent text-[13px] placeholder:text-muted-foreground focus:outline-none"
               />
             </form>
           </div>
           <p className="mt-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
             {loading
-              ? "Searching…"
+              ? t("results.searching")
               : results
-                ? `${results.length} result${results.length === 1 ? "" : "s"} for “${q}”`
+                ? `${
+                    results.length === 1
+                      ? t("results.countOne", { n: results.length })
+                      : t("results.countMany", { n: results.length })
+                  } “${q}”`
                 : ""}
           </p>
         </header>
@@ -204,6 +211,7 @@ function ResultCard({
   const online = useOnlineStatus();
   const savedItems = useSavedItems();
   const isFav = savedItems.some((s) => s.id === slug) || isSaved(slug);
+  const t = useT();
 
   const [open, setOpen] = useState(false);
 
@@ -238,7 +246,7 @@ function ResultCard({
     e.stopPropagation();
     if (isFav) {
       removeItem(slug);
-      toast("Removed from Saved");
+      toast(t("toast.removedFromSaved"));
       return;
     }
     saveItem({
@@ -248,8 +256,8 @@ function ResultCard({
       savedAt: Date.now(),
       attraction: { ...attraction, image_url: photo ?? attraction.image_url },
     });
-    toast.success("Saved", {
-      description: "Tap Download to keep the guide for offline.",
+    toast.success(t("toast.saved"), {
+      description: t("toast.savedDesc"),
     });
   };
 
@@ -257,25 +265,25 @@ function ResultCard({
     e.preventDefault();
     e.stopPropagation();
     if (cached) {
-      toast.info("Already offline", { description: "This guide plays offline." });
+      toast.info(t("results.alreadyOffline"), { description: t("toast.alreadyCachedDesc") });
       return;
     }
     if (!online) {
-      toast.error("You're offline", { description: "Connect once to download the guide." });
+      toast.error(t("toast.youreOffline"), { description: t("toast.youreOfflineDesc") });
       return;
     }
     setDownloading(true);
     try {
       const script = await fetchGuideFresh(attraction.name, language);
       if (script) {
-        toast.success("Downloaded for offline", { description: attraction.name });
+        toast.success(t("toast.downloaded"), { description: attraction.name });
         setCached(true);
       } else {
-        toast.error("No guide returned");
+        toast.error(t("toast.noGuide"));
       }
     } catch (err) {
-      toast.error("Download failed", {
-        description: err instanceof Error ? err.message : "Try again later.",
+      toast.error(t("toast.downloadFailed"), {
+        description: err instanceof Error ? err.message : t("toast.tryAgain"),
       });
     } finally {
       setDownloading(false);
@@ -346,10 +354,10 @@ function ResultCard({
             {attraction.name}
           </h3>
           <p className="my-1.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            <Headphones className="h-2.5 w-2.5" /> Audio guide
+            <Headphones className="h-2.5 w-2.5" /> {t("card.audioGuide")}
             {cached && (
               <span className="ml-1 inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[8.5px] tracking-[0.12em] text-primary">
-                <Download className="h-2 w-2" /> Offline
+                <Download className="h-2 w-2" /> {t("card.offline")}
               </span>
             )}
           </p>
@@ -435,7 +443,7 @@ function ResultCard({
                 ) : (
                   <Bookmark className="h-4 w-4" />
                 )}
-                {isFav ? "Saved" : "Save"}
+                {isFav ? t("card.saved") : t("card.save")}
               </button>
 
               <button
@@ -454,7 +462,7 @@ function ResultCard({
                 ) : (
                   <Download className="h-4 w-4" />
                 )}
-                {downloading ? "Saving" : cached ? "Offline" : "Download"}
+                {downloading ? t("card.saving") : cached ? t("card.offline") : t("card.download")}
               </button>
 
               <Link
@@ -465,7 +473,7 @@ function ResultCard({
                 className="flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-gold px-2 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02]"
               >
                 <ArrowRight className="h-4 w-4" />
-                Details
+                {t("card.details")}
               </Link>
             </div>
           </div>
@@ -500,21 +508,21 @@ function SkeletonList() {
 }
 
 function EmptyState({ query }: { query: string }) {
+  const t = useT();
   return (
     <div className="mt-10 text-center">
       <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-card">
         <Search className="h-5 w-5 text-muted-foreground" />
       </div>
-      <h2 className="mt-5 font-display text-[22px] text-foreground">Nothing found</h2>
+      <h2 className="mt-5 font-display text-[22px] text-foreground">{t("results.empty")}</h2>
       <p className="mt-2 px-6 text-[12.5px] text-muted-foreground">
-        We couldn't find places matching “{query}”. Try a different word — a place, a feeling, or an
-        era.
+        {t("results.emptyHelp", { query })}
       </p>
       <Link
         to="/"
         className="mt-6 inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground transition-smooth hover:border-primary/40"
       >
-        Back to home
+        {t("results.backHome")}
       </Link>
     </div>
   );

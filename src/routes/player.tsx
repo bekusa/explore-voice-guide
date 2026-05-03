@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Pause, Play, Square, Loader2, Headphones, WifiOff, Download } from "lucide-react";
+import {
+  ArrowLeft,
+  Pause,
+  Play,
+  Square,
+  Loader2,
+  Headphones,
+  WifiOff,
+  Download,
+} from "lucide-react";
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
 import { fetchGuide } from "@/lib/api";
@@ -11,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LANGUAGES } from "@/lib/languages";
 import { getCachedGuide } from "@/lib/guideCache";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { useT } from "@/hooks/useT";
 
 type Search = { name: string };
 
@@ -33,6 +43,7 @@ function PlayerPage() {
   const voices = useSpeechVoices();
   const { user } = useAuth();
   const online = useOnlineStatus();
+  const t = useT();
 
   const [script, setScript] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -91,8 +102,8 @@ function PlayerPage() {
     if (!online) {
       setScript("");
       setLoading(false);
-      toast.error("You're offline", {
-        description: "This guide isn't downloaded yet. Connect once to cache it.",
+      toast.error(t("toast.youreOffline"), {
+        description: t("toast.guideOfflineDesc"),
       });
       return;
     }
@@ -104,8 +115,8 @@ function PlayerPage() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        toast.error("Couldn't load the guide", {
-          description: err instanceof Error ? err.message : "Please try again.",
+        toast.error(t("toast.couldNotLoadGuide"), {
+          description: err instanceof Error ? err.message : t("toast.tryAgainPlease"),
         });
         setScript("");
       })
@@ -115,6 +126,7 @@ function PlayerPage() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, language, online]);
 
   // Stop speech on unmount
@@ -128,7 +140,7 @@ function PlayerPage() {
 
   const speak = () => {
     if (!script || typeof window === "undefined" || !("speechSynthesis" in window)) {
-      toast.error("Speech not supported on this device");
+      toast.error(t("toast.speechUnsupported"));
       return;
     }
     window.speechSynthesis.cancel();
@@ -184,13 +196,13 @@ function PlayerPage() {
             to="/attraction/$id"
             params={{ id: encodeURIComponent(name.toLowerCase().replace(/\s+/g, "-")) }}
             search={{ name }}
-            aria-label="Back"
+            aria-label={t("nav.back")}
             className="grid h-10 w-10 place-items-center rounded-full border border-border bg-card transition-smooth hover:bg-secondary"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
-            Now narrating
+            {t("player.nowNarrating")}
           </span>
           <span className="h-10 w-10" />
         </header>
@@ -201,7 +213,7 @@ function PlayerPage() {
             <Headphones className="h-12 w-12 text-primary-foreground" />
           </div>
           <h1 className="mt-7 text-center font-display text-[26px] font-medium leading-tight text-foreground">
-            {name || "Audio guide"}
+            {name || t("player.audioGuide")}
           </h1>
           <p className="mt-1.5 text-center text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
             {LANGUAGES.find((l) => l.code === langTag)?.name ?? langTag}
@@ -217,11 +229,11 @@ function PlayerPage() {
               >
                 {online ? (
                   <>
-                    <Download className="h-2.5 w-2.5" /> Cached offline
+                    <Download className="h-2.5 w-2.5" /> {t("player.cachedOffline")}
                   </>
                 ) : (
                   <>
-                    <WifiOff className="h-2.5 w-2.5" /> Offline mode
+                    <WifiOff className="h-2.5 w-2.5" /> {t("player.offlineMode")}
                   </>
                 )}
               </span>
@@ -249,7 +261,7 @@ function PlayerPage() {
               onClick={speak}
               disabled={loading || !script}
               className="grid h-16 w-16 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow transition-smooth hover:scale-[1.04] disabled:opacity-50"
-              aria-label="Play"
+              aria-label={t("card.play")}
             >
               {loading ? (
                 <Loader2 className="h-6 w-6 animate-spin" />
@@ -262,7 +274,7 @@ function PlayerPage() {
               <button
                 onClick={togglePause}
                 className="grid h-14 w-14 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary"
-                aria-label={paused ? "Resume" : "Pause"}
+                aria-label={paused ? t("player.resume") : t("player.pause")}
               >
                 {paused ? (
                   <Play className="h-5 w-5 translate-x-[1px] fill-current" />
@@ -273,7 +285,7 @@ function PlayerPage() {
               <button
                 onClick={stop}
                 className="grid h-14 w-14 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary"
-                aria-label="Stop"
+                aria-label={t("player.stop")}
               >
                 <Square className="h-4 w-4 fill-current" />
               </button>
@@ -284,7 +296,7 @@ function PlayerPage() {
         {/* Transcript */}
         <section className="relative z-10 mt-10 px-6 pb-16">
           <h2 className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-            Transcript
+            {t("player.transcript")}
           </h2>
           <div className="mt-4 rounded-2xl border border-border bg-card p-5">
             {loading ? (
@@ -300,9 +312,7 @@ function PlayerPage() {
                 {script}
               </p>
             ) : (
-              <p className="text-[13px] text-muted-foreground">
-                No narration available yet for this place.
-              </p>
+              <p className="text-[13px] text-muted-foreground">{t("player.noNarration")}</p>
             )}
           </div>
         </section>

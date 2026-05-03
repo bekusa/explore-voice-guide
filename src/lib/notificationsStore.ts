@@ -70,9 +70,7 @@ export function addNotification(
 }
 
 export function markRead(id: string) {
-  const list = getNotifications().map((n) =>
-    n.id === id ? { ...n, read: true } : n,
-  );
+  const list = getNotifications().map((n) => (n.id === id ? { ...n, read: true } : n));
   write(list);
 }
 

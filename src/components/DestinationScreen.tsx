@@ -22,12 +22,7 @@ import type { Destination } from "@/lib/destinations";
 import { setSelectedSlug } from "@/lib/destinationStore";
 import { useT, useTranslated } from "@/hooks/useT";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
-import {
-  attractionSlug,
-  detectQueryLanguage,
-  fetchAttractions,
-  type Attraction,
-} from "@/lib/api";
+import { attractionSlug, detectQueryLanguage, fetchAttractions, type Attraction } from "@/lib/api";
 
 /* ─────────────────────────────────────────────
  * DESTINATION SCREEN — what used to be the home screen
@@ -92,8 +87,8 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        toast.error("Couldn't load attractions", {
-          description: err instanceof Error ? err.message : "Showing curated picks instead.",
+        toast.error(t("toast.couldNotLoadAttractions"), {
+          description: err instanceof Error ? err.message : t("dest.showingCurated"),
         });
         setLiveAttractions([]);
       })
@@ -103,6 +98,7 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dest.city, language]);
 
   // Adapt n8n Attraction → NearYouCard's NearPlace shape.
@@ -123,15 +119,15 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
           rating: typeof a.rating === "number" ? a.rating : 4.8,
           stops: 1,
           distance: dest.city,
-          category: (typeof a.category === "string" && a.category) || "Audio guide",
+          category: (typeof a.category === "string" && a.category) || t("card.audioGuide"),
           description,
         };
       }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [liveAttractions, dest.city, dest.featured, dest.hero],
   );
 
-  const places: NearPlace[] =
-    placesFromLive.length > 0 ? placesFromLive : dest.featured;
+  const places: NearPlace[] = placesFromLive.length > 0 ? placesFromLive : dest.featured;
 
   function submitSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -157,7 +153,7 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
             <div className="flex items-start gap-2">
               <Link
                 to="/"
-                aria-label="Back to home"
+                aria-label={t("dest.backHome")}
                 className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
@@ -182,13 +178,25 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
               </div>
             </div>
             <div className="flex gap-2">
-              <Link to="/settings" aria-label={t("nav.settings")} className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60">
+              <Link
+                to="/settings"
+                aria-label={t("nav.settings")}
+                className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
+              >
                 <SettingsIcon className="h-3.5 w-3.5" />
               </Link>
-              <Link to="/language" aria-label={t("nav.language")} className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60">
+              <Link
+                to="/language"
+                aria-label={t("nav.language")}
+                className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
+              >
                 <Globe className="h-3.5 w-3.5" />
               </Link>
-              <Link to="/notifications" aria-label={t("nav.notifications")} className="relative grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60">
+              <Link
+                to="/notifications"
+                aria-label={t("nav.notifications")}
+                className="relative grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
+              >
                 <Bell className="h-3.5 w-3.5" />
               </Link>
             </div>
@@ -271,21 +279,21 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
                 className="text-[26px] font-medium tracking-[-0.02em] text-foreground"
                 style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
               >
-                Inside <span className="italic text-primary">{dest.city}</span>
+                {t("dest.insideWord")} <span className="italic text-primary">{city}</span>
               </h2>
               <p className="mt-1 text-[11.5px] text-muted-foreground">
                 {loadingAttractions
-                  ? "Loading top attractions…"
+                  ? t("dest.loadingTop")
                   : liveAttractions && liveAttractions.length > 0
-                    ? "Top picks, narrated by locals"
-                    : "Curated stops, narrated by locals"}
+                    ? t("dest.topPicks")
+                    : t("dest.insideSub")}
               </p>
             </div>
             <Link
               to="/destinations"
               className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary"
             >
-              Other cities <ArrowRight className="h-2.5 w-2.5" />
+              {t("dest.otherCities")} <ArrowRight className="h-2.5 w-2.5" />
             </Link>
           </div>
 
@@ -293,7 +301,7 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
             {loadingAttractions && placesFromLive.length === 0 ? (
               <div className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-card px-4 py-8 text-[12px] text-muted-foreground">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Loading top attractions…
+                {t("dest.loadingTop")}
               </div>
             ) : (
               places.map((p) => (
@@ -301,9 +309,7 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
                   key={p.id}
                   place={p}
                   expanded={expandedId === p.id}
-                  onToggle={() =>
-                    setExpandedId((curr) => (curr === p.id ? null : p.id))
-                  }
+                  onToggle={() => setExpandedId((curr) => (curr === p.id ? null : p.id))}
                 />
               ))
             )}

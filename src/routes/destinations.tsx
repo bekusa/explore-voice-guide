@@ -5,6 +5,7 @@ import { z } from "zod";
 import { ArrowLeft, ArrowRight, Headphones, MapPin, Search, Sparkles } from "lucide-react";
 import { MobileFrame } from "@/components/MobileFrame";
 import { COLLECTIONS, DESTINATIONS, searchDestinations, type Collection } from "@/lib/destinations";
+import { useT, useTranslated } from "@/hooks/useT";
 
 const collectionEnum = z.enum(["ancient", "sacred", "coastal", "imperial", "mystic"]);
 
@@ -36,6 +37,7 @@ export const Route = createFileRoute("/destinations")({
 function DestinationsPage() {
   const { q, collection } = Route.useSearch();
   const navigate = useNavigate();
+  const t = useT();
   const [query, setQuery] = useState(q);
   const [activeCollection, setActiveCollection] = useState<Collection | undefined>(collection);
 
@@ -46,6 +48,12 @@ function DestinationsPage() {
     }
     return list;
   }, [query, activeCollection]);
+
+  // Translate dynamic content (collection labels + city/country/vibe).
+  const collectionLabels = useTranslated(COLLECTIONS.map((c) => c.label));
+  const cityNames = useTranslated(results.map((d) => d.city));
+  const countryNames = useTranslated(results.map((d) => d.country));
+  const vibeNames = useTranslated(results.map((d) => d.vibe[0] ?? ""));
 
   /** Submit the typed query to the n8n-backed Lokali Attractions search. */
   function submitToLokali(e?: React.FormEvent) {
@@ -64,20 +72,20 @@ function DestinationsPage() {
             <div className="flex items-center gap-2">
               <Link
                 to="/"
-                aria-label="Back to home"
+                aria-label={t("dest.backHome")}
                 className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card transition-smooth hover:border-primary/50"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
               </Link>
               <div>
                 <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
-                  Explore
+                  {t("dest.exploreTitle")}
                 </div>
                 <h1
                   className="text-[20px] font-medium leading-tight tracking-[-0.02em]"
                   style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
                 >
-                  Choose a <span className="italic text-primary">destination</span>
+                  {t("dest.chooseDest")}
                 </h1>
               </div>
             </div>
@@ -90,7 +98,7 @@ function DestinationsPage() {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Any city, country, or landmark…"
+                placeholder={t("dest.searchAny")}
                 enterKeyHint="search"
                 autoComplete="off"
                 className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none"
@@ -100,13 +108,11 @@ function DestinationsPage() {
                   type="submit"
                   className="inline-flex items-center gap-1 rounded-full bg-gradient-gold px-3 py-1 text-[10.5px] font-bold uppercase tracking-[0.14em] text-primary-foreground transition-smooth hover:scale-105"
                 >
-                  <Sparkles className="h-2.5 w-2.5" /> Search
+                  <Sparkles className="h-2.5 w-2.5" /> {t("home.search")}
                 </button>
               )}
             </form>
-            <p className="mt-1.5 px-1 text-[10px] text-muted-foreground">
-              Press Enter to discover anywhere on Earth with Lokali AI.
-            </p>
+            <p className="mt-1.5 px-1 text-[10px] text-muted-foreground">{t("dest.searchHint")}</p>
 
             <div className="mt-3 flex gap-2 overflow-x-auto scrollbar-hide">
               <button
@@ -117,9 +123,9 @@ function DestinationsPage() {
                     : "border border-border bg-transparent text-muted-foreground hover:text-foreground"
                 }`}
               >
-                All ({DESTINATIONS.length})
+                {t("dest.allCount", { n: DESTINATIONS.length })}
               </button>
-              {COLLECTIONS.map((c) => {
+              {COLLECTIONS.map((c, i) => {
                 const on = activeCollection === c.id;
                 return (
                   <button
@@ -131,7 +137,7 @@ function DestinationsPage() {
                         : "border border-border bg-transparent text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {c.label}
+                    {collectionLabels[i] ?? c.label}
                   </button>
                 );
               })}
@@ -141,13 +147,15 @@ function DestinationsPage() {
           {/* Results */}
           <div className="px-5 pt-4">
             <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-              {results.length} {results.length === 1 ? "destination" : "destinations"}
+              {results.length === 1
+                ? t("dest.countOne", { n: results.length })
+                : t("dest.countMany", { n: results.length })}
             </p>
 
             {results.length === 0 && (
               <div className="mt-8 rounded-2xl border border-border bg-card p-6 text-center">
                 <p className="text-[13px] text-muted-foreground">
-                  Not in our curated list yet —{" "}
+                  {t("dest.notInList")} —{" "}
                   <span className="font-semibold text-foreground">"{query}"</span>
                 </p>
                 {query.trim() && (
@@ -155,7 +163,8 @@ function DestinationsPage() {
                     onClick={() => submitToLokali()}
                     className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-gradient-gold px-4 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-glow transition-smooth hover:scale-105"
                   >
-                    <Sparkles className="h-3 w-3" /> Search "{query.trim()}" with Lokali AI
+                    <Sparkles className="h-3 w-3" />{" "}
+                    {t("dest.searchWithLokali", { query: query.trim() })}
                     <ArrowRight className="h-3 w-3" />
                   </button>
                 )}
@@ -166,13 +175,13 @@ function DestinationsPage() {
                   }}
                   className="mt-3 block w-full text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground transition-smooth hover:text-foreground"
                 >
-                  Reset filters
+                  {t("dest.resetFilters")}
                 </button>
               </div>
             )}
 
             <div className="mt-3 grid grid-cols-2 gap-3">
-              {results.map((d) => (
+              {results.map((d, i) => (
                 <Link
                   key={d.slug}
                   to="/destination/$slug"
@@ -188,7 +197,7 @@ function DestinationsPage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
                   <div className="absolute left-2.5 right-2.5 top-2.5 flex items-center justify-between">
                     <span className="rounded-full border border-foreground/15 bg-background/60 px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.14em] text-foreground backdrop-blur-md">
-                      {d.country}
+                      {countryNames[i] ?? d.country}
                     </span>
                     <span className="inline-flex items-center gap-0.5 rounded-full border border-foreground/15 bg-background/60 px-1.5 py-0.5 text-[8.5px] font-bold text-primary backdrop-blur-md">
                       <Headphones className="h-2 w-2" />
@@ -200,10 +209,10 @@ function DestinationsPage() {
                       className="text-[18px] font-medium leading-tight text-foreground"
                       style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
                     >
-                      {d.city}
+                      {cityNames[i] ?? d.city}
                     </h3>
                     <p className="mt-0.5 inline-flex items-center gap-1 text-[9.5px] text-foreground/70">
-                      <MapPin className="h-2 w-2" /> {d.vibe[0]}
+                      <MapPin className="h-2 w-2" /> {vibeNames[i] ?? d.vibe[0]}
                     </p>
                   </div>
                 </Link>

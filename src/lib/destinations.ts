@@ -25,12 +25,7 @@ import athensImg from "@/assets/destinations/athens.jpg";
 import edinburghImg from "@/assets/destinations/edinburgh.jpg";
 import varanasiImg from "@/assets/destinations/varanasi.jpg";
 
-export type Collection =
-  | "ancient"
-  | "sacred"
-  | "coastal"
-  | "imperial"
-  | "mystic";
+export type Collection = "ancient" | "sacred" | "coastal" | "imperial" | "mystic";
 
 export type FeaturedTour = {
   id: string;
@@ -473,16 +468,11 @@ export function distanceKm(
   const dLng = toRad(b.lng - a.lng);
   const lat1 = toRad(a.lat);
   const lat2 = toRad(b.lat);
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-export function nearestDestination(coords: {
-  lat: number;
-  lng: number;
-}): Destination {
+export function nearestDestination(coords: { lat: number; lng: number }): Destination {
   let best = DESTINATIONS[0];
   let bestD = distanceKm(coords, best);
   for (const d of DESTINATIONS) {

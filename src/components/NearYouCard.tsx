@@ -21,6 +21,7 @@ import { useSavedItems } from "@/hooks/useSavedItems";
 import { getCachedGuide, onGuideCacheChange } from "@/lib/guideCache";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { useT } from "@/hooks/useT";
 
 export type NearPlace = {
   id: string;
@@ -47,14 +48,14 @@ export function NearYouCard({
   const language = usePreferredLanguage();
   const online = useOnlineStatus();
   const saved = useSavedItems();
+  const t = useT();
   const slug = useMemo(() => attractionSlug(place.title), [place.title]);
   const isFav = saved.some((s) => s.id === slug) || isSaved(slug);
 
   // Live cache state — re-renders when a download finishes / cache cleared
   const [cached, setCached] = useState(false);
   useEffect(() => {
-    const refresh = () =>
-      setCached(!!getCachedGuide(place.title, language));
+    const refresh = () => setCached(!!getCachedGuide(place.title, language));
     refresh();
     return onGuideCacheChange(refresh);
   }, [place.title, language]);
@@ -65,7 +66,7 @@ export function NearYouCard({
     e.stopPropagation();
     if (isFav) {
       removeItem(slug);
-      toast("Removed from Saved");
+      toast(t("toast.removedFromSaved"));
     } else {
       saveItem({
         id: slug,
@@ -81,8 +82,8 @@ export function NearYouCard({
           image_url: place.img,
         },
       });
-      toast.success("Saved", {
-        description: "Tap Download to keep the guide for offline.",
+      toast.success(t("toast.saved"), {
+        description: t("toast.savedDesc"),
       });
     }
   };
@@ -90,14 +91,14 @@ export function NearYouCard({
   const downloadOffline = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (cached) {
-      toast.info("Already cached", {
-        description: "This guide plays offline.",
+      toast.info(t("toast.alreadyCached"), {
+        description: t("toast.alreadyCachedDesc"),
       });
       return;
     }
     if (!online) {
-      toast.error("You're offline", {
-        description: "Connect once to download the guide.",
+      toast.error(t("toast.youreOffline"), {
+        description: t("toast.youreOfflineDesc"),
       });
       return;
     }
@@ -105,7 +106,7 @@ export function NearYouCard({
     try {
       const script = await fetchGuideFresh(place.title, language);
       if (script) {
-        toast.success("Downloaded for offline", {
+        toast.success(t("toast.downloaded"), {
           description: place.title,
         });
         setCached(true);
@@ -128,11 +129,11 @@ export function NearYouCard({
           });
         }
       } else {
-        toast.error("No guide returned");
+        toast.error(t("toast.noGuide"));
       }
     } catch (err) {
-      toast.error("Download failed", {
-        description: err instanceof Error ? err.message : "Try again later.",
+      toast.error(t("toast.downloadFailed"), {
+        description: err instanceof Error ? err.message : t("toast.tryAgain"),
       });
     } finally {
       setDownloading(false);
@@ -152,21 +153,15 @@ export function NearYouCard({
         className="flex w-full items-center gap-3 p-3 text-left"
       >
         <div className="h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-xl">
-          <img
-            src={place.img}
-            alt={place.title}
-            className="h-full w-full object-cover"
-          />
+          <img src={place.img} alt={place.title} className="h-full w-full object-cover" />
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-[14.5px] font-semibold text-foreground">
-            {place.title}
-          </h3>
+          <h3 className="text-[14.5px] font-semibold text-foreground">{place.title}</h3>
           <p className="my-1.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            <Headphones className="h-2.5 w-2.5" /> Audio guide
+            <Headphones className="h-2.5 w-2.5" /> {t("card.audioGuide")}
             {cached && (
               <span className="ml-1 inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[8.5px] tracking-[0.12em] text-primary">
-                <Download className="h-2 w-2" /> Offline
+                <Download className="h-2 w-2" /> {t("card.offline")}
               </span>
             )}
           </p>
@@ -206,7 +201,7 @@ export function NearYouCard({
                 {place.category}
               </span>
               <span className="rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                {place.stops} stops
+                {t("card.stops", { n: place.stops })}
               </span>
               <span className="rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 {place.subtitle}
@@ -215,8 +210,7 @@ export function NearYouCard({
 
             {/* Description */}
             <p className="mt-3 text-[12.5px] leading-[1.55] text-foreground/75">
-              {place.description ??
-                `A curated walk through ${place.title}. Tap "Open details" for the full narrated guide and stop-by-stop story.`}
+              {place.description ?? t("card.fallbackDesc", { title: place.title })}
             </p>
 
             {/* Action buttons */}
@@ -235,7 +229,7 @@ export function NearYouCard({
                 ) : (
                   <Bookmark className="h-4 w-4" />
                 )}
-                {isFav ? "Saved" : "Save"}
+                {isFav ? t("card.saved") : t("card.save")}
               </button>
 
               <button
@@ -254,7 +248,7 @@ export function NearYouCard({
                 ) : (
                   <Download className="h-4 w-4" />
                 )}
-                {downloading ? "Saving" : cached ? "Offline" : "Download"}
+                {downloading ? t("card.saving") : cached ? t("card.offline") : t("card.download")}
               </button>
 
               <Link
@@ -265,7 +259,7 @@ export function NearYouCard({
                 className="flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-gold px-2 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02]"
               >
                 <ArrowRight className="h-4 w-4" />
-                Details
+                {t("card.details")}
               </Link>
             </div>
 
@@ -277,7 +271,7 @@ export function NearYouCard({
               className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-[11px] font-semibold text-foreground transition-smooth hover:border-primary/40"
             >
               <Play className="h-3 w-3 fill-current text-primary" />
-              Play narrated guide
+              {t("card.play")}
             </Link>
           </div>
         </div>

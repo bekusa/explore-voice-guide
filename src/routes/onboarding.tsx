@@ -3,13 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Search, Check, Play, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LANGUAGES, getPreviewPhrase, type Language } from "@/lib/languages";
-import {
-  useSpeechVoices,
-  voicesForLanguage,
-  speakWithVoice,
-} from "@/hooks/useSpeechVoices";
+import { useSpeechVoices, voicesForLanguage, speakWithVoice } from "@/hooks/useSpeechVoices";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useT } from "@/hooks/useT";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -29,6 +26,7 @@ type Step = "language" | "voice";
 function OnboardingPage() {
   const navigate = useNavigate();
   const voices = useSpeechVoices();
+  const t = useT();
 
   const [step, setStep] = useState<Step>("language");
   const [query, setQuery] = useState("");
@@ -109,11 +107,11 @@ function OnboardingPage() {
         .eq("user_id", userId);
 
       if (error) throw error;
-      toast.success("All set", { description: "Your guide is ready." });
+      toast.success(t("toast.allSet"), { description: t("toast.allSetDesc") });
       navigate({ to: "/" });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Could not save preferences";
-      toast.error("Setup failed", { description: msg });
+      const msg = err instanceof Error ? err.message : t("toast.couldNotSave");
+      toast.error(t("toast.setupFailed"), { description: msg });
     } finally {
       setSaving(false);
     }
@@ -123,8 +121,8 @@ function OnboardingPage() {
     if (!selectedLang) return;
     const voice = matchingVoices.find((v) => v.voiceURI === selectedVoiceURI);
     if (!voice) {
-      toast.info("No voice available", {
-        description: "Your device doesn't ship a voice for this language. We'll use the default.",
+      toast.info(t("toast.noVoiceAvailable"), {
+        description: t("set.noNativeVoice"),
       });
       return;
     }
@@ -164,6 +162,7 @@ function OnboardingPage() {
             selected={selectedLang}
             setSelected={setSelectedLang}
             onContinue={handleContinue}
+            t={t}
           />
         ) : (
           <VoiceStep
@@ -175,6 +174,7 @@ function OnboardingPage() {
             onBack={() => setStep("language")}
             onFinish={handleFinish}
             saving={saving}
+            t={t}
           />
         )}
       </div>
@@ -191,6 +191,7 @@ function LanguageStep({
   selected,
   setSelected,
   onContinue,
+  t,
 }: {
   query: string;
   setQuery: (q: string) => void;
@@ -198,18 +199,19 @@ function LanguageStep({
   selected: Language | null;
   setSelected: (l: Language) => void;
   onContinue: () => void;
+  t: ReturnType<typeof useT>;
 }) {
   return (
     <>
       <div className="mb-6">
         <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
-          Step 1 of 2
+          {t("onb.step1")}
         </span>
         <h1 className="mt-3 font-display text-[2.25rem] font-medium leading-[1.05]">
-          Choose your <span className="italic text-primary">language</span>
+          {t("onb.chooseLang")}
         </h1>
         <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
-          Your audio guides will be narrated in this language. You can change it any time.
+          {t("onb.voiceHelp")}
         </p>
       </div>
 
@@ -218,7 +220,7 @@ function LanguageStep({
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search languages…"
+          placeholder={t("onb.searchLang")}
           className="border-0 bg-transparent shadow-none p-0 h-auto text-[13px] focus-visible:ring-0"
         />
       </div>
@@ -253,7 +255,7 @@ function LanguageStep({
           })}
           {languages.length === 0 && (
             <li className="py-8 text-center text-[13px] text-muted-foreground">
-              No languages match "{query}"
+              {t("set.noLanguagesMatch")} "{query}"
             </li>
           )}
         </ul>
@@ -265,7 +267,7 @@ function LanguageStep({
           onClick={onContinue}
           className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-gold text-[14px] font-semibold text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01] disabled:opacity-40 disabled:hover:scale-100"
         >
-          Continue <ArrowRight className="h-4 w-4" />
+          {t("onb.continue")} <ArrowRight className="h-4 w-4" />
         </button>
       </div>
     </>
@@ -283,6 +285,7 @@ function VoiceStep({
   onBack,
   onFinish,
   saving,
+  t,
 }: {
   language: Language;
   voices: SpeechSynthesisVoice[];
@@ -292,6 +295,7 @@ function VoiceStep({
   onBack: () => void;
   onFinish: () => void;
   saving: boolean;
+  t: ReturnType<typeof useT>;
 }) {
   return (
     <>
@@ -299,32 +303,30 @@ function VoiceStep({
         onClick={onBack}
         className="mb-6 inline-flex items-center gap-2 self-start text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground transition-smooth hover:text-foreground"
       >
-        <ArrowLeft className="h-3.5 w-3.5" /> Back
+        <ArrowLeft className="h-3.5 w-3.5" /> {t("onb.back")}
       </button>
 
       <div className="mb-6">
         <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
-          Step 2 of 2
+          {t("onb.step2")}
         </span>
         <h1 className="mt-3 font-display text-[2.25rem] font-medium leading-[1.05]">
-          Pick a <span className="italic text-primary">voice</span>
+          {t("onb.pickVoice")}
         </h1>
         <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
-          {language.flag} {language.native} · {voices.length} voice
-          {voices.length === 1 ? "" : "s"} available on this device
+          {language.flag} {language.native} ·{" "}
+          {voices.length === 1
+            ? t("onb.voiceCountOne", { n: voices.length })
+            : t("onb.voiceCountMany", { n: voices.length })}
         </p>
       </div>
 
       <div className="-mx-2 flex-1 overflow-y-auto px-2 pb-32 scrollbar-hide">
         {voices.length === 0 ? (
           <div className="rounded-2xl border border-border bg-card p-5">
-            <p className="text-[13px] text-foreground">
-              No native voice found on this device for{" "}
-              <span className="font-semibold">{language.native}</span>.
-            </p>
+            <p className="text-[13px] text-foreground">{t("onb.noNativeVoice")}</p>
             <p className="mt-2 text-[12px] text-muted-foreground">
-              We'll fall back to the browser default. You can install additional voices
-              in your operating system's accessibility settings.
+              <span className="font-semibold">{language.native}</span>
             </p>
           </div>
         ) : (
@@ -342,11 +344,9 @@ function VoiceStep({
                     }`}
                   >
                     <span className="flex flex-1 flex-col leading-tight">
-                      <span className="text-[14px] font-semibold text-foreground">
-                        {v.name}
-                      </span>
+                      <span className="text-[14px] font-semibold text-foreground">{v.name}</span>
                       <span className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                        {v.lang} {v.localService ? "· On-device" : "· Cloud"}
+                        {v.lang} · {v.localService ? t("voice.onDevice") : t("voice.cloud")}
                       </span>
                     </span>
                     {active && (
@@ -366,7 +366,7 @@ function VoiceStep({
           disabled={voices.length === 0}
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card px-5 py-3 text-[13px] font-semibold text-foreground transition-smooth hover:border-primary/40 disabled:opacity-50"
         >
-          <Play className="h-3.5 w-3.5 fill-current" /> Preview voice
+          <Play className="h-3.5 w-3.5 fill-current" /> {t("onb.previewVoice")}
         </button>
       </div>
 
@@ -376,7 +376,7 @@ function VoiceStep({
           disabled={saving}
           className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-gold text-[14px] font-semibold text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01] disabled:opacity-60 disabled:hover:scale-100"
         >
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Begin journey"}
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : t("onb.beginCta")}
         </button>
       </div>
     </>

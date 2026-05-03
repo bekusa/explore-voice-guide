@@ -4,6 +4,7 @@ import { Loader2, Mail, Lock, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useT } from "@/hooks/useT";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const t = useT();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -61,18 +63,16 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success("Account created", { description: "Welcome aboard." });
+        toast.success(t("auth.accountCreated"), { description: t("auth.welcomeAboard") });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast.success("Welcome back");
+        toast.success(t("auth.welcomeBackToast"));
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Something went wrong";
-      toast.error(mode === "signup" ? "Sign up failed" : "Sign in failed", {
-        description: msg.includes("already registered")
-          ? "This email is already registered. Try signing in."
-          : msg,
+      const msg = err instanceof Error ? err.message : t("auth.somethingWrong");
+      toast.error(mode === "signup" ? t("auth.signUpFailed") : t("auth.signInFailed"), {
+        description: msg.includes("already registered") ? t("auth.alreadyRegistered") : msg,
       });
     } finally {
       setLoading(false);
@@ -86,26 +86,18 @@ function AuthPage() {
           to="/"
           className="mb-10 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-smooth"
         >
-          <ArrowLeft className="h-3.5 w-3.5" /> Back
+          <ArrowLeft className="h-3.5 w-3.5" /> {t("nav.back")}
         </Link>
 
         <div className="mb-8">
           <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
-            {mode === "signin" ? "Welcome back" : "Begin your journey"}
+            {mode === "signin" ? t("auth.welcomeBack") : t("auth.beginJourney")}
           </span>
           <h1 className="mt-3 font-display text-[2.25rem] font-medium leading-[1.05]">
-            {mode === "signin" ? (
-              <>
-                Sign in to <span className="italic text-primary">continue</span>
-              </>
-            ) : (
-              <>
-                Create your <span className="italic text-primary">account</span>
-              </>
-            )}
+            {mode === "signin" ? t("auth.signInCont") : t("auth.createAcct")}
           </h1>
           <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
-            Save tours, sync chapters across devices, and pick up where you left off.
+            {t("auth.subtitle")}
           </p>
         </div>
 
@@ -113,12 +105,12 @@ function AuthPage() {
           {mode === "signup" && (
             <label className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3">
               <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground w-16 shrink-0">
-                Name
+                {t("auth.name")}
               </span>
               <Input
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Your name"
+                placeholder={t("auth.yourName")}
                 className="border-0 bg-transparent shadow-none p-0 h-auto text-[14px] focus-visible:ring-0"
                 autoComplete="name"
               />
@@ -132,7 +124,7 @@ function AuthPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder={t("auth.emailPlaceholder")}
               className="border-0 bg-transparent shadow-none p-0 h-auto text-[14px] focus-visible:ring-0"
               autoComplete="email"
             />
@@ -146,7 +138,7 @@ function AuthPage() {
               minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
+              placeholder={t("auth.password")}
               className="border-0 bg-transparent shadow-none p-0 h-auto text-[14px] focus-visible:ring-0"
               autoComplete={mode === "signup" ? "new-password" : "current-password"}
             />
@@ -160,9 +152,9 @@ function AuthPage() {
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : mode === "signin" ? (
-              "Sign in"
+              t("auth.signIn")
             ) : (
-              "Create account"
+              t("auth.signUp")
             )}
           </button>
         </form>
@@ -173,11 +165,13 @@ function AuthPage() {
         >
           {mode === "signin" ? (
             <>
-              No account yet? <span className="font-semibold text-primary">Sign up</span>
+              {t("auth.noAccount")}{" "}
+              <span className="font-semibold text-primary">{t("auth.signUpLink")}</span>
             </>
           ) : (
             <>
-              Already have an account? <span className="font-semibold text-primary">Sign in</span>
+              {t("auth.haveAccount")}{" "}
+              <span className="font-semibold text-primary">{t("auth.signInLink")}</span>
             </>
           )}
         </button>

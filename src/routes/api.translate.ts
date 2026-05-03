@@ -69,10 +69,10 @@ export const Route = createFileRoute("/api/translate")({
           }
           if (typeof body.target === "string") target = body.target;
         } catch {
-          return new Response(
-            JSON.stringify({ error: "Invalid JSON body" }),
-            { status: 400, headers: { "Content-Type": "application/json" } },
-          );
+          return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          });
         }
 
         if (texts.length === 0) {
@@ -102,49 +102,45 @@ export const Route = createFileRoute("/api/translate")({
         const userPrompt = JSON.stringify({ strings: texts }, null, 0);
 
         try {
-          const upstream = await fetch(
-            "https://ai.gateway.lovable.dev/v1/chat/completions",
-            {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${apiKey}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                model: "google/gemini-2.5-flash",
-                messages: [
-                  { role: "system", content: system },
-                  { role: "user", content: userPrompt },
-                ],
-                tools: [
-                  {
-                    type: "function",
-                    function: {
-                      name: "return_translations",
-                      description: `Return translations into ${targetName}.`,
-                      parameters: {
-                        type: "object",
-                        properties: {
-                          translations: {
-                            type: "array",
-                            items: { type: "string" },
-                            description:
-                              "Translated strings in the same order as input.strings",
-                          },
+          const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "google/gemini-2.5-flash",
+              messages: [
+                { role: "system", content: system },
+                { role: "user", content: userPrompt },
+              ],
+              tools: [
+                {
+                  type: "function",
+                  function: {
+                    name: "return_translations",
+                    description: `Return translations into ${targetName}.`,
+                    parameters: {
+                      type: "object",
+                      properties: {
+                        translations: {
+                          type: "array",
+                          items: { type: "string" },
+                          description: "Translated strings in the same order as input.strings",
                         },
-                        required: ["translations"],
-                        additionalProperties: false,
                       },
+                      required: ["translations"],
+                      additionalProperties: false,
                     },
                   },
-                ],
-                tool_choice: {
-                  type: "function",
-                  function: { name: "return_translations" },
                 },
-              }),
-            },
-          );
+              ],
+              tool_choice: {
+                type: "function",
+                function: { name: "return_translations" },
+              },
+            }),
+          });
 
           if (!upstream.ok) {
             // 429/402/etc — fall back to source so UI doesn't freeze.
@@ -161,8 +157,7 @@ export const Route = createFileRoute("/api/translate")({
             }>;
           };
 
-          const argsRaw =
-            data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+          const argsRaw = data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
           if (!argsRaw) return Response.json({ translations: texts });
 
           let parsed: { translations?: unknown };
@@ -178,10 +173,7 @@ export const Route = createFileRoute("/api/translate")({
               : texts;
 
           // Guard array length
-          const aligned =
-            out.length === texts.length
-              ? out
-              : texts.map((t, i) => out[i] ?? t);
+          const aligned = out.length === texts.length ? out : texts.map((t, i) => out[i] ?? t);
 
           return Response.json({ translations: aligned });
         } catch {

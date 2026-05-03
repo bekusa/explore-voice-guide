@@ -19,7 +19,9 @@ export function MobileFrame({
   return (
     <div className="min-h-screen w-full bg-background flex items-center justify-center md:p-8">
       <div className="relative w-full h-[100dvh] md:w-[420px] md:h-[860px] md:rounded-[3rem] md:border md:border-border md:shadow-elegant overflow-hidden bg-background">
-        <div className={`h-full w-full overflow-y-auto scrollbar-hide ${hideTabBar ? "" : "pb-[74px]"}`}>
+        <div
+          className={`h-full w-full overflow-y-auto scrollbar-hide ${hideTabBar ? "" : "pb-[74px]"}`}
+        >
           {children}
         </div>
         {!hideTabBar && <TabBar />}

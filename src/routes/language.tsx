@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { LANGUAGES, type Language } from "@/lib/languages";
 import { setStoredLang } from "@/lib/i18n";
+import { useT } from "@/hooks/useT";
 
 export const Route = createFileRoute("/language")({
   head: () => ({
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/language")({
 function LanguagePage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const t = useT();
   const [query, setQuery] = useState("");
   const [active, setActive] = useState<string>("ka");
   const [pending, setPending] = useState<string | null>(null);
@@ -80,14 +82,14 @@ function LanguagePage() {
       }
       setActive(lang.code);
       setStoredLang(lang.code);
-      toast.success("Language updated", {
+      toast.success(t("toast.langUpdated"), {
         description: `${lang.flag} ${lang.native}`,
       });
       // Brief delay so the user sees the checkmark before we leave
       setTimeout(() => navigate({ to: "/" }), 350);
     } catch (err) {
-      toast.error("Couldn't change language", {
-        description: err instanceof Error ? err.message : "Try again later.",
+      toast.error(t("toast.langFailed"), {
+        description: err instanceof Error ? err.message : t("toast.tryAgain"),
       });
     } finally {
       setPending(null);
@@ -113,7 +115,7 @@ function LanguagePage() {
         <header className="flex items-center justify-between px-6 pt-12">
           <button
             onClick={() => navigate({ to: "/" })}
-            aria-label="Back"
+            aria-label={t("nav.back")}
             className="grid h-10 w-10 place-items-center rounded-full border border-border bg-card transition-smooth hover:border-primary/40"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -121,21 +123,20 @@ function LanguagePage() {
           <div className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5">
             <span className="text-[15px] leading-none">{activeLang.flag}</span>
             <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Current
+              {t("lang.current")}
             </span>
           </div>
         </header>
 
         <section className="px-6 pt-6">
           <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
-            Audio guide
+            {t("lang.audioGuide")}
           </span>
           <h1 className="mt-3 font-display text-[2.25rem] font-medium leading-[1.05]">
-            Speak my <span className="italic text-primary">language</span>
+            {t("lang.speakMy")} <span className="italic text-primary">{t("lang.language")}</span>
           </h1>
           <p className="mt-3 max-w-[320px] text-[13px] leading-[1.55] text-muted-foreground">
-            Tap a language to switch instantly. Your narrator voice will reset so
-            you can pick a new one.
+            {t("lang.tapHint")}
           </p>
         </section>
 
@@ -146,7 +147,7 @@ function LanguagePage() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search 37 languages…"
+              placeholder={t("lang.searchPlaceholder")}
               autoComplete="off"
               className="h-auto border-0 bg-transparent p-0 text-[13px] shadow-none focus-visible:ring-0"
             />
@@ -173,9 +174,7 @@ function LanguagePage() {
                     <span className="text-[22px] leading-none">{l.flag}</span>
                     <span className="flex flex-1 flex-col leading-tight">
                       <span className="text-[14px] font-semibold">{l.native}</span>
-                      <span className="text-[11px] text-muted-foreground">
-                        {l.name}
-                      </span>
+                      <span className="text-[11px] text-muted-foreground">{l.name}</span>
                     </span>
                     {isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin text-primary" />
@@ -190,7 +189,7 @@ function LanguagePage() {
             })}
             {filtered.length === 0 && (
               <li className="py-10 text-center text-[13px] text-muted-foreground">
-                No languages match "{query}"
+                {t("lang.noMatches")} "{query}"
               </li>
             )}
           </ul>

@@ -26,11 +26,7 @@ import { MobileFrame } from "@/components/MobileFrame";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  speakWithVoice,
-  useSpeechVoices,
-  voicesForLanguage,
-} from "@/hooks/useSpeechVoices";
+import { speakWithVoice, useSpeechVoices, voicesForLanguage } from "@/hooks/useSpeechVoices";
 import { LANGUAGES, getPreviewPhrase, type Language } from "@/lib/languages";
 import { clearAll, getSaved, updateItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
@@ -42,6 +38,7 @@ import {
   guideCacheSize,
   onGuideCacheChange,
 } from "@/lib/guideCache";
+import { useT } from "@/hooks/useT";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -49,8 +46,7 @@ export const Route = createFileRoute("/settings")({
       { title: "Settings — Voices of Old Tbilisi" },
       {
         name: "description",
-        content:
-          "Configure your language, narrator voice, theme, and offline library.",
+        content: "Configure your language, narrator voice, theme, and offline library.",
       },
       { property: "og:title", content: "Settings — Voices of Old Tbilisi" },
       {
@@ -69,6 +65,7 @@ function SettingsPage() {
   const navigate = useNavigate();
   const voices = useSpeechVoices();
   const saved = useSavedItems();
+  const t = useT();
 
   const [section, setSection] = useState<Section>("main");
   const [langCode, setLangCode] = useState<string>("ka");
@@ -134,18 +131,15 @@ function SettingsPage() {
       .from("profiles")
       .update({ preferred_language: lang.code, preferred_voice: "browser-default" })
       .eq("user_id", user.id);
-    toast.success("Language updated", { description: lang.native });
+    toast.success(t("toast.langUpdated"), { description: lang.native });
     setSection("main");
   };
 
   const updateVoice = async (uri: string) => {
     setVoiceURI(uri);
     if (!user) return;
-    await supabase
-      .from("profiles")
-      .update({ preferred_voice: uri })
-      .eq("user_id", user.id);
-    toast.success("Voice updated");
+    await supabase.from("profiles").update({ preferred_voice: uri }).eq("user_id", user.id);
+    toast.success(t("toast.voiceUpdated"));
     setSection("main");
   };
 
@@ -158,10 +152,10 @@ function SettingsPage() {
         .update({ display_name: displayName.trim() || null })
         .eq("user_id", user.id);
       if (error) throw error;
-      toast.success("Profile saved");
+      toast.success(t("toast.profileSaved"));
     } catch (err) {
-      toast.error("Couldn't save", {
-        description: err instanceof Error ? err.message : "Try again later.",
+      toast.error(t("toast.couldNotSave"), {
+        description: err instanceof Error ? err.message : t("toast.tryAgain"),
       });
     } finally {
       setSavingProfile(false);
@@ -179,29 +173,23 @@ function SettingsPage() {
     if (activeVoice) {
       speakWithVoice(getPreviewPhrase(language.code), activeVoice);
     } else {
-      toast.info("No voice available", {
-        description: "This device has no installed voice for this language.",
+      toast.info(t("toast.noVoiceAvailable"), {
+        description: t("set.noNativeVoice"),
       });
     }
   };
 
   const clearOffline = () => {
-    if (
-      !confirm(
-        `Clear ${saved.length} saved place${saved.length === 1 ? "" : "s"} and all cached guides?`,
-      )
-    )
-      return;
+    if (!confirm(t("saved.clearConfirm"))) return;
     clearAll();
     clearGuideCache();
-    toast.success("Offline library cleared");
+    toast.success(t("toast.libCleared"));
   };
 
   /* ─── Offline guide cache (live-updating count + size) ─── */
   const [cacheStats, setCacheStats] = useState({ count: 0, bytes: 0 });
   useEffect(() => {
-    const refresh = () =>
-      setCacheStats({ count: guideCacheCount(), bytes: guideCacheSize() });
+    const refresh = () => setCacheStats({ count: guideCacheCount(), bytes: guideCacheSize() });
     refresh();
     return onGuideCacheChange(refresh);
   }, []);
@@ -212,14 +200,14 @@ function SettingsPage() {
 
   const downloadAllForOffline = async () => {
     if (!online) {
-      toast.error("You're offline", {
-        description: "Connect to download guides for offline use.",
+      toast.error(t("toast.youreOffline"), {
+        description: t("toast.youreOfflineDesc"),
       });
       return;
     }
     if (saved.length === 0) {
-      toast.info("Save some places first", {
-        description: "Bookmark places, then download them in your language here.",
+      toast.info(t("saved.empty"), {
+        description: t("saved.emptyHelp"),
       });
       return;
     }
@@ -245,12 +233,17 @@ function SettingsPage() {
     }
     setDownloading(false);
     if (ok > 0) {
-      toast.success(`Downloaded ${ok} guide${ok === 1 ? "" : "s"}`, {
-        description: `Available offline in ${language.native}${failed ? ` · ${failed} failed` : ""}.`,
-      });
+      toast.success(
+        ok === 1 ? t("set.downloadedOne", { n: ok }) : t("set.downloadedMany", { n: ok }),
+        {
+          description: failed
+            ? t("set.downloadAvailableFailed", { lang: language.native, n: failed })
+            : t("set.downloadAvailable", { lang: language.native }),
+        },
+      );
     } else {
-      toast.error("Couldn't download any guides", {
-        description: "Check your connection and try again.",
+      toast.error(t("set.downloadFailed"), {
+        description: t("set.downloadFailedDesc"),
       });
     }
   };
@@ -274,7 +267,7 @@ function SettingsPage() {
 
   if (section === "language") {
     return (
-      <SubScreen title="Language" onBack={() => setSection("main")}>
+      <SubScreen title={t("set.language")} onBack={() => setSection("main")}>
         <LanguageList active={langCode} onPick={updateLanguage} />
       </SubScreen>
     );
@@ -283,8 +276,12 @@ function SettingsPage() {
   if (section === "voice") {
     return (
       <SubScreen
-        title="Narrator voice"
-        subtitle={`${language.flag} ${language.native} · ${matchingVoices.length} available`}
+        title={t("set.narratorVoice")}
+        subtitle={`${language.flag} ${language.native} · ${
+          matchingVoices.length === 1
+            ? t("onb.voiceCountOne", { n: matchingVoices.length })
+            : t("onb.voiceCountMany", { n: matchingVoices.length })
+        }`}
         onBack={() => setSection("main")}
       >
         <VoiceList
@@ -306,7 +303,7 @@ function SettingsPage() {
         <header className="relative z-10 flex items-center justify-between px-6 pt-12">
           <Link
             to="/"
-            aria-label="Back"
+            aria-label={t("nav.back")}
             className="grid h-10 w-10 place-items-center rounded-full border border-border bg-card transition-smooth hover:border-primary/40"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -315,27 +312,26 @@ function SettingsPage() {
 
         <section className="px-6 pt-6">
           <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
-            Configuration
+            {t("set.configuration")}
           </span>
           <h1 className="mt-3 font-display text-[2.25rem] font-medium leading-[1.05]">
-            Tune your <span className="italic text-primary">journey</span>
+            {t("set.tuneYour")} <span className="italic text-primary">{t("set.journey")}</span>
           </h1>
           <p className="mt-3 max-w-[320px] text-[13px] leading-[1.55] text-muted-foreground">
-            Language, voice, theme, and offline storage — everything that shapes
-            how Tbilisi whispers back to you.
+            {t("set.intro")}
           </p>
         </section>
 
         {/* Account */}
         {user && (
-          <Group title="Account">
+          <Group title={t("set.account")}>
             <div className="flex items-center gap-3 px-4 py-4">
               <span className="grid h-11 w-11 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow">
                 <UserIcon className="h-4 w-4" />
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  <Mail className="h-2.5 w-2.5" /> Signed in as
+                  <Mail className="h-2.5 w-2.5" /> {t("set.signedInAs")}
                 </div>
                 <div className="truncate text-[13px] font-semibold">{user.email}</div>
               </div>
@@ -343,13 +339,13 @@ function SettingsPage() {
             <Divider />
             <div className="flex flex-col gap-2 px-4 py-4">
               <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Display name
+                {t("set.displayName")}
               </label>
               <div className="flex gap-2">
                 <Input
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Your name"
+                  placeholder={t("set.yourName")}
                   className="h-10 rounded-xl border-border bg-background text-[13px]"
                 />
                 <button
@@ -357,7 +353,7 @@ function SettingsPage() {
                   disabled={savingProfile}
                   className="rounded-xl bg-foreground px-4 text-[11px] font-bold uppercase tracking-[0.16em] text-background transition-smooth hover:scale-[1.02] disabled:opacity-50"
                 >
-                  {savingProfile ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Save"}
+                  {savingProfile ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : t("set.save")}
                 </button>
               </div>
             </div>
@@ -365,18 +361,18 @@ function SettingsPage() {
         )}
 
         {/* Voice & language */}
-        <Group title="Audio guide">
+        <Group title={t("set.audioGuide")}>
           <Row
             icon={<Globe2 className="h-4 w-4" />}
-            label="Language"
+            label={t("set.language")}
             value={`${language.flag} ${language.native}`}
             onClick={() => setSection("language")}
           />
           <Divider />
           <Row
             icon={<Headphones className="h-4 w-4" />}
-            label="Narrator voice"
-            value={activeVoice?.name ?? "Browser default"}
+            label={t("set.narratorVoice")}
+            value={activeVoice?.name ?? t("set.browserDefault")}
             onClick={() => setSection("voice")}
           />
           <Divider />
@@ -387,28 +383,24 @@ function SettingsPage() {
             <span className="grid h-9 w-9 place-items-center rounded-full bg-secondary text-foreground">
               <Volume2 className="h-4 w-4" />
             </span>
-            <span className="flex-1 text-[13px] font-semibold">Preview voice</span>
+            <span className="flex-1 text-[13px] font-semibold">{t("set.previewVoice")}</span>
             <Play className="h-3.5 w-3.5 fill-current text-primary" />
           </button>
         </Group>
 
         {/* Appearance */}
-        <Group title="Appearance">
+        <Group title={t("set.appearance")}>
           <button
             onClick={toggleTheme}
             className="flex w-full items-center gap-3 px-4 py-4 text-left transition-smooth hover:bg-secondary/40"
           >
             <span className="grid h-9 w-9 place-items-center rounded-full bg-secondary text-foreground">
-              {theme === "dark" ? (
-                <Moon className="h-4 w-4" />
-              ) : (
-                <Sun className="h-4 w-4" />
-              )}
+              {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
             </span>
             <span className="flex-1">
-              <span className="block text-[13px] font-semibold">Theme</span>
+              <span className="block text-[13px] font-semibold">{t("set.theme")}</span>
               <span className="block text-[11px] text-muted-foreground">
-                {theme === "dark" ? "Cinematic dark" : "Daylight"}
+                {theme === "dark" ? t("set.themeDark") : t("set.themeLight")}
               </span>
             </span>
             <span
@@ -426,7 +418,7 @@ function SettingsPage() {
         </Group>
 
         {/* Offline mode */}
-        <Group title="Offline mode">
+        <Group title={t("set.offlineMode")}>
           <div className="flex items-center gap-3 px-4 py-4">
             <span
               className={`grid h-9 w-9 place-items-center rounded-full ${
@@ -437,12 +429,10 @@ function SettingsPage() {
             </span>
             <div className="flex-1">
               <div className="text-[13px] font-semibold">
-                {online ? "You're online" : "You're offline"}
+                {online ? t("set.youOnline") : t("set.youOffline")}
               </div>
               <div className="text-[11px] text-muted-foreground">
-                {online
-                  ? "Download guides now so they keep playing without signal."
-                  : "Cached guides keep working — others will load when you reconnect."}
+                {online ? t("set.onlineHelp") : t("set.offlineHelp")}
               </div>
             </div>
           </div>
@@ -454,16 +444,16 @@ function SettingsPage() {
             </span>
             <div className="flex-1">
               <div className="text-[13px] font-semibold">
-                {saved.length} saved · {cacheStats.count} guide
-                {cacheStats.count === 1 ? "" : "s"} cached
+                {cacheStats.count === 1
+                  ? t("set.savedSummaryOne", { saved: saved.length, cached: cacheStats.count })
+                  : t("set.savedSummaryMany", { saved: saved.length, cached: cacheStats.count })}
               </div>
               <div className="text-[11px] text-muted-foreground">
-                {language.flag} {language.native} · ~
-                {Math.max(
-                  1,
-                  Math.round((estimateBytes() + cacheStats.bytes) / 1024),
-                )}{" "}
-                KB on this device
+                {t("set.cacheSize", {
+                  flag: language.flag,
+                  native: language.native,
+                  kb: Math.max(1, Math.round((estimateBytes() + cacheStats.bytes) / 1024)),
+                })}
               </div>
             </div>
           </div>
@@ -477,8 +467,7 @@ function SettingsPage() {
             <span className="grid h-9 w-9 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow">
               {downloading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
-              ) : downloadProgress.done > 0 &&
-                downloadProgress.done === downloadProgress.total ? (
+              ) : downloadProgress.done > 0 && downloadProgress.done === downloadProgress.total ? (
                 <CheckCircle2 className="h-4 w-4" />
               ) : (
                 <Download className="h-4 w-4" />
@@ -487,19 +476,21 @@ function SettingsPage() {
             <span className="flex-1">
               <span className="block text-[13px] font-semibold">
                 {downloading
-                  ? `Downloading… ${downloadProgress.done}/${downloadProgress.total}`
-                  : `Download ${saved.length || ""} guide${saved.length === 1 ? "" : "s"} for offline`}
+                  ? t("set.downloading", {
+                      done: downloadProgress.done,
+                      total: downloadProgress.total,
+                    })
+                  : saved.length === 1
+                    ? t("set.downloadAllOne", { n: saved.length })
+                    : t("set.downloadAllMany", { n: saved.length })}
               </span>
               <span className="block text-[11px] text-muted-foreground">
-                Caches all saved places in {language.native}
+                {t("set.downloadDesc", { lang: language.native })}
               </span>
             </span>
             {downloading && downloadProgress.total > 0 && (
               <span className="font-mono text-[10px] text-primary">
-                {Math.round(
-                  (downloadProgress.done / downloadProgress.total) * 100,
-                )}
-                %
+                {Math.round((downloadProgress.done / downloadProgress.total) * 100)}%
               </span>
             )}
           </button>
@@ -513,9 +504,7 @@ function SettingsPage() {
             <span className="grid h-9 w-9 place-items-center rounded-full bg-destructive/15">
               <Trash2 className="h-4 w-4" />
             </span>
-            <span className="flex-1 text-[13px] font-semibold">
-              Clear offline library
-            </span>
+            <span className="flex-1 text-[13px] font-semibold">{t("set.clearLib")}</span>
           </button>
         </Group>
 
@@ -527,13 +516,13 @@ function SettingsPage() {
               className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card px-5 py-3.5 text-[13px] font-semibold text-foreground transition-smooth hover:border-destructive/50 hover:text-destructive"
             >
               <LogOut className="h-4 w-4" />
-              Sign out
+              {t("set.signOut")}
             </button>
           </div>
         )}
 
         <p className="px-6 pt-6 text-center text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-          Voices of Old Tbilisi · v1.0
+          {t("set.appVersion")}
         </p>
       </div>
     </MobileFrame>
@@ -558,9 +547,7 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
       <h2 className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
         {title}
       </h2>
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
-        {children}
-      </div>
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">{children}</div>
     </section>
   );
 }
@@ -590,9 +577,7 @@ function Row({
       </span>
       <span className="flex-1">
         <span className="block text-[13px] font-semibold">{label}</span>
-        <span className="block truncate text-[11px] text-muted-foreground">
-          {value}
-        </span>
+        <span className="block truncate text-[11px] text-muted-foreground">{value}</span>
       </span>
       <ChevronRight className="h-4 w-4 text-muted-foreground" />
     </button>
@@ -610,40 +595,34 @@ function SubScreen({
   onBack: () => void;
   children: React.ReactNode;
 }) {
+  const t = useT();
   return (
     <MobileFrame>
       <div className="relative min-h-full bg-background pb-32 text-foreground">
         <header className="flex items-center gap-3 px-6 pt-12">
           <button
             onClick={onBack}
-            aria-label="Back"
+            aria-label={t("nav.back")}
             className="grid h-10 w-10 place-items-center rounded-full border border-border bg-card transition-smooth hover:border-primary/40"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
           <div>
             <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-primary">
-              Settings
+              {t("set.title")}
             </span>
             <h1 className="font-display text-[22px] leading-tight">{title}</h1>
           </div>
         </header>
-        {subtitle && (
-          <p className="mt-3 px-6 text-[12px] text-muted-foreground">{subtitle}</p>
-        )}
+        {subtitle && <p className="mt-3 px-6 text-[12px] text-muted-foreground">{subtitle}</p>}
         <div className="px-6 pt-6">{children}</div>
       </div>
     </MobileFrame>
   );
 }
 
-function LanguageList({
-  active,
-  onPick,
-}: {
-  active: string;
-  onPick: (l: Language) => void;
-}) {
+function LanguageList({ active, onPick }: { active: string; onPick: (l: Language) => void }) {
+  const t = useT();
   const [query, setQuery] = useState("");
   const filtered = useMemo(() => {
     if (!query.trim()) return LANGUAGES;
@@ -663,7 +642,7 @@ function LanguageList({
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search languages…"
+          placeholder={t("set.searchLanguages")}
           className="h-auto border-0 bg-transparent p-0 text-[13px] shadow-none focus-visible:ring-0"
         />
       </div>
@@ -696,7 +675,7 @@ function LanguageList({
         })}
         {filtered.length === 0 && (
           <li className="py-8 text-center text-[13px] text-muted-foreground">
-            No languages match "{query}"
+            {t("set.noLanguagesMatch")} "{query}"
           </li>
         )}
       </ul>
@@ -717,17 +696,12 @@ function VoiceList({
   onPreview: () => void;
   languageCode: string;
 }) {
+  const t = useT();
   if (voices.length === 0) {
     return (
       <div className="rounded-2xl border border-border bg-card p-5 text-[13px]">
-        <p className="text-foreground">
-          No native voice found on this device for{" "}
-          <span className="font-semibold">{languageCode}</span>.
-        </p>
-        <p className="mt-2 text-[12px] text-muted-foreground">
-          We'll fall back to the browser default. Install additional voices in
-          your operating system's accessibility settings.
-        </p>
+        <p className="text-foreground">{t("set.noVoiceForLang", { code: languageCode })}</p>
+        <p className="mt-2 text-[12px] text-muted-foreground">{t("set.installVoicesHelp")}</p>
       </div>
     );
   }
@@ -750,7 +724,7 @@ function VoiceList({
                 <span className="flex flex-1 flex-col leading-tight">
                   <span className="text-[14px] font-semibold">{v.name}</span>
                   <span className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                    {v.lang} · {v.localService ? "On-device" : "Cloud"}
+                    {v.lang} · {v.localService ? t("voice.onDevice") : t("voice.cloud")}
                   </span>
                 </span>
                 {isActive && (
@@ -767,7 +741,7 @@ function VoiceList({
         onClick={onPreview}
         className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card px-5 py-3 text-[13px] font-semibold transition-smooth hover:border-primary/40"
       >
-        <Play className="h-3.5 w-3.5 fill-current" /> Preview voice
+        <Play className="h-3.5 w-3.5 fill-current" /> {t("set.previewVoice")}
       </button>
     </>
   );

@@ -25,19 +25,14 @@ function emit() {
 export function getSelectedSlug(): string {
   if (typeof window === "undefined") return DEFAULT_DESTINATION_SLUG;
   try {
-    return (
-      localStorage.getItem(KEY_SLUG) ?? DEFAULT_DESTINATION_SLUG
-    );
+    return localStorage.getItem(KEY_SLUG) ?? DEFAULT_DESTINATION_SLUG;
   } catch {
     return DEFAULT_DESTINATION_SLUG;
   }
 }
 
 export function getSelectedDestination(): Destination {
-  return (
-    getDestination(getSelectedSlug()) ??
-    getDestination(DEFAULT_DESTINATION_SLUG)!
-  );
+  return getDestination(getSelectedSlug()) ?? getDestination(DEFAULT_DESTINATION_SLUG)!;
 }
 
 export function setSelectedSlug(slug: string) {

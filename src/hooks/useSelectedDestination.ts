@@ -4,11 +4,7 @@ import {
   getSelectedDestination,
   onDestinationChange,
 } from "@/lib/destinationStore";
-import {
-  DEFAULT_DESTINATION_SLUG,
-  getDestination,
-  type Destination,
-} from "@/lib/destinations";
+import { DEFAULT_DESTINATION_SLUG, getDestination, type Destination } from "@/lib/destinations";
 
 /**
  * Reactive selected-destination hook.
@@ -16,9 +12,7 @@ import {
  * - Triggers a single best-effort geolocation attempt on mount.
  */
 export function useSelectedDestination(): Destination {
-  const [dest, setDest] = useState<Destination>(
-    () => getDestination(DEFAULT_DESTINATION_SLUG)!,
-  );
+  const [dest, setDest] = useState<Destination>(() => getDestination(DEFAULT_DESTINATION_SLUG)!);
 
   useEffect(() => {
     setDest(getSelectedDestination());
