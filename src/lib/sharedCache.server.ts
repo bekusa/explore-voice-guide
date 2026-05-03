@@ -23,13 +23,24 @@
  * on a Postgres round-trip too. A failed write is logged and
  * swallowed: the cache is an optimization, not a source of truth.
  */
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { createClient } from "@supabase/supabase-js";
 
-// The auto-generated `Database` type lives in supabase/types.ts and
-// is regenerated whenever Lovable syncs schema. Until that file
-// learns about the cached_* tables this migration adds, we read the
-// admin client through a permissive view so TypeScript doesn't trip.
-// Behaviour is unchanged — this is purely a type hatch.
+// We deliberately don't reuse `supabaseAdmin` here. Lovable Cloud
+// auto-manages the SUPABASE_* prefixed env vars and points them at
+// its own provisioned project, which Beka can't reach to apply
+// migrations. The cache lives in a separate Beka-owned project, so
+// we read its credentials from EXTERNAL_SUPABASE_* env vars instead
+// (Lovable explicitly allows non-SUPABASE_-prefixed names).
+//
+// Required env vars (set in Lovable Project Secrets):
+//   EXTERNAL_SUPABASE_URL              → https://<project>.supabase.co
+//   EXTERNAL_SUPABASE_SERVICE_ROLE_KEY → service_role key from
+//                                        Supabase Dashboard → Project
+//                                        Settings → API
+//
+// If either is missing the cache silently no-ops and every request
+// falls through to n8n — same behaviour as before this file existed.
+
 type AnyTable = {
   select: (cols: string) => {
     eq: (
@@ -73,7 +84,31 @@ type AnyTable = {
 type DbWithCache = {
   from: (table: "cached_guides" | "cached_attractions") => AnyTable;
 };
-const db = supabaseAdmin as unknown as DbWithCache;
+
+// Lazy + memoized: don't crash module load if vars are missing,
+// just return null so callers no-op.
+let _db: DbWithCache | null | undefined;
+function getDb(): DbWithCache | null {
+  if (_db !== undefined) return _db;
+  const url = process.env.EXTERNAL_SUPABASE_URL;
+  const key = process.env.EXTERNAL_SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    console.warn(
+      "[sharedCache] EXTERNAL_SUPABASE_URL or EXTERNAL_SUPABASE_SERVICE_ROLE_KEY missing — cache disabled",
+    );
+    _db = null;
+    return null;
+  }
+  const client = createClient(url, key, {
+    auth: {
+      storage: undefined,
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+  _db = client as unknown as DbWithCache;
+  return _db;
+}
 
 /* ─── Key normalization ─── */
 
@@ -108,6 +143,8 @@ export type GuideKey = {
 };
 
 export async function getCachedGuide(key: GuideKey): Promise<unknown | null> {
+  const db = getDb();
+  if (!db) return null;
   try {
     const { data, error } = await db
       .from("cached_guides")
@@ -131,6 +168,8 @@ export async function getCachedGuide(key: GuideKey): Promise<unknown | null> {
 }
 
 export async function putCachedGuide(key: GuideKey, payload: unknown): Promise<void> {
+  const db = getDb();
+  if (!db) return;
   try {
     const { error } = await db.from("cached_guides").upsert(
       {
@@ -149,6 +188,8 @@ export async function putCachedGuide(key: GuideKey, payload: unknown): Promise<v
 }
 
 async function bumpGuideHit(key: GuideKey): Promise<void> {
+  const db = getDb();
+  if (!db) return;
   try {
     // PostgREST doesn't expose `hit_count = hit_count + 1` directly,
     // so do a small read-then-write. Race conditions here just mean a
@@ -182,6 +223,8 @@ export type AttractionsKey = {
 };
 
 export async function getCachedAttractions(key: AttractionsKey): Promise<unknown | null> {
+  const db = getDb();
+  if (!db) return null;
   try {
     const { data, error } = await db
       .from("cached_attractions")
@@ -204,6 +247,8 @@ export async function getCachedAttractions(key: AttractionsKey): Promise<unknown
 }
 
 export async function putCachedAttractions(key: AttractionsKey, payload: unknown): Promise<void> {
+  const db = getDb();
+  if (!db) return;
   try {
     const { error } = await db.from("cached_attractions").upsert(
       {
@@ -222,6 +267,8 @@ export async function putCachedAttractions(key: AttractionsKey, payload: unknown
 }
 
 async function bumpAttractionsHit(key: AttractionsKey): Promise<void> {
+  const db = getDb();
+  if (!db) return;
   try {
     const { data } = await db
       .from("cached_attractions")
