@@ -11,7 +11,7 @@ import { useT } from "@/hooks/useT";
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
-      { title: "Choose your language · Voices of Old Tbilisi" },
+      { title: "Choose your language · Lokali" },
       {
         name: "description",
         content: "Pick your preferred language and narrator voice for personalized audio guides.",

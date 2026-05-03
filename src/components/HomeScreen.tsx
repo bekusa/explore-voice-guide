@@ -5,7 +5,6 @@ import {
   Bell,
   ChevronDown,
   Globe,
-  Headphones,
   MapPin,
   Search,
   Settings as SettingsIcon,
@@ -325,7 +324,6 @@ function TimeMachineMomentCard({
  * ───────────────────────────────────────────── */
 function DestinationCard({ dest }: { dest: Destination }) {
   const t = useT();
-  const tours = dest.featured.length;
   const [city, country, ...vibes] = useTranslated([
     dest.city,
     dest.country,
@@ -349,10 +347,10 @@ function DestinationCard({ dest }: { dest: Destination }) {
         <span className="rounded-full border border-foreground/15 bg-background/60 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.18em] text-foreground backdrop-blur-md">
           {country}
         </span>
-        <span className="inline-flex items-center gap-1 rounded-full border border-foreground/15 bg-background/60 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.16em] text-primary backdrop-blur-md">
-          <Headphones className="h-2.5 w-2.5" />{" "}
-          {tours === 1 ? t("home.tours.one", { n: tours }) : t("home.tours.many", { n: tours })}
-        </span>
+        {/* Tour count pill removed per Beka's request — the number was
+            sourced from the static `dest.featured.length` and didn't
+            reflect what the n8n attractions workflow returns, so it
+            was misleading. */}
       </div>
 
       <div className="absolute inset-x-4 bottom-4">

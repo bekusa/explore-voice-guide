@@ -26,12 +26,12 @@ import type { UiKey } from "@/lib/i18n";
 export const Route = createFileRoute("/notifications")({
   head: () => ({
     meta: [
-      { title: "Notifications — Voices of Old Tbilisi" },
+      { title: "Notifications — Lokali" },
       {
         name: "description",
         content: "Tips, updates, and offline status for your audio journeys.",
       },
-      { property: "og:title", content: "Notifications — Voices of Old Tbilisi" },
+      { property: "og:title", content: "Notifications — Lokali" },
       {
         property: "og:description",
         content: "Tips, updates, and offline status for your audio journeys.",

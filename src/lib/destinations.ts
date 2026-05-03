@@ -74,7 +74,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "tbilisi",
     city: "Tbilisi",
     country: "Georgia",
-    tagline: "Voices of|Old Tbilisi",
+    tagline: "Lokali|Old Tbilisi",
     blurb:
       "From sulfur baths and crooked balconies to the chants of Sioni — a cinematic walk through the soul of the old town.",
     hero: tbilisiHero,
@@ -128,7 +128,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "rome",
     city: "Rome",
     country: "Italy",
-    tagline: "Voices of|Eternal Rome",
+    tagline: "Lokali|Eternal Rome",
     blurb:
       "Through the Forum's ghosts, baroque fountains and trastevere supper tables — the city that never quite stops being itself.",
     hero: romeImg,
@@ -169,7 +169,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "istanbul",
     city: "Istanbul",
     country: "Türkiye",
-    tagline: "Voices of|the Bosphorus",
+    tagline: "Lokali|the Bosphorus",
     blurb:
       "Two continents, three empires, a thousand minarets — Istanbul drifts between sea, prayer, and bazaar.",
     hero: istanbulImg,
@@ -197,7 +197,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "kyoto",
     city: "Kyoto",
     country: "Japan",
-    tagline: "Voices of|Old Kyoto",
+    tagline: "Lokali|Old Kyoto",
     blurb:
       "Lantern-lit alleys of Gion, mossy temples, and the ten thousand vermillion gates of Fushimi — Japan's quiet old soul.",
     hero: kyotoImg,
@@ -225,7 +225,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "lisbon",
     city: "Lisbon",
     country: "Portugal",
-    tagline: "Voices of|the Tagus",
+    tagline: "Lokali|the Tagus",
     blurb:
       "Saudade, fado, and tile-clad hills tipping toward the Atlantic — Lisbon sings its melancholy in azulejo blue.",
     hero: lisbonImg,
@@ -253,7 +253,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "marrakech",
     city: "Marrakech",
     country: "Morocco",
-    tagline: "Voices of|the Red City",
+    tagline: "Lokali|the Red City",
     blurb:
       "Lantern-lit medinas, riad courtyards, and the trance-drum theatre of Jemaa el-Fnaa — sensory overload, in the best way.",
     hero: marrakechImg,
@@ -281,7 +281,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "cusco",
     city: "Cusco",
     country: "Peru",
-    tagline: "Voices of|the Andes",
+    tagline: "Lokali|the Andes",
     blurb:
       "Inca foundations under colonial arches, terracotta rooftops cascading down the valley — the gateway to the Sacred Valley.",
     hero: cuscoImg,
@@ -309,7 +309,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "prague",
     city: "Prague",
     country: "Czechia",
-    tagline: "Voices of|the Vltava",
+    tagline: "Lokali|the Vltava",
     blurb:
       "Gothic spires, baroque alleys, and the alchemists' lane in the castle's shadow — a city that wears every century at once.",
     hero: pragueImg,
@@ -337,7 +337,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "cairo",
     city: "Cairo",
     country: "Egypt",
-    tagline: "Voices of|the Nile",
+    tagline: "Lokali|the Nile",
     blurb:
       "Pyramids on the desert edge, Fatimid minarets in the old city, the Nile carrying the centuries — Cairo is a thousand cities stacked.",
     hero: cairoImg,
@@ -365,7 +365,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "athens",
     city: "Athens",
     country: "Greece",
-    tagline: "Voices of|the Acropolis",
+    tagline: "Lokali|the Acropolis",
     blurb:
       "Marble columns above a tangle of neoclassical streets — the city that invented the very idea of a city.",
     hero: athensImg,
@@ -393,7 +393,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "edinburgh",
     city: "Edinburgh",
     country: "Scotland",
-    tagline: "Voices of|the Royal Mile",
+    tagline: "Lokali|the Royal Mile",
     blurb:
       "A volcano, a castle, and a literary capital wrapped in misty cobblestones — the most theatrical city in the British Isles.",
     hero: edinburghImg,
@@ -421,7 +421,7 @@ export const DESTINATIONS: Destination[] = [
     slug: "varanasi",
     city: "Varanasi",
     country: "India",
-    tagline: "Voices of|the Ganges",
+    tagline: "Lokali|the Ganges",
     blurb:
       "The world's oldest continuously lived-in city. Ghats, pyres, sitar drift, and dawn boats — life and death in plain view.",
     hero: varanasiImg,

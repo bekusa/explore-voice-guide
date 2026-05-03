@@ -124,6 +124,58 @@ function unwrapEnvelope(parsed: unknown): unknown {
 }
 
 /**
+ * Repair JSON that has unescaped control characters inside string
+ * literals — Claude / GPT regularly emit content like:
+ *   "outside_desc": "ძველი სამყაროს ერთ-ერთი
+ *   შვიდი საოცრება..."
+ * with a real newline inside the quotes. Strict JSON.parse rejects
+ * that; this walker re-escapes the offending bytes only when we're
+ * inside a string and not already inside an escape sequence.
+ */
+function repairJsonStrings(text: string): string {
+  let inStr = false;
+  let escape = false;
+  let out = "";
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inStr) {
+      if (escape) {
+        out += c;
+        escape = false;
+        continue;
+      }
+      if (c === "\\") {
+        out += c;
+        escape = true;
+        continue;
+      }
+      if (c === '"') {
+        out += c;
+        inStr = false;
+        continue;
+      }
+      if (c === "\n") {
+        out += "\\n";
+        continue;
+      }
+      if (c === "\r") {
+        out += "\\r";
+        continue;
+      }
+      if (c === "\t") {
+        out += "\\t";
+        continue;
+      }
+      out += c;
+      continue;
+    }
+    if (c === '"') inStr = true;
+    out += c;
+  }
+  return out;
+}
+
+/**
  * Tolerant JSON parser — n8n/Claude often wrap JSON in ```json ... ``` fences,
  * the Anthropic message envelope, or prepend/append stray text. Strip noise
  * progressively until something parses.
@@ -139,11 +191,23 @@ function tolerantParse<T>(text: string): T {
     // fall through
   }
 
+  // 1.5. Re-try after repairing unescaped newlines/tabs inside strings.
+  // Most "Could not parse response as JSON" failures we've seen on the
+  // attractions endpoint were Claude emitting a multi-line description
+  // with literal \n inside the string body — strict JSON.parse rejects
+  // that, but it's trivial to repair.
+  try {
+    const parsed = JSON.parse(repairJsonStrings(trimmed));
+    return unwrapEnvelope(parsed) as T;
+  } catch {
+    // fall through
+  }
+
   // 2. Strip markdown code fences (```json ... ``` or ``` ... ```).
   const fenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
   if (fenceMatch) {
     try {
-      const parsed = JSON.parse(fenceMatch[1].trim());
+      const parsed = JSON.parse(repairJsonStrings(fenceMatch[1].trim()));
       return unwrapEnvelope(parsed) as T;
     } catch {
       // fall through
@@ -157,7 +221,12 @@ function tolerantParse<T>(text: string): T {
       const parsed = JSON.parse(balanced);
       return unwrapEnvelope(parsed) as T;
     } catch {
-      // fall through
+      try {
+        const parsed = JSON.parse(repairJsonStrings(balanced));
+        return unwrapEnvelope(parsed) as T;
+      } catch {
+        // fall through
+      }
     }
   }
 
@@ -167,7 +236,11 @@ function tolerantParse<T>(text: string): T {
     try {
       return JSON.parse(attrMatch[0]) as T;
     } catch {
-      // fall through
+      try {
+        return JSON.parse(repairJsonStrings(attrMatch[0])) as T;
+      } catch {
+        // fall through
+      }
     }
   }
 

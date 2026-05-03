@@ -57,9 +57,9 @@ export const Route = createFileRoute("/attraction/$id")({
     const title = unslugAttraction(params.id);
     return {
       meta: [
-        { title: `${title} — Voices of Old Tbilisi` },
+        { title: `${title} — Lokali` },
         { name: "description", content: `A cinematic audio guide to ${title} in Tbilisi.` },
-        { property: "og:title", content: `${title} — Voices of Old Tbilisi` },
+        { property: "og:title", content: `${title} — Lokali` },
         { property: "og:description", content: `A cinematic audio guide to ${title}.` },
       ],
     };
@@ -296,8 +296,15 @@ function AttractionPage() {
         <InterestPicker current={interest} onPick={setInterest} loading={loadingScript} />
 
         {/* About — outside-view short description (n8n: outside_desc).
-            FIRST: at-a-glance factual summary. */}
-        <AboutSection loading={loading} aboutText={a?.outside_desc ?? a?.description ?? ""} />
+            FIRST: at-a-glance factual summary.
+            Wait for BOTH endpoints (attractions metadata + guide
+            content) before swapping the skeleton, so About and Stops
+            land together — Beka noticed the staggered fade-in and
+            asked for them to share timing. */}
+        <AboutSection
+          loading={loading || loadingScript}
+          aboutText={a?.outside_desc ?? a?.description ?? ""}
+        />
 
         {/* The story — what a local would tell you (n8n: insider_desc).
             SECOND: longer, story-shaped intro before the audio guide

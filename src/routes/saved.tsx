@@ -20,13 +20,13 @@ import { useT, useTranslated } from "@/hooks/useT";
 export const Route = createFileRoute("/saved")({
   head: () => ({
     meta: [
-      { title: "Saved — Voices of Old Tbilisi" },
+      { title: "Saved — Lokali" },
       {
         name: "description",
         content:
           "Your offline library: saved places and narrated guides available without a connection.",
       },
-      { property: "og:title", content: "Saved — Voices of Old Tbilisi" },
+      { property: "og:title", content: "Saved — Lokali" },
       {
         property: "og:description",
         content: "Your offline library of saved places and narrated guides.",

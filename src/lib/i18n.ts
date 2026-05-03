@@ -278,7 +278,7 @@ export const UI_STRINGS = {
   "set.downloadFailedDesc": "Check your connection and try again.",
   "set.clearLib": "Clear offline library",
   "set.signOut": "Sign out",
-  "set.appVersion": "Voices of Old Tbilisi · v1.0",
+  "set.appVersion": "Lokali · v1.0",
   "set.searchLanguages": "Search languages…",
   "set.noLanguagesMatch": "No languages match",
   "set.noNativeVoice": "No native voice found for this language. Speech will use a generic voice.",

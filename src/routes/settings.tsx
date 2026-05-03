@@ -42,12 +42,12 @@ import { useT } from "@/hooks/useT";
 export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
-      { title: "Settings — Voices of Old Tbilisi" },
+      { title: "Settings — Lokali" },
       {
         name: "description",
         content: "Configure your language, narrator voice, theme, and offline library.",
       },
-      { property: "og:title", content: "Settings — Voices of Old Tbilisi" },
+      { property: "og:title", content: "Settings — Lokali" },
       {
         property: "og:description",
         content: "Configure language, voice, theme and offline data.",

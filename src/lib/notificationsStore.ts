@@ -114,7 +114,7 @@ export function seedDefaultsOnce() {
     {
       id: "seed_welcome",
       kind: "system",
-      title: "Welcome to Voices of Old Tbilisi",
+      title: "Welcome to Lokali",
       body: "Pick a place from Near You to begin a narrated journey.",
       createdAt: now,
       read: false,

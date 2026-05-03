@@ -9,7 +9,7 @@ import { useT } from "@/hooks/useT";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in · Voices of Old Tbilisi" },
+      { title: "Sign in · Lokali" },
       { name: "description", content: "Sign in or create an account to save audio tours." },
     ],
   }),

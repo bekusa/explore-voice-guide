@@ -58,7 +58,7 @@ export const Route = createFileRoute("/results")({
   },
   head: () => ({
     meta: [
-      { title: "Search results — Voices of Old Tbilisi" },
+      { title: "Search results — Lokali" },
       { name: "description", content: "Curated attractions matching your search across Tbilisi." },
     ],
   }),
