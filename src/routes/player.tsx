@@ -14,9 +14,6 @@ import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
 import { fetchGuide } from "@/lib/api";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
-import { useSpeechVoices, voicesForLanguage } from "@/hooks/useSpeechVoices";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
 import { LANGUAGES } from "@/lib/languages";
 import { getCachedGuide } from "@/lib/guideCache";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
@@ -40,8 +37,6 @@ export const Route = createFileRoute("/player")({
 function PlayerPage() {
   const { name } = Route.useSearch();
   const language = usePreferredLanguage();
-  const voices = useSpeechVoices();
-  const { user } = useAuth();
   const online = useOnlineStatus();
   const t = useT();
 
@@ -50,30 +45,16 @@ function PlayerPage() {
   const [fromCache, setFromCache] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [paused, setPaused] = useState(false);
-  const [preferredVoiceURI, setPreferredVoiceURI] = useState<string | null>(null);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  // Azure TTS audio (replaces browser speechSynthesis)
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [generatingAudio, setGeneratingAudio] = useState(false);
 
   const langTag = useMemo(() => {
     const match = LANGUAGES.find((l) => l.code.split("-")[0].toLowerCase() === language);
     return match?.code ?? language;
   }, [language]);
-
-  // Load user's preferred voice URI
-  useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    supabase
-      .from("profiles")
-      .select("preferred_voice")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!cancelled && data?.preferred_voice) setPreferredVoiceURI(data.preferred_voice);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
 
   // Fetch the narrated script — cache first, then network. If offline AND no
   // cache, surface a clear "go online" hint instead of a generic error.
@@ -129,57 +110,104 @@ function PlayerPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, language, online]);
 
-  // Stop speech on unmount
+  // Reset audio when the script or language changes (different content =
+  // different audio). Old blob URL is revoked to free memory.
+  useEffect(() => {
+    setAudioUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setPlaying(false);
+    setPaused(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [script, langTag]);
+
+  // Cleanup blob URL on unmount + stop any ongoing playback
   useEffect(() => {
     return () => {
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
       }
+      setAudioUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
     };
   }, []);
 
-  const speak = () => {
-    if (!script || typeof window === "undefined" || !("speechSynthesis" in window)) {
-      toast.error(t("toast.speechUnsupported"));
+  // Auto-play once a fresh audio URL is ready
+  useEffect(() => {
+    if (audioUrl && audioRef.current) {
+      audioRef.current.play().catch(() => {
+        /* user gesture required on some browsers — Play button click handles it */
+      });
+    }
+  }, [audioUrl]);
+
+  // Fetch audio from /api/tts (server proxy → n8n /webhook/tts → Azure)
+  // Returns the blob URL on success, null on failure. Caches in state so
+  // subsequent plays of the same script don't refetch.
+  const ensureAudio = async (): Promise<string | null> => {
+    if (audioUrl) return audioUrl;
+    if (!script) return null;
+    setGeneratingAudio(true);
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ script, language: langTag.split("-")[0].toLowerCase() }),
+      });
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        throw new Error(`HTTP ${res.status}${errText ? `: ${errText.slice(0, 120)}` : ""}`);
+      }
+      const blob = await res.blob();
+      if (blob.size < 500 || !blob.type.toLowerCase().includes("audio")) {
+        throw new Error("Invalid audio response");
+      }
+      const url = URL.createObjectURL(blob);
+      setAudioUrl(url);
+      return url;
+    } catch (err) {
+      toast.error(t("toast.couldNotLoadGuide"), {
+        description: err instanceof Error ? err.message : t("toast.tryAgainPlease"),
+      });
+      return null;
+    } finally {
+      setGeneratingAudio(false);
+    }
+  };
+
+  const speak = async () => {
+    if (!script) {
+      toast.error(t("player.noNarration"));
       return;
     }
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(script);
-    u.lang = langTag;
-    const langVoices = voicesForLanguage(voices, langTag);
-    const chosen =
-      (preferredVoiceURI && voices.find((v) => v.voiceURI === preferredVoiceURI)) ||
-      langVoices[0] ||
-      voices[0];
-    if (chosen) u.voice = chosen;
-    u.onend = () => {
-      setPlaying(false);
-      setPaused(false);
-    };
-    u.onerror = () => {
-      setPlaying(false);
-      setPaused(false);
-    };
-    utteranceRef.current = u;
-    window.speechSynthesis.speak(u);
-    setPlaying(true);
-    setPaused(false);
+    // If we already have audio, just resume play
+    if (audioUrl && audioRef.current) {
+      audioRef.current.play().catch(() => {});
+      return;
+    }
+    await ensureAudio();
+    // Audio element will auto-play via the useEffect above when audioUrl is set
   };
 
   const togglePause = () => {
-    if (typeof window === "undefined") return;
-    if (paused) {
-      window.speechSynthesis.resume();
-      setPaused(false);
+    const a = audioRef.current;
+    if (!a) return;
+    if (a.paused) {
+      a.play().catch(() => {});
     } else {
-      window.speechSynthesis.pause();
-      setPaused(true);
+      a.pause();
     }
   };
 
   const stop = () => {
-    if (typeof window === "undefined") return;
-    window.speechSynthesis.cancel();
+    const a = audioRef.current;
+    if (!a) return;
+    a.pause();
+    a.currentTime = 0;
     setPlaying(false);
     setPaused(false);
   };
@@ -187,6 +215,32 @@ function PlayerPage() {
   return (
     <MobileFrame hideTabBar>
       <div className="relative min-h-full bg-background text-foreground">
+        {/* Hidden audio element — drives the actual playback. UI mirrors
+            its state via onPlay/onPause/onEnded handlers. */}
+        {audioUrl && (
+          <audio
+            ref={audioRef}
+            src={audioUrl}
+            preload="auto"
+            onPlay={() => {
+              setPlaying(true);
+              setPaused(false);
+            }}
+            onPause={() => {
+              // Distinguish "user paused" from "ended": if the audio is at
+              // the end, treat as ended; otherwise it's a real pause.
+              const a = audioRef.current;
+              if (a && a.currentTime >= a.duration - 0.05) return;
+              setPaused(true);
+            }}
+            onEnded={() => {
+              setPlaying(false);
+              setPaused(false);
+            }}
+            style={{ display: "none" }}
+          />
+        )}
+
         {/* Backdrop glow */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[360px] bg-gradient-card opacity-80" />
 
@@ -259,11 +313,11 @@ function PlayerPage() {
           {!playing ? (
             <button
               onClick={speak}
-              disabled={loading || !script}
+              disabled={loading || !script || generatingAudio}
               className="grid h-16 w-16 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow transition-smooth hover:scale-[1.04] disabled:opacity-50"
               aria-label={t("card.play")}
             >
-              {loading ? (
+              {loading || generatingAudio ? (
                 <Loader2 className="h-6 w-6 animate-spin" />
               ) : (
                 <Play className="h-6 w-6 translate-x-[2px] fill-current" />
