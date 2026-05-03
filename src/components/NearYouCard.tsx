@@ -9,7 +9,6 @@ import {
   Headphones,
   Loader2,
   MapPin,
-  Play,
   Star,
   CheckCircle2,
   ArrowRight,
@@ -277,16 +276,11 @@ export function NearYouCard({
               </Link>
             </div>
 
-            {/* Quick play to player */}
-            <Link
-              to="/player"
-              search={{ name: place.title }}
-              onClick={(e) => e.stopPropagation()}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-[11px] font-semibold text-foreground transition-smooth hover:border-primary/40"
-            >
-              <Play className="h-3 w-3 fill-current text-primary" />
-              {t("card.play")}
-            </Link>
+            {/* Play lives on the attraction page (Details → Play button
+                opens the inline audio panel). The dedicated /player
+                page was removed — playback is now in-context so the
+                user keeps the surrounding text on screen while
+                listening. */}
           </div>
         </div>
       </div>

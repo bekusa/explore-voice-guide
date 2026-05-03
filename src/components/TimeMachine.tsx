@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { attractionSlug } from "@/lib/api";
 import {
   ArrowLeft,
   Bookmark,
@@ -608,8 +609,13 @@ const LOADING_STAGES: { emoji: string; titleKey: UiKey; subKey: UiKey }[] = [
 ];
 
 interface TimeMachineProps {
-  language: string;
-  webhookUrl: string;
+  /**
+   * Kept on the props for back-compat with the old simulation flow —
+   * we don't use them now that Details navigates to the attraction
+   * page instead, but the route file still passes them in.
+   */
+  language?: string;
+  webhookUrl?: string;
   onResult?: (data: unknown) => void;
   /**
    * Optional ID to pre-select on mount. Used by Home's Time Machine
@@ -619,13 +625,9 @@ interface TimeMachineProps {
   initialId?: string | null;
 }
 
-export default function TimeMachine({
-  language,
-  webhookUrl,
-  onResult,
-  initialId,
-}: TimeMachineProps) {
+export default function TimeMachine({ onResult, initialId }: TimeMachineProps) {
   const t = useT();
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [tierFilter, setTierFilter] = useState<"ALL" | Tier>("ALL");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -693,47 +695,22 @@ export default function TimeMachine({
     return () => clearInterval(id);
   }, [loading]);
 
-  const handleStart = async (attraction: Attraction, roleValue: string) => {
+  // "Details" used to POST to a placeholder n8n webhook for the
+  // historical-simulation feature, which always failed with "Failed
+  // to fetch" because the workflow doesn't exist yet. Until the
+  // simulation flow is built out on the n8n side, route the user to
+  // the attraction page so the button does something useful — they
+  // get the full Lokali narrated guide for the place. The simulation
+  // path can be reinstated later via a different button.
+  const handleStart = async (attraction: Attraction, _roleValue: string) => {
     setError(null);
     setSelectedId(attraction.id);
-    setLoading(true);
-    try {
-      const res = await fetch(webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          place_id: attraction.id,
-          place_name: attraction.name,
-          country: attraction.country,
-          era: attraction.era,
-          year: attraction.year,
-          situation: attraction.situation,
-          character_role: roleValue,
-          language,
-          duration_minutes: 10,
-        }),
-      });
-      if (!res.ok) throw new Error(`Request failed (${res.status})`);
-      const data = await res.json().catch(() => ({}) as Record<string, unknown>);
-      onResult?.(data);
-      const d = data as Record<string, unknown>;
-      const body =
-        (typeof d.story === "string" && d.story) ||
-        (typeof d.text === "string" && d.text) ||
-        (typeof d.output === "string" && d.output) ||
-        (typeof d.message === "string" && d.message) ||
-        JSON.stringify(data, null, 2);
-      const role = ROLES.find((r) => r.value === roleValue);
-      const roleLabel = role ? t(role.labelKey) : roleValue;
-      setResult({
-        title: `${attraction.name} · ${roleLabel}`,
-        body,
-      });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t("tm.somethingWentWrong"));
-    } finally {
-      setLoading(false);
-    }
+    onResult?.({ navigated_to: attraction.id });
+    navigate({
+      to: "/attraction/$id",
+      params: { id: attractionSlug(attraction.name) },
+      search: { name: attraction.name },
+    });
   };
 
   return (

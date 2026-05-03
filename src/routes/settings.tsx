@@ -293,8 +293,14 @@ function SettingsPage() {
           <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
             {t("set.configuration")}
           </span>
-          <h1 className="mt-3 font-display text-[2.25rem] font-medium leading-[1.05]">
-            {t("set.tuneYour")} <span className="italic text-primary">{t("set.journey")}</span>
+          {/* Single-key title — translating "Tune your" + "journey"
+              separately produced broken word order and font-mixing in
+              non-English locales (Playfair Display has no Georgian /
+              Arabic / CJK glyphs, so the italic span fell back to a
+              different font than the regular run, looking like random
+              chunks). One key keeps the translated sentence whole. */}
+          <h1 className="mt-3 font-display text-[2.25rem] font-medium leading-[1.05] text-primary">
+            {t("set.subtitle")}
           </h1>
           <p className="mt-3 max-w-[320px] text-[13px] leading-[1.55] text-muted-foreground">
             {t("set.intro")}
