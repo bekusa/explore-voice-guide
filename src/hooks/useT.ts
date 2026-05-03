@@ -89,7 +89,9 @@ function setUiMemory(lang: string, pairs: { source: string; text: string }[]) {
   for (const { source, text } of pairs) m.set(source, text);
 }
 
-let uiInflight: Promise<void> | null = null;
+// Per-language in-flight tracking so a Georgian batch doesn't block
+// a Spanish batch (and vice versa).
+const uiInflight = new Map<string, Promise<void>>();
 
 function ensureUiTranslations(lang: string): Promise<void> {
   if (lang === "en") return Promise.resolve();
@@ -97,8 +99,9 @@ function ensureUiTranslations(lang: string): Promise<void> {
   const missing: string[] = [];
   for (const v of UI_VALUES) if (uiLookup(lang, v) === null) missing.push(v);
   if (missing.length === 0) return Promise.resolve();
-  if (uiInflight) return uiInflight;
-  uiInflight = translateBatch(missing, lang)
+  const existing = uiInflight.get(lang);
+  if (existing) return existing;
+  const promise = translateBatch(missing, lang)
     .then((translated) => {
       setUiMemory(
         lang,
@@ -109,9 +112,10 @@ function ensureUiTranslations(lang: string): Promise<void> {
       /* fall back to source */
     })
     .finally(() => {
-      uiInflight = null;
+      uiInflight.delete(lang);
     });
-  return uiInflight;
+  uiInflight.set(lang, promise);
+  return promise;
 }
 
 export function useT() {

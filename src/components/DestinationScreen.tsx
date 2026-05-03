@@ -6,7 +6,6 @@ import {
   Bell,
   ChevronDown,
   Clock,
-  Globe,
   Loader2,
   MapPin,
   Search,
@@ -184,13 +183,6 @@ export function DestinationScreen({ dest }: { dest: Destination }) {
                 className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
               >
                 <SettingsIcon className="h-3.5 w-3.5" />
-              </Link>
-              <Link
-                to="/language"
-                aria-label={t("nav.language")}
-                className="grid h-9 w-9 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth hover:bg-background/60"
-              >
-                <Globe className="h-3.5 w-3.5" />
               </Link>
               <Link
                 to="/notifications"

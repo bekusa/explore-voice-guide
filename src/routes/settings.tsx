@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   Check,
   ChevronRight,
-  Globe2,
   Headphones,
   Loader2,
   LogOut,
@@ -58,7 +57,7 @@ export const Route = createFileRoute("/settings")({
   component: SettingsPage,
 });
 
-type Section = "main" | "language" | "voice";
+type Section = "main" | "voice";
 
 function SettingsPage() {
   const { user, signOut, loading } = useAuth();
@@ -122,18 +121,6 @@ function SettingsPage() {
   );
 
   /* ─── Mutations ─── */
-
-  const updateLanguage = async (lang: Language) => {
-    setLangCode(lang.code);
-    setVoiceURI(null); // clear voice — must rechoose
-    if (!user) return;
-    await supabase
-      .from("profiles")
-      .update({ preferred_language: lang.code, preferred_voice: "browser-default" })
-      .eq("user_id", user.id);
-    toast.success(t("toast.langUpdated"), { description: lang.native });
-    setSection("main");
-  };
 
   const updateVoice = async (uri: string) => {
     setVoiceURI(uri);
@@ -265,14 +252,6 @@ function SettingsPage() {
 
   /* ─── Sub-screens ─── */
 
-  if (section === "language") {
-    return (
-      <SubScreen title={t("set.language")} onBack={() => setSection("main")}>
-        <LanguageList active={langCode} onPick={updateLanguage} />
-      </SubScreen>
-    );
-  }
-
   if (section === "voice") {
     return (
       <SubScreen
@@ -360,15 +339,8 @@ function SettingsPage() {
           </Group>
         )}
 
-        {/* Voice & language */}
+        {/* Voice (language is on Home only) */}
         <Group title={t("set.audioGuide")}>
-          <Row
-            icon={<Globe2 className="h-4 w-4" />}
-            label={t("set.language")}
-            value={`${language.flag} ${language.native}`}
-            onClick={() => setSection("language")}
-          />
-          <Divider />
           <Row
             icon={<Headphones className="h-4 w-4" />}
             label={t("set.narratorVoice")}
@@ -618,68 +590,6 @@ function SubScreen({
         <div className="px-6 pt-6">{children}</div>
       </div>
     </MobileFrame>
-  );
-}
-
-function LanguageList({ active, onPick }: { active: string; onPick: (l: Language) => void }) {
-  const t = useT();
-  const [query, setQuery] = useState("");
-  const filtered = useMemo(() => {
-    if (!query.trim()) return LANGUAGES;
-    const q = query.toLowerCase();
-    return LANGUAGES.filter(
-      (l) =>
-        l.name.toLowerCase().includes(q) ||
-        l.native.toLowerCase().includes(q) ||
-        l.code.toLowerCase().includes(q),
-    );
-  }, [query]);
-
-  return (
-    <>
-      <div className="mb-3 flex items-center gap-3 rounded-full border border-border bg-card px-5 py-3">
-        <Search className="h-4 w-4 text-muted-foreground" strokeWidth={2.2} />
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t("set.searchLanguages")}
-          className="h-auto border-0 bg-transparent p-0 text-[13px] shadow-none focus-visible:ring-0"
-        />
-      </div>
-      <ul className="flex flex-col gap-2">
-        {filtered.map((l) => {
-          const isActive = active === l.code;
-          return (
-            <li key={l.code}>
-              <button
-                onClick={() => onPick(l)}
-                className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-smooth ${
-                  isActive
-                    ? "border-primary/60 bg-primary/10"
-                    : "border-border bg-card hover:border-primary/30"
-                }`}
-              >
-                <span className="text-[22px] leading-none">{l.flag}</span>
-                <span className="flex flex-1 flex-col leading-tight">
-                  <span className="text-[14px] font-semibold">{l.native}</span>
-                  <span className="text-[11px] text-muted-foreground">{l.name}</span>
-                </span>
-                {isActive && (
-                  <span className="grid h-6 w-6 place-items-center rounded-full bg-primary text-primary-foreground">
-                    <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
-                  </span>
-                )}
-              </button>
-            </li>
-          );
-        })}
-        {filtered.length === 0 && (
-          <li className="py-8 text-center text-[13px] text-muted-foreground">
-            {t("set.noLanguagesMatch")} "{query}"
-          </li>
-        )}
-      </ul>
-    </>
   );
 }
 
