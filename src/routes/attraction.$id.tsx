@@ -981,14 +981,18 @@ function MapSection({
       markersRef.current.push(primary);
 
       // Secondary markers for nearby saved places — smaller, outlined,
-      // clickable to dive into that attraction's guide.
-      nearby.forEach(({ item }) => {
+      // tappable to dive straight into that attraction's guide. We
+      // bind a popup (not a tooltip) so the first tap on mobile shows
+      // the place's name + an explicit "Open guide" affordance — a
+      // bound tooltip on touch can swallow the first tap, requiring
+      // a second tap to fire the click handler.
+      nearby.forEach(({ item, distanceKm }) => {
         const sLat = item.attraction.lat as number;
         const sLng = item.attraction.lng as number;
         const icon = L.divIcon({
           className: "tg-pin-saved",
           html: `
-            <div class="relative flex items-center justify-center">
+            <div class="relative flex items-center justify-center" style="cursor: pointer;">
               <span class="relative grid h-6 w-6 place-items-center rounded-full bg-card text-primary border border-primary/60 shadow-soft">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M6 3a2 2 0 0 0-2 2v16l8-5 8 5V5a2 2 0 0 0-2-2H6z"/></svg>
               </span>
@@ -996,17 +1000,48 @@ function MapSection({
           iconSize: [24, 24],
           iconAnchor: [12, 22],
         });
-        const marker = L.marker([sLat, sLng], { icon }).addTo(map);
-        marker.bindTooltip(item.name, {
-          direction: "top",
-          offset: [0, -20],
-          className: "tg-tooltip",
-        });
+        const marker = L.marker([sLat, sLng], { icon, riseOnHover: true }).addTo(map);
+
+        // Click anywhere on the pin → navigate immediately. This
+        // covers desktop clicks and the mobile case where a tap
+        // doesn't go through the popup's "Open" button.
         marker.on("click", () => {
           navigate({
             to: "/attraction/$id",
             params: { id: attractionSlug(item.name) },
             search: { name: item.name },
+          });
+        });
+
+        // Popup gives a clearer "you're about to leave this page"
+        // confirmation, especially for users who tap a pin to peek
+        // at the name before committing.
+        const safeName = item.name.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+        const distLabel =
+          distanceKm < 1
+            ? `${Math.round(distanceKm * 1000)} m away`
+            : `${distanceKm.toFixed(1)} km away`;
+        marker.bindPopup(
+          `<div style="font-family: inherit; min-width: 140px;">
+            <div style="font-weight: 600; font-size: 13px; line-height: 1.3;">${safeName}</div>
+            <div style="font-size: 10.5px; opacity: 0.65; margin-top: 2px;">${distLabel}</div>
+            <a href="#" class="tg-popup-open" style="display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font-size: 11px; font-weight: 700; text-decoration: none; color: inherit;">
+              Open guide <span style="font-size: 13px; line-height: 1;">→</span>
+            </a>
+          </div>`,
+          { closeButton: false, offset: [0, -10] },
+        );
+        marker.on("popupopen", (e) => {
+          const link = (e.popup.getElement() as HTMLElement | null)?.querySelector(
+            ".tg-popup-open",
+          );
+          link?.addEventListener("click", (ev) => {
+            ev.preventDefault();
+            navigate({
+              to: "/attraction/$id",
+              params: { id: attractionSlug(item.name) },
+              search: { name: item.name },
+            });
           });
         });
         markersRef.current.push(marker);
