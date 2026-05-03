@@ -409,10 +409,13 @@ export function detectQueryLanguage(text: string, fallback = "en"): string {
     else if (code >= 0xac00 && code <= 0xd7af) counts.ko++;
     else if ((code >= 0x41 && code <= 0x5a) || (code >= 0x61 && code <= 0x7a)) counts.latin++;
   }
-  // Pick the script with the most hits; ties go to the explicit
-  // (non-Latin) script if any is non-zero, otherwise English.
+  // Pick the script with the most hits. If the strongest signal is
+  // Latin (or there's no signal at all), defer to the caller's
+  // fallback — usually the user's preferred UI language. This keeps a
+  // Georgian-speaking user on Georgian even when they tap an
+  // English-named attraction like "Narikala Fortress".
   const ranked = Object.entries(counts).sort((a, b) => b[1] - a[1]);
   const [top, topCount] = ranked[0];
   if (!topCount) return fallback;
-  return top === "latin" ? "en" : top;
+  return top === "latin" ? fallback : top;
 }

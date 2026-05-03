@@ -21,7 +21,7 @@ import { useSavedItems } from "@/hooks/useSavedItems";
 import { getCachedGuide, onGuideCacheChange } from "@/lib/guideCache";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
-import { useT } from "@/hooks/useT";
+import { useT, useTranslated } from "@/hooks/useT";
 
 export type NearPlace = {
   id: string;
@@ -51,6 +51,18 @@ export function NearYouCard({
   const t = useT();
   const slug = useMemo(() => attractionSlug(place.title), [place.title]);
   const isFav = saved.some((s) => s.id === slug) || isSaved(slug);
+
+  // Translate the dynamic content surfaced on the card so a user
+  // browsing in Georgian / Spanish / Chinese sees the title, category,
+  // subtitle, distance and description in their UI language. The
+  // useTranslated hook is cache-first, so repeats are instant.
+  const [tTitle, tSubtitle, tCategory, tDistance, tDescription] = useTranslated([
+    place.title,
+    place.subtitle,
+    place.category,
+    place.distance,
+    place.description ?? "",
+  ]);
 
   // Live cache state — re-renders when a download finishes / cache cleared
   const [cached, setCached] = useState(false);
@@ -153,10 +165,10 @@ export function NearYouCard({
         className="flex w-full items-center gap-3 p-3 text-left"
       >
         <div className="h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-xl">
-          <img src={place.img} alt={place.title} className="h-full w-full object-cover" />
+          <img src={place.img} alt={tTitle ?? place.title} className="h-full w-full object-cover" />
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-[14.5px] font-semibold text-foreground">{place.title}</h3>
+          <h3 className="text-[14.5px] font-semibold text-foreground">{tTitle ?? place.title}</h3>
           <p className="my-1.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             <Headphones className="h-2.5 w-2.5" /> {t("card.audioGuide")}
             {cached && (
@@ -173,7 +185,7 @@ export function NearYouCard({
               <Star className="h-2.5 w-2.5 fill-primary" /> {place.rating}
             </span>
             <span className="inline-flex items-center gap-1">
-              <MapPin className="h-2.5 w-2.5" /> {place.distance}
+              <MapPin className="h-2.5 w-2.5" /> {tDistance ?? place.distance}
             </span>
           </div>
         </div>
@@ -198,19 +210,21 @@ export function NearYouCard({
             {/* Meta row */}
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.18em] text-primary">
-                {place.category}
+                {tCategory ?? place.category}
               </span>
               <span className="rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 {t("card.stops", { n: place.stops })}
               </span>
               <span className="rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                {place.subtitle}
+                {tSubtitle ?? place.subtitle}
               </span>
             </div>
 
             {/* Description */}
             <p className="mt-3 text-[12.5px] leading-[1.55] text-foreground/75">
-              {place.description ?? t("card.fallbackDesc", { title: place.title })}
+              {place.description
+                ? (tDescription ?? place.description)
+                : t("card.fallbackDesc", { title: tTitle ?? place.title })}
             </p>
 
             {/* Action buttons */}

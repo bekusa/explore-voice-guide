@@ -13,9 +13,9 @@ import {
 import { useEffect, useState } from "react";
 import { MobileFrame } from "@/components/MobileFrame";
 import { useSavedItems } from "@/hooks/useSavedItems";
-import { clearAll, removeItem } from "@/lib/savedStore";
+import { clearAll, removeItem, type SavedItem } from "@/lib/savedStore";
 import { attractionSlug } from "@/lib/api";
-import { useT } from "@/hooks/useT";
+import { useT, useTranslated } from "@/hooks/useT";
 
 export const Route = createFileRoute("/saved")({
   head: () => ({
@@ -104,75 +104,89 @@ function SavedPage() {
             <EmptyState />
           ) : (
             <ul className="flex flex-col gap-3">
-              {items.map((item) => {
-                const a = item.attraction;
-                const slug = attractionSlug(item.name);
-                const hasGuide = !!item.script;
-                return (
-                  <li
-                    key={item.id}
-                    className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-3 transition-smooth hover:border-primary/40"
-                  >
-                    <Link
-                      to="/attraction/$id"
-                      params={{ id: slug }}
-                      search={{ name: item.name }}
-                      className="flex flex-1 items-center gap-3"
-                    >
-                      <div className="h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-xl bg-secondary">
-                        {item.imageDataUrl || a.image_url ? (
-                          <img
-                            src={item.imageDataUrl ?? a.image_url}
-                            alt={item.name}
-                            className="h-full w-full object-cover"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="grid h-full w-full place-items-center text-muted-foreground">
-                            <MapPin className="h-5 w-5" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="truncate text-[14.5px] font-semibold">{item.name}</h3>
-                        <p className="my-1.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                          <Headphones className="h-2.5 w-2.5" />
-                          {hasGuide ? t("saved.guideCached") : t("card.audioGuide")}
-                        </p>
-                        <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground">
-                          {a.duration && (
-                            <span className="inline-flex items-center gap-1">
-                              <Clock className="h-2.5 w-2.5" /> {a.duration}
-                            </span>
-                          )}
-                          {typeof a.rating === "number" && (
-                            <span className="inline-flex items-center gap-1 text-primary">
-                              <Star className="h-2.5 w-2.5 fill-primary" />
-                              {a.rating.toFixed(2)}
-                            </span>
-                          )}
-                          <span className="inline-flex items-center gap-1">
-                            <Bookmark className="h-2.5 w-2.5" />
-                            {new Date(item.savedAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                    <button
-                      onClick={() => removeItem(item.id)}
-                      aria-label={t("saved.removeAria", { name: item.name })}
-                      className="grid h-9 w-9 place-items-center rounded-full border border-border text-muted-foreground transition-smooth hover:border-accent/50 hover:text-accent"
-                    >
-                      <BookmarkX className="h-3.5 w-3.5" />
-                    </button>
-                  </li>
-                );
-              })}
+              {items.map((item) => (
+                <SavedRow key={item.id} item={item} />
+              ))}
             </ul>
           )}
         </section>
       </div>
     </MobileFrame>
+  );
+}
+
+/**
+ * One row of the Saved list. Lifted into its own component so we can
+ * call `useTranslated` per-item — Rules-of-Hooks forbids calling it
+ * inside a `.map()` body. The row also handles broken thumbnails by
+ * falling back to a MapPin glyph when the image URL fails to load
+ * (Google Places photo links expire; Wikipedia links sometimes 404).
+ */
+function SavedRow({ item }: { item: SavedItem }) {
+  const t = useT();
+  const a = item.attraction;
+  const slug = attractionSlug(item.name);
+  const hasGuide = !!item.script;
+  const [tName, tDuration] = useTranslated([item.name, a.duration ?? ""]);
+  const [imgFailed, setImgFailed] = useState(false);
+  const showImg = (item.imageDataUrl || a.image_url) && !imgFailed;
+
+  return (
+    <li className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-3 transition-smooth hover:border-primary/40">
+      <Link
+        to="/attraction/$id"
+        params={{ id: slug }}
+        search={{ name: item.name }}
+        className="flex flex-1 items-center gap-3"
+      >
+        <div className="h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-xl bg-secondary">
+          {showImg ? (
+            <img
+              src={item.imageDataUrl ?? a.image_url}
+              alt={tName ?? item.name}
+              className="h-full w-full object-cover"
+              loading="lazy"
+              onError={() => setImgFailed(true)}
+            />
+          ) : (
+            <div className="grid h-full w-full place-items-center text-muted-foreground">
+              <MapPin className="h-5 w-5" />
+            </div>
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate text-[14.5px] font-semibold">{tName ?? item.name}</h3>
+          <p className="my-1.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <Headphones className="h-2.5 w-2.5" />
+            {hasGuide ? t("saved.guideCached") : t("card.audioGuide")}
+          </p>
+          <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground">
+            {a.duration && (
+              <span className="inline-flex items-center gap-1">
+                <Clock className="h-2.5 w-2.5" /> {tDuration ?? a.duration}
+              </span>
+            )}
+            {typeof a.rating === "number" && (
+              <span className="inline-flex items-center gap-1 text-primary">
+                <Star className="h-2.5 w-2.5 fill-primary" />
+                {a.rating.toFixed(2)}
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1">
+              <Bookmark className="h-2.5 w-2.5" />
+              {new Date(item.savedAt).toLocaleDateString()}
+            </span>
+          </div>
+        </div>
+      </Link>
+      <button
+        onClick={() => removeItem(item.id)}
+        aria-label={t("saved.removeAria", { name: item.name })}
+        className="grid h-9 w-9 place-items-center rounded-full border border-border text-muted-foreground transition-smooth hover:border-accent/50 hover:text-accent"
+      >
+        <BookmarkX className="h-3.5 w-3.5" />
+      </button>
+    </li>
   );
 }
 
