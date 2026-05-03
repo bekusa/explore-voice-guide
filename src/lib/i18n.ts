@@ -98,6 +98,8 @@ export const UI_STRINGS = {
   "home.browse": "Browse",
   "home.collections.title": "Curated collections",
   "home.collections.sub": "Themes for the way you travel",
+  "home.timeMachine.title": "Time Machine",
+  "home.timeMachine.sub": "Top 10 immersive moments — step inside history",
   "home.featured.title": "Featured cities",
   "home.featured.sub": "Cinematic walks, narrated by locals",
   "home.seeAll": "See all",

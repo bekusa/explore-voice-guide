@@ -17,12 +17,11 @@ import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useUnreadCount } from "@/hooks/useNotifications";
 import { useSelectedDestination } from "@/hooks/useSelectedDestination";
 import { useT, useTranslated, useTranslatedString } from "@/hooks/useT";
+import { DESTINATIONS, type Destination } from "@/lib/destinations";
 import {
-  COLLECTIONS,
-  DESTINATIONS,
-  destinationsByCollection,
-  type Destination,
-} from "@/lib/destinations";
+  ATTRACTIONS as TIME_MACHINE_ATTRACTIONS,
+  type Attraction as TimeMachineAttraction,
+} from "@/components/TimeMachine";
 
 /* ─────────────────────────────────────────────
  * UNIVERSAL HOME · Editorial magazine
@@ -30,10 +29,16 @@ import {
  * - Cinematic rotating hero (selected destination)
  * - "Where to next?" location chip → destinations browser
  * - Search bar (any city / landmark / vibe)
- * - Curated collections strip
+ * - Time Machine strip — top 10 immersive moments by score
  * - Featured destinations — large editorial cards
  * - Mini player + tab bar (kept consistent across the app)
  * ───────────────────────────────────────────── */
+
+// Top 10 Time Machine attractions by score — surfaced as the home
+// strip so first-time visitors can dip into a moment with one tap.
+const TIME_MACHINE_TOP_10 = [...TIME_MACHINE_ATTRACTIONS]
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 10);
 
 const HERO_ROTATION = ["tbilisi", "rome", "kyoto", "lisbon", "marrakech"]
   .map((slug) => DESTINATIONS.find((d) => d.slug === slug))
@@ -115,7 +120,9 @@ export function HomeScreen() {
                 className="mt-1.5 inline-flex max-w-full items-center gap-1.5 truncate text-[15px] font-semibold text-foreground transition-smooth hover:text-primary"
               >
                 <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
-                <span className="truncate">{selectedCity}, {selectedCountry}</span>
+                <span className="truncate">
+                  {selectedCity}, {selectedCountry}
+                </span>
                 <ChevronDown className="h-3 w-3 shrink-0 opacity-60" />
               </Link>
             </div>
@@ -205,22 +212,27 @@ export function HomeScreen() {
           </form>
         </section>
 
-        {/* ─── COLLECTIONS ─── */}
+        {/* ─── TIME MACHINE STRIP ─── */}
         <section className="mt-9">
           <div className="mb-4 flex items-end justify-between px-5">
             <div>
               <h2 className="font-display text-[22px] font-medium leading-tight tracking-[-0.02em] text-foreground">
-                {t("home.collections.title")}
+                {t("home.timeMachine.title")}
               </h2>
               <p className="mt-1 text-[12px] leading-snug text-muted-foreground">
-                {t("home.collections.sub")}
+                {t("home.timeMachine.sub")}
               </p>
             </div>
+            <Link
+              to="/time-machine"
+              className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary transition-smooth hover:opacity-80"
+            >
+              {t("home.seeAll")} <ArrowRight className="h-3 w-3" />
+            </Link>
           </div>
           <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
-            <TimeMachineCollectionCard />
-            {COLLECTIONS.map((c) => (
-              <CollectionCard key={c.id} collection={c} />
+            {TIME_MACHINE_TOP_10.map((a, i) => (
+              <TimeMachineMomentCard key={a.id} attraction={a} rank={i + 1} />
             ))}
           </div>
         </section>
@@ -232,7 +244,9 @@ export function HomeScreen() {
               <h2 className="font-display text-[26px] font-medium leading-tight tracking-[-0.02em] text-foreground">
                 {t("home.featured.title")}
               </h2>
-              <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{t("home.featured.sub")}</p>
+              <p className="mt-1 text-[12px] leading-snug text-muted-foreground">
+                {t("home.featured.sub")}
+              </p>
             </div>
             <Link
               to="/destinations"
@@ -254,66 +268,54 @@ export function HomeScreen() {
 }
 
 /* ─────────────────────────────────────────────
- * Editorial collection card
+ * Time Machine moment card — one of the top-10 entries on Home.
+ *
+ * Cinematic single shot of the moment, era + year tags overlaid, rank
+ * pill in the corner. Tap → /time-machine?id=<id>, where the chosen
+ * card auto-expands and scrolls into view.
  * ───────────────────────────────────────────── */
-function CollectionCard({ collection }: { collection: (typeof COLLECTIONS)[number] }) {
-  const sample = destinationsByCollection(collection.id)[0];
-  const [label, tagline] = useTranslated([collection.label, collection.tagline]);
-  return (
-    <Link
-      to="/destinations"
-      search={{ collection: collection.id }}
-      className="group relative h-[150px] w-[210px] flex-shrink-0 overflow-hidden rounded-2xl border border-border transition-smooth hover:border-primary/50 active:scale-[0.98]"
-    >
-      {sample && (
-        <img
-          src={sample.hero}
-          alt={label}
-          loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
-        />
-      )}
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-      <div className="absolute inset-x-3.5 bottom-3.5">
-        <div className="font-display text-[16px] font-medium leading-tight text-foreground">
-          {label}
-        </div>
-        <div className="mt-1 text-[10.5px] leading-snug text-foreground/65">{tagline}</div>
-      </div>
-    </Link>
-  );
-}
-
-/* ─────────────────────────────────────────────
- * Time Machine — featured collection card
- * ───────────────────────────────────────────── */
-function TimeMachineCollectionCard() {
-  const t = useT();
-  const [label, tagline] = useTranslated([
-    "Time Machine",
-    "Step inside history — 34 immersive moments",
-  ]);
+function TimeMachineMomentCard({
+  attraction,
+  rank,
+}: {
+  attraction: TimeMachineAttraction;
+  rank: number;
+}) {
+  // Free-form fields are translated on the fly; the era / year strings
+  // live in the dataset in English so they round-trip through the
+  // gateway just like destination blurbs.
+  const [name, era] = useTranslated([attraction.name, attraction.era]);
   return (
     <Link
       to="/time-machine"
-      className="group relative h-[150px] w-[230px] flex-shrink-0 overflow-hidden rounded-2xl border border-primary/50 shadow-glow transition-smooth active:scale-[0.98]"
+      search={{ id: attraction.id }}
+      className="group relative h-[170px] w-[240px] flex-shrink-0 overflow-hidden rounded-2xl border border-border bg-card transition-smooth hover:border-primary/50 active:scale-[0.98]"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-[oklch(0.18_0.04_60)] via-[oklch(0.12_0.02_60)] to-black" />
-      <div
-        aria-hidden
-        className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-gradient-gold opacity-30 blur-2xl transition-opacity group-hover:opacity-50"
+      <img
+        src={attraction.image}
+        alt={name}
+        loading="lazy"
+        className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
       />
-      <div className="absolute left-3.5 top-3.5 inline-flex items-center gap-1 rounded-full border border-primary/50 bg-background/40 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-md">
-        <Sparkles className="h-2.5 w-2.5" /> New
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-background/10" />
+
+      {/* Rank pill */}
+      <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-primary/50 bg-background/55 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-md">
+        <Sparkles className="h-2.5 w-2.5" /> #{rank}
       </div>
+
+      {/* Year pill */}
+      <div className="absolute right-3 top-3 rounded-full border border-foreground/15 bg-background/45 px-2 py-0.5 text-[9.5px] font-semibold tracking-wide text-foreground/80 backdrop-blur-md">
+        {attraction.year}
+      </div>
+
       <div className="absolute inset-x-3.5 bottom-3.5">
-        <div className="font-display text-[16px] font-medium leading-tight text-primary">
-          {label}
+        <div className="text-[18px] leading-none">{attraction.emoji}</div>
+        <div className="mt-1.5 font-display text-[15px] font-medium leading-tight text-foreground line-clamp-2">
+          {name}
         </div>
-        <div className="mt-1 line-clamp-2 text-[10.5px] leading-snug text-foreground/70">{tagline}</div>
+        <div className="mt-1 text-[10.5px] leading-snug text-foreground/65">{era}</div>
       </div>
-      <ArrowRight className="absolute bottom-3.5 right-3.5 h-3.5 w-3.5 text-primary opacity-0 transition-opacity group-hover:opacity-100" />
-      <span className="hidden">{t("home.collections.title")}</span>
     </Link>
   );
 }
@@ -371,4 +373,3 @@ function DestinationCard({ dest }: { dest: Destination }) {
     </Link>
   );
 }
-
