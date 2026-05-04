@@ -315,7 +315,7 @@ function AttractionPage() {
             THIRD: rendered as flowing prose, with no chapter cards or
             numbering — Beka's request was to keep the content but drop
             the divisions. */}
-        <StopsSection script={script} loading={loadingScript} />
+        <StopsSection script={script} loading={loading || loadingScript} />
 
         {/* Key facts — emerald chips */}
         <ChipsSection
@@ -761,9 +761,10 @@ function StopsSection({ script, loading }: { script: string; loading: boolean })
     [script],
   );
 
-  // Tall skeleton while we wait for the script — keeps the page from
-  // jumping when the text lands.
-  if (loading && paragraphs.length === 0) {
+  // Tall skeleton while we wait for either endpoint — synchronizes
+  // with AboutSection so they swap from skeleton to content together
+  // (Beka's request — see the analogous comment in AboutSection).
+  if (loading) {
     return (
       <section className="mt-8 px-6">
         <div className="flex items-center gap-2">
