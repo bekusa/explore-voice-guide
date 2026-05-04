@@ -17,6 +17,8 @@ import { useUnreadCount } from "@/hooks/useNotifications";
 import { useSelectedDestination } from "@/hooks/useSelectedDestination";
 import { useT, useTranslated, useTranslatedString } from "@/hooks/useT";
 import { DESTINATIONS, type Destination } from "@/lib/destinations";
+import { TOP_CITIES } from "@/lib/topCities";
+import { CityCard } from "@/components/CityCard";
 import {
   ATTRACTIONS as TIME_MACHINE_ATTRACTIONS,
   type Attraction as TimeMachineAttraction,
@@ -232,6 +234,36 @@ export function HomeScreen() {
           <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
             {TIME_MACHINE_TOP_10.map((a, i) => (
               <TimeMachineMomentCard key={a.id} attraction={a} rank={i + 1} />
+            ))}
+          </div>
+        </section>
+
+        {/* ─── TOP CITIES ─── */}
+        <section className="mt-10">
+          <div className="mb-4 flex items-end justify-between px-5">
+            <div>
+              <h2 className="font-display text-[22px] font-medium leading-tight tracking-[-0.02em] text-foreground">
+                {t("home.topCities.title")}
+              </h2>
+              <p className="mt-1 text-[12px] leading-snug text-muted-foreground">
+                {t("home.topCities.sub")}
+              </p>
+            </div>
+            <Link
+              to="/destinations"
+              className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary transition-smooth hover:opacity-80"
+            >
+              {t("home.seeAll")} <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          {/* Horizontal scroll on mobile keeps Home compact while still
+              exposing all 25 cities. The Explore page renders the same
+              list as a 2-col grid so users get a fuller browse view. */}
+          <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
+            {TOP_CITIES.map((c) => (
+              <div key={c.id} className="w-[160px] shrink-0">
+                <CityCard city={c} />
+              </div>
             ))}
           </div>
         </section>

@@ -5,6 +5,8 @@ import { z } from "zod";
 import { ArrowLeft, ArrowRight, Headphones, MapPin, Search, Sparkles } from "lucide-react";
 import { MobileFrame } from "@/components/MobileFrame";
 import { COLLECTIONS, DESTINATIONS, searchDestinations, type Collection } from "@/lib/destinations";
+import { TOP_CITIES } from "@/lib/topCities";
+import { CityCard } from "@/components/CityCard";
 import { useT, useTranslated } from "@/hooks/useT";
 
 const collectionEnum = z.enum(["ancient", "sacred", "coastal", "imperial", "mystic"]);
@@ -217,6 +219,25 @@ function DestinationsPage() {
                   </div>
                 </Link>
               ))}
+            </div>
+
+            {/* ─── TOP 25 CITIES — quick-tap grid ───
+                Mirrors the Home strip but as a 2-col grid so the
+                Explore page exposes the full Top-25 in one
+                browseable surface. Each card → /results?q=<city>,
+                same as on Home. */}
+            <div className="mt-8">
+              <h2 className="font-display text-[20px] font-medium leading-tight tracking-[-0.02em] text-foreground">
+                {t("home.topCities.title")}
+              </h2>
+              <p className="mt-1 text-[12px] leading-snug text-muted-foreground">
+                {t("home.topCities.sub")}
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                {TOP_CITIES.map((c) => (
+                  <CityCard key={c.id} city={c} />
+                ))}
+              </div>
             </div>
           </div>
         </div>
