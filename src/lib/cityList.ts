@@ -1,8 +1,8 @@
 /**
- * Curated, ordered list of cities surfaced on the home page and the
- * Explore page. Tapping a card navigates to /results with the city
- * name as the query, so the n8n attractions workflow loads its top
- * picks for that city.
+ * Curated, ordered list of cities surfaced on the home page (first 10)
+ * and the Explore page (full list). Tapping a card navigates to /results
+ * with the city name as the query, so the n8n attractions workflow
+ * loads its top picks for that city.
  *
  * Names are stored in English; the UI runs them through useTranslated()
  * so they appear in the user's preferred language at render time.
@@ -34,3 +34,5 @@ export const CITY_LIST: string[] = [
   "Tbilisi",
   "Bali",
 ];
+
+export const HOME_CITIES = CITY_LIST.slice(0, 10);
