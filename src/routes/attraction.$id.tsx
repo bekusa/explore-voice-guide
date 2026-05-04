@@ -670,7 +670,12 @@ function AboutSection({ loading, aboutText }: { loading: boolean; aboutText: str
     return out;
   }, [aboutText]);
 
-  if (loading && !aboutText) {
+  // Keep the skeleton up while *either* endpoint is still in flight,
+  // even if `aboutText` has already arrived from fetchAttractions.
+  // Without this, About would pop in seconds before Stops because
+  // the metadata call is faster than the guide call — Beka asked
+  // for them to appear together.
+  if (loading) {
     return (
       <section className="mt-8 px-6">
         <h2 className="font-display text-[20px] text-foreground">

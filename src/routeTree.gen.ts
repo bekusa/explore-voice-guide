@@ -27,6 +27,7 @@ import { Route as ApiTtsRouteImport } from './routes/api.tts'
 import { Route as ApiTranslateRouteImport } from './routes/api.translate'
 import { Route as ApiPhotoRouteImport } from './routes/api.photo'
 import { Route as ApiGuideRouteImport } from './routes/api.guide'
+import { Route as ApiCacheDebugRouteImport } from './routes/api.cache-debug'
 import { Route as ApiAttractionsRouteImport } from './routes/api.attractions'
 
 const TimeMachineRoute = TimeMachineRouteImport.update({
@@ -119,6 +120,11 @@ const ApiGuideRoute = ApiGuideRouteImport.update({
   path: '/api/guide',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCacheDebugRoute = ApiCacheDebugRouteImport.update({
+  id: '/api/cache-debug',
+  path: '/api/cache-debug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAttractionsRoute = ApiAttractionsRouteImport.update({
   id: '/api/attractions',
   path: '/api/attractions',
@@ -139,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/time-machine': typeof TimeMachineRoute
   '/api/attractions': typeof ApiAttractionsRoute
+  '/api/cache-debug': typeof ApiCacheDebugRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/photo': typeof ApiPhotoRoute
   '/api/translate': typeof ApiTranslateRoute
@@ -160,6 +167,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/time-machine': typeof TimeMachineRoute
   '/api/attractions': typeof ApiAttractionsRoute
+  '/api/cache-debug': typeof ApiCacheDebugRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/photo': typeof ApiPhotoRoute
   '/api/translate': typeof ApiTranslateRoute
@@ -182,6 +190,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/time-machine': typeof TimeMachineRoute
   '/api/attractions': typeof ApiAttractionsRoute
+  '/api/cache-debug': typeof ApiCacheDebugRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/photo': typeof ApiPhotoRoute
   '/api/translate': typeof ApiTranslateRoute
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/time-machine'
     | '/api/attractions'
+    | '/api/cache-debug'
     | '/api/guide'
     | '/api/photo'
     | '/api/translate'
@@ -226,6 +236,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/time-machine'
     | '/api/attractions'
+    | '/api/cache-debug'
     | '/api/guide'
     | '/api/photo'
     | '/api/translate'
@@ -247,6 +258,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/time-machine'
     | '/api/attractions'
+    | '/api/cache-debug'
     | '/api/guide'
     | '/api/photo'
     | '/api/translate'
@@ -269,6 +281,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   TimeMachineRoute: typeof TimeMachineRoute
   ApiAttractionsRoute: typeof ApiAttractionsRoute
+  ApiCacheDebugRoute: typeof ApiCacheDebugRoute
   ApiGuideRoute: typeof ApiGuideRoute
   ApiPhotoRoute: typeof ApiPhotoRoute
   ApiTranslateRoute: typeof ApiTranslateRoute
@@ -405,6 +418,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGuideRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cache-debug': {
+      id: '/api/cache-debug'
+      path: '/api/cache-debug'
+      fullPath: '/api/cache-debug'
+      preLoaderRoute: typeof ApiCacheDebugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/attractions': {
       id: '/api/attractions'
       path: '/api/attractions'
@@ -429,6 +449,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   TimeMachineRoute: TimeMachineRoute,
   ApiAttractionsRoute: ApiAttractionsRoute,
+  ApiCacheDebugRoute: ApiCacheDebugRoute,
   ApiGuideRoute: ApiGuideRoute,
   ApiPhotoRoute: ApiPhotoRoute,
   ApiTranslateRoute: ApiTranslateRoute,

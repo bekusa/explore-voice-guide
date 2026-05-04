@@ -26,6 +26,10 @@ export const Route = createFileRoute("/api/guide")({
         // disable caching for that request (we only cache when we
         // can build a stable key).
         const key = extractGuideKey(rawBody);
+        // Diagnostic header surfaced via DevTools so Beka can tell
+        // at a glance whether the cache key was extracted correctly
+        // even when X-Cache says MISS.
+        const keyHeader = key ? `${key.name}|${key.language}|${key.interest}` : "no-key";
 
         // 1. Cache lookup
         if (key) {
@@ -36,6 +40,7 @@ export const Route = createFileRoute("/api/guide")({
               headers: {
                 "Content-Type": "application/json",
                 "X-Cache": "HIT",
+                "X-Cache-Key": keyHeader,
               },
             });
           }
@@ -53,14 +58,27 @@ export const Route = createFileRoute("/api/guide")({
           // 3. Persist successful responses to the shared cache.
           // Only cache 2xx with a non-empty body that parses as JSON
           // — avoids storing error bodies or transient n8n hiccups.
+          let writeStatus = "skip";
           if (key && upstream.ok && text.trim().length > 0) {
             const parsed = safeParseJson(text);
             if (parsed !== undefined) {
-              // Fire-and-forget — we already paid the Claude latency
-              // for this user, no point making them wait on a
-              // Postgres write too.
-              void putCachedGuide(key, parsed);
+              // We pay the Claude latency, but await the write so
+              // X-Cache-Write can report its actual outcome — handy
+              // for debugging. Once cache is stable we can switch
+              // back to fire-and-forget.
+              try {
+                await putCachedGuide(key, parsed);
+                writeStatus = "ok";
+              } catch (err) {
+                writeStatus = `error: ${err instanceof Error ? err.message : "unknown"}`;
+              }
+            } else {
+              writeStatus = "skip-not-json";
             }
+          } else if (!key) {
+            writeStatus = "skip-no-key";
+          } else if (!upstream.ok) {
+            writeStatus = `skip-status-${upstream.status}`;
           }
 
           return new Response(text, {
@@ -68,6 +86,8 @@ export const Route = createFileRoute("/api/guide")({
             headers: {
               "Content-Type": upstream.headers.get("Content-Type") ?? "application/json",
               "X-Cache": "MISS",
+              "X-Cache-Key": keyHeader,
+              "X-Cache-Write": writeStatus,
             },
           });
         } catch (err) {
