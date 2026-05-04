@@ -11,11 +11,7 @@ import { getCachedAttractions, putCachedAttractions } from "@/lib/sharedCache.se
  * serialization of the {interests, duration} pair so that two
  * requests with the same intent collapse to the same row.
  *
- * Diagnostic headers (mirrors /api/guide):
- *   X-Cache         HIT | MISS
- *   X-Cache-Key     <query>|<lang>|<filters_key>  (or "no-key")
- *   X-Cache-Write   ok | skip-no-key | skip-not-json |
- *                   skip-status-N | error: <message>
+ * Single response header for monitoring: `X-Cache: HIT|MISS`.
  */
 export const Route = createFileRoute("/api/attractions")({
   server: {
@@ -23,9 +19,6 @@ export const Route = createFileRoute("/api/attractions")({
       POST: async ({ request }) => {
         const rawBody = await request.text();
         const key = extractAttractionsKey(rawBody);
-        const keyHeader = key
-          ? `${key.query}|${key.language}|${stableFiltersString(key.filters)}`
-          : "no-key";
 
         // 1. Cache lookup
         if (key) {
@@ -36,7 +29,6 @@ export const Route = createFileRoute("/api/attractions")({
               headers: {
                 "Content-Type": "application/json",
                 "X-Cache": "HIT",
-                "X-Cache-Key": keyHeader,
               },
             });
           }
@@ -52,25 +44,12 @@ export const Route = createFileRoute("/api/attractions")({
           const text = await upstream.text();
 
           // 3. Persist successful responses to the shared cache.
-          // Awaited (not fire-and-forget) while we're verifying the
-          // setup — lets X-Cache-Write report the actual outcome.
-          let writeStatus = "skip";
           if (key && upstream.ok && text.trim().length > 0) {
             const parsed = safeParseJson(text);
             if (parsed !== undefined) {
-              try {
-                await putCachedAttractions(key, parsed);
-                writeStatus = "ok";
-              } catch (err) {
-                writeStatus = `error: ${err instanceof Error ? err.message : "unknown"}`;
-              }
-            } else {
-              writeStatus = "skip-not-json";
+              // Fire-and-forget — see api.guide.ts for the rationale.
+              void putCachedAttractions(key, parsed);
             }
-          } else if (!key) {
-            writeStatus = "skip-no-key";
-          } else if (!upstream.ok) {
-            writeStatus = `skip-status-${upstream.status}`;
           }
 
           return new Response(text, {
@@ -78,8 +57,6 @@ export const Route = createFileRoute("/api/attractions")({
             headers: {
               "Content-Type": upstream.headers.get("Content-Type") ?? "application/json",
               "X-Cache": "MISS",
-              "X-Cache-Key": keyHeader,
-              "X-Cache-Write": writeStatus,
             },
           });
         } catch (err) {
@@ -130,13 +107,6 @@ function extractAttractionsKey(rawBody: string): {
   } catch {
     return null;
   }
-}
-
-function stableFiltersString(filters: { interests?: string[]; duration?: string }): string {
-  const interests = (filters.interests ?? []).slice().sort().join(",");
-  const duration = filters.duration ?? "";
-  if (!interests && !duration) return "no-filters";
-  return `${interests || "-"}|${duration || "-"}`;
 }
 
 function safeParseJson(text: string): unknown {
