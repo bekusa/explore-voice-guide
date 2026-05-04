@@ -15,8 +15,10 @@ import {
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useUnreadCount } from "@/hooks/useNotifications";
 import { useSelectedDestination } from "@/hooks/useSelectedDestination";
-import { useT, useTranslated, useTranslatedString } from "@/hooks/useT";
+import { useT, useTranslated } from "@/hooks/useT";
 import { DESTINATIONS, type Destination } from "@/lib/destinations";
+import { HOME_CITIES } from "@/lib/cityList";
+import { CityCard } from "@/components/CityCard";
 import {
   ATTRACTIONS as TIME_MACHINE_ATTRACTIONS,
   type Attraction as TimeMachineAttraction,
@@ -63,7 +65,6 @@ export function HomeScreen() {
   }, []);
 
   const heroDest = HERO_ROTATION[heroIdx];
-  const featured = useMemo(() => DESTINATIONS.slice(0, 6), []);
 
   // Translate the selected destination + hero copy on the fly.
   const [selectedCity, selectedCountry] = useTranslated([selected.city, selected.country]);
@@ -256,8 +257,8 @@ export function HomeScreen() {
           </div>
 
           <div className="mt-5 flex flex-col gap-4 px-5">
-            {featured.map((d) => (
-              <DestinationCard key={d.slug} dest={d} />
+            {HOME_CITIES.map((city) => (
+              <CityCard key={city} city={city} />
             ))}
           </div>
         </section>
