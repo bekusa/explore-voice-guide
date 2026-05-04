@@ -26,6 +26,7 @@ import { Route as AttractionIdRouteImport } from './routes/attraction.$id'
 import { Route as ApiTtsRouteImport } from './routes/api.tts'
 import { Route as ApiTranslateRouteImport } from './routes/api.translate'
 import { Route as ApiPhotoRouteImport } from './routes/api.photo'
+import { Route as ApiN8nTestRouteImport } from './routes/api.n8n-test'
 import { Route as ApiGuideRouteImport } from './routes/api.guide'
 import { Route as ApiCacheDebugRouteImport } from './routes/api.cache-debug'
 import { Route as ApiAttractionsRouteImport } from './routes/api.attractions'
@@ -115,6 +116,11 @@ const ApiPhotoRoute = ApiPhotoRouteImport.update({
   path: '/api/photo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiN8nTestRoute = ApiN8nTestRouteImport.update({
+  id: '/api/n8n-test',
+  path: '/api/n8n-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGuideRoute = ApiGuideRouteImport.update({
   id: '/api/guide',
   path: '/api/guide',
@@ -147,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/cache-debug': typeof ApiCacheDebugRoute
   '/api/guide': typeof ApiGuideRoute
+  '/api/n8n-test': typeof ApiN8nTestRoute
   '/api/photo': typeof ApiPhotoRoute
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
@@ -169,6 +176,7 @@ export interface FileRoutesByTo {
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/cache-debug': typeof ApiCacheDebugRoute
   '/api/guide': typeof ApiGuideRoute
+  '/api/n8n-test': typeof ApiN8nTestRoute
   '/api/photo': typeof ApiPhotoRoute
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
@@ -192,6 +200,7 @@ export interface FileRoutesById {
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/cache-debug': typeof ApiCacheDebugRoute
   '/api/guide': typeof ApiGuideRoute
+  '/api/n8n-test': typeof ApiN8nTestRoute
   '/api/photo': typeof ApiPhotoRoute
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
@@ -216,6 +225,7 @@ export interface FileRouteTypes {
     | '/api/attractions'
     | '/api/cache-debug'
     | '/api/guide'
+    | '/api/n8n-test'
     | '/api/photo'
     | '/api/translate'
     | '/api/tts'
@@ -238,6 +248,7 @@ export interface FileRouteTypes {
     | '/api/attractions'
     | '/api/cache-debug'
     | '/api/guide'
+    | '/api/n8n-test'
     | '/api/photo'
     | '/api/translate'
     | '/api/tts'
@@ -260,6 +271,7 @@ export interface FileRouteTypes {
     | '/api/attractions'
     | '/api/cache-debug'
     | '/api/guide'
+    | '/api/n8n-test'
     | '/api/photo'
     | '/api/translate'
     | '/api/tts'
@@ -283,6 +295,7 @@ export interface RootRouteChildren {
   ApiAttractionsRoute: typeof ApiAttractionsRoute
   ApiCacheDebugRoute: typeof ApiCacheDebugRoute
   ApiGuideRoute: typeof ApiGuideRoute
+  ApiN8nTestRoute: typeof ApiN8nTestRoute
   ApiPhotoRoute: typeof ApiPhotoRoute
   ApiTranslateRoute: typeof ApiTranslateRoute
   ApiTtsRoute: typeof ApiTtsRoute
@@ -411,6 +424,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPhotoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/n8n-test': {
+      id: '/api/n8n-test'
+      path: '/api/n8n-test'
+      fullPath: '/api/n8n-test'
+      preLoaderRoute: typeof ApiN8nTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/guide': {
       id: '/api/guide'
       path: '/api/guide'
@@ -451,6 +471,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAttractionsRoute: ApiAttractionsRoute,
   ApiCacheDebugRoute: ApiCacheDebugRoute,
   ApiGuideRoute: ApiGuideRoute,
+  ApiN8nTestRoute: ApiN8nTestRoute,
   ApiPhotoRoute: ApiPhotoRoute,
   ApiTranslateRoute: ApiTranslateRoute,
   ApiTtsRoute: ApiTtsRoute,
