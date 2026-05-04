@@ -44,10 +44,16 @@ export const Route = createFileRoute("/api/attractions")({
           const enKey = { ...key, language: "en" };
           const cachedEn = await getCachedAttractions(enKey);
           if (cachedEn !== null) {
-            const translated = await translateAttractionsPayload(cachedEn, userLang);
-            // Cache the translated version so future hits in this lang are instant.
-            void putCachedAttractions(key, translated);
-            return jsonResponse(translated, 200, "TRANSLATED");
+            const { payload: translated, translated: ok } = await translateAttractionsPayload(
+              cachedEn,
+              userLang,
+            );
+            // Only cache the target-language row when the gateway
+            // actually translated — otherwise we'd pin English under
+            // a Georgian key forever and every retry would short-
+            // circuit on the dud row.
+            if (ok) void putCachedAttractions(key, translated);
+            return jsonResponse(translated, 200, ok ? "TRANSLATED" : "TRANSLATE-FAILED");
           }
         }
 
@@ -77,9 +83,12 @@ export const Route = createFileRoute("/api/attractions")({
 
           // Translate now if the user wanted a non-English response.
           if (key && upstream.ok && parsed !== undefined && wantsTranslation) {
-            const translated = await translateAttractionsPayload(parsed, userLang);
-            void putCachedAttractions(key, translated);
-            return jsonResponse(translated, 200, "MISS-TRANSLATED");
+            const { payload: translated, translated: ok } = await translateAttractionsPayload(
+              parsed,
+              userLang,
+            );
+            if (ok) void putCachedAttractions(key, translated);
+            return jsonResponse(translated, 200, ok ? "MISS-TRANSLATED" : "MISS-NO-TRANS");
           }
 
           return jsonResponse(parsed ?? text, upstream.status, "MISS");

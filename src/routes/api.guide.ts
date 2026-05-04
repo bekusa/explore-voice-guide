@@ -39,9 +39,15 @@ export const Route = createFileRoute("/api/guide")({
           const enKey = { ...key, language: "en" };
           const cachedEn = await getCachedGuide(enKey);
           if (cachedEn !== null) {
-            const translated = await translateGuidePayload(cachedEn, userLang);
-            void putCachedGuide(key, translated);
-            return jsonResponse(translated, 200, "TRANSLATED");
+            const { payload: translated, translated: ok } = await translateGuidePayload(
+              cachedEn,
+              userLang,
+            );
+            // Skip caching when the translation gateway returned the
+            // source verbatim — keeping a dud row would short-circuit
+            // every future request and serve English under a non-en key.
+            if (ok) void putCachedGuide(key, translated);
+            return jsonResponse(translated, 200, ok ? "TRANSLATED" : "TRANSLATE-FAILED");
           }
         }
 
@@ -67,9 +73,12 @@ export const Route = createFileRoute("/api/guide")({
           }
 
           if (key && upstream.ok && parsed !== undefined && wantsTranslation) {
-            const translated = await translateGuidePayload(parsed, userLang);
-            void putCachedGuide(key, translated);
-            return jsonResponse(translated, 200, "MISS-TRANSLATED");
+            const { payload: translated, translated: ok } = await translateGuidePayload(
+              parsed,
+              userLang,
+            );
+            if (ok) void putCachedGuide(key, translated);
+            return jsonResponse(translated, 200, ok ? "MISS-TRANSLATED" : "MISS-NO-TRANS");
           }
 
           return jsonResponse(parsed ?? text, upstream.status, "MISS");

@@ -76,18 +76,16 @@ function isEnglish(target: string): boolean {
 }
 
 /**
- * Call the Lovable AI Gateway with a tool-call schema that returns
- * `{translations: string[]}` aligned with the input order. Returns
- * the source array on any failure so the caller sees English text
- * instead of an exception.
+ * Issue one gateway call for a small batch of strings. Used by
+ * `callGateway` which slices the full input into safe-sized chunks
+ * — long guide scripts trip Gemini's tool-output token cap when sent
+ * in one go and the response truncates silently to the input array.
  */
-async function callGateway(texts: string[], target: string): Promise<string[]> {
-  if (texts.length === 0) return [];
-  if (isEnglish(target)) return texts;
-
-  const apiKey = process.env.LOVABLE_API_KEY;
-  if (!apiKey) return texts;
-
+async function callGatewayChunk(
+  texts: string[],
+  target: string,
+  apiKey: string,
+): Promise<string[]> {
   const targetName = langName(target);
   const system = [
     `You are a professional travel-content translator.`,
@@ -139,14 +137,10 @@ async function callGateway(texts: string[], target: string): Promise<string[]> {
         },
       }),
     });
-
     if (!upstream.ok) return texts;
-
     const data = (await upstream.json()) as {
       choices?: Array<{
-        message?: {
-          tool_calls?: Array<{ function?: { arguments?: string } }>;
-        };
+        message?: { tool_calls?: Array<{ function?: { arguments?: string } }> };
       }>;
     };
     const argsRaw = data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
@@ -160,6 +154,88 @@ async function callGateway(texts: string[], target: string): Promise<string[]> {
   } catch {
     return texts;
   }
+}
+
+/**
+ * Call the Lovable AI Gateway with chunking + size guards so that
+ * a single very long string (say, a 5KB guide script) doesn't
+ * starve smaller items in the same batch. Strategy:
+ *
+ *   - Long strings (> 1500 chars) get a chunk of size 1.
+ *   - Everything else is grouped up to 6 strings per chunk.
+ *
+ * Failure mode is preserved: any chunk that errors keeps its source
+ * strings, so the caller still sees something sensible.
+ */
+async function callGateway(texts: string[], target: string): Promise<string[]> {
+  if (texts.length === 0) return [];
+  if (isEnglish(target)) return texts;
+
+  const apiKey = process.env.LOVABLE_API_KEY;
+  if (!apiKey) return texts;
+
+  const LONG = 1500;
+  const MAX_PER_CHUNK = 6;
+  const chunks: number[][] = []; // each chunk holds the original indices
+  let current: number[] = [];
+  let currentChars = 0;
+
+  texts.forEach((s, i) => {
+    if (s.length > LONG) {
+      // Flush any accumulating chunk, then send this big string alone.
+      if (current.length > 0) {
+        chunks.push(current);
+        current = [];
+        currentChars = 0;
+      }
+      chunks.push([i]);
+      return;
+    }
+    if (current.length >= MAX_PER_CHUNK || currentChars + s.length > 4000) {
+      chunks.push(current);
+      current = [];
+      currentChars = 0;
+    }
+    current.push(i);
+    currentChars += s.length;
+  });
+  if (current.length > 0) chunks.push(current);
+
+  // Fan out chunks in parallel — each call independent so a slow
+  // long-script translation doesn't block the short-text ones.
+  const results = await Promise.all(
+    chunks.map(async (idxs) => {
+      const slice = idxs.map((i) => texts[i]);
+      const out = await callGatewayChunk(slice, target, apiKey);
+      return { idxs, out };
+    }),
+  );
+
+  const merged = texts.slice();
+  for (const { idxs, out } of results) {
+    idxs.forEach((origIdx, j) => {
+      merged[origIdx] = out[j] ?? texts[origIdx];
+    });
+  }
+  return merged;
+}
+
+/**
+ * How "different" the translated array is from the source. Used to
+ * decide whether translation actually ran — Gemini occasionally
+ * returns the source verbatim on overload, and we don't want to
+ * cache that as if it were the target language.
+ */
+export function translationLooksReal(source: string[], translated: string[]): boolean {
+  if (source.length === 0) return true;
+  if (translated.length !== source.length) return false;
+  let changed = 0;
+  for (let i = 0; i < source.length; i++) {
+    if (source[i].trim() !== translated[i].trim()) changed++;
+  }
+  // Treat 50%+ changed as a successful translation. Lower than that
+  // probably means the gateway choked and returned source verbatim.
+  return changed / source.length >= 0.5;
 }
 
 /* ─── Field selectors ─── */
@@ -185,22 +261,23 @@ const ATTRACTION_TRANSLATABLE_FIELDS = [
 
 /**
  * Translate an attractions list response from English into the
- * target language. Mutates a deep clone, returns it.
+ * target language. Returns both the (possibly-)translated payload
+ * AND a `translated` flag — caller uses the flag to decide whether
+ * to cache the result as the target-language row, or skip the cache
+ * write when translation visibly failed (so we don't pin English
+ * content under a Georgian key forever).
  */
 export async function translateAttractionsPayload(
   payload: unknown,
   target: string,
-): Promise<unknown> {
-  if (isEnglish(target)) return payload;
-  if (!payload || typeof payload !== "object") return payload;
+): Promise<{ payload: unknown; translated: boolean }> {
+  if (isEnglish(target)) return { payload, translated: true };
+  if (!payload || typeof payload !== "object") return { payload, translated: false };
 
   const cloned = JSON.parse(JSON.stringify(payload)) as Record<string, unknown>;
   const list = pickAttractionsArray(cloned);
-  if (!list) return cloned;
+  if (!list) return { payload: cloned, translated: false };
 
-  // Collect every translatable string across every attraction in
-  // one flat batch — the gateway handles ~50 strings per call
-  // comfortably, and a 10-attraction list rarely exceeds that.
   const sources: string[] = [];
   const slots: Array<{ row: AttractionRecord; field: string }> = [];
 
@@ -216,13 +293,13 @@ export async function translateAttractionsPayload(
     }
   }
 
-  if (sources.length === 0) return cloned;
+  if (sources.length === 0) return { payload: cloned, translated: true };
 
   const translated = await callGateway(sources, target);
   for (let i = 0; i < slots.length; i++) {
     slots[i].row[slots[i].field] = translated[i] ?? sources[i];
   }
-  return cloned;
+  return { payload: cloned, translated: translationLooksReal(sources, translated) };
 }
 
 function pickAttractionsArray(obj: Record<string, unknown>): unknown[] | null {
@@ -240,11 +317,15 @@ const GUIDE_TRANSLATABLE_ARRAYS = ["key_facts", "look_for", "tips"] as const;
 
 /**
  * Translate a rich guide payload (script + chips + tips + nearby).
- * Names of nearby places stay untranslated; their `desc` is.
+ * Returns both the result and a `translated` flag — see the
+ * attractions variant above for the rationale.
  */
-export async function translateGuidePayload(payload: unknown, target: string): Promise<unknown> {
-  if (isEnglish(target)) return payload;
-  if (!payload || typeof payload !== "object") return payload;
+export async function translateGuidePayload(
+  payload: unknown,
+  target: string,
+): Promise<{ payload: unknown; translated: boolean }> {
+  if (isEnglish(target)) return { payload, translated: true };
+  if (!payload || typeof payload !== "object") return { payload, translated: false };
 
   const cloned = JSON.parse(JSON.stringify(payload)) as Record<string, unknown>;
 
@@ -291,11 +372,11 @@ export async function translateGuidePayload(payload: unknown, target: string): P
     });
   }
 
-  if (sources.length === 0) return cloned;
+  if (sources.length === 0) return { payload: cloned, translated: true };
 
   const translated = await callGateway(sources, target);
   for (let i = 0; i < setters.length; i++) {
     setters[i](translated[i] ?? sources[i]);
   }
-  return cloned;
+  return { payload: cloned, translated: translationLooksReal(sources, translated) };
 }
