@@ -183,6 +183,14 @@ function repairJsonStrings(text: string): string {
 function tolerantParse<T>(text: string): T {
   const trimmed = text.trim();
 
+  // 0. Empty body — n8n workflow returned nothing (timeout, silent
+  // failure, unfamiliar query). Throw a clear, distinct error so the
+  // upstream caller can surface friendly UX ("No results for X")
+  // instead of the generic "Could not parse" preview.
+  if (trimmed.length === 0) {
+    throw new Error("Empty response from upstream — workflow may have timed out");
+  }
+
   // 1. Try direct parse, then unwrap any LLM envelope.
   try {
     const parsed = JSON.parse(trimmed);

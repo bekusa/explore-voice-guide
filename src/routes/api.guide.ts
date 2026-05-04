@@ -49,31 +49,45 @@ export const Route = createFileRoute("/api/guide")({
             body: rawBody,
           });
           const text = await upstream.text();
+          const trimmed = text.trim();
+          const parsed = trimmed.length > 0 ? safeParseJson(text) : undefined;
 
           // 3. Persist successful responses to the shared cache.
           // Only cache 2xx with a non-empty body that parses as JSON
           // — avoids storing error bodies or transient n8n hiccups.
-          if (key && upstream.ok && text.trim().length > 0) {
-            const parsed = safeParseJson(text);
-            if (parsed !== undefined) {
-              // Fire-and-forget: we already paid the Claude latency
-              // for this user, no point making them wait on a
-              // Postgres write too. Errors are logged inside
-              // putCachedGuide and swallowed.
-              void putCachedGuide(key, parsed);
-            }
+          if (key && upstream.ok && parsed !== undefined) {
+            // Fire-and-forget: we already paid the Claude latency
+            // for this user, no point making them wait on a
+            // Postgres write too. Errors are logged inside
+            // putCachedGuide and swallowed.
+            void putCachedGuide(key, parsed);
           }
 
-          return new Response(text, {
+          // 4. Always return parseable JSON. Empty / unparseable n8n
+          // body becomes an empty guide envelope so the client doesn't
+          // surface "Could not parse response as JSON".
+          if (upstream.ok && parsed === undefined) {
+            return new Response(JSON.stringify({ script: "" }), {
+              status: 200,
+              headers: {
+                "Content-Type": "application/json",
+                "X-Cache": "MISS",
+                "X-Cache-Reason": "upstream-empty",
+              },
+            });
+          }
+
+          return new Response(parsed !== undefined ? JSON.stringify(parsed) : text, {
             status: upstream.status,
             headers: {
-              "Content-Type": upstream.headers.get("Content-Type") ?? "application/json",
+              "Content-Type": "application/json",
               "X-Cache": "MISS",
             },
           });
         } catch (err) {
           return new Response(
             JSON.stringify({
+              script: "",
               error: err instanceof Error ? err.message : "Upstream failed",
             }),
             { status: 502, headers: { "Content-Type": "application/json" } },

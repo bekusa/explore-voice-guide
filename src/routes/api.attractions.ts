@@ -42,26 +42,45 @@ export const Route = createFileRoute("/api/attractions")({
             body: rawBody,
           });
           const text = await upstream.text();
+          const trimmed = text.trim();
+          const parsed = trimmed.length > 0 ? safeParseJson(text) : undefined;
 
           // 3. Persist successful responses to the shared cache.
-          if (key && upstream.ok && text.trim().length > 0) {
-            const parsed = safeParseJson(text);
-            if (parsed !== undefined) {
-              // Fire-and-forget — see api.guide.ts for the rationale.
-              void putCachedAttractions(key, parsed);
-            }
+          if (key && upstream.ok && parsed !== undefined) {
+            // Fire-and-forget — see api.guide.ts for the rationale.
+            void putCachedAttractions(key, parsed);
           }
 
-          return new Response(text, {
+          // 4. Always return parseable JSON to the client. If n8n
+          // gave us an empty / unparseable body (timeout, unfamiliar
+          // city, silent error) we fall back to {attractions: []}
+          // so the client renders an empty results page instead of
+          // throwing a "Could not parse response as JSON" toast.
+          if (upstream.ok && parsed === undefined) {
+            return new Response(JSON.stringify({ attractions: [] }), {
+              status: 200,
+              headers: {
+                "Content-Type": "application/json",
+                "X-Cache": "MISS",
+                "X-Cache-Reason": "upstream-empty",
+              },
+            });
+          }
+
+          return new Response(parsed !== undefined ? JSON.stringify(parsed) : text, {
             status: upstream.status,
             headers: {
-              "Content-Type": upstream.headers.get("Content-Type") ?? "application/json",
+              "Content-Type": "application/json",
               "X-Cache": "MISS",
             },
           });
         } catch (err) {
+          // Network failure talking to n8n. Return a structured
+          // "no results" payload instead of a 502 with raw text so
+          // the client doesn't crash on a missing JSON body.
           return new Response(
             JSON.stringify({
+              attractions: [],
               error: err instanceof Error ? err.message : "Upstream failed",
             }),
             { status: 502, headers: { "Content-Type": "application/json" } },
