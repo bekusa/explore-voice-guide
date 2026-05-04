@@ -1,24 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getCachedGuide, putCachedGuide } from "@/lib/sharedCache.server";
+import { translateGuidePayload } from "@/lib/translatePayload.server";
 
 /**
  * /api/guide — Cloudflare Worker proxy in front of the n8n
  * /webhook/guide workflow.
  *
- * Cache layer: shared Postgres cache (see `lib/sharedCache.server`).
- *   - HIT  → return the stored payload immediately. Skip n8n + Claude.
- *   - MISS → forward to n8n; on success, write the response back into
- *     Supabase so the next visitor — anywhere in the world — gets a
- *     ~50ms answer instead of a 6-8s Claude round-trip.
+ * Smart cache strategy (mirror of /api/attractions):
+ *   1. Try direct cache hit on (name, lang, interest).
+ *   2. Miss + lang != en → look up the English baseline, translate
+ *      to userLang via the Lovable AI Gateway, cache, return.
+ *   3. Miss everywhere → call n8n forcing language="en", cache the
+ *      English version, translate if needed.
  *
- * The cache is opportunistic: if Supabase is down or the lookup
- * errors, we transparently fall through to n8n. Writes are
- * fire-and-forget so the cold-cache visitor doesn't pay an extra
- * Postgres round-trip on top of the Claude latency they already ate.
+ * One Claude generation per (name, interest) regardless of locale.
  *
- * One header is exposed for monitoring: `X-Cache: HIT|MISS`. The
- * verbose debug headers (X-Cache-Key, X-Cache-Write) were removed
- * once the cache was confirmed working — see commit history.
+ * `X-Cache: HIT|TRANSLATED|MISS|MISS-TRANSLATED` for monitoring.
  */
 export const Route = createFileRoute("/api/guide")({
   server: {
@@ -26,64 +23,56 @@ export const Route = createFileRoute("/api/guide")({
       POST: async ({ request }) => {
         const rawBody = await request.text();
         const key = extractGuideKey(rawBody);
+        const userLang = key?.language ?? "en";
+        const wantsTranslation = key !== null && !isEnglish(userLang);
 
-        // 1. Cache lookup
+        // 1. Direct cache hit
         if (key) {
           const cached = await getCachedGuide(key);
           if (cached !== null) {
-            return new Response(JSON.stringify(cached), {
-              status: 200,
-              headers: {
-                "Content-Type": "application/json",
-                "X-Cache": "HIT",
-              },
-            });
+            return jsonResponse(cached, 200, "HIT");
           }
         }
 
-        // 2. Forward to n8n
+        // 2. Miss; if non-English, try the English baseline + translate
+        if (key && wantsTranslation) {
+          const enKey = { ...key, language: "en" };
+          const cachedEn = await getCachedGuide(enKey);
+          if (cachedEn !== null) {
+            const translated = await translateGuidePayload(cachedEn, userLang);
+            void putCachedGuide(key, translated);
+            return jsonResponse(translated, 200, "TRANSLATED");
+          }
+        }
+
+        // 3. Forward to n8n in English
+        const enBody = forceLanguageEnglish(rawBody);
         try {
           const upstream = await fetch("https://tsitskabeka.app.n8n.cloud/webhook/guide", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: rawBody,
+            body: enBody,
           });
           const text = await upstream.text();
           const trimmed = text.trim();
           const parsed = trimmed.length > 0 ? safeParseJson(text) : undefined;
 
-          // 3. Persist successful responses to the shared cache.
-          // Only cache 2xx with a non-empty body that parses as JSON
-          // — avoids storing error bodies or transient n8n hiccups.
           if (key && upstream.ok && parsed !== undefined) {
-            // Fire-and-forget: we already paid the Claude latency
-            // for this user, no point making them wait on a
-            // Postgres write too. Errors are logged inside
-            // putCachedGuide and swallowed.
-            void putCachedGuide(key, parsed);
+            const enKey = { ...key, language: "en" };
+            void putCachedGuide(enKey, parsed);
           }
 
-          // 4. Always return parseable JSON. Empty / unparseable n8n
-          // body becomes an empty guide envelope so the client doesn't
-          // surface "Could not parse response as JSON".
           if (upstream.ok && parsed === undefined) {
-            return new Response(JSON.stringify({ script: "" }), {
-              status: 200,
-              headers: {
-                "Content-Type": "application/json",
-                "X-Cache": "MISS",
-                "X-Cache-Reason": "upstream-empty",
-              },
-            });
+            return jsonResponse({ script: "" }, 200, "MISS", "upstream-empty");
           }
 
-          return new Response(parsed !== undefined ? JSON.stringify(parsed) : text, {
-            status: upstream.status,
-            headers: {
-              "Content-Type": "application/json",
-              "X-Cache": "MISS",
-            },
-          });
+          if (key && upstream.ok && parsed !== undefined && wantsTranslation) {
+            const translated = await translateGuidePayload(parsed, userLang);
+            void putCachedGuide(key, translated);
+            return jsonResponse(translated, 200, "MISS-TRANSLATED");
+          }
+
+          return jsonResponse(parsed ?? text, upstream.status, "MISS");
         } catch (err) {
           return new Response(
             JSON.stringify({
@@ -100,9 +89,7 @@ export const Route = createFileRoute("/api/guide")({
 
 /**
  * Pull a stable {name, language, interest} key out of the request
- * body. Returns null if name or language is missing — the cache row
- * would be ambiguous and a future request with the same (incomplete)
- * payload couldn't safely match it.
+ * body. Returns null if name or language is missing.
  */
 function extractGuideKey(rawBody: string): {
   name: string;
@@ -128,10 +115,40 @@ function extractGuideKey(rawBody: string): {
   }
 }
 
+function forceLanguageEnglish(rawBody: string): string {
+  try {
+    const obj = JSON.parse(rawBody) as Record<string, unknown>;
+    obj.language = "en";
+    if ("lang" in obj) obj.lang = "en";
+    return JSON.stringify(obj);
+  } catch {
+    return rawBody;
+  }
+}
+
+function isEnglish(lang: string): boolean {
+  return !lang || lang.toLowerCase().startsWith("en");
+}
+
 function safeParseJson(text: string): unknown {
   try {
     return JSON.parse(text);
   } catch {
     return undefined;
   }
+}
+
+function jsonResponse(
+  payload: unknown,
+  status: number,
+  cacheTag: string,
+  reason?: string,
+): Response {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "X-Cache": cacheTag,
+  };
+  if (reason) headers["X-Cache-Reason"] = reason;
+  const body = typeof payload === "string" ? payload : JSON.stringify(payload);
+  return new Response(body, { status, headers });
 }

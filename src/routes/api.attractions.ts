@@ -1,17 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getCachedAttractions, putCachedAttractions } from "@/lib/sharedCache.server";
+import { translateAttractionsPayload } from "@/lib/translatePayload.server";
 
 /**
  * /api/attractions — Cloudflare Worker proxy in front of the n8n
  * /webhook/attractions workflow.
  *
- * Same shared-cache pattern as /api/guide — see that file for the
- * full rationale. The cache key here is
- * (query, language, filters_key) where `filters_key` is a stable
- * serialization of the {interests, duration} pair so that two
- * requests with the same intent collapse to the same row.
+ * Smart cache strategy (saves ~80% Claude cost across languages):
+ *   1. Try direct cache hit on (query, userLang).
+ *   2. Miss + userLang != en → try (query, "en"); if found,
+ *      translate it to userLang via Lovable AI Gateway (Gemini Flash,
+ *      ~10× cheaper than Claude) and cache the translated row too.
+ *   3. Miss everywhere → forward to n8n forcing language="en" so we
+ *      always cache an English baseline, then translate to userLang
+ *      if needed.
  *
- * Single response header for monitoring: `X-Cache: HIT|MISS`.
+ * Result: each city now costs ONE Claude call regardless of how
+ * many languages we serve it in. The translation step is opportunistic
+ * — if it fails or returns the source array, the user sees English
+ * which is still a working result.
+ *
+ * Single response header for monitoring: `X-Cache: HIT|TRANSLATED|MISS`.
  */
 export const Route = createFileRoute("/api/attractions")({
   server: {
@@ -19,65 +28,64 @@ export const Route = createFileRoute("/api/attractions")({
       POST: async ({ request }) => {
         const rawBody = await request.text();
         const key = extractAttractionsKey(rawBody);
+        const userLang = key?.language ?? "en";
+        const wantsTranslation = key !== null && !isEnglish(userLang);
 
-        // 1. Cache lookup
+        // 1. Direct cache hit (e.g. user wants ka, ka cached)
         if (key) {
           const cached = await getCachedAttractions(key);
           if (cached !== null) {
-            return new Response(JSON.stringify(cached), {
-              status: 200,
-              headers: {
-                "Content-Type": "application/json",
-                "X-Cache": "HIT",
-              },
-            });
+            return jsonResponse(cached, 200, "HIT");
           }
         }
 
-        // 2. Forward to n8n
+        // 2. Miss; if non-English, try the English baseline + translate
+        if (key && wantsTranslation) {
+          const enKey = { ...key, language: "en" };
+          const cachedEn = await getCachedAttractions(enKey);
+          if (cachedEn !== null) {
+            const translated = await translateAttractionsPayload(cachedEn, userLang);
+            // Cache the translated version so future hits in this lang are instant.
+            void putCachedAttractions(key, translated);
+            return jsonResponse(translated, 200, "TRANSLATED");
+          }
+        }
+
+        // 3. Forward to n8n — always request English so the cached
+        // baseline is reusable across every locale we ever serve.
+        const enBody = forceLanguageEnglish(rawBody);
         try {
           const upstream = await fetch("https://tsitskabeka.app.n8n.cloud/webhook/attractions", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: rawBody,
+            body: enBody,
           });
           const text = await upstream.text();
           const trimmed = text.trim();
           const parsed = trimmed.length > 0 ? safeParseJson(text) : undefined;
 
-          // 3. Persist successful responses to the shared cache.
+          // Persist the English baseline.
           if (key && upstream.ok && parsed !== undefined) {
-            // Fire-and-forget — see api.guide.ts for the rationale.
-            void putCachedAttractions(key, parsed);
+            const enKey = { ...key, language: "en" };
+            void putCachedAttractions(enKey, parsed);
           }
 
-          // 4. Always return parseable JSON to the client. If n8n
-          // gave us an empty / unparseable body (timeout, unfamiliar
-          // city, silent error) we fall back to {attractions: []}
-          // so the client renders an empty results page instead of
-          // throwing a "Could not parse response as JSON" toast.
+          // Empty / unparseable upstream → friendly empty list.
           if (upstream.ok && parsed === undefined) {
-            return new Response(JSON.stringify({ attractions: [] }), {
-              status: 200,
-              headers: {
-                "Content-Type": "application/json",
-                "X-Cache": "MISS",
-                "X-Cache-Reason": "upstream-empty",
-              },
-            });
+            return jsonResponse({ attractions: [] }, 200, "MISS", "upstream-empty");
           }
 
-          return new Response(parsed !== undefined ? JSON.stringify(parsed) : text, {
-            status: upstream.status,
-            headers: {
-              "Content-Type": "application/json",
-              "X-Cache": "MISS",
-            },
-          });
+          // Translate now if the user wanted a non-English response.
+          if (key && upstream.ok && parsed !== undefined && wantsTranslation) {
+            const translated = await translateAttractionsPayload(parsed, userLang);
+            void putCachedAttractions(key, translated);
+            return jsonResponse(translated, 200, "MISS-TRANSLATED");
+          }
+
+          return jsonResponse(parsed ?? text, upstream.status, "MISS");
         } catch (err) {
-          // Network failure talking to n8n. Return a structured
-          // "no results" payload instead of a 502 with raw text so
-          // the client doesn't crash on a missing JSON body.
+          // Network failure talking to n8n — return empty list with
+          // an `error` field so the client can render gracefully.
           return new Response(
             JSON.stringify({
               attractions: [],
@@ -102,8 +110,6 @@ function extractAttractionsKey(rawBody: string): {
 } | null {
   try {
     const obj = JSON.parse(rawBody) as Record<string, unknown>;
-    // Frontend sends `query` and also mirrors as `city` / `country`
-    // for the n8n workflow. We pick the most-specific one available.
     const query =
       (typeof obj.query === "string" && obj.query) ||
       (typeof obj.city === "string" && obj.city) ||
@@ -128,10 +134,45 @@ function extractAttractionsKey(rawBody: string): {
   }
 }
 
+/**
+ * Rewrite `language: ...` → `language: "en"` in the JSON body before
+ * forwarding to n8n, so we always cache an English baseline.
+ * Falls back to the original body on any parse failure.
+ */
+function forceLanguageEnglish(rawBody: string): string {
+  try {
+    const obj = JSON.parse(rawBody) as Record<string, unknown>;
+    obj.language = "en";
+    if ("lang" in obj) obj.lang = "en";
+    return JSON.stringify(obj);
+  } catch {
+    return rawBody;
+  }
+}
+
+function isEnglish(lang: string): boolean {
+  return !lang || lang.toLowerCase().startsWith("en");
+}
+
 function safeParseJson(text: string): unknown {
   try {
     return JSON.parse(text);
   } catch {
     return undefined;
   }
+}
+
+function jsonResponse(
+  payload: unknown,
+  status: number,
+  cacheTag: string,
+  reason?: string,
+): Response {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "X-Cache": cacheTag,
+  };
+  if (reason) headers["X-Cache-Reason"] = reason;
+  const body = typeof payload === "string" ? payload : JSON.stringify(payload);
+  return new Response(body, { status, headers });
 }
