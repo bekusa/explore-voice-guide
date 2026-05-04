@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -17,6 +17,8 @@ import { useUnreadCount } from "@/hooks/useNotifications";
 import { useSelectedDestination } from "@/hooks/useSelectedDestination";
 import { useT, useTranslated, useTranslatedString } from "@/hooks/useT";
 import { DESTINATIONS, type Destination } from "@/lib/destinations";
+import { CITY_LIST } from "@/lib/cityList";
+import { CityCard } from "@/components/CityCard";
 import {
   ATTRACTIONS as TIME_MACHINE_ATTRACTIONS,
   type Attraction as TimeMachineAttraction,
@@ -63,7 +65,6 @@ export function HomeScreen() {
   }, []);
 
   const heroDest = HERO_ROTATION[heroIdx];
-  const featured = useMemo(() => DESTINATIONS.slice(0, 6), []);
 
   // Translate the selected destination + hero copy on the fly.
   const [selectedCity, selectedCountry] = useTranslated([selected.city, selected.country]);
@@ -255,9 +256,9 @@ export function HomeScreen() {
             </Link>
           </div>
 
-          <div className="mt-5 flex flex-col gap-4 px-5">
-            {featured.map((d) => (
-              <DestinationCard key={d.slug} dest={d} />
+          <div className="mt-5 grid grid-cols-2 gap-3 px-5">
+            {CITY_LIST.map((city, i) => (
+              <CityCard key={city} city={city} index={i} />
             ))}
           </div>
         </section>
@@ -319,55 +320,3 @@ function TimeMachineMomentCard({
   );
 }
 
-/* ─────────────────────────────────────────────
- * Editorial destination card
- * ───────────────────────────────────────────── */
-function DestinationCard({ dest }: { dest: Destination }) {
-  const t = useT();
-  const [city, country, ...vibes] = useTranslated([
-    dest.city,
-    dest.country,
-    ...dest.vibe.slice(0, 3),
-  ]);
-  return (
-    <Link
-      to="/destination/$slug"
-      params={{ slug: dest.slug }}
-      className="group relative block h-[210px] overflow-hidden rounded-3xl border border-border transition-smooth hover:border-primary/50 hover:shadow-elegant active:scale-[0.99]"
-    >
-      <img
-        src={dest.hero}
-        alt={`${dest.city}, ${dest.country}`}
-        loading="lazy"
-        className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-
-      <div className="absolute left-4 right-4 top-3.5 flex items-center justify-between">
-        <span className="rounded-full border border-foreground/15 bg-background/60 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.18em] text-foreground backdrop-blur-md">
-          {country}
-        </span>
-        {/* Tour count pill removed per Beka's request — the number was
-            sourced from the static `dest.featured.length` and didn't
-            reflect what the n8n attractions workflow returns, so it
-            was misleading. */}
-      </div>
-
-      <div className="absolute inset-x-4 bottom-4">
-        <h3 className="font-display text-[26px] font-medium leading-[1.05] text-foreground">
-          {city}
-        </h3>
-        <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] text-foreground/70">
-          {vibes.map((v, i) => (
-            <span
-              key={i}
-              className="rounded-full border border-foreground/15 bg-background/40 px-2 py-0.5 backdrop-blur-md"
-            >
-              {v}
-            </span>
-          ))}
-        </div>
-      </div>
-    </Link>
-  );
-}
