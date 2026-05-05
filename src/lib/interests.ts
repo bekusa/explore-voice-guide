@@ -24,28 +24,32 @@ export type Interest = {
 };
 
 export const INTERESTS: Interest[] = [
+  // Default — picked first when no preference set. The "Editor's
+  // Pick" framing tells the user we'll surface a balanced, magazine-
+  // quality narration instead of biasing toward one angle.
+  { id: "editors", key: "filters.int.editors", emoji: "✨" },
   { id: "history", key: "filters.int.history", emoji: "🏛️" },
-  { id: "art", key: "filters.int.art", emoji: "🎨" },
-  { id: "food", key: "filters.int.food", emoji: "🍽️" },
-  { id: "nature", key: "filters.int.nature", emoji: "🌿" },
-  { id: "architecture", key: "filters.int.architecture", emoji: "🏗️" },
-  { id: "spirituality", key: "filters.int.spirituality", emoji: "🕯️" },
-  { id: "family", key: "filters.int.family", emoji: "👨‍👩‍👧" },
-  { id: "couples", key: "filters.int.couples", emoji: "💞" },
   { id: "photography", key: "filters.int.photography", emoji: "📸" },
-  { id: "adventure", key: "filters.int.adventure", emoji: "🧗" },
-  { id: "local", key: "filters.int.local", emoji: "🏘️" },
-  { id: "nightlife", key: "filters.int.nightlife", emoji: "🌙" },
+  { id: "authentic", key: "filters.int.authentic", emoji: "🎭" },
+  { id: "family", key: "filters.int.family", emoji: "👨‍👩‍👧" },
+  { id: "romantic", key: "filters.int.romantic", emoji: "💞" },
 ];
 
 export const INTERESTS_BY_ID = new Map<string, Interest>(INTERESTS.map((x) => [x.id, x]));
 export const VALID_INTEREST_IDS = new Set<string>(INTERESTS.map((x) => x.id));
 
 /**
- * Beka's product call: heritage-tourist audience, so the safer
- * fallback is History when nothing else is selected.
+ * Default interest when nothing else is selected. Editor's Pick
+ * delegates the angle to Claude — it's the safest "give me the
+ * best of this place" signal for first-time visitors.
+ *
+ * Migration note: legacy IDs like "art", "food", "nature",
+ * "architecture", "spirituality", "couples" (replaced by "romantic"),
+ * "adventure", "local", "nightlife" no longer exist. Any persisted
+ * preference referencing them is normalised back to "editors" via
+ * normalizeInterest below.
  */
-export const DEFAULT_INTEREST = "history";
+export const DEFAULT_INTEREST = "editors";
 
 export function isValidInterest(id: string): boolean {
   return VALID_INTEREST_IDS.has(id);

@@ -153,18 +153,12 @@ export const UI_STRINGS = {
   // Results filters
   "filters.interests": "Interests",
   "filters.clear": "Clear",
+  "filters.int.editors": "Editor's Pick",
   "filters.int.history": "History",
-  "filters.int.art": "Art",
-  "filters.int.food": "Food",
-  "filters.int.nature": "Nature",
-  "filters.int.architecture": "Architecture",
-  "filters.int.spirituality": "Spirituality",
-  "filters.int.family": "Family",
-  "filters.int.couples": "Couples",
   "filters.int.photography": "Photography",
-  "filters.int.adventure": "Adventure",
-  "filters.int.local": "Local culture",
-  "filters.int.nightlife": "Nightlife",
+  "filters.int.authentic": "Authentic",
+  "filters.int.family": "Family",
+  "filters.int.romantic": "Romantic",
 
   // Toasts
   "toast.removedFromSaved": "Removed from Saved",
