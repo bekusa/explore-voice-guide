@@ -164,12 +164,55 @@ function isEnglish(lang: string): boolean {
   return !lang || lang.toLowerCase().startsWith("en");
 }
 
+/**
+ * Tolerant JSON parser. Handles three Claude-induced quirks:
+ *   1. Pure JSON — happy path.
+ *   2. Markdown-fenced JSON ( ```json ... ``` ) — Haiku ignores
+ *      the "no backticks" rule about half the time, so strip the
+ *      fence and retry.
+ *   3. Anthropic envelope — when n8n returns the full Messages API
+ *      response, the payload is { content: [{ type:"text", text:"..." }] }.
+ *      Pull out content[0].text and recurse.
+ */
 function safeParseJson(text: string): unknown {
+  const trimmed = text.trim();
+
+  // 1. Direct parse
   try {
-    return JSON.parse(text);
+    const parsed = JSON.parse(trimmed);
+    return unwrapIfEnvelope(parsed);
   } catch {
-    return undefined;
+    /* fall through */
   }
+
+  // 2. Strip markdown code fence (```json ... ``` or ``` ... ```)
+  const fence = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (fence) {
+    try {
+      return unwrapIfEnvelope(JSON.parse(fence[1].trim()));
+    } catch {
+      /* fall through */
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * If the parsed object is the Anthropic Messages API envelope,
+ * reach inside content[0].text and re-parse.
+ */
+function unwrapIfEnvelope(parsed: unknown): unknown {
+  if (!parsed || typeof parsed !== "object") return parsed;
+  const obj = parsed as Record<string, unknown>;
+  if (Array.isArray(obj.content) && obj.content.length > 0) {
+    const first = obj.content[0] as { type?: string; text?: string };
+    if (first?.type === "text" && typeof first.text === "string") {
+      // Recurse — text often contains fenced JSON
+      return safeParseJson(first.text);
+    }
+  }
+  return parsed;
 }
 
 /**

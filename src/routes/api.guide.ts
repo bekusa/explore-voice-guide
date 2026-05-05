@@ -141,12 +141,43 @@ function isEnglish(lang: string): boolean {
   return !lang || lang.toLowerCase().startsWith("en");
 }
 
+/**
+ * Tolerant JSON parser — same logic as /api/attractions. Handles
+ * pure JSON, markdown-fenced JSON, and the Anthropic Messages
+ * envelope shape.
+ */
 function safeParseJson(text: string): unknown {
+  const trimmed = text.trim();
+
   try {
-    return JSON.parse(text);
+    const parsed = JSON.parse(trimmed);
+    return unwrapIfEnvelope(parsed);
   } catch {
-    return undefined;
+    /* fall through */
   }
+
+  const fence = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (fence) {
+    try {
+      return unwrapIfEnvelope(JSON.parse(fence[1].trim()));
+    } catch {
+      /* fall through */
+    }
+  }
+
+  return undefined;
+}
+
+function unwrapIfEnvelope(parsed: unknown): unknown {
+  if (!parsed || typeof parsed !== "object") return parsed;
+  const obj = parsed as Record<string, unknown>;
+  if (Array.isArray(obj.content) && obj.content.length > 0) {
+    const first = obj.content[0] as { type?: string; text?: string };
+    if (first?.type === "text" && typeof first.text === "string") {
+      return safeParseJson(first.text);
+    }
+  }
+  return parsed;
 }
 
 /**
