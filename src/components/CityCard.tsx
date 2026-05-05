@@ -4,6 +4,55 @@ import { MapPin } from "lucide-react";
 import { useTranslatedString, useUiLang } from "@/hooks/useT";
 
 /**
+ * Persistent cross-session cache for city hero images. The server route
+ * /api/photo already does in-memory + HTTP caching, but a cold worker or
+ * a fresh browser tab still pays the round-trip + image latency. We mirror
+ * the resolved URL into localStorage so subsequent visits paint instantly.
+ *
+ * TTL kept generous (30 days) — Google Places photo URLs are signed and
+ * eventually expire (~2 days for the redirect target on lh3), so we re-
+ * fetch periodically. On image load error we also bust the entry.
+ */
+const CACHE_PREFIX = "cityPhoto:v1:";
+const CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 30;
+
+type CacheEntry = { url: string; ts: number };
+
+function readCache(key: string): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(CACHE_PREFIX + key);
+    if (!raw) return null;
+    const entry = JSON.parse(raw) as CacheEntry;
+    if (!entry?.url || Date.now() - entry.ts > CACHE_TTL_MS) return null;
+    return entry.url;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(key: string, url: string) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(
+      CACHE_PREFIX + key,
+      JSON.stringify({ url, ts: Date.now() } satisfies CacheEntry),
+    );
+  } catch {
+    /* quota / private mode — ignore */
+  }
+}
+
+function clearCache(key: string) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(CACHE_PREFIX + key);
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
  * Editorial city card shown on Home + Explore. Same visual language as
  * the previous DestinationCard (large rounded image, gradient overlay,
  * city label bottom-left) — but the destination is a plain city string
