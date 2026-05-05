@@ -14,7 +14,7 @@
  */
 
 const STORAGE_KEY = "tg.lang";
-const CACHE_KEY = "tg.translations.v2";
+const CACHE_KEY = "tg.translations.v3";
 const CHANGE_EVENT = "tg:lang-changed";
 const MAX_CACHE_ENTRIES = 5000;
 

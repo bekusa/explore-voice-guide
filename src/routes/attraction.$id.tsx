@@ -230,20 +230,20 @@ function AttractionPage() {
           </header>
 
           <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-7 animate-float-up">
-            <div className="flex flex-wrap items-center gap-2">
-              {a?.category && (
-                <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 backdrop-blur-md">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
-                    {a.category}
-                  </span>
-                </span>
-              )}
-              {isUnescoSite(a?.name ?? fallbackName, {
-                city: typeof a?.city === "string" ? a.city : null,
-                type: a?.type ?? a?.category ?? null,
-                description: a?.outside_desc ?? a?.description ?? null,
-              }) && <UnescoBadge variant="hero" />}
-            </div>
+            {/* Category chip removed per Beka's feedback — the
+                hero already carries the place name + meta row;
+                showing "Museum" twice felt redundant. UNESCO badge
+                stays because it's a globally recognised credential
+                and worth the visual weight. */}
+            {isUnescoSite(a?.name ?? fallbackName, {
+              city: typeof a?.city === "string" ? a.city : null,
+              type: a?.type ?? a?.category ?? null,
+              description: a?.outside_desc ?? a?.description ?? null,
+            }) && (
+              <div className="mb-1">
+                <UnescoBadge variant="hero" />
+              </div>
+            )}
             <h1 className="mt-4 font-display text-[2.25rem] font-medium leading-[1.05] text-foreground">
               {a?.name ?? fallbackName}
             </h1>
