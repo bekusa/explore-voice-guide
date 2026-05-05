@@ -19,8 +19,7 @@ export const Route = createFileRoute("/destinations")({
       { title: "Explore destinations — Lokali" },
       {
         name: "description",
-        content:
-          "Browse cinematic, locally narrated audio walks across cities around the world.",
+        content: "Browse cinematic, locally narrated audio walks across cities around the world.",
       },
     ],
   }),

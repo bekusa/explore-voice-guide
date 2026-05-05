@@ -4,6 +4,55 @@ import { MapPin } from "lucide-react";
 import { useTranslatedString, useUiLang } from "@/hooks/useT";
 
 /**
+ * Persistent cross-session cache for city hero images. The server route
+ * /api/photo already does in-memory + HTTP caching, but a cold worker or
+ * a fresh browser tab still pays the round-trip + image latency. We mirror
+ * the resolved URL into localStorage so subsequent visits paint instantly.
+ *
+ * TTL kept generous (30 days) — Google Places photo URLs are signed and
+ * eventually expire (~2 days for the redirect target on lh3), so we re-
+ * fetch periodically. On image load error we also bust the entry.
+ */
+const CACHE_PREFIX = "cityPhoto:v1:";
+const CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 30;
+
+type CacheEntry = { url: string; ts: number };
+
+function readCache(key: string): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(CACHE_PREFIX + key);
+    if (!raw) return null;
+    const entry = JSON.parse(raw) as CacheEntry;
+    if (!entry?.url || Date.now() - entry.ts > CACHE_TTL_MS) return null;
+    return entry.url;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(key: string, url: string) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(
+      CACHE_PREFIX + key,
+      JSON.stringify({ url, ts: Date.now() } satisfies CacheEntry),
+    );
+  } catch {
+    /* quota / private mode — ignore */
+  }
+}
+
+function clearCache(key: string) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(CACHE_PREFIX + key);
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
  * Editorial city card shown on Home + Explore. Same visual language as
  * the previous DestinationCard (large rounded image, gradient overlay,
  * city label bottom-left) — but the destination is a plain city string
@@ -17,14 +66,22 @@ import { useTranslatedString, useUiLang } from "@/hooks/useT";
 export function CityCard({ city }: { city: string }) {
   const lang = useUiLang();
   const label = useTranslatedString(city);
-  const [img, setImg] = useState<string | null>(null);
+  const cacheKey = `${lang}:${city}`;
+  const [img, setImg] = useState<string | null>(() => readCache(cacheKey));
 
   useEffect(() => {
+    const cached = readCache(cacheKey);
+    if (cached) {
+      setImg(cached);
+      return;
+    }
     let cancelled = false;
     fetch(`/api/photo?q=${encodeURIComponent(city)}&city=${encodeURIComponent(city)}&lang=${lang}`)
       .then((r) => r.json())
       .then((data: { url: string | null }) => {
-        if (!cancelled) setImg(data.url);
+        if (cancelled) return;
+        setImg(data.url);
+        if (data.url) writeCache(cacheKey, data.url);
       })
       .catch(() => {
         /* placeholder will stay */
@@ -32,7 +89,7 @@ export function CityCard({ city }: { city: string }) {
     return () => {
       cancelled = true;
     };
-  }, [city, lang]);
+  }, [city, lang, cacheKey]);
 
   return (
     <Link
@@ -45,6 +102,10 @@ export function CityCard({ city }: { city: string }) {
           src={img}
           alt={city}
           loading="lazy"
+          onError={() => {
+            clearCache(cacheKey);
+            setImg(null);
+          }}
           className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
         />
       ) : (
