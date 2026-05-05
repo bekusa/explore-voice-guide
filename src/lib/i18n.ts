@@ -100,6 +100,8 @@ export const UI_STRINGS = {
   "home.collections.sub": "Themes for the way you travel",
   "home.timeMachine.title": "Time Machine",
   "home.timeMachine.sub": "Top 10 immersive moments — step inside history",
+  "unesco.title": "UNESCO World Heritage",
+  "unesco.short": "UNESCO",
   "home.featured.title": "Featured cities",
   "home.featured.sub": "Cinematic walks, narrated by locals",
   "home.seeAll": "See all",

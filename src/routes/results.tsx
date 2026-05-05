@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
+import { UnescoBadge } from "@/components/UnescoBadge";
+import { isUnescoSite } from "@/lib/unesco";
 import {
   attractionSlug,
   detectQueryLanguage,
@@ -347,12 +349,19 @@ function ResultCard({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <h3
-            className="truncate text-[15px] font-semibold leading-tight text-foreground"
-            style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
-          >
-            {attraction.name}
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3
+              className="truncate text-[15px] font-semibold leading-tight text-foreground"
+              style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
+            >
+              {attraction.name}
+            </h3>
+            {isUnescoSite(attraction.name, {
+              city: cityChip,
+              type: attraction.type ?? attraction.category,
+              description: attraction.outside_desc ?? attraction.description,
+            }) && <UnescoBadge />}
+          </div>
           <p className="my-1.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             <Headphones className="h-2.5 w-2.5" /> {t("card.audioGuide")}
             {cached && (
