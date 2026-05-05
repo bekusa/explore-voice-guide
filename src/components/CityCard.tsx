@@ -66,14 +66,22 @@ function clearCache(key: string) {
 export function CityCard({ city }: { city: string }) {
   const lang = useUiLang();
   const label = useTranslatedString(city);
-  const [img, setImg] = useState<string | null>(null);
+  const cacheKey = `${lang}:${city}`;
+  const [img, setImg] = useState<string | null>(() => readCache(cacheKey));
 
   useEffect(() => {
+    const cached = readCache(cacheKey);
+    if (cached) {
+      setImg(cached);
+      return;
+    }
     let cancelled = false;
     fetch(`/api/photo?q=${encodeURIComponent(city)}&city=${encodeURIComponent(city)}&lang=${lang}`)
       .then((r) => r.json())
       .then((data: { url: string | null }) => {
-        if (!cancelled) setImg(data.url);
+        if (cancelled) return;
+        setImg(data.url);
+        if (data.url) writeCache(cacheKey, data.url);
       })
       .catch(() => {
         /* placeholder will stay */
@@ -81,7 +89,7 @@ export function CityCard({ city }: { city: string }) {
     return () => {
       cancelled = true;
     };
-  }, [city, lang]);
+  }, [city, lang, cacheKey]);
 
   return (
     <Link
@@ -94,6 +102,10 @@ export function CityCard({ city }: { city: string }) {
           src={img}
           alt={city}
           loading="lazy"
+          onError={() => {
+            clearCache(cacheKey);
+            setImg(null);
+          }}
           className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
         />
       ) : (
