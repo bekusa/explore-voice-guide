@@ -26,10 +26,11 @@ export const Route = createFileRoute("/api/guide")({
         const userLang = key?.language ?? "en";
         const wantsTranslation = key !== null && !isEnglish(userLang);
 
-        // 1. Direct cache hit
+        // 1. Direct cache hit. Skip dud rows — empty {script: ""}
+        // shouldn't short-circuit future requests.
         if (key) {
           const cached = await getCachedGuide(key);
-          if (cached !== null) {
+          if (cached !== null && hasGuideScript(cached)) {
             return jsonResponse(cached, 200, "HIT");
           }
         }
@@ -38,14 +39,11 @@ export const Route = createFileRoute("/api/guide")({
         if (key && wantsTranslation) {
           const enKey = { ...key, language: "en" };
           const cachedEn = await getCachedGuide(enKey);
-          if (cachedEn !== null) {
+          if (cachedEn !== null && hasGuideScript(cachedEn)) {
             const { payload: translated, translated: ok } = await translateGuidePayload(
               cachedEn,
               userLang,
             );
-            // Skip caching when the translation gateway returned the
-            // source verbatim — keeping a dud row would short-circuit
-            // every future request and serve English under a non-en key.
             if (ok) void putCachedGuide(key, translated);
             return jsonResponse(translated, 200, ok ? "TRANSLATED" : "TRANSLATE-FAILED");
           }
@@ -63,12 +61,16 @@ export const Route = createFileRoute("/api/guide")({
           const trimmed = text.trim();
           const parsed = trimmed.length > 0 ? safeParseJson(text) : undefined;
 
-          if (key && upstream.ok && parsed !== undefined) {
+          // Cache the English baseline only when there's actual
+          // narration content — empty {script: ""} would pin a dud
+          // row and short-circuit every future request.
+          if (key && upstream.ok && parsed !== undefined && hasGuideScript(parsed)) {
             const enKey = { ...key, language: "en" };
             void putCachedGuide(enKey, parsed);
           }
 
-          if (upstream.ok && parsed === undefined) {
+          // Empty / scriptless upstream → friendly empty guide (NOT cached).
+          if (upstream.ok && (parsed === undefined || !hasGuideScript(parsed))) {
             return jsonResponse({ script: "" }, 200, "MISS", "upstream-empty");
           }
 
@@ -145,6 +147,18 @@ function safeParseJson(text: string): unknown {
   } catch {
     return undefined;
   }
+}
+
+/**
+ * True when the parsed n8n response contains real guide narration.
+ * Used to gate cache writes so we never persist a dud `{script: ""}`
+ * row that would short-circuit every future request and serve an
+ * empty guide forever.
+ */
+function hasGuideScript(payload: unknown): boolean {
+  if (!payload || typeof payload !== "object") return false;
+  const script = (payload as { script?: unknown }).script;
+  return typeof script === "string" && script.trim().length > 0;
 }
 
 function jsonResponse(

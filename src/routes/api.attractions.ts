@@ -32,9 +32,12 @@ export const Route = createFileRoute("/api/attractions")({
         const wantsTranslation = key !== null && !isEnglish(userLang);
 
         // 1. Direct cache hit (e.g. user wants ka, ka cached)
+        // Skip dud rows — if a previous bad upstream response left
+        // an empty {attractions:[]} stuck in the cache, treat it as
+        // a miss so the next request actually hits n8n again.
         if (key) {
           const cached = await getCachedAttractions(key);
-          if (cached !== null) {
+          if (cached !== null && hasAttractions(cached)) {
             return jsonResponse(cached, 200, "HIT");
           }
         }
@@ -43,15 +46,11 @@ export const Route = createFileRoute("/api/attractions")({
         if (key && wantsTranslation) {
           const enKey = { ...key, language: "en" };
           const cachedEn = await getCachedAttractions(enKey);
-          if (cachedEn !== null) {
+          if (cachedEn !== null && hasAttractions(cachedEn)) {
             const { payload: translated, translated: ok } = await translateAttractionsPayload(
               cachedEn,
               userLang,
             );
-            // Only cache the target-language row when the gateway
-            // actually translated — otherwise we'd pin English under
-            // a Georgian key forever and every retry would short-
-            // circuit on the dud row.
             if (ok) void putCachedAttractions(key, translated);
             return jsonResponse(translated, 200, ok ? "TRANSLATED" : "TRANSLATE-FAILED");
           }
@@ -70,14 +69,16 @@ export const Route = createFileRoute("/api/attractions")({
           const trimmed = text.trim();
           const parsed = trimmed.length > 0 ? safeParseJson(text) : undefined;
 
-          // Persist the English baseline.
-          if (key && upstream.ok && parsed !== undefined) {
+          // Persist the English baseline. Only when there's at least
+          // one attraction in the payload — caching an empty list
+          // would pin a dud row that short-circuits future requests.
+          if (key && upstream.ok && parsed !== undefined && hasAttractions(parsed)) {
             const enKey = { ...key, language: "en" };
             void putCachedAttractions(enKey, parsed);
           }
 
-          // Empty / unparseable upstream → friendly empty list.
-          if (upstream.ok && parsed === undefined) {
+          // Empty / unparseable upstream → friendly empty list (NOT cached).
+          if (upstream.ok && (parsed === undefined || !hasAttractions(parsed))) {
             return jsonResponse({ attractions: [] }, 200, "MISS", "upstream-empty");
           }
 
@@ -169,6 +170,20 @@ function safeParseJson(text: string): unknown {
   } catch {
     return undefined;
   }
+}
+
+/**
+ * True when the parsed n8n response looks like a real attractions
+ * payload with at least one entry. Tolerates the wrapped shape
+ * `{attractions:[...]}` and the bare-array shape `[...]`. Used to
+ * gate cache writes so we never persist a dud empty result.
+ */
+function hasAttractions(payload: unknown): boolean {
+  if (!payload) return false;
+  if (Array.isArray(payload)) return payload.length > 0;
+  if (typeof payload !== "object") return false;
+  const arr = (payload as { attractions?: unknown }).attractions;
+  return Array.isArray(arr) && arr.length > 0;
 }
 
 function jsonResponse(
