@@ -5,7 +5,8 @@
  * elsewhere in the app reads from here so the bias stays consistent
  * (open Narikala with "photography" → tap Begin → /player still
  * fetches the photography-biased script). One value, app-wide, single-
- * select. History default.
+ * select. Editor's Pick is the default — see DEFAULT_INTEREST in
+ * lib/interests.ts.
  *
  * Why a custom event: the standard "storage" event only fires on OTHER
  * tabs, never the tab that wrote the value. We dispatch our own event
@@ -15,7 +16,12 @@
 import { useEffect, useState } from "react";
 import { DEFAULT_INTEREST, normalizeInterest } from "./interests";
 
-const KEY = "tg.interest.v1";
+// v2 — bumped from v1 so users who had legacy "history" persisted from
+// the pre-Editor's-Pick era are migrated back to the new default. Beka
+// asked: "default კატეგორია უნდა იყოს ყოველთვის Editor's Pick
+// ავტომატურად გახსნისას" — first page open should always land on
+// Editor's Pick, not a stale value left over from the old picker.
+const KEY = "tg.interest.v2";
 const EVENT = "tg:interest-changed";
 
 function isBrowser(): boolean {
