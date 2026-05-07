@@ -309,6 +309,14 @@ export const UI_STRINGS = {
     "We couldn't find places matching “{query}”. Try a different word — a place, a feeling, or an era.",
   "results.backHome": "Back to home",
   "results.alreadyOffline": "Already offline",
+  // Pagination — 10 per page, capped at 3 pages (= 30 results max).
+  // The cap matches what the n8n /webhook/attractions prompt is asked
+  // to return; everything past that is ignored on the client and never
+  // hits the cache key, so this label set is the source of truth for
+  // "how big a result set the user can ever see for one query".
+  "results.prev": "Previous",
+  "results.next": "Next",
+  "results.pageLabel": "Page {n} of {total}",
 
   // Destinations
   "dest.exploreTitle": "Explore",

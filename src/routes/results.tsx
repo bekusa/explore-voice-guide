@@ -7,6 +7,8 @@ import {
   BookmarkCheck,
   CheckCircle2,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Download,
   Headphones,
@@ -40,22 +42,52 @@ import { useT } from "@/hooks/useT";
  * longer surface it here. The `interests` and `duration` keys are kept
  * in the URL schema so old shared links don't crash validation, but
  * they're ignored on this page.
+ *
+ * `page` drives client-side pagination — the full ≤30-item result set
+ * is fetched once (and Supabase-cached in `cached_attractions` as a
+ * single row), then sliced into PAGE_SIZE chunks here. URL-backed so
+ * the browser back button steps through pages instead of jumping out
+ * of /results.
  */
 type Search = {
   q: string;
   interests?: string;
   duration?: string;
+  page?: number;
 };
 
 const VALID_DURATIONS = new Set(["short", "medium", "long"]);
 
+/**
+ * Pagination knobs. 10 results per page, capped at 3 pages — Beka's
+ * spec: "10-ის მერე გადავიდეს შემდეგ ფეიჯზე, მაქსიმუმ შეიძლებოდეს 3
+ * ფეიჯის ჩატვირთვა". The n8n /webhook/attractions prompt is asked to
+ * return up to PAGE_SIZE * MAX_PAGES (= 30) attractions; anything past
+ * that the LLM hands back is simply ignored on the client. The ceiling
+ * lives here so a single source of truth drives both the prompt and
+ * the slice — bumping PAGE_SIZE / MAX_PAGES is the only edit needed
+ * to grow the catalogue (plus a one-line tweak to the n8n prompt's
+ * "return up to N" instruction).
+ */
+const PAGE_SIZE = 10;
+const MAX_PAGES = 3;
+const MAX_RESULTS = PAGE_SIZE * MAX_PAGES;
+
 export const Route = createFileRoute("/results")({
   validateSearch: (search: Record<string, unknown>): Search => {
     const duration = typeof search.duration === "string" ? search.duration : "";
+    const rawPage =
+      typeof search.page === "number"
+        ? search.page
+        : typeof search.page === "string"
+          ? parseInt(search.page, 10)
+          : 1;
+    const page = Number.isFinite(rawPage) ? Math.min(MAX_PAGES, Math.max(1, rawPage)) : 1;
     return {
       q: typeof search.q === "string" ? search.q : "",
       interests: typeof search.interests === "string" ? search.interests : "",
       duration: VALID_DURATIONS.has(duration) ? duration : "",
+      page,
     };
   },
   head: () => ({
@@ -68,7 +100,7 @@ export const Route = createFileRoute("/results")({
 });
 
 function ResultsPage() {
-  const { q } = Route.useSearch();
+  const { q, page = 1 } = Route.useSearch();
   const navigate = useNavigate();
   const t = useT();
   const preferredLanguage = usePreferredLanguage();
@@ -89,6 +121,11 @@ function ResultsPage() {
     setResults(null);
     // Discovery list is unbiased — interest tilts only the per-place
     // guide on /attraction/$id. So no `interests` payload from here.
+    // One fetch returns up to MAX_RESULTS (= 30) attractions; the
+    // Supabase cache (cached_attractions table) stores the whole 30-item
+    // payload as a single row keyed by (query, language, filters), so
+    // every visitor after the first pays zero LLM cost for that query
+    // — we just slice client-side per page.
     fetchAttractions(q, language)
       .then((data) => {
         if (cancelled) return;
@@ -110,13 +147,54 @@ function ResultsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, language]);
 
+  // Slice the cached payload for the current page. The n8n response is
+  // capped at MAX_RESULTS so longer payloads are silently truncated —
+  // we never want page 4 to exist even if the LLM gets generous.
+  const totalAvailable = Math.min(results?.length ?? 0, MAX_RESULTS);
+  const pageCount = Math.max(1, Math.ceil(totalAvailable / PAGE_SIZE));
+  // Clamp to the available range (e.g. user lands on /results?page=3 but
+  // only 12 results came back → bounce to page 2 in the URL).
+  const safePage = Math.min(Math.max(1, page), pageCount);
+  const pagedResults = useMemo(() => {
+    if (!results) return null;
+    const start = (safePage - 1) * PAGE_SIZE;
+    return results.slice(0, MAX_RESULTS).slice(start, start + PAGE_SIZE);
+  }, [results, safePage]);
+
+  // If the URL says page=3 but the data only has 1 page, rewrite the
+  // URL so back/forward stays consistent. Replace (not push) so we
+  // don't pollute history with a redirect step.
+  useEffect(() => {
+    if (!results) return;
+    if (page === safePage) return;
+    navigate({
+      to: "/results",
+      search: (prev: Search) => ({ ...prev, q, page: safePage }),
+      replace: true,
+    });
+  }, [results, page, safePage, q, navigate]);
+
+  const goToPage = (next: number) => {
+    const clamped = Math.min(pageCount, Math.max(1, next));
+    if (clamped === safePage) return;
+    navigate({
+      to: "/results",
+      search: (prev: Search) => ({ ...prev, q, page: clamped }),
+    });
+    // Scroll back to the top so page 2 doesn't dump the user mid-list.
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const next = query.trim();
     if (!next) return;
+    // New search → reset to page 1.
     navigate({
       to: "/results",
-      search: { q: next },
+      search: { q: next, page: 1 },
     });
   };
 
@@ -165,22 +243,107 @@ function ResultsPage() {
 
           {!loading && results && results.length === 0 && <EmptyState query={q} />}
 
-          {!loading && results && results.length > 0 && (
-            <div className="flex flex-col gap-3">
-              {results.map((a, i) => (
-                <ResultCard
-                  key={`${a.name}-${i}`}
-                  attraction={a}
-                  index={i}
-                  language={language}
-                  cityContext={q}
+          {!loading && pagedResults && pagedResults.length > 0 && (
+            <>
+              <div className="flex flex-col gap-3">
+                {pagedResults.map((a, i) => (
+                  <ResultCard
+                    // Stable key across pages: `${name}-${absoluteIndex}`,
+                    // so React doesn't re-mount cards on a page swap.
+                    key={`${a.name}-${(safePage - 1) * PAGE_SIZE + i}`}
+                    attraction={a}
+                    index={i}
+                    language={language}
+                    cityContext={q}
+                  />
+                ))}
+              </div>
+
+              {pageCount > 1 && (
+                <Pagination
+                  page={safePage}
+                  pageCount={pageCount}
+                  onChange={goToPage}
+                  label={t("results.pageLabel", { n: safePage, total: pageCount })}
+                  prevLabel={t("results.prev")}
+                  nextLabel={t("results.next")}
                 />
-              ))}
-            </div>
+              )}
+            </>
           )}
         </section>
       </div>
     </MobileFrame>
+  );
+}
+
+/**
+ * Pagination strip — Prev / page-number dots / Next. Renders only when
+ * pageCount > 1 (single-page result sets get nothing extra). Numbered
+ * dots are tappable so the user can jump straight to a page; chevrons
+ * step ±1. Disabled state on the edge buttons keeps tap targets but
+ * dims them so it's clear nothing happens.
+ */
+function Pagination({
+  page,
+  pageCount,
+  onChange,
+  label,
+  prevLabel,
+  nextLabel,
+}: {
+  page: number;
+  pageCount: number;
+  onChange: (next: number) => void;
+  label: string;
+  prevLabel: string;
+  nextLabel: string;
+}) {
+  const atStart = page <= 1;
+  const atEnd = page >= pageCount;
+  return (
+    <nav aria-label="Pagination" className="mt-6 flex flex-col items-center gap-3 pb-2">
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onChange(page - 1)}
+          disabled={atStart}
+          aria-label={prevLabel}
+          className="grid h-10 w-10 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:border-primary/40 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => {
+          const active = p === page;
+          return (
+            <button
+              key={p}
+              type="button"
+              onClick={() => onChange(p)}
+              aria-label={`Go to page ${p}`}
+              aria-current={active ? "page" : undefined}
+              className={`h-10 min-w-[40px] rounded-full border px-3 text-[13px] font-bold transition-smooth ${
+                active
+                  ? "border-primary/60 bg-gradient-gold text-primary-foreground shadow-glow"
+                  : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+              }`}
+            >
+              {p}
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          onClick={() => onChange(page + 1)}
+          disabled={atEnd}
+          aria-label={nextLabel}
+          className="grid h-10 w-10 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:border-primary/40 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+      <p className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+    </nav>
   );
 }
 
