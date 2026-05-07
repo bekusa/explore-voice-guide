@@ -308,6 +308,43 @@ export async function fetchAttractions(
 }
 
 /**
+ * Background-prefetch additional attractions (pages 2-3) for a query
+ * already shown on /results. The server hits n8n with `exclude` (the
+ * names already on screen) and `count` (how many more to find), then
+ * merges the new items into the Supabase cache rows so the next
+ * visitor reads the full ≤30-item set in one cache hit. Returns ONLY
+ * the new attractions — the caller already has the first page in
+ * state and can append locally.
+ *
+ * Called immediately after the first page paints in /results.tsx, so
+ * by the time the user taps "Next" pages 2-3 are usually already
+ * warm. Failure is silent: a rejected promise just means the user
+ * keeps the first page they had.
+ */
+export async function fetchMoreAttractions(
+  query: string,
+  language: string,
+  excludeNames: string[],
+  count: number,
+  filters: AttractionFilters = {},
+): Promise<Attraction[]> {
+  if (excludeNames.length === 0 || count <= 0) return [];
+  const interests = (filters.interests ?? []).filter(Boolean);
+  const data = await postJSON<AttractionsResponse | Attraction[]>(ATTRACTIONS_URL, {
+    query,
+    city: query,
+    country: "",
+    language,
+    interests,
+    duration: filters.duration ?? "",
+    exclude: excludeNames,
+    count,
+  });
+  if (Array.isArray(data)) return data;
+  return data.attractions ?? [];
+}
+
+/**
  * Coerce a raw n8n response into a GuideData with safe defaults.
  * Tolerates: a bare string (uses it as script), a partial object
  * (fills in only what's present), or noise (returns empty script).

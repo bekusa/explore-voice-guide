@@ -26,6 +26,7 @@ import {
   detectQueryLanguage,
   fetchAttractions,
   fetchGuideFresh,
+  fetchMoreAttractions,
   fetchPlacePhoto,
   type Attraction,
 } from "@/lib/api";
@@ -112,6 +113,9 @@ function ResultsPage() {
 
   const [results, setResults] = useState<Attraction[] | null>(null);
   const [loading, setLoading] = useState(true);
+  // Background prefetch is in flight — drives the spinner on the
+  // pagination dots so the user knows pages 2-3 are warming up.
+  const [prefetching, setPrefetching] = useState(false);
   const [query, setQuery] = useState(q);
 
   useEffect(() => {
@@ -119,13 +123,14 @@ function ResultsPage() {
     let cancelled = false;
     setLoading(true);
     setResults(null);
+    setPrefetching(false);
     // Discovery list is unbiased — interest tilts only the per-place
     // guide on /attraction/$id. So no `interests` payload from here.
-    // One fetch returns up to MAX_RESULTS (= 30) attractions; the
-    // Supabase cache (cached_attractions table) stores the whole 30-item
-    // payload as a single row keyed by (query, language, filters), so
-    // every visitor after the first pays zero LLM cost for that query
-    // — we just slice client-side per page.
+    // First call returns up to ~10 attractions. A background
+    // fetchMoreAttractions() call kicks off as soon as page 1 lands,
+    // and merges 20 more into state + cache so the user's first
+    // search stays fast (~5-10s) while pages 2-3 still feel instant
+    // by the time they tap Next.
     fetchAttractions(q, language)
       .then((data) => {
         if (cancelled) return;
@@ -146,6 +151,56 @@ function ResultsPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, language]);
+
+  // Background prefetch for pages 2-3. Fires once after the first
+  // page lands, asking n8n for ~20 more attractions excluding the
+  // ones already on screen. The server merges the result into the
+  // Supabase cache row, so the very next visitor to this query
+  // reads all 30 in one cache hit — zero LLM cost. If the prefetch
+  // fails, the user just keeps page 1; pagination dots stay hidden.
+  useEffect(() => {
+    if (!results || results.length === 0) return;
+    // Already have enough? Either the cache served us the full 30
+    // (no work needed) or the LLM returned <PAGE_SIZE so pagination
+    // is impossible anyway.
+    if (results.length >= MAX_RESULTS) return;
+    if (results.length < PAGE_SIZE) return;
+    let cancelled = false;
+    setPrefetching(true);
+    const excludeNames = results.map((a) => a.name).filter(Boolean);
+    const need = MAX_RESULTS - results.length;
+    fetchMoreAttractions(q, language, excludeNames, need)
+      .then((more) => {
+        if (cancelled || more.length === 0) return;
+        // Append, dedup by name (case-insensitive), cap at MAX_RESULTS
+        // so a generous LLM can't blow past the 30-item ceiling.
+        setResults((prev) => {
+          if (!prev) return more.slice(0, MAX_RESULTS);
+          const seen = new Set(prev.map((a) => a.name.trim().toLowerCase()));
+          const fresh = more.filter((a) => {
+            const n = a.name.trim().toLowerCase();
+            if (!n || seen.has(n)) return false;
+            seen.add(n);
+            return true;
+          });
+          return [...prev, ...fresh].slice(0, MAX_RESULTS);
+        });
+      })
+      .catch(() => {
+        /* Silent — page 1 still works, pagination just won't appear */
+      })
+      .finally(() => {
+        if (!cancelled) setPrefetching(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // Re-runs whenever the result set length changes — but the gates
+    // above (`< PAGE_SIZE` and `>= MAX_RESULTS`) keep it firing only
+    // once per query, on the transition from the first-page payload
+    // to "needs prefetching".
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, language, results?.length]);
 
   // Slice the cached payload for the current page. The n8n response is
   // capped at MAX_RESULTS so longer payloads are silently truncated —
@@ -259,11 +314,12 @@ function ResultsPage() {
                 ))}
               </div>
 
-              {pageCount > 1 && (
+              {(pageCount > 1 || prefetching) && (
                 <Pagination
                   page={safePage}
                   pageCount={pageCount}
                   onChange={goToPage}
+                  prefetching={prefetching}
                   label={t("results.pageLabel", { n: safePage, total: pageCount })}
                   prevLabel={t("results.prev")}
                   nextLabel={t("results.next")}
@@ -288,6 +344,7 @@ function Pagination({
   page,
   pageCount,
   onChange,
+  prefetching,
   label,
   prevLabel,
   nextLabel,
@@ -295,12 +352,21 @@ function Pagination({
   page: number;
   pageCount: number;
   onChange: (next: number) => void;
+  // Background prefetch in flight. Renders a faded "ghost" dot for
+  // each not-yet-loaded page so the user sees pagination is on the
+  // way — Beka picked the prefetch path specifically so the user
+  // never waits when they click Next.
+  prefetching: boolean;
   label: string;
   prevLabel: string;
   nextLabel: string;
 }) {
   const atStart = page <= 1;
   const atEnd = page >= pageCount;
+  // While prefetching, show a placeholder for every page slot up to
+  // MAX_PAGES so the strip's footprint doesn't pop wider once the
+  // 20 extra results land.
+  const totalSlots = prefetching ? Math.max(pageCount, MAX_PAGES) : pageCount;
   return (
     <nav aria-label="Pagination" className="mt-6 flex flex-col items-center gap-3 pb-2">
       <div className="flex items-center gap-2">
@@ -313,19 +379,23 @@ function Pagination({
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
-        {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => {
+        {Array.from({ length: totalSlots }, (_, i) => i + 1).map((p) => {
           const active = p === page;
+          const ghost = p > pageCount; // not yet available — prefetching
           return (
             <button
               key={p}
               type="button"
               onClick={() => onChange(p)}
+              disabled={ghost}
               aria-label={`Go to page ${p}`}
               aria-current={active ? "page" : undefined}
               className={`h-10 min-w-[40px] rounded-full border px-3 text-[13px] font-bold transition-smooth ${
                 active
                   ? "border-primary/60 bg-gradient-gold text-primary-foreground shadow-glow"
-                  : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                  : ghost
+                    ? "border-dashed border-border/60 bg-transparent text-muted-foreground/40 cursor-wait"
+                    : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
               }`}
             >
               {p}
@@ -335,14 +405,21 @@ function Pagination({
         <button
           type="button"
           onClick={() => onChange(page + 1)}
-          disabled={atEnd}
+          disabled={atEnd && !prefetching}
           aria-label={nextLabel}
           className="grid h-10 w-10 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:border-primary/40 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
-      <p className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+      <p className="flex items-center gap-2 text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+        {label}
+        {prefetching && (
+          <span className="inline-flex items-center gap-1 text-primary/80">
+            <Loader2 className="h-2.5 w-2.5 animate-spin" />
+          </span>
+        )}
+      </p>
     </nav>
   );
 }
