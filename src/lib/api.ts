@@ -499,14 +499,17 @@ export async function fetchPlacePhoto(
       `/api/photo?q=${encodeURIComponent(cleaned)}&lang=${encodeURIComponent(language)}${cityParam}${scopeParam}`,
     );
     if (!res.ok) {
-      photoCache.set(cacheKey, null);
+      // Don't cache misses — server-side fixes (User-Agent, retry
+      // strategy) shouldn't be hidden behind a stale null in browser
+      // memory for the rest of the session. Beka caught this when
+      // the highlights stayed empty after an api.photo.ts fix
+      // because every photoCache entry was a sticky null.
       return null;
     }
     const data = (await res.json()) as { url: string | null };
-    photoCache.set(cacheKey, data.url);
+    if (data.url) photoCache.set(cacheKey, data.url);
     return data.url;
   } catch {
-    photoCache.set(cacheKey, null);
     return null;
   }
 }

@@ -245,13 +245,22 @@ export const Route = createFileRoute("/api/photo")({
           }
         }
 
-        cache.set(cacheKey, photoUrl);
+        // Only cache successful lookups. Caching nulls (Wikipedia
+        // miss, Google quota error) pinned the wrong answer for a
+        // full day on every visitor — Beka caught it after the User-
+        // Agent fix shipped: the highlights still showed no photos
+        // because every browser was serving the pre-fix `{url:null}`
+        // straight from disk cache for 24 h. Successful URLs cache
+        // the original day; misses get short no-store responses so
+        // a retry from any client picks up the corrected lookup
+        // immediately.
+        if (photoUrl) cache.set(cacheKey, photoUrl);
         return new Response(JSON.stringify({ url: photoUrl }), {
           headers: {
             "Content-Type": "application/json",
-            // Browser-side cache for 1 day; server-side cache (above) is
-            // process-lifetime.
-            "Cache-Control": "public, max-age=86400",
+            "Cache-Control": photoUrl
+              ? "public, max-age=86400"
+              : "no-store, no-cache, must-revalidate",
           },
         });
       },
