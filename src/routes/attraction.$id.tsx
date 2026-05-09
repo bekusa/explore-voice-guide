@@ -1748,7 +1748,14 @@ function HighlightCard({ h, rank, museum }: { h: MuseumHighlight; rank: number; 
       ];
       for (const q of candidates) {
         if (cancelled) return;
-        const url = await fetchPlacePhoto(q, "en", museum.city);
+        // scope="artwork" tells /api/photo to skip Google Places
+        // entirely and go straight to Wikipedia. Google Places kept
+        // returning Tbilisi-area matches (Liberty Bank, a residential
+        // street called "The Lacemaker") because the project's API
+        // key carries a Tbilisi regional bias that overrides the
+        // city= param we send. Artworks aren't places — Wikipedia
+        // is the right source.
+        const url = await fetchPlacePhoto(q, "en", museum.city, "artwork");
         if (cancelled) return;
         if (url) {
           setPhoto(url);

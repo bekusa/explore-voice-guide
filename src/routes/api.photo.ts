@@ -191,6 +191,15 @@ export const Route = createFileRoute("/api/photo")({
         // City context — the original search query (e.g. "Batumi") helps
         // disambiguate generic names like "ბოტანიკური ბაღი" in Google.
         const city = url.searchParams.get("city")?.trim() || null;
+        // Scope hint. "artwork" → skip Google Places entirely and go
+        // straight to Wikipedia. Beka observed Google Places returning
+        // Tbilisi-area matches for highlight names ("Liberty Leading
+        // the People" → Liberty Bank, "The Lacemaker" → a Tbilisi
+        // suburb) because the project's Places API key is regionally
+        // biased and "city=Paris" alone wasn't strong enough to
+        // override it. Artworks aren't places — Wikipedia is the
+        // right source, period.
+        const scope = url.searchParams.get("scope")?.trim() || null;
 
         if (!q) {
           return new Response(JSON.stringify({ url: null }), {
@@ -198,7 +207,7 @@ export const Route = createFileRoute("/api/photo")({
           });
         }
 
-        const cacheKey = `${lang}:${city ?? ""}:${q}`;
+        const cacheKey = `${scope ?? ""}:${lang}:${city ?? ""}:${q}`;
         if (cache.has(cacheKey)) {
           return new Response(JSON.stringify({ url: cache.get(cacheKey) ?? null }), {
             headers: { "Content-Type": "application/json" },
@@ -206,10 +215,16 @@ export const Route = createFileRoute("/api/photo")({
         }
 
         let photoUrl: string | null = null;
-        try {
-          photoUrl = await googlePhoto(q, city);
-        } catch {
-          // fall through to Wikipedia
+        const isArtwork = scope === "artwork";
+
+        // Artworks: Wikipedia only. Skip the Google Places step that
+        // keeps polluting results with regional matches.
+        if (!isArtwork) {
+          try {
+            photoUrl = await googlePhoto(q, city);
+          } catch {
+            // fall through to Wikipedia
+          }
         }
 
         if (!photoUrl) {

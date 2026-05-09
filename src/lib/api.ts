@@ -479,18 +479,24 @@ export async function fetchPlacePhoto(
   // names. E.g. searching "ბოტანიკური ბაღი" alone returns nothing, but
   // "ბოტანიკური ბაღი + Batumi" finds Batumi Botanical Garden.
   city: string | null = null,
+  // Scope hint forwarded to /api/photo. Pass "artwork" for museum
+  // highlights — that path skips Google Places entirely (whose
+  // region-biased results were returning Tbilisi banks for "Liberty
+  // Leading the People") and goes straight to Wikipedia.
+  scope: "artwork" | null = null,
 ): Promise<string | null> {
   const cleaned = name.trim();
   if (!cleaned) return null;
 
   const cleanCity = city?.trim() || "";
-  const cacheKey = `${language}:${cleanCity}:${cleaned}`;
+  const cacheKey = `${scope ?? ""}:${language}:${cleanCity}:${cleaned}`;
   if (photoCache.has(cacheKey)) return photoCache.get(cacheKey) ?? null;
 
   try {
     const cityParam = cleanCity ? `&city=${encodeURIComponent(cleanCity)}` : "";
+    const scopeParam = scope ? `&scope=${encodeURIComponent(scope)}` : "";
     const res = await fetch(
-      `/api/photo?q=${encodeURIComponent(cleaned)}&lang=${encodeURIComponent(language)}${cityParam}`,
+      `/api/photo?q=${encodeURIComponent(cleaned)}&lang=${encodeURIComponent(language)}${cityParam}${scopeParam}`,
     );
     if (!res.ok) {
       photoCache.set(cacheKey, null);
