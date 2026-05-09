@@ -28,6 +28,13 @@ export const KA: Partial<Record<UiKey, string>> = {
   "home.collections.sub": "თემები შენი მოგზაურობის სტილისთვის",
   "home.timeMachine.title": "დროის მანქანა",
   "home.timeMachine.sub": "ტოპ 10 ჩაძირული მომენტი — შედი ისტორიაში",
+  "home.museums.title": "ტოპ მუზეუმები",
+  "home.museums.sub": "20 კოლექცია, რომელიც ცივილიზაციას განსაზღვრავს",
+  "museums.title": "ტოპ მუზეუმები",
+  "museums.subtitle": "20 კოლექცია, რომელიც ცივილიზაციას განსაზღვრავს",
+  "museums.openGuide": "გიდის გახსნა",
+  "museums.intro":
+    "ხელით შერჩეული მსოფლიო კულტურის შედევრები — ლუვრიდან თოპქაფამდე, ყველაფერი შუაში.",
   "unesco.title": "UNESCO-ს მსოფლიო მემკვიდრეობა",
   "unesco.short": "UNESCO",
   "home.featured.title": "გამორჩეული ქალაქები",

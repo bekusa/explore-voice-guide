@@ -19,6 +19,8 @@ import { useT, useTranslated } from "@/hooks/useT";
 import { DESTINATIONS, type Destination } from "@/lib/destinations";
 import { HOME_CITIES } from "@/lib/cityList";
 import { CityCard } from "@/components/CityCard";
+import { MUSEUMS, type Museum } from "@/lib/topMuseums";
+import { attractionSlug } from "@/lib/api";
 import {
   ATTRACTIONS as TIME_MACHINE_ATTRACTIONS,
   type Attraction as TimeMachineAttraction,
@@ -237,6 +239,37 @@ export function HomeScreen() {
           </div>
         </section>
 
+        {/* ─── TOP MUSEUMS STRIP ─── */}
+        {/* Sibling to the Time Machine strip above — same shape, same
+            visual language, different curation axis. Beka asked for
+            this surface so museum-lovers can dive straight in without
+            having to land on a city first. Tapping a card opens the
+            existing /attraction/$id flow keyed by the museum's
+            English name. */}
+        <section className="mt-9">
+          <div className="mb-4 flex items-end justify-between px-5">
+            <div>
+              <h2 className="font-display text-[22px] font-medium leading-tight tracking-[-0.02em] text-foreground">
+                {t("home.museums.title")}
+              </h2>
+              <p className="mt-1 text-[12px] leading-snug text-muted-foreground">
+                {t("home.museums.sub")}
+              </p>
+            </div>
+            <Link
+              to="/museums"
+              className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary transition-smooth hover:opacity-80"
+            >
+              {t("home.seeAll")} <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
+            {MUSEUMS.slice(0, 10).map((m, i) => (
+              <MuseumCard key={m.id} museum={m} rank={i + 1} />
+            ))}
+          </div>
+        </section>
+
         {/* ─── FEATURED DESTINATIONS ─── */}
         <section className="mt-10">
           <div className="flex items-end justify-between px-5">
@@ -274,6 +307,43 @@ export function HomeScreen() {
  * pill in the corner. Tap → /time-machine?id=<id>, where the chosen
  * card auto-expands and scrolls into view.
  * ───────────────────────────────────────────── */
+/**
+ * Museum card for the home strip — small enough to show several in
+ * a horizontal scroll, big enough to read at a glance. Tapping it
+ * goes straight to /attraction/$id with the museum's English name
+ * in the search params, which is the same shape the rest of the app
+ * uses for free-text attraction lookups.
+ */
+function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
+  const [name] = useTranslated([museum.name]);
+  const slug = attractionSlug(museum.name);
+  return (
+    <Link
+      to="/attraction/$id"
+      params={{ id: slug }}
+      search={{ name: museum.name }}
+      className="group relative h-[170px] w-[240px] flex-shrink-0 overflow-hidden rounded-2xl border border-border bg-card transition-smooth hover:border-primary/50 active:scale-[0.98]"
+    >
+      <img
+        src={museum.image}
+        alt={name}
+        loading="lazy"
+        className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-background/10" />
+      <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-primary/50 bg-background/55 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-md">
+        #{rank}
+      </div>
+      <div className="absolute inset-x-3.5 bottom-3.5">
+        <div className="text-[18px] leading-none">{museum.emoji}</div>
+        <div className="mt-1.5 font-display text-[15px] font-medium leading-tight text-foreground line-clamp-2">
+          {name}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 function TimeMachineMomentCard({
   attraction,
   rank,
