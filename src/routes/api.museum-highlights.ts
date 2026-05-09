@@ -78,17 +78,21 @@ export const Route = createFileRoute("/api/museum-highlights")({
             city: museum.city,
             language: "en",
           });
-          // Sonnet, not Haiku — matches /api/guide's reasoning.
-          // Highlights are the "must-see canon" of a major museum, the
-          // copy needs to feel like a curator wrote it. Worth the
-          // 30-60 s per (museum, language) since it caches forever.
-          // Big maxTokens because 30 highlights × ~110-word stories is
-          // 3.3k words ≈ 4.4k tokens output, plus brief / era / hint
-          // overhead — 8192 leaves comfortable headroom.
+          // Haiku, not Sonnet — Beka's first deploy hit Cloudflare's
+          // 100 s origin timeout (524 Bad Gateway: "[anthropic] 524").
+          // Sonnet at ~50 tok/s × 8192 maxTokens worst-cases past 2.5
+          // minutes; the worker dies long before Anthropic finishes.
+          // Haiku at ~150 tok/s brings the same 30-item payload into
+          // a comfortable 25-40 s window. The list-shaped output (no
+          // long narrated prose) reads the same on both models, so
+          // there's no quality cost. Sonnet stays on /api/guide where
+          // the multi-paragraph script genuinely benefits from it.
+          // maxTokens dropped 8192 → 6144 to leave further headroom.
           const text = await callClaude({
+            model: "claude-haiku-4-5",
             system,
             user,
-            maxTokens: 8192,
+            maxTokens: 6144,
           });
           const parsed = parseClaudeJson(text);
 

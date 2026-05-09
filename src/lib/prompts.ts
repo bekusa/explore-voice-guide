@@ -212,7 +212,7 @@ JSON SHAPE:
       "name": "Canonical name of the object/work/space",
       "era": "Short period or date label",
       "brief": "1 sentence, 15-25 words — what is it and why it matters.",
-      "story": "2-4 sentences, 60-110 words — vivid hook, surprising detail, the why-it-stops-people moment.",
+      "story": "2-3 sentences, 45-80 words — vivid hook, one surprising detail, the why-it-stops-people moment.",
       "location_hint": "Gallery / wing / room reference (e.g. \\"Denon Wing, Salle 711\\"), or empty if not stable."
     }
   ]
