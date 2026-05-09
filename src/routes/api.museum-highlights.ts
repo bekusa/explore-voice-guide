@@ -94,14 +94,33 @@ export const Route = createFileRoute("/api/museum-highlights")({
             user,
             maxTokens: 6144,
           });
-          const parsed = parseClaudeJson(text);
+          const parsedRaw = parseClaudeJson(text);
+          // Normalise so {items:[...]}, {data:{highlights:...}}, or
+          // a bare [...] all become { highlights: [...] } before the
+          // cache write — frontend can keep its single shape contract.
+          const parsed = normaliseHighlights(parsedRaw);
 
           if (parsed !== undefined && hasHighlights(parsed)) {
             await putCachedMuseumHighlights({ museumId: key.museumId, language: "en" }, parsed);
           }
 
           if (parsed === undefined || !hasHighlights(parsed)) {
-            return jsonResponse({ highlights: [] }, 200, "MISS", "upstream-empty");
+            // Surface as much detail as we can — Beka had to guess
+            // why "No highlights yet" appeared. Logged to Lovable
+            // Logs and echoed in the response body.
+            const preview = typeof text === "string" ? text.slice(0, 200) : "(no text)";
+            console.warn(
+              "[museum-highlights] empty after parse",
+              key.museumId,
+              "preview:",
+              preview,
+            );
+            return jsonResponse(
+              { highlights: [], debug: { museum: museum.name, textPreview: preview } },
+              200,
+              "MISS",
+              "upstream-empty",
+            );
           }
 
           if (wantsTranslation) {
@@ -156,8 +175,41 @@ function isEnglish(lang: string): boolean {
 
 function hasHighlights(payload: unknown): boolean {
   if (!payload || typeof payload !== "object") return false;
-  const arr = (payload as { highlights?: unknown }).highlights;
-  return Array.isArray(arr) && arr.length > 0;
+  // Tolerate the variant shapes Claude occasionally returns:
+  //   { highlights: [...] }       — canonical
+  //   { items: [...] }            — Claude sometimes renames the key
+  //   { data: { highlights: ... } } — wrapper envelope
+  //   [...]                       — bare array
+  if (Array.isArray(payload)) return payload.length > 0;
+  const obj = payload as Record<string, unknown>;
+  const candidates = [obj.highlights, obj.items, obj.results, obj.list];
+  for (const c of candidates) {
+    if (Array.isArray(c) && c.length > 0) return true;
+  }
+  if (obj.data && typeof obj.data === "object") {
+    return hasHighlights(obj.data);
+  }
+  return false;
+}
+
+/**
+ * Normalise whatever Claude returned into the canonical
+ * `{ highlights: [...] }` shape the frontend expects. Mirrors the
+ * tolerance of hasHighlights — keeps cached payloads consistent
+ * regardless of which variant key Claude used.
+ */
+function normaliseHighlights(payload: unknown): unknown {
+  if (!payload || typeof payload !== "object") return payload;
+  if (Array.isArray(payload)) return { highlights: payload };
+  const obj = payload as Record<string, unknown>;
+  if (Array.isArray(obj.highlights)) return obj;
+  for (const key of ["items", "results", "list"] as const) {
+    if (Array.isArray(obj[key])) return { highlights: obj[key] };
+  }
+  if (obj.data && typeof obj.data === "object") {
+    return normaliseHighlights(obj.data);
+  }
+  return payload;
 }
 
 function jsonResponse(
@@ -171,5 +223,23 @@ function jsonResponse(
     "X-Cache": cacheTag,
   };
   if (reason) headers["X-Cache-Reason"] = reason;
-  return new Response(JSON.stringify(payload), { status, headers });
+  // Surface the reason inside the body too — Beka couldn't see
+  // X-Cache-Reason from screenshots of the rendered card and had to
+  // guess why "No highlights yet" appeared. Empty responses now ship
+  // a `reason` field so the failure mode is visible in DevTools'
+  // Response tab without checking headers.
+  let body: string;
+  if (typeof payload === "string") {
+    body = payload;
+  } else if (
+    reason &&
+    payload &&
+    typeof payload === "object" &&
+    !(payload as { reason?: unknown }).reason
+  ) {
+    body = JSON.stringify({ ...(payload as object), reason });
+  } else {
+    body = JSON.stringify(payload);
+  }
+  return new Response(body, { status, headers });
 }
