@@ -687,13 +687,18 @@ function ResultCard({
               </div>
             )}
 
+            {/* Beka's request: factual description first, italic
+                local-voice teaser second. The factual paragraph
+                sets the place, then the italic line gives the
+                "knowledgeable friend" detail — reads like a tip
+                you'd act on after reading the basics. */}
+            {description && (
+              <p className="mt-3 text-[12px] leading-[1.55] text-muted-foreground">{description}</p>
+            )}
             {teaser && (
-              <p className="mt-3 text-[12.5px] italic leading-[1.55] text-foreground/80">
+              <p className="mt-2 text-[12.5px] italic leading-[1.55] text-foreground/80">
                 {teaser}
               </p>
-            )}
-            {description && (
-              <p className="mt-2 text-[12px] leading-[1.55] text-muted-foreground">{description}</p>
             )}
 
             {/* Actions — Save / Download / Details (no Play; that lives
