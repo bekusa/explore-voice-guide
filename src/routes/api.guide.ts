@@ -1,21 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getCachedGuide, putCachedGuide } from "@/lib/sharedCache.server";
 import { translateGuidePayload } from "@/lib/translatePayload.server";
+import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
+import { buildGuideSystem, buildGuideUser } from "@/lib/prompts";
 
 /**
- * /api/guide — Cloudflare Worker proxy in front of the n8n
- * /webhook/guide workflow.
+ * /api/guide — Cloudflare Worker route that calls Anthropic Claude
+ * directly (no more n8n hop) to generate the rich, narrated audio
+ * guide for one attraction.
  *
  * Smart cache strategy (mirror of /api/attractions):
  *   1. Try direct cache hit on (name, lang, interest).
  *   2. Miss + lang != en → look up the English baseline, translate
  *      to userLang via the Lovable AI Gateway, cache, return.
- *   3. Miss everywhere → call n8n forcing language="en", cache the
- *      English version, translate if needed.
+ *   3. Miss everywhere → call Claude with the English prompt, cache
+ *      the English version, translate if needed.
  *
  * One Claude generation per (name, interest) regardless of locale.
  *
- * `X-Cache: HIT|TRANSLATED|MISS|MISS-TRANSLATED` for monitoring.
+ * `X-Cache: HIT|TRANSLATED|MISS|MISS-TRANSLATED|MISS-NO-TRANS` for
+ * monitoring.
  */
 export const Route = createFileRoute("/api/guide")({
   server: {
@@ -49,32 +53,37 @@ export const Route = createFileRoute("/api/guide")({
           }
         }
 
-        // 3. Forward to n8n in English
-        const enBody = forceLanguageEnglish(rawBody);
+        // 3. Cache miss — call Claude directly. Always English baseline
+        // so the cached row is reusable across every locale we serve.
+        if (!key) {
+          return jsonResponse({ script: "" }, 200, "MISS", "no-name");
+        }
         try {
-          const upstream = await fetch("https://tsitskabeka.app.n8n.cloud/webhook/guide", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: enBody,
+          const system = buildGuideSystem();
+          const user = buildGuideUser({
+            name: key.name,
+            language: "en",
+            interest: key.interest,
           });
-          const text = await upstream.text();
-          const trimmed = text.trim();
-          const parsed = trimmed.length > 0 ? safeParseJson(text) : undefined;
+          // Big maxTokens — the narrated script can run 1500-3000
+          // words, plus key_facts/tips/look_for/nearby chips.
+          const text = await callClaude({ system, user, maxTokens: 8192 });
+          const parsed = parseClaudeJson(text);
 
           // Cache the English baseline only when there's actual
           // narration content — empty {script: ""} would pin a dud
-          // row and short-circuit every future request.
-          if (key && upstream.ok && parsed !== undefined && hasGuideScript(parsed)) {
+          // row and short-circuit every future request forever.
+          if (parsed !== undefined && hasGuideScript(parsed)) {
             const enKey = { ...key, language: "en" };
             void putCachedGuide(enKey, parsed);
           }
 
-          // Empty / scriptless upstream → friendly empty guide (NOT cached).
-          if (upstream.ok && (parsed === undefined || !hasGuideScript(parsed))) {
+          // Empty / scriptless Claude output → friendly empty guide (NOT cached).
+          if (parsed === undefined || !hasGuideScript(parsed)) {
             return jsonResponse({ script: "" }, 200, "MISS", "upstream-empty");
           }
 
-          if (key && upstream.ok && parsed !== undefined && wantsTranslation) {
+          if (wantsTranslation) {
             const { payload: translated, translated: ok } = await translateGuidePayload(
               parsed,
               userLang,
@@ -83,8 +92,11 @@ export const Route = createFileRoute("/api/guide")({
             return jsonResponse(translated, 200, ok ? "MISS-TRANSLATED" : "MISS-NO-TRANS");
           }
 
-          return jsonResponse(parsed ?? text, upstream.status, "MISS");
+          return jsonResponse(parsed, 200, "MISS");
         } catch (err) {
+          // Anthropic call failed (key missing, rate limit, network)
+          // — return an empty guide with an error string so the
+          // client renders gracefully instead of breaking.
           return new Response(
             JSON.stringify({
               script: "",
@@ -118,22 +130,11 @@ function extractGuideKey(rawBody: string): {
       (typeof obj.language === "string" && obj.language) ||
       (typeof obj.lang === "string" && obj.lang) ||
       "";
-    const interest = (typeof obj.interest === "string" && obj.interest) || "history";
+    const interest = (typeof obj.interest === "string" && obj.interest) || "editors";
     if (!name.trim() || !language.trim()) return null;
     return { name: name.trim(), language: language.trim(), interest: interest.trim() };
   } catch {
     return null;
-  }
-}
-
-function forceLanguageEnglish(rawBody: string): string {
-  try {
-    const obj = JSON.parse(rawBody) as Record<string, unknown>;
-    obj.language = "en";
-    if ("lang" in obj) obj.lang = "en";
-    return JSON.stringify(obj);
-  } catch {
-    return rawBody;
   }
 }
 
@@ -142,46 +143,7 @@ function isEnglish(lang: string): boolean {
 }
 
 /**
- * Tolerant JSON parser — same logic as /api/attractions. Handles
- * pure JSON, markdown-fenced JSON, and the Anthropic Messages
- * envelope shape.
- */
-function safeParseJson(text: string): unknown {
-  const trimmed = text.trim();
-
-  try {
-    const parsed = JSON.parse(trimmed);
-    return unwrapIfEnvelope(parsed);
-  } catch {
-    /* fall through */
-  }
-
-  const fence = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-  if (fence) {
-    try {
-      return unwrapIfEnvelope(JSON.parse(fence[1].trim()));
-    } catch {
-      /* fall through */
-    }
-  }
-
-  return undefined;
-}
-
-function unwrapIfEnvelope(parsed: unknown): unknown {
-  if (!parsed || typeof parsed !== "object") return parsed;
-  const obj = parsed as Record<string, unknown>;
-  if (Array.isArray(obj.content) && obj.content.length > 0) {
-    const first = obj.content[0] as { type?: string; text?: string };
-    if (first?.type === "text" && typeof first.text === "string") {
-      return safeParseJson(first.text);
-    }
-  }
-  return parsed;
-}
-
-/**
- * True when the parsed n8n response contains real guide narration.
+ * True when the parsed Claude response contains real guide narration.
  * Used to gate cache writes so we never persist a dud `{script: ""}`
  * row that would short-circuit every future request and serve an
  * empty guide forever.

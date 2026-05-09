@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getCachedAttractions, putCachedAttractions } from "@/lib/sharedCache.server";
 import { translateAttractionsPayload } from "@/lib/translatePayload.server";
+import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
+import { buildAttractionsSystem, buildAttractionsUser } from "@/lib/prompts";
 
 /**
- * /api/attractions — Cloudflare Worker proxy in front of the n8n
- * /webhook/attractions workflow.
+ * /api/attractions — Cloudflare Worker route that calls Anthropic
+ * Claude directly (no more n8n hop).
  *
  * Smart cache strategy (saves ~80% Claude cost across languages):
  *   1. Try direct cache hit on (query, userLang).
@@ -76,34 +78,40 @@ export const Route = createFileRoute("/api/attractions")({
           }
         }
 
-        // 3. Forward to n8n — always request English so the cached
-        // baseline is reusable across every locale we ever serve.
-        const enBody = forceLanguageEnglish(rawBody);
+        // 3. Cache miss — call Claude directly. Always request the
+        // English baseline so the cached row is reusable across every
+        // locale we ever serve (translateAttractionsPayload handles
+        // the rest via Lovable AI Gateway → Gemini Flash).
+        if (!key) {
+          return jsonResponse({ attractions: [] }, 200, "MISS", "no-query");
+        }
         try {
-          const upstream = await fetch("https://tsitskabeka.app.n8n.cloud/webhook/attractions", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: enBody,
+          const system = buildAttractionsSystem();
+          const user = buildAttractionsUser({
+            query: key.query,
+            language: "en",
+            count: 10,
+            interests: key.filters.interests,
+            duration: key.filters.duration,
           });
-          const text = await upstream.text();
-          const trimmed = text.trim();
-          const parsed = trimmed.length > 0 ? safeParseJson(text) : undefined;
+          const text = await callClaude({ system, user, maxTokens: 4096 });
+          const parsed = parseClaudeJson(text);
 
-          // Persist the English baseline. Only when there's at least
-          // one attraction in the payload — caching an empty list
-          // would pin a dud row that short-circuits future requests.
-          if (key && upstream.ok && parsed !== undefined && hasAttractions(parsed)) {
+          // Persist the English baseline only when at least one
+          // attraction is present — caching an empty list would pin
+          // a dud row that short-circuits future requests forever.
+          if (parsed !== undefined && hasAttractions(parsed)) {
             const enKey = { ...key, language: "en" };
             void putCachedAttractions(enKey, parsed);
           }
 
-          // Empty / unparseable upstream → friendly empty list (NOT cached).
-          if (upstream.ok && (parsed === undefined || !hasAttractions(parsed))) {
+          // Empty / unparseable Claude output → friendly empty list (NOT cached).
+          if (parsed === undefined || !hasAttractions(parsed)) {
             return jsonResponse({ attractions: [] }, 200, "MISS", "upstream-empty");
           }
 
           // Translate now if the user wanted a non-English response.
-          if (key && upstream.ok && parsed !== undefined && wantsTranslation) {
+          if (wantsTranslation) {
             const { payload: translated, translated: ok } = await translateAttractionsPayload(
               parsed,
               userLang,
@@ -112,10 +120,12 @@ export const Route = createFileRoute("/api/attractions")({
             return jsonResponse(translated, 200, ok ? "MISS-TRANSLATED" : "MISS-NO-TRANS");
           }
 
-          return jsonResponse(parsed ?? text, upstream.status, "MISS");
+          return jsonResponse(parsed, 200, "MISS");
         } catch (err) {
-          // Network failure talking to n8n — return empty list with
-          // an `error` field so the client can render gracefully.
+          // Anthropic call failed (key missing, rate limit, network,
+          // …) — return an empty list with an `error` field so the
+          // client renders a graceful "nothing found" instead of a
+          // broken page.
           return new Response(
             JSON.stringify({
               attractions: [],
@@ -164,79 +174,12 @@ function extractAttractionsKey(rawBody: string): {
   }
 }
 
-/**
- * Rewrite `language: ...` → `language: "en"` in the JSON body before
- * forwarding to n8n, so we always cache an English baseline.
- * Falls back to the original body on any parse failure.
- */
-function forceLanguageEnglish(rawBody: string): string {
-  try {
-    const obj = JSON.parse(rawBody) as Record<string, unknown>;
-    obj.language = "en";
-    if ("lang" in obj) obj.lang = "en";
-    return JSON.stringify(obj);
-  } catch {
-    return rawBody;
-  }
-}
-
 function isEnglish(lang: string): boolean {
   return !lang || lang.toLowerCase().startsWith("en");
 }
 
 /**
- * Tolerant JSON parser. Handles three Claude-induced quirks:
- *   1. Pure JSON — happy path.
- *   2. Markdown-fenced JSON ( ```json ... ``` ) — Haiku ignores
- *      the "no backticks" rule about half the time, so strip the
- *      fence and retry.
- *   3. Anthropic envelope — when n8n returns the full Messages API
- *      response, the payload is { content: [{ type:"text", text:"..." }] }.
- *      Pull out content[0].text and recurse.
- */
-function safeParseJson(text: string): unknown {
-  const trimmed = text.trim();
-
-  // 1. Direct parse
-  try {
-    const parsed = JSON.parse(trimmed);
-    return unwrapIfEnvelope(parsed);
-  } catch {
-    /* fall through */
-  }
-
-  // 2. Strip markdown code fence (```json ... ``` or ``` ... ```)
-  const fence = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-  if (fence) {
-    try {
-      return unwrapIfEnvelope(JSON.parse(fence[1].trim()));
-    } catch {
-      /* fall through */
-    }
-  }
-
-  return undefined;
-}
-
-/**
- * If the parsed object is the Anthropic Messages API envelope,
- * reach inside content[0].text and re-parse.
- */
-function unwrapIfEnvelope(parsed: unknown): unknown {
-  if (!parsed || typeof parsed !== "object") return parsed;
-  const obj = parsed as Record<string, unknown>;
-  if (Array.isArray(obj.content) && obj.content.length > 0) {
-    const first = obj.content[0] as { type?: string; text?: string };
-    if (first?.type === "text" && typeof first.text === "string") {
-      // Recurse — text often contains fenced JSON
-      return safeParseJson(first.text);
-    }
-  }
-  return parsed;
-}
-
-/**
- * True when the parsed n8n response looks like a real attractions
+ * True when the parsed Claude response looks like a real attractions
  * payload with at least one entry. Tolerates the wrapped shape
  * `{attractions:[...]}` and the bare-array shape `[...]`. Used to
  * gate cache writes so we never persist a dud empty result.
@@ -292,27 +235,7 @@ function extractExtensionExtras(rawBody: string): ExtensionExtras {
 }
 
 /**
- * Rewrite the body for an extension call: language → "en" (so we
- * always call Claude in English and translate downstream), and
- * `exclude` / `count` are preserved so the n8n prompt can use them
- * to ask Claude for more, distinct attractions. Falls back to the
- * raw body on parse failure.
- */
-function forceLanguageEnglishWithExtras(rawBody: string, exclude: string[], count: number): string {
-  try {
-    const obj = JSON.parse(rawBody) as Record<string, unknown>;
-    obj.language = "en";
-    if ("lang" in obj) obj.lang = "en";
-    obj.exclude = exclude;
-    obj.count = count;
-    return JSON.stringify(obj);
-  } catch {
-    return rawBody;
-  }
-}
-
-/**
- * Pull the attractions array out of an n8n payload. Tolerates both
+ * Pull the attractions array out of a Claude response payload. Tolerates both
  * the wrapped `{attractions: [...]}` shape and the bare-array `[...]`
  * shape, returning [] when neither matches.
  */
@@ -360,23 +283,24 @@ async function handleExtensionRequest(
   key: { query: string; language: string; filters: { interests?: string[]; duration?: string } },
   userLang: string,
   wantsTranslation: boolean,
-  rawBody: string,
+  _rawBody: string,
   extras: ExtensionExtras,
 ): Promise<Response> {
-  const enBody = forceLanguageEnglishWithExtras(rawBody, extras.exclude, extras.count);
   let parsed: unknown;
   try {
-    const upstream = await fetch("https://tsitskabeka.app.n8n.cloud/webhook/attractions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: enBody,
+    const system = buildAttractionsSystem();
+    const user = buildAttractionsUser({
+      query: key.query,
+      language: "en",
+      count: extras.count,
+      exclude: extras.exclude,
+      interests: key.filters.interests,
+      duration: key.filters.duration,
     });
-    const text = await upstream.text();
-    const trimmed = text.trim();
-    parsed = trimmed.length > 0 ? safeParseJson(text) : undefined;
-    if (!upstream.ok) {
-      return jsonResponse({ attractions: [] }, 200, "EXTEND-EMPTY", "upstream-non-ok");
-    }
+    // Bigger maxTokens because extension calls can ask for up to 30
+    // attractions — each row averages ~120-180 tokens.
+    const text = await callClaude({ system, user, maxTokens: 6144 });
+    parsed = parseClaudeJson(text);
   } catch (err) {
     return new Response(
       JSON.stringify({
