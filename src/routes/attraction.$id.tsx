@@ -430,7 +430,11 @@ function AttractionPage() {
             in flight; nothing shown when the attraction isn't a
             museum we know about. */}
         {matchedMuseum && (
-          <MuseumHighlightsSection highlights={highlights} loading={loadingHighlights} />
+          <MuseumHighlightsSection
+            museum={matchedMuseum}
+            highlights={highlights}
+            loading={loadingHighlights}
+          />
         )}
 
         <MapSection lat={a?.lat} lng={a?.lng} name={a?.name ?? fallbackName} currentSlug={id} />
@@ -1582,9 +1586,14 @@ function InlineAudioPanel({
  * lang) tuple takes 30-60 s — gated by the loading skeleton.
  */
 function MuseumHighlightsSection({
+  museum,
   highlights,
   loading,
 }: {
+  /** The matched museum — used to scope the per-highlight photo lookup
+   *  so "Mona Lisa" doesn't resolve to a hair salon and "Liberty
+   *  Leading the People" doesn't resolve to a Tbilisi bank. */
+  museum: Museum;
   highlights: MuseumHighlight[] | null;
   loading: boolean;
 }) {
@@ -1648,7 +1657,14 @@ function MuseumHighlightsSection({
       <ol className="mt-4 flex flex-col gap-3" start={(safePage - 1) * PAGE_SIZE + 1}>
         {slice.map((h, i) => {
           const rank = (safePage - 1) * PAGE_SIZE + i + 1;
-          return <HighlightCard key={`${h.name_en ?? h.name}-${rank}`} h={h} rank={rank} />;
+          return (
+            <HighlightCard
+              key={`${h.name_en ?? h.name}-${rank}`}
+              h={h}
+              rank={rank}
+              museum={museum}
+            />
+          );
         })}
       </ol>
 
@@ -1706,22 +1722,45 @@ function MuseumHighlightsSection({
  * the network. Cross-session caching happens at the route level
  * (the highlights payload itself caches in Supabase).
  */
-function HighlightCard({ h, rank }: { h: MuseumHighlight; rank: number }) {
+function HighlightCard({ h, rank, museum }: { h: MuseumHighlight; rank: number; museum: Museum }) {
   const [photo, setPhoto] = useState<string | null>(null);
   const queryName = h.name_en ?? h.name;
   useEffect(() => {
     if (!queryName) return;
     let cancelled = false;
-    // Wikipedia lookups work much better in English regardless of UI
-    // language — "Mona Lisa" hits the right page; "მონა ლიზა" rarely
-    // does. Same approach as the attraction-page hero photo.
-    fetchPlacePhoto(queryName, "en").then((url) => {
-      if (!cancelled && url) setPhoto(url);
-    });
+    // Disambiguate by appending the museum name AND city to the
+    // search query. Without this, "Mona Lisa" matched a Tbilisi
+    // beauty salon and "Liberty Leading the People" matched Liberty
+    // Bank — Wikipedia's full-text search ranks any page with the
+    // term, not the artwork specifically. "Mona Lisa Louvre Paris"
+    // pins it to the painting. Tried in order:
+    //   1. "{name} {museum} {city}" — most specific, usually wins
+    //   2. "{name} {museum}"        — drops city when the museum name
+    //                                  alone is unique enough (Uffizi,
+    //                                  Hermitage, etc.)
+    //   3. "{name}"                 — bare-name fallback for objects
+    //                                  whose Wikipedia article doesn't
+    //                                  mention the museum (rare).
+    (async () => {
+      const candidates = [
+        `${queryName} ${museum.name} ${museum.city}`,
+        `${queryName} ${museum.name}`,
+        queryName,
+      ];
+      for (const q of candidates) {
+        if (cancelled) return;
+        const url = await fetchPlacePhoto(q, "en", museum.city);
+        if (cancelled) return;
+        if (url) {
+          setPhoto(url);
+          return;
+        }
+      }
+    })();
     return () => {
       cancelled = true;
     };
-  }, [queryName]);
+  }, [queryName, museum.name, museum.city]);
 
   return (
     <li className="overflow-hidden rounded-2xl border border-border bg-card transition-smooth hover:border-primary/40">
