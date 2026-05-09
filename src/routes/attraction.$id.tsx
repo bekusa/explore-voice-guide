@@ -46,8 +46,7 @@ import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { getCachedGuide, getCachedGuideData, onGuideCacheChange } from "@/lib/guideCache";
-import { setInterest, useInterest } from "@/lib/interestPreference";
-import { INTERESTS } from "@/lib/interests";
+import { DEFAULT_INTEREST, INTERESTS } from "@/lib/interests";
 import { useT } from "@/hooks/useT";
 
 type Search = { name?: string };
@@ -86,7 +85,12 @@ function AttractionPage() {
   // localStorage). Tilts the n8n guide toward a topic — e.g.
   // "photography" gets more on framing, light, materials than dates.
   // Defaults to History when unset (Lokali's heritage-tourist baseline).
-  const interest = useInterest();
+  // Beka's spec: every fresh attraction page open should land on
+  // Editor's Pick by default, regardless of what the user picked
+  // last time. Local state (not global) — chip taps re-fetch a
+  // bias-tilted guide for THIS attraction only and don't leak into
+  // the next place the user opens.
+  const [interest, setInterest] = useState<string>(DEFAULT_INTEREST);
   const [attraction, setAttraction] = useState<Attraction | null>(
     searchName ? { name: searchName } : null,
   );
@@ -202,8 +206,23 @@ function AttractionPage() {
     : null;
 
   return (
-    <MobileFrame>
-      <div className="relative min-h-full bg-background pb-32 text-foreground">
+    <MobileFrame
+      // The audio player is rendered as a sibling of the scrolling
+      // content (not inside it) so it floats above the TabBar at
+      // every scroll position — Beka's request: "მცურავი და არ
+      // სჭირდებოდეს ჩასქროლვა".
+      floatingPanel={
+        playerOpen ? (
+          <InlineAudioPanel
+            name={a?.name ?? fallbackName}
+            script={script}
+            language={language}
+            onClose={() => setPlayerOpen(false)}
+          />
+        ) : null
+      }
+    >
+      <div className="relative min-h-full bg-background text-foreground">
         {/* Hero */}
         <section className="relative h-[420px] w-full overflow-hidden">
           {heroPhoto ? (
@@ -359,19 +378,10 @@ function AttractionPage() {
             pins drop for any saved place within ~5 km of this one. */}
         <MapSection lat={a?.lat} lng={a?.lng} name={a?.name ?? fallbackName} currentSlug={id} />
 
-        {/* Inline audio player — sticky bar at the bottom that opens
-            when the user taps Play in ActionRow. Replaces the old
-            /player route so the user can keep reading the guide while
-            listening to it. Self-mounts/unmounts on toggle so the
-            audio fetch only happens after the first Play press. */}
-        {playerOpen && (
-          <InlineAudioPanel
-            name={a?.name ?? fallbackName}
-            script={script}
-            language={language}
-            onClose={() => setPlayerOpen(false)}
-          />
-        )}
+        {/* The audio player itself lives in MobileFrame's floatingPanel
+            slot — see the prop on the wrapping <MobileFrame> above.
+            That keeps it visible at any scroll position instead of
+            buried at the end of the page. */}
       </div>
     </MobileFrame>
   );
@@ -1322,12 +1332,10 @@ function InlineAudioPanel({
     };
   }, []);
 
-  const togglePause = () => {
-    const a = audioRef.current;
-    if (!a) return;
-    if (a.paused) a.play().catch(() => {});
-    else a.pause();
-  };
+  // Play / Pause used to share one toggle button. Beka asked for
+  // them as separate visible buttons (see Controls block below) so
+  // each transport action is its own affordance instead of an icon
+  // that flips mid-press. The togglePause helper is no longer needed.
 
   const stop = () => {
     const a = audioRef.current;
@@ -1352,7 +1360,11 @@ function InlineAudioPanel({
     <div
       role="region"
       aria-label={t("player.nowNarrating")}
-      className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-[420px] border-t border-border bg-background/95 px-5 pb-6 pt-4 shadow-elegant backdrop-blur-xl md:absolute md:rounded-b-[3rem]"
+      // Positioning is handled by MobileFrame's floatingPanel slot —
+      // we just paint the bar's chrome here. No more `fixed` / `mx-auto
+      // max-w-[420px]`: the slot is already inside the 420px phone
+      // container on desktop and at the screen edge on mobile.
+      className="border-t border-border bg-background/95 px-5 pb-4 pt-4 shadow-elegant backdrop-blur-xl"
     >
       {audioUrl && (
         <audio
@@ -1416,21 +1428,37 @@ function InlineAudioPanel({
         <span>{fmt(progress.total)}</span>
       </div>
 
-      {/* Controls */}
+      {/* Controls — Beka's spec: explicit Play and Pause buttons
+          (instead of one toggle) plus Stop. Each button is always
+          visible; only its `disabled` state changes with audio status,
+          so the user always knows which transport actions are
+          available without having to read icon mid-flight. */}
       <div className="mt-3 flex items-center justify-center gap-3">
         <button
-          onClick={togglePause}
-          disabled={generating || !audioUrl}
-          aria-label={paused || !playing ? t("player.resume") : t("player.pause")}
+          onClick={() => {
+            const a = audioRef.current;
+            if (a && a.paused) a.play().catch(() => {});
+          }}
+          disabled={generating || !audioUrl || (playing && !paused)}
+          aria-label={t("player.resume")}
           className="grid h-12 w-12 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow transition-smooth hover:scale-[1.04] disabled:opacity-50"
         >
           {generating ? (
             <Loader2 className="h-5 w-5 animate-spin" />
-          ) : playing && !paused ? (
-            <Pause className="h-5 w-5 fill-current" />
           ) : (
             <Play className="h-5 w-5 translate-x-[1px] fill-current" />
           )}
+        </button>
+        <button
+          onClick={() => {
+            const a = audioRef.current;
+            if (a && !a.paused) a.pause();
+          }}
+          disabled={generating || !audioUrl || !playing || paused}
+          aria-label={t("player.pause")}
+          className="grid h-12 w-12 place-items-center rounded-full border border-primary/40 bg-card text-foreground transition-smooth hover:border-primary/70 hover:scale-[1.04] disabled:opacity-50"
+        >
+          <Pause className="h-5 w-5 fill-current" />
         </button>
         <button
           onClick={stop}

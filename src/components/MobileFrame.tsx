@@ -8,22 +8,48 @@ import { TabBar } from "@/components/TabBar";
  * Renders the shared bottom TabBar by default so navigation stays
  * consistent across every page. Pass `hideTabBar` for fullscreen
  * flows (auth, onboarding, player overlays) that shouldn't show it.
+ *
+ * `floatingPanel` is a separate slot rendered as a SIBLING of the
+ * scrolling content (not inside it) and pinned just above the TabBar.
+ * Use it for persistent UI like the audio player that has to stay
+ * visible without forcing the user to scroll back up. Plain `fixed`
+ * positioning didn't work here — the desktop preview crops to a 420px
+ * phone-shaped container, and a viewport-fixed element drops out of
+ * that frame entirely. Anchoring at this level keeps the panel inside
+ * the phone on desktop and at the screen edge on mobile in one go.
  */
 export function MobileFrame({
   children,
   hideTabBar = false,
+  floatingPanel,
 }: {
   children: ReactNode;
   hideTabBar?: boolean;
+  floatingPanel?: ReactNode;
 }) {
+  // Reserve room at the bottom of the scroll area so the last item
+  // doesn't sit underneath the TabBar (74px) and, when present, the
+  // floating panel above it. The panel's actual height varies, so we
+  // budget a generous 200px when it's mounted.
+  const bottomPad =
+    !hideTabBar && floatingPanel
+      ? "pb-[280px]"
+      : !hideTabBar
+        ? "pb-[74px]"
+        : floatingPanel
+          ? "pb-[200px]"
+          : "";
   return (
     <div className="min-h-screen w-full bg-background flex items-center justify-center md:p-8">
       <div className="relative w-full h-[100dvh] md:w-[420px] md:h-[860px] md:rounded-[3rem] md:border md:border-border md:shadow-elegant overflow-hidden bg-background">
-        <div
-          className={`h-full w-full overflow-y-auto scrollbar-hide ${hideTabBar ? "" : "pb-[74px]"}`}
-        >
+        <div className={`h-full w-full overflow-y-auto scrollbar-hide ${bottomPad}`}>
           {children}
         </div>
+        {floatingPanel && (
+          <div className={`absolute inset-x-0 z-30 ${hideTabBar ? "bottom-0" : "bottom-[74px]"}`}>
+            {floatingPanel}
+          </div>
+        )}
         {!hideTabBar && <TabBar />}
       </div>
     </div>

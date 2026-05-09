@@ -31,7 +31,11 @@ const DEFAULT_STEPS: UiKey[] = [
 
 export function LoadingMessages({
   steps = DEFAULT_STEPS,
-  intervalMs = 3000,
+  // Beka asked for the rotation 5× slower than the original 3 s tempo,
+  // so each message holds for 15 s. With LLM fetches typically running
+  // 5-15 s, most users will see one or two messages instead of the
+  // strip flickering through all five.
+  intervalMs = 15000,
   className = "",
 }: {
   steps?: UiKey[];
