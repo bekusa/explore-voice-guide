@@ -1,0 +1,450 @@
+/**
+ * Pre-translated UI strings — committed to git, NOT generated at runtime.
+ *
+ * Why this file exists: every UI label in the app (menu items, button
+ * text, section headers, "Save", "About this place", etc.) used to be
+ * translated by an LLM at runtime via /api/translate. That worked but
+ * had three real problems:
+ *
+ *   1. First page load on a fresh language burned 1-3 seconds waiting
+ *      for ~50 strings to come back from the gateway.
+ *   2. Every visitor pays the translation cost for the same strings,
+ *      cached only per-browser (localStorage). Running the AI on
+ *      "Save" once for 10 000 visitors is silly.
+ *   3. The gateway occasionally returned garbage — Python tracebacks,
+ *      truncations, wrong-language results — and that garbage got
+ *      pinned in caches as the canonical translation.
+ *
+ * Static translations sidestep all three: they ship with the bundle,
+ * render instantly, never call an LLM, and can be reviewed in PR.
+ * Dynamic translation is still used for content that genuinely changes
+ * per request (search queries, attraction descriptions, guide scripts)
+ * — the runtime /api/translate path is intact for those.
+ *
+ * Adding a new language:
+ *   1. Add an entry under UI_TRANSLATIONS keyed by ISO code.
+ *   2. The value is a Record<UiKey, string> — same keys as UI_STRINGS,
+ *      values are the localized text.
+ *   3. Anything missing from a language's dict falls back to the
+ *      runtime /api/translate path, then to the English source. So
+ *      partial translations are safe.
+ *
+ * This file is hand-curated for now. If we ever need to bulk-regen
+ * (e.g. UI_STRINGS grew 50 entries), a one-shot Claude run can
+ * produce a fresh draft for review.
+ */
+
+import type { UiKey } from "@/lib/i18n";
+
+/**
+ * Every language we ship pre-translated UI for. Anything not in this
+ * map falls through to the runtime translation pipeline + cache.
+ *
+ * Empty map by default — populated below per language.
+ */
+export const UI_TRANSLATIONS: Record<string, Partial<Record<UiKey, string>>> = {
+  ka: {
+    // Nav / chrome
+    "nav.home": "მთავარი",
+    "nav.explore": "აღმოაჩინე",
+    "nav.map": "რუკა",
+    "nav.saved": "შენახული",
+    "nav.signOut": "გასვლა",
+    "nav.signIn": "შესვლა",
+    "nav.settings": "პარამეტრები",
+    "nav.notifications": "შეტყობინებები",
+    "nav.language": "ენა",
+    "nav.back": "უკან",
+
+    // Home
+    "home.whereNext": "სად მივდივართ?",
+    "home.offline": "ოფლაინ",
+    "home.searchPlaceholder": "ქვეყანა, ქალაქი ან ღირსშესანიშნაობა…",
+    "home.search": "ძებნა",
+    "home.browse": "დათვალიერება",
+    "home.collections.title": "შერჩეული კოლექციები",
+    "home.collections.sub": "თემები შენი მოგზაურობის სტილისთვის",
+    "home.timeMachine.title": "დროის მანქანა",
+    "home.timeMachine.sub": "ტოპ 10 ჩაძირული მომენტი — შედი ისტორიაში",
+    "unesco.title": "UNESCO-ს მსოფლიო მემკვიდრეობა",
+    "unesco.short": "UNESCO",
+    "home.featured.title": "გამორჩეული ქალაქები",
+    "home.featured.sub": "კინემატოგრაფიული გასეირნებები ადგილობრივების მონათხრობით",
+    "home.seeAll": "ყველას ნახვა",
+    "home.featuredBadge": "გამორჩეული",
+    "home.openCity": "გახსენი {city}",
+    "home.tours.one": "{n} ტური",
+    "home.tours.many": "{n} ტური",
+
+    // Destination screen
+    "dest.currentlyIn": "ახლა აქ ხარ",
+    "dest.featuredTour": "გამორჩეული ტური",
+    "dest.beginJourney": "მოგზაურობის დაწყება",
+    "dest.firstChapter": "მოუსმინე პირველ თავს",
+    "dest.freeMin": "უფასო · 3 წთ",
+    "dest.searchIn": "ძებნა {city}-ში…",
+    "dest.inside": "{city}-ის შიგნით",
+    "dest.insideSub": "შერჩეული გაჩერებები ადგილობრივების მონათხრობით",
+    "dest.otherCities": "სხვა ქალაქები",
+    "dest.cat.all": "ყველა",
+    "dest.cat.historic": "ისტორიული",
+    "dest.cat.sacred": "სასულიერო",
+    "dest.cat.culinary": "კულინარია",
+    "dest.cat.hidden": "დაფარული",
+    "dest.cat.fortress": "ციხესიმაგრე",
+    "dest.nowPlaying": "თავი 2 · გოგირდი და ქვა",
+
+    // Near-you / attraction card
+    "card.audioGuide": "აუდიო გიდი",
+    "card.offline": "ოფლაინ",
+    "card.stops": "{n} გაჩერება",
+    "card.save": "შენახვა",
+    "card.saved": "შენახულია",
+    "card.download": "ჩამოტვირთვა",
+    "card.saving": "ინახება",
+    "card.details": "დეტალები",
+    "card.play": "მოუსმინე გიდს",
+    "card.fallbackDesc":
+      'შერჩეული გასეირნება {title}-ში. შეეხე „დეტალების გახსნას" სრული ნაამბობი გიდისა და გაჩერებების ისტორიისთვის.',
+
+    // Attraction page
+    "attr.aboutThis": "ამ ადგილის შესახებ",
+    "attr.theStops": "გაჩერებები",
+    "attr.chapters": "{n} თავი",
+    "attr.beginJourney": "მოგზაურობის დაწყება",
+    "attr.listenNarrated": "მოუსმინე გიდს",
+    "attr.tapBegin": 'შეეხე „მოგზაურობის დაწყებას" და მოისმინე ამ ადგილის ისტორია.',
+    "attr.stopsAppear": "გაჩერებები გამოჩნდება გიდის გენერირების შემდეგ.",
+
+    // Results filters
+    "filters.interests": "ინტერესები",
+    "filters.clear": "გასუფთავება",
+    "filters.int.editors": "რედაქტორის არჩევანი",
+    "filters.int.history": "ისტორია",
+    "filters.int.photography": "ფოტოგრაფია",
+    "filters.int.authentic": "ავთენტური",
+    "filters.int.family": "ოჯახური",
+    "filters.int.romantic": "რომანტიკული",
+
+    // Toasts
+    "toast.removedFromSaved": "ამოშლილია შენახულებიდან",
+    "toast.saved": "შენახულია",
+    "toast.savedDesc": "შეეხე ჩამოტვირთვას, რომ გიდი ოფლაინ შეგინახოს.",
+    "toast.alreadyCached": "უკვე ჩატვირთულია",
+    "toast.alreadyCachedDesc": "ეს გიდი ოფლაინ რეჟიმში მუშაობს.",
+    "toast.youreOffline": "ოფლაინ ხარ",
+    "toast.youreOfflineDesc": "ერთხელ დაუკავშირდი ქსელს გიდის ჩამოსატვირთად.",
+    "toast.downloaded": "ჩამოტვირთულია ოფლაინისთვის",
+    "toast.noGuide": "გიდი ვერ მოვიდა",
+    "toast.downloadFailed": "ჩამოტვირთვა ვერ მოხერხდა",
+    "toast.tryAgain": "სცადე მოგვიანებით.",
+    "toast.langUpdated": "ენა განახლდა",
+    "toast.langUpdatedDesc": "ყველა ადგილი ამიერიდან {lang}-ზე გელაპარაკება.",
+    "toast.langFailed": "ენის შეცვლა ვერ მოხერხდა",
+    "toast.langFailedDesc": "ცოტა ხანში ხელახლა სცადე.",
+    "toast.voiceUpdated": "ხმა განახლდა",
+    "toast.voiceUpdatedDesc": "ამიერიდან {voice} მოგიყვება.",
+    "toast.profileSaved": "პროფილი შენახულია",
+    "toast.couldNotSave": "შენახვა ვერ მოხერხდა",
+    "toast.noVoiceAvailable": "ხელმისაწვდომი ხმა არ არის",
+    "toast.libCleared": "ოფლაინ ბიბლიოთეკა გასუფთავდა",
+    "toast.speechUnsupported": "ეს მოწყობილობა ხმოვან რეჟიმს არ უჭერს მხარს",
+    "toast.couldNotLoadGuide": "გიდი ვერ ჩაიტვირთა",
+    "toast.tryAgainPlease": "გთხოვთ, ხელახლა სცადე.",
+    "toast.guideOfflineDesc":
+      "ეს გიდი ჯერ არაა ჩამოტვირთული. ერთხელ დაუკავშირდი ქსელს, რომ შეინახო.",
+    "toast.couldNotLoadAttractions": "ღირსშესანიშნაობები ვერ ჩაიტვირთა",
+    "toast.allSet": "ყველაფერი მზადაა",
+    "toast.allSetDesc": "კეთილი იყოს შენი მობრძანება Voices-ში.",
+    "toast.setupFailed": "გამართვა ვერ მოხერხდა",
+    "toast.signedOut": "გამოხვედი სისტემიდან",
+
+    // Language picker
+    "lang.title": "ენა",
+    "lang.audioGuide": "აუდიო გიდი",
+    "lang.speakMy": "ილაპარაკე ჩემს",
+    "lang.language": "ენაზე",
+    "lang.current": "მიმდინარე",
+    "lang.searchPlaceholder": "ეძებე 37 ენაში…",
+    "lang.tapHint":
+      "შეეხე ენას მყისიერი გადასართველად. შენი მთხრობელის ხმა ამ ენის პირველ შესაბამის ხმაზე გადაირთვება.",
+    "lang.noMatches": "შესაბამისი ენა ვერ მოიძებნა",
+
+    // Saved page
+    "saved.title": "შენახული",
+    "saved.offlineLib": "ოფლაინ ბიბლიოთეკა",
+    "saved.your": "შენი",
+    "saved.placesOne": "ადგილი",
+    "saved.placesMany": "ადგილი",
+    "saved.storedHelp": "ინახება ამ მოწყობილობაზე — ნარაცია კავშირის გარეშე უკრავს.",
+    "saved.guideCached": "გიდი შენახულია",
+    "saved.removeAria": "ამოშალე {name}",
+    "saved.empty": "არაფერია შენახული",
+    "saved.emptyYet": "ჯერ",
+    "saved.emptyHelp": "შეეხე ნებისმიერი ადგილის სანიშნეს, რომ ოფლაინ შეინახო.",
+    "saved.exploreCta": "ადგილების აღმოჩენა",
+    "saved.clearConfirm": "ყველა შენახული ადგილის წაშლა? ეს ჩატვირთულ აუდიოს არ წაშლის.",
+    "saved.clear": "გასუფთავება",
+
+    // Map page
+    "map.title": "რუკაზე",
+    "map.savedOne": "{n} შენახული ადგილი",
+    "map.savedMany": "{n} შენახული ადგილი",
+    "map.toggleStyle": "რუკის სტილის შეცვლა",
+    "map.centerLoc": "ჩემს ადგილმდებარეობაზე ცენტრირება",
+    "map.empty": "სანიშნეები არ არის",
+    "map.emptyYet": "ჯერ",
+    "map.emptyHelp": "შეინახე ადგილი მთავარი ან დანიშნულების გვერდიდან და ის აქ რუკაზე გამოჩნდება.",
+    "map.findCta": "ადგილების მოძებნა",
+    "map.loading": "რუკა იტვირთება…",
+
+    // Settings
+    "set.title": "პარამეტრები",
+    "set.subtitle": "მოარგე შენი მოგზაურობა",
+    "set.configuration": "კონფიგურაცია",
+    "set.tuneYour": "მოარგე შენი",
+    "set.journey": "მოგზაურობა",
+    "set.intro":
+      "ენა, ხმა, თემა და ოფლაინ მეხსიერება — ყველაფერი, რაც განსაზღვრავს, როგორ ჩაგჩურჩულებს Tbilisi.",
+    "set.account": "ანგარიში",
+    "set.signedInAs": "შესული ხარ როგორც",
+    "set.displayName": "სახელი",
+    "set.yourName": "შენი სახელი",
+    "set.save": "შენახვა",
+    "set.audioGuide": "აუდიო გიდი",
+    "set.language": "ენა",
+    "set.narratorVoice": "მთხრობელის ხმა",
+    "set.browserDefault": "ბრაუზერის ნაგულისხმევი",
+    "set.previewVoice": "ხმის მოსმენა",
+    "set.appearance": "გარეგნობა",
+    "set.theme": "თემა",
+    "set.themeDark": "კინემატოგრაფიული მუქი",
+    "set.themeLight": "დღის სინათლე",
+    "set.offlineMode": "ოფლაინ რეჟიმი",
+    "set.youOnline": "ონლაინ ხარ",
+    "set.youOffline": "ოფლაინ ხარ",
+    "set.onlineHelp": "ჩამოტვირთე გიდები ახლა, რომ სიგნალის გარეშეც გამოგადგეს.",
+    "set.offlineHelp": "ჩატვირთული გიდები იმუშავებს — დანარჩენები ქსელის დაბრუნებისას ჩაიტვირთება.",
+    "set.savedSummaryOne": "{saved} შენახული · {cached} ჩატვირთული გიდი",
+    "set.savedSummaryMany": "{saved} შენახული · {cached} ჩატვირთული გიდი",
+    "set.cacheSize": "{flag} {native} · ~{kb} KB ამ მოწყობილობაზე",
+    "set.downloadAllOne": "ჩამოტვირთე {n} გიდი ოფლაინისთვის",
+    "set.downloadAllMany": "ჩამოტვირთე {n} გიდი ოფლაინისთვის",
+    "set.downloading": "იტვირთება… {done}/{total}",
+    "set.downloadDesc": "ინახავს ყველა შენახულ ადგილს {lang}-ზე",
+    "set.downloadedOne": "ჩამოტვირთულია {n} გიდი",
+    "set.downloadedMany": "ჩამოტვირთულია {n} გიდი",
+    "set.downloadAvailable": "ხელმისაწვდომია ოფლაინ {lang}-ზე",
+    "set.downloadAvailableFailed": "ხელმისაწვდომია ოფლაინ {lang}-ზე · {n} ვერ ჩაიტვირთა",
+    "set.downloadFailed": "ვერც ერთი გიდი ვერ ჩამოიტვირთა",
+    "set.downloadFailedDesc": "შეამოწმე კავშირი და ხელახლა სცადე.",
+    "set.clearLib": "ოფლაინ ბიბლიოთეკის გასუფთავება",
+    "set.signOut": "გასვლა",
+    "set.appVersion": "Lokali · v1.0",
+    "set.searchLanguages": "ენის ძებნა…",
+    "set.noLanguagesMatch": "შესაბამისი ენა ვერ მოიძებნა",
+    "set.noNativeVoice": "ამ ენის მშობლიური ხმა ვერ მოიძებნა. გამოყენებული იქნება ზოგადი ხმა.",
+    "set.noVoiceForLang": "ამ მოწყობილობაზე {code}-ის მშობლიური ხმა ვერ მოიძებნა.",
+    "set.installVoicesHelp":
+      "გამოვიყენებთ ბრაუზერის ნაგულისხმევ ხმას. დამატებითი ხმების დაყენება შეგიძლია ოპერაციული სისტემის ხელმისაწვდომობის პარამეტრებში.",
+    "voice.onDevice": "მოწყობილობაზე",
+    "voice.cloud": "ღრუბელი",
+
+    // Notifications
+    "notif.title": "შეტყობინებები",
+    "notif.unread": "{n} წაუკითხავი",
+    "notif.allCaught": "ყველაფერი წაკითხულია",
+    "notif.empty": "ყუთი ცარიელია",
+    "notif.markAll": "ყველას წაკითხულად მონიშვნა",
+    "notif.clearAll": "ყველას გასუფთავება",
+    "notif.dismiss": "დახურვა",
+    "notif.emptyTitle": "შეტყობინებები არ არის",
+    "notif.emptyHelp": "რჩევები, მოგზაურობის სიახლეები და იდეები აქ გამოჩნდება.",
+    "notif.backHome": "მთავარზე დაბრუნება",
+    "notif.now": "ახლა",
+    "notif.min": "წთ",
+    "notif.hour": "სთ",
+    "notif.day": "დღ",
+
+    "results.searching": "მიმდინარეობს ძებნა…",
+    "results.countOne": "{n} შედეგი მოთხოვნისთვის",
+    "results.countMany": "{n} შედეგი მოთხოვნისთვის",
+    "results.placeholder": "ქვეყანა, ქალაქი ან ღირსშესანიშნაობა…",
+    "results.empty": "არაფერი მოიძებნა",
+    "results.emptyHelp":
+      'ვერ ვიპოვეთ ადგილები „{query}"-ის შესაბამისი. სცადე სხვა სიტყვა — ადგილი, განცდა ან ეპოქა.',
+    "results.backHome": "მთავარზე დაბრუნება",
+    "results.alreadyOffline": "უკვე ოფლაინ",
+    "results.prev": "წინა",
+    "results.next": "შემდეგი",
+    "results.pageLabel": "გვერდი {n} / {total}",
+
+    // Destinations
+    "dest.exploreTitle": "აღმოაჩინე",
+    "dest.chooseDest": "აირჩიე დანიშნულება",
+    "dest.searchAny": "ნებისმიერი ქალაქი, ქვეყანა ან ღირსშესანიშნაობა…",
+    "dest.searchHint": "დააჭირე Enter-ს, რომ Lokali AI-ით აღმოაჩინო ნებისმიერი ადგილი დედამიწაზე.",
+    "dest.allCount": "ყველა ({n})",
+    "dest.countOne": "{n} დანიშნულება",
+    "dest.countMany": "{n} დანიშნულება",
+    "dest.notInList": "ჯერ არ არის ჩვენს შერჩეულ სიაში",
+    "dest.searchWithLokali": "მოძებნე {query} Lokali AI-ით",
+    "dest.resetFilters": "ფილტრების გადატვირთვა",
+    "dest.backHome": "მთავარზე დაბრუნება",
+    "dest.loadingTop": "იტვირთება საუკეთესო ღირსშესანიშნაობები…",
+    "dest.topPicks": "საუკეთესო შერჩეული ადგილები ადგილობრივების მონათხრობით",
+    "dest.insideWord": "შიგნით",
+    "dest.showingCurated": "ვაჩვენებთ შერჩეულ ვარიანტებს.",
+
+    // Time Machine
+    "tm.title": "დროის მანქანა",
+    "tm.brand": "Lokali · დროის მანქანა",
+    "tm.travelThrough": "იმოგზაურე",
+    "tm.time": "დროში",
+    "tm.subtitle": "ჩაძირული სიმულაციები — შედი მომენტში, გახდი მოწმე.",
+    "tm.score": "ქულა",
+    "tm.scoreOver": "{n} / {max}",
+    "tm.minutes": "{n} წთ",
+    "tm.chooseRole": "აირჩიე შენი როლი *",
+    "tm.selectChar": "აირჩიე პერსონაჟი…",
+    "tm.startSim": "სიმულაციის დაწყება",
+    "tm.chooseRoleFirst": "ჯერ როლი აირჩიე",
+    "tm.save": "შენახვა",
+    "tm.saved": "შენახულია",
+    "tm.download": "ჩამოტვირთვა",
+    "tm.saving": "ინახება",
+    "tm.offline": "ოფლაინ",
+    "tm.details": "დეტალები",
+    "tm.close": "დახურვა",
+    "tm.backToHome": "მთავარზე დაბრუნება",
+    "tm.somethingWentWrong": "რაღაც ვერ გამოვიდა",
+    "tm.loading.timeFolding.title": "დრო იკეცება…",
+    "tm.loading.timeFolding.sub": "ეპოქის კარიბჭე იღება",
+    "tm.loading.historyAwakens.title": "ისტორია იღვიძებს…",
+    "tm.loading.historyAwakens.sub": "ატმოსფერო ფორმდება",
+    "tm.loading.candleLit.title": "სანთელი ანთია…",
+    "tm.loading.candleLit.sub": "შენი პერსონაჟი წინ გამოდის",
+    "tm.loading.scrollUnfolds.title": "გრაგნილი იშლება…",
+    "tm.loading.scrollUnfolds.sub": "Claude ასრულებს სიმულაციას",
+    "tm.role.merchant.label": "ვაჭარი",
+    "tm.role.merchant.hint": "ყველგან ვაჭრობს, თავისუფლად მოძრაობს",
+    "tm.role.soldier.label": "ჯარისკაცი / დარაჯი",
+    "tm.role.soldier.hint": "ყველა კარიბჭესთან, ყველა ეპოქაში",
+    "tm.role.servant.label": "მსახური",
+    "tm.role.servant.hint": "ხედავს ყველაფერს, ცოტას ამბობს",
+    "tm.role.foreigner.label": "უცხოელი მოგზაური",
+    "tm.role.foreigner.hint": "კითხვები ბუნებრივია, არაფერია ჩვეულებრივი",
+    "tm.role.child.label": "ბავშვი",
+    "tm.role.child.hint": "ყველაფერს პირველად ხედავს",
+    "tm.role.healer.label": "მკურნალი",
+    "tm.role.healer.hint": "საჭიროა ომში და მშვიდობაში",
+    "tm.role.spy.label": "ჯაშუში / ინფორმატორი",
+    "tm.role.spy.hint": "არავის ენდობა, ყველაფერს ამჩნევს",
+    "tm.role.survivor.label": "გადარჩენილი",
+    "tm.role.survivor.hint": "გადაურჩა კატასტროფას, ომს ან გზას",
+
+    // Auth
+    "auth.welcomeBack": "კეთილი იყოს დაბრუნება",
+    "auth.beginJourney": "დაიწყე შენი მოგზაურობა",
+    "auth.signInCont": "გასაგრძელებლად შედი ანგარიშზე",
+    "auth.createAcct": "შექმენი ანგარიში",
+    "auth.subtitle":
+      "შეინახე ტურები, დაასინქრონე თავები და გახსენი კინემატოგრაფიული ნარაცია შენს ენაზე.",
+    "auth.name": "სახელი",
+    "auth.yourName": "შენი სახელი",
+    "auth.emailPlaceholder": "you@example.com",
+    "auth.password": "პაროლი",
+    "auth.signIn": "შესვლა",
+    "auth.signUp": "ანგარიშის შექმნა",
+    "auth.noAccount": "ჯერ არ გაქვს ანგარიში?",
+    "auth.haveAccount": "უკვე გაქვს ანგარიში?",
+    "auth.signUpLink": "დარეგისტრირდი",
+    "auth.signInLink": "შედი",
+    "auth.accountCreated": "ანგარიში შეიქმნა",
+    "auth.welcomeAboard": "კეთილი იყოს შენი მობრძანება.",
+    "auth.welcomeBackToast": "კეთილი იყოს დაბრუნება",
+    "auth.somethingWrong": "რაღაც ვერ გამოვიდა",
+    "auth.signUpFailed": "რეგისტრაცია ვერ მოხერხდა",
+    "auth.signInFailed": "შესვლა ვერ მოხერხდა",
+    "auth.alreadyRegistered": "ეს ელფოსტა უკვე დარეგისტრირებულია. სცადე შესვლა.",
+
+    // Onboarding
+    "onb.step1": "ნაბიჯი 1 / 2",
+    "onb.step2": "ნაბიჯი 2 / 2",
+    "onb.chooseLang": "აირჩიე შენი ენა",
+    "onb.pickVoice": "აირჩიე ხმა",
+    "onb.voiceHelp":
+      "შენი აუდიო გიდები ამ ხმით გელაპარაკება. ზოგ მოწყობილობას უფრო მდიდარი სისტემური ხმები აქვს, ვიდრე სხვებს.",
+    "onb.searchLang": "ენის ძებნა…",
+    "onb.continue": "გაგრძელება",
+    "onb.back": "უკან",
+    "onb.noNativeVoice":
+      "ამ მოწყობილობაზე მშობლიური ხმა ვერ მოიძებნა. აუდიო გიდები სათადარიგო ხმით ისაუბრებს.",
+    "onb.voiceCountOne": "{n} ხმა ხელმისაწვდომია ამ მოწყობილობაზე",
+    "onb.voiceCountMany": "{n} ხმა ხელმისაწვდომია ამ მოწყობილობაზე",
+    "onb.previewVoice": "ხმის მოსმენა",
+    "onb.beginCta": "მოგზაურობის დაწყება",
+
+    // Attraction page
+    "attr.tilt": "გადახარე",
+    "attr.guide": "გიდი",
+    "attr.updating": "მიმდინარეობს განახლება",
+    "attr.pickFocus": "აირჩიე, რაზე გაამახვილო ყურადღება.",
+    "attr.theWord": "მისი",
+    "attr.story": "ისტორია",
+    "attr.stopsWord": "გაჩერებები",
+    "attr.aboutWord": "ამის",
+    "attr.thisPlace": "შესახებ",
+    "attr.keyFacts": "მთავარი ფაქტები",
+    "attr.keyFactsTitle": "მთავარი ფაქტები",
+    "attr.whatToLook": "რას უნდა მიაქციო ყურადღება",
+    "attr.tips": "რჩევები",
+    "attr.practical": "პრაქტიკული",
+    "attr.nearbyWord": "ახლომახლო",
+    "attr.places": "ადგილები",
+    "attr.onTheMap": "რუკაზე",
+    "attr.mapWord": "რუკა",
+    "attr.openInGmaps": "გახსენი Google Maps-ში",
+    "attr.savedNearbyOne": "{n} შენახული ადგილი ახლოსაა — შეეხე სანიშნეს გასახსნელად.",
+    "attr.savedNearbyMany": "{n} შენახული ადგილი ახლოსაა — შეეხე სანიშნეს გასახსნელად.",
+    "attr.tapDirections": "შეეხე, რომ ახლანდელი ადგილმდებარეობიდან მარშრუტი გახსნა.",
+    "attr.begin": "დაიწყე",
+    "attr.listen": "მოუსმინე",
+    "attr.get": "მიიღე",
+    "attr.couldNotLoadPlace": "ეს ადგილი ვერ ჩაიტვირთა",
+    "attr.savedForOffline": "შენახულია ოფლაინისთვის",
+    "attr.findInSaved": "იპოვი შენახულის ჩანართში — მუშაობს კავშირის გარეშეც.",
+    "attr.alreadyDownloaded": "უკვე ჩამოტვირთულია",
+    "attr.removeFromSaved": "შენახულებიდან ამოშლა",
+    "attr.saveForOffline": "შეინახე ოფლაინისთვის",
+    "attr.openInGmapsAria": "გახსენი {name} Google Maps-ში",
+    "attr.openGuide": "გიდის გახსნა",
+    "attr.metersAway": "{n} მ მანძილზე",
+    "attr.kmAway": "{n} კმ მანძილზე",
+    "attr.mapOf": "{name}-ის რუკა",
+
+    // Player
+    "player.nowNarrating": "ახლა გიყვება",
+    "player.audioGuide": "აუდიო გიდი",
+    "player.cachedOffline": "ჩატვირთული ოფლაინ",
+    "player.offlineMode": "ოფლაინ რეჟიმი",
+    "player.transcript": "ტრანსკრიპტი",
+    "player.noNarration": "ამ ადგილისთვის ნარაცია ჯერ არ არის ხელმისაწვდომი.",
+    "player.resume": "გაგრძელება",
+    "player.pause": "პაუზა",
+    "player.stop": "გაჩერება",
+  },
+};
+
+/**
+ * Quick lookup helper used by useT(). Returns the static translation
+ * if we have one, otherwise null (which signals the caller to fall
+ * back to runtime translation). Source-language ("en") returns null
+ * too — the caller already knows the source.
+ */
+export function staticUiLookup(lang: string, key: UiKey): string | null {
+  if (!lang || lang.toLowerCase().startsWith("en")) return null;
+  const dict = UI_TRANSLATIONS[lang.toLowerCase()];
+  if (!dict) return null;
+  return dict[key] ?? null;
+}

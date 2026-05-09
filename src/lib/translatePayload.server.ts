@@ -23,6 +23,7 @@
  * unchanged (English). Better to surface English than to fail the
  * request and spike a Claude retry.
  */
+import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
 
 const LANG_NAMES: Record<string, string> = {
   en: "English",
@@ -84,72 +85,49 @@ function isEnglish(target: string): boolean {
 async function callGatewayChunk(
   texts: string[],
   target: string,
-  apiKey: string,
+  _apiKey: string,
 ): Promise<string[]> {
+  // Migrated from the Lovable AI Gateway (Gemini 2.5 Flash via BYOK)
+  // to Anthropic Claude Haiku 4.5. Beka observed Gemini repeatedly
+  // leaking garbage into the translations array — Python tracebacks,
+  // its own system prompt, "टोक्यो)) flores", English under a Hindi
+  // key, etc — and the anti-garbage filters kept catching everything
+  // and falling back to English source. Net effect: nothing
+  // translated. Claude Haiku is more expensive (~$1/MT input vs
+  // Gemini's free BYOK) but produces clean output that respects the
+  // target language. Cached forever per (place, lang) so the cost
+  // is paid once per locale, not per visit.
   const targetName = langName(target);
   const system = [
     `You are a professional travel-content translator.`,
-    `Translate every input string to ${targetName}.`,
+    `Translate every input string into ${targetName}.`,
     `Preserve placeholders like {name}, {n}, {city} EXACTLY.`,
     `Preserve URLs, numbers, em-dashes, and the literal "|" character.`,
-    `Do not translate proper nouns of places (e.g. "Marina Bay Sands", "Colosseum") — keep them in their original form, optionally appending a transliteration in parentheses if meaningful.`,
+    `Do not translate proper nouns of places ("Marina Bay Sands", "Colosseum") — keep them in their original form.`,
     `Keep tone natural and travel-magazine quality.`,
-    `Return the same number of strings, in the same order, via the provided tool.`,
+    `RESPOND WITH ONLY VALID JSON. No markdown fences, no preamble, no commentary.`,
+    `Output shape: {"translations": ["<translated string 1>", "<translated string 2>", ...]}.`,
+    `Return EXACTLY ${texts.length} translated strings, in the same order as the input.`,
   ].join(" ");
 
+  const userMessage = JSON.stringify({ strings: texts });
+
   try {
-    const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: JSON.stringify({ strings: texts }) },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "return_translations",
-              description: `Return translations into ${targetName}.`,
-              parameters: {
-                type: "object",
-                properties: {
-                  translations: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Translated strings in the same order as input.strings",
-                  },
-                },
-                required: ["translations"],
-                additionalProperties: false,
-              },
-            },
-          },
-        ],
-        tool_choice: {
-          type: "function",
-          function: { name: "return_translations" },
-        },
-      }),
+    const text = await callClaude({
+      model: "claude-haiku-4-5",
+      system,
+      user: userMessage,
+      // Roughly 4× the input character count + headroom — translation
+      // output usually stays close to source length; 4096 covers up to
+      // the longest single guide-script chunk we send.
+      maxTokens: 4096,
+      // Lower temperature for translation — we want consistency, not
+      // creative re-wording.
+      temperature: 0.3,
     });
-    if (!upstream.ok) return texts;
-    const data = (await upstream.json()) as {
-      choices?: Array<{
-        message?: { tool_calls?: Array<{ function?: { arguments?: string } }> };
-      }>;
-    };
-    const argsRaw = data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-    if (!argsRaw) return texts;
-    const parsed = JSON.parse(argsRaw) as { translations?: unknown };
-    const out =
-      Array.isArray(parsed.translations) && parsed.translations.every((s) => typeof s === "string")
-        ? (parsed.translations as string[])
-        : texts;
+    const parsed = parseClaudeJson(text) as { translations?: unknown } | undefined;
+    if (!parsed || !Array.isArray(parsed.translations)) return texts;
+    const out = parsed.translations.filter((s): s is string => typeof s === "string");
     return out.length === texts.length ? out : texts.map((t, i) => out[i] ?? t);
   } catch {
     return texts;

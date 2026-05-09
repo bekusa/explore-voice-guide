@@ -4,10 +4,12 @@
  * Body: { texts: string[]; target: string }   // target = BCP-47 / ISO lang code
  * Returns: { translations: string[] } in same order.
  *
- * Uses the Lovable AI Gateway. Falls back to source on any error so the
- * UI stays usable even when offline / the gateway is rate-limited.
+ * Calls Anthropic Claude Haiku directly. Falls back to source on any
+ * error so the UI stays usable even when offline / Anthropic is
+ * rate-limited.
  */
 import { createFileRoute } from "@tanstack/react-router";
+import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
 
 const LANG_NAMES: Record<string, string> = {
   en: "English",
@@ -82,12 +84,13 @@ export const Route = createFileRoute("/api/translate")({
           return Response.json({ translations: texts });
         }
 
-        const apiKey = process.env.LOVABLE_API_KEY;
-        if (!apiKey) {
-          // No key: degrade gracefully.
-          return Response.json({ translations: texts });
-        }
-
+        // Migrated from Lovable AI Gateway (Gemini 2.5 Flash) to
+        // Anthropic Claude Haiku — the gateway was leaking garbage
+        // (truncations, wrong-language responses, system-prompt
+        // echoes) badly enough that every cached UI string was
+        // corrupted. Claude is more expensive but reliable; UI
+        // strings are batch-cached in browser localStorage so the
+        // cost is paid once per (user, lang).
         const targetName = langName(target);
 
         const system = [
@@ -96,81 +99,26 @@ export const Route = createFileRoute("/api/translate")({
           `Preserve placeholders like {name}, {n}, {city} EXACTLY (do not translate or remove them).`,
           `Preserve punctuation, ellipses, ampersands, line breaks, and the literal "|" character.`,
           `Do not add commentary, quotes, or markdown.`,
-          `Return the same number of strings, in the same order, via the provided tool.`,
+          `RESPOND WITH ONLY VALID JSON. No markdown fences, no preamble.`,
+          `Output shape: {"translations": ["<translated string 1>", ...]}.`,
+          `Return EXACTLY ${texts.length} translated strings, in the same order as the input.`,
         ].join(" ");
 
-        const userPrompt = JSON.stringify({ strings: texts }, null, 0);
+        const userMessage = JSON.stringify({ strings: texts }, null, 0);
 
         try {
-          const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model: "google/gemini-2.5-flash",
-              messages: [
-                { role: "system", content: system },
-                { role: "user", content: userPrompt },
-              ],
-              tools: [
-                {
-                  type: "function",
-                  function: {
-                    name: "return_translations",
-                    description: `Return translations into ${targetName}.`,
-                    parameters: {
-                      type: "object",
-                      properties: {
-                        translations: {
-                          type: "array",
-                          items: { type: "string" },
-                          description: "Translated strings in the same order as input.strings",
-                        },
-                      },
-                      required: ["translations"],
-                      additionalProperties: false,
-                    },
-                  },
-                },
-              ],
-              tool_choice: {
-                type: "function",
-                function: { name: "return_translations" },
-              },
-            }),
+          const text = await callClaude({
+            model: "claude-haiku-4-5",
+            system,
+            user: userMessage,
+            maxTokens: 4096,
+            temperature: 0.3,
           });
-
-          if (!upstream.ok) {
-            // 429/402/etc — fall back to source so UI doesn't freeze.
+          const parsedJson = parseClaudeJson(text) as { translations?: unknown } | undefined;
+          if (!parsedJson || !Array.isArray(parsedJson.translations)) {
             return Response.json({ translations: texts });
           }
-
-          const data = (await upstream.json()) as {
-            choices?: Array<{
-              message?: {
-                tool_calls?: Array<{
-                  function?: { arguments?: string };
-                }>;
-              };
-            }>;
-          };
-
-          const argsRaw = data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-          if (!argsRaw) return Response.json({ translations: texts });
-
-          let parsed: { translations?: unknown };
-          try {
-            parsed = JSON.parse(argsRaw);
-          } catch {
-            return Response.json({ translations: texts });
-          }
-          const out =
-            Array.isArray(parsed.translations) &&
-            parsed.translations.every((s) => typeof s === "string")
-              ? (parsed.translations as string[])
-              : texts;
+          const out = parsedJson.translations.filter((s): s is string => typeof s === "string");
 
           // Guard array length
           const aligned = out.length === texts.length ? out : texts.map((t, i) => out[i] ?? t);

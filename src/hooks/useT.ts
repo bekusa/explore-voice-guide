@@ -26,6 +26,7 @@ import {
   setStoredLang,
   translateBatch,
 } from "@/lib/i18n";
+import { staticUiLookup } from "@/lib/ui-translations.generated";
 
 /** Reactive current UI language (normalized, e.g. "en", "ka", "es", "zh-cn"). */
 export function useUiLang(): string {
@@ -122,6 +123,10 @@ export function useT() {
   const lang = useUiLang();
   const [, force] = useState(0);
 
+  // Runtime fetch is now a *fallback* — only fires for keys not
+  // covered by the static dict in ui-translations.generated.ts. For
+  // languages with full static coverage (Georgian today, more later),
+  // this useEffect ends up doing nothing and the UI renders instantly.
   useEffect(() => {
     if (lang === "en") return;
     let cancelled = false;
@@ -137,6 +142,12 @@ export function useT() {
     return (key: UiKey, vars?: Record<string, string | number>) => {
       const source = UI_STRINGS[key] ?? key;
       if (lang === "en") return format(source, vars);
+      // 1. Static pre-translated dict — instant, no LLM call ever.
+      const fromStatic = staticUiLookup(lang, key);
+      if (fromStatic !== null) return format(fromStatic, vars);
+      // 2. Runtime cache (localStorage), populated on demand by
+      //    ensureUiTranslations() above. Used only for languages that
+      //    don't yet have full static coverage.
       const translated = uiLookup(lang, source);
       return format(translated ?? source, vars);
     };
