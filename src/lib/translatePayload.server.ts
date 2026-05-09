@@ -476,3 +476,58 @@ function hasWrongScript(text: string, target: string): boolean {
   }
   return false;
 }
+
+/* ─── Museum highlights payload ─── */
+
+const HIGHLIGHT_TRANSLATABLE_FIELDS = ["name", "era", "brief", "story", "location_hint"] as const;
+
+/**
+ * Translate the museum highlights payload — same chunked-translate +
+ * sanitize pattern as translateAttractionsPayload, applied to the
+ * `highlights[]` array. Always preserves the English source `name`
+ * under `name_en` on each row so frontend technical handles (image
+ * lookup, deep linking, deduplication) keep working in localised UIs.
+ */
+export async function translateMuseumHighlightsPayload(
+  payload: unknown,
+  target: string,
+): Promise<{ payload: unknown; translated: boolean }> {
+  if (isEnglish(target)) return { payload, translated: true };
+  if (!payload || typeof payload !== "object") return { payload, translated: false };
+
+  const cloned = JSON.parse(JSON.stringify(payload)) as Record<string, unknown>;
+  const list = Array.isArray((cloned as { highlights?: unknown }).highlights)
+    ? ((cloned as { highlights: unknown[] }).highlights as unknown[])
+    : null;
+  if (!list) return { payload: cloned, translated: false };
+
+  const sources: string[] = [];
+  const slots: Array<{ row: AttractionRecord; field: string }> = [];
+
+  for (const item of list) {
+    if (!item || typeof item !== "object") continue;
+    const row = item as AttractionRecord;
+    // Preserve English name under name_en before the translation pass
+    // overwrites name with the localised form. Same pattern as the
+    // attractions translator.
+    if (typeof row.name === "string" && row.name.trim().length > 0 && !row.name_en) {
+      row.name_en = row.name;
+    }
+    for (const field of HIGHLIGHT_TRANSLATABLE_FIELDS) {
+      const v = row[field];
+      if (typeof v === "string" && v.trim().length > 0) {
+        sources.push(v);
+        slots.push({ row, field });
+      }
+    }
+  }
+
+  if (sources.length === 0) return { payload: cloned, translated: true };
+
+  const translated = await callGateway(sources, target);
+  const safe = translated.map((t, i) => (looksLikeGarbage(t, sources[i], target) ? sources[i] : t));
+  for (let i = 0; i < slots.length; i++) {
+    slots[i].row[slots[i].field] = safe[i] ?? sources[i];
+  }
+  return { payload: cloned, translated: translationLooksReal(sources, safe) };
+}

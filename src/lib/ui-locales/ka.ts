@@ -35,6 +35,10 @@ export const KA: Partial<Record<UiKey, string>> = {
   "museums.openGuide": "გიდის გახსნა",
   "museums.intro":
     "ხელით შერჩეული მსოფლიო კულტურის შედევრები — ლუვრიდან თოპქაფამდე, ყველაფერი შუაში.",
+  "highlights.title": "აუცილებლად სანახავი",
+  "highlights.subtitle": "ტოპ 30 გამორჩეული — გვერდზე 10",
+  "highlights.noLocation": "ადგილი დასაზუსტებელია",
+  "highlights.empty": "ჯერ არცერთი გამორჩეული ექსპონატი ამ მუზეუმისთვის.",
   "unesco.title": "UNESCO-ს მსოფლიო მემკვიდრეობა",
   "unesco.short": "UNESCO",
   "home.featured.title": "გამორჩეული ქალაქები",

@@ -26,6 +26,7 @@ import {
   Timer,
   BookOpen,
   Sparkles,
+  ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -39,11 +40,14 @@ import {
   fetchAttractions,
   fetchGuideData,
   fetchGuideFresh,
+  fetchMuseumHighlights,
   fetchPlacePhoto,
   unslugAttraction,
   type Attraction,
   type GuideData,
+  type MuseumHighlight,
 } from "@/lib/api";
+import { findMuseumByName, type Museum } from "@/lib/topMuseums";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
@@ -190,6 +194,41 @@ function AttractionPage() {
       cancelled = true;
     };
   }, [attraction?.name, attraction?.name_en, attraction?.image_url, fallbackName, language]);
+
+  // Museum highlights — only fetched when the attraction matches one
+  // of the curated MUSEUMS in src/lib/topMuseums.ts. The match key is
+  // the English-baseline name when available (`name_en`) so a
+  // localised display name like "ლუვრი" still resolves to the
+  // Louvre's id. Cached server-side per (museum, lang); first hit on
+  // a fresh tuple takes ~30-60 s, every visitor after that ~50 ms.
+  const matchedMuseum = useMemo<Museum | null>(
+    () => findMuseumByName(attraction?.name_en ?? attraction?.name ?? fallbackName),
+    [attraction?.name, attraction?.name_en, fallbackName],
+  );
+  const [highlights, setHighlights] = useState<MuseumHighlight[] | null>(null);
+  const [loadingHighlights, setLoadingHighlights] = useState(false);
+  useEffect(() => {
+    if (!matchedMuseum) {
+      setHighlights(null);
+      return;
+    }
+    let cancelled = false;
+    setLoadingHighlights(true);
+    setHighlights(null);
+    fetchMuseumHighlights(matchedMuseum.id, language)
+      .then((data) => {
+        if (!cancelled) setHighlights(data);
+      })
+      .catch(() => {
+        if (!cancelled) setHighlights([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingHighlights(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [matchedMuseum, language]);
 
   // Inline audio player state. Replaces the old /player page — Play
   // now opens a sticky panel at the bottom of this screen so the user
@@ -385,6 +424,15 @@ function AttractionPage() {
         {/* Map — pinned at the very bottom. Leaflet (same stack as
             /map) so the visual matches the Saved-places map; secondary
             pins drop for any saved place within ~5 km of this one. */}
+        {/* Must-see highlights — only renders when the attraction is
+            one of the curated MUSEUMS. Self-paginates 10 per page,
+            three pages max. Quiet skeleton while the first fetch is
+            in flight; nothing shown when the attraction isn't a
+            museum we know about. */}
+        {matchedMuseum && (
+          <MuseumHighlightsSection highlights={highlights} loading={loadingHighlights} />
+        )}
+
         <MapSection lat={a?.lat} lng={a?.lng} name={a?.name ?? fallbackName} currentSlug={id} />
 
         {/* The audio player itself lives in MobileFrame's floatingPanel
@@ -1521,5 +1569,161 @@ function InlineAudioPanel({
         </button>
       </div>
     </div>
+  );
+}
+
+/**
+ * MuseumHighlightsSection — paginated "must-see" list for one museum.
+ *
+ * Beka's spec: top 30 highlights paginated 10 per page (1-2-3),
+ * matching the /results page pagination UX. Each item shows the
+ * artwork's name, era, brief summary, vivid story, and gallery hint.
+ * Cache hits land in 50-100 ms; first-fetch on a fresh (museum,
+ * lang) tuple takes 30-60 s — gated by the loading skeleton.
+ */
+function MuseumHighlightsSection({
+  highlights,
+  loading,
+}: {
+  highlights: MuseumHighlight[] | null;
+  loading: boolean;
+}) {
+  const t = useT();
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
+  const MAX_PAGES = 3;
+  const total = Math.min(highlights?.length ?? 0, PAGE_SIZE * MAX_PAGES);
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const safePage = Math.min(Math.max(1, page), pageCount);
+  const slice = useMemo(() => {
+    if (!highlights) return [];
+    const start = (safePage - 1) * PAGE_SIZE;
+    return highlights.slice(0, total).slice(start, start + PAGE_SIZE);
+  }, [highlights, safePage, total]);
+
+  // Loading skeleton — three placeholder rows so the section's
+  // footprint is roughly correct when content lands and the rest of
+  // the page doesn't jump.
+  if (loading) {
+    return (
+      <section className="mt-8 px-6">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <h2 className="font-display text-[20px] text-foreground">{t("highlights.title")}</h2>
+        </div>
+        <p className="mt-1 text-[12px] text-muted-foreground">{t("highlights.subtitle")}</p>
+        <div className="mt-4 flex flex-col gap-3">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="h-[120px] animate-pulse rounded-2xl border border-border/60 bg-card"
+            />
+          ))}
+        </div>
+        <LoadingMessages className="mt-4" />
+      </section>
+    );
+  }
+
+  if (!highlights || highlights.length === 0) {
+    return (
+      <section className="mt-8 px-6">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <h2 className="font-display text-[20px] text-foreground">{t("highlights.title")}</h2>
+        </div>
+        <p className="mt-2 text-[12.5px] text-muted-foreground">{t("highlights.empty")}</p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="mt-8 px-6">
+      <div className="flex items-center gap-2">
+        <Sparkles className="h-4 w-4 text-primary" />
+        <h2 className="font-display text-[20px] text-foreground">{t("highlights.title")}</h2>
+      </div>
+      <p className="mt-1 text-[12px] text-muted-foreground">{t("highlights.subtitle")}</p>
+
+      <ol className="mt-4 flex flex-col gap-3" start={(safePage - 1) * PAGE_SIZE + 1}>
+        {slice.map((h, i) => {
+          const rank = (safePage - 1) * PAGE_SIZE + i + 1;
+          return (
+            <li
+              key={`${h.name_en ?? h.name}-${rank}`}
+              className="rounded-2xl border border-border bg-card p-4 transition-smooth hover:border-primary/40"
+            >
+              <div className="flex items-start gap-3">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-primary/40 bg-primary/10 text-[11px] font-bold text-primary">
+                  {rank}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-display text-[16px] font-medium leading-tight text-foreground">
+                    {h.name}
+                  </h3>
+                  {h.era && (
+                    <p className="mt-1 text-[10.5px] uppercase tracking-[0.18em] text-primary/80">
+                      {h.era}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {h.brief && (
+                <p className="mt-3 text-[13px] leading-[1.55] text-foreground/85">{h.brief}</p>
+              )}
+              {h.story && (
+                <p className="mt-2 text-[12.5px] leading-[1.65] text-muted-foreground">{h.story}</p>
+              )}
+              {h.location_hint && (
+                <p className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/30 px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  <MapPin className="h-2.5 w-2.5" /> {h.location_hint}
+                </p>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+
+      {pageCount > 1 && (
+        <nav
+          aria-label="Highlights pagination"
+          className="mt-5 flex items-center justify-center gap-2"
+        >
+          <button
+            type="button"
+            onClick={() => setPage(safePage - 1)}
+            disabled={safePage <= 1}
+            className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:border-primary/40 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => {
+            const active = p === safePage;
+            return (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setPage(p)}
+                className={`h-9 min-w-[36px] rounded-full border px-3 text-[12px] font-bold transition-smooth ${
+                  active
+                    ? "border-primary/60 bg-gradient-gold text-primary-foreground shadow-glow"
+                    : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                }`}
+              >
+                {p}
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => setPage(safePage + 1)}
+            disabled={safePage >= pageCount}
+            className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:border-primary/40 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </nav>
+      )}
+    </section>
   );
 }

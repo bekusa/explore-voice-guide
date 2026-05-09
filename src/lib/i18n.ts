@@ -115,6 +115,12 @@ export const UI_STRINGS = {
   "museums.openGuide": "Open guide",
   "museums.intro":
     "Hand-picked masterworks of human culture — from the Louvre to the Topkapı, with everything in between.",
+  // Museum-highlights section on the attraction page (only renders
+  // when the attraction matches one of the curated MUSEUMS).
+  "highlights.title": "Must-see",
+  "highlights.subtitle": "Top 30 highlights — paginated 10 per page",
+  "highlights.noLocation": "Location TBD",
+  "highlights.empty": "No highlights yet for this museum.",
   "unesco.title": "UNESCO World Heritage",
   "unesco.short": "UNESCO",
   "home.featured.title": "Featured cities",

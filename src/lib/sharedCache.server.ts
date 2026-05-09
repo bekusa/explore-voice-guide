@@ -41,48 +41,32 @@ import { createClient } from "@supabase/supabase-js";
 // If either is missing the cache silently no-ops and every request
 // falls through to n8n — same behaviour as before this file existed.
 
+// Recursive chain type — every .eq() returns another chain that
+// itself supports .eq() AND .maybeSingle(). This way 2-key tables
+// (museum highlights) and 3-key tables (guides, attractions) share
+// one type definition. Same idea for update — chained .eq() ends
+// in a thenable when the chain is complete.
+type SelectChain = {
+  eq: (col: string, val: string) => SelectChain;
+  maybeSingle: () => Promise<{
+    data: Record<string, unknown> | null;
+    error: { message: string } | null;
+  }>;
+};
+type UpdateChain = {
+  eq: (col: string, val: string) => UpdateChain;
+  then: (onResolved: (value: { error: { message: string } | null }) => unknown) => Promise<unknown>;
+};
 type AnyTable = {
-  select: (cols: string) => {
-    eq: (
-      col: string,
-      val: string,
-    ) => {
-      eq: (
-        col: string,
-        val: string,
-      ) => {
-        eq: (
-          col: string,
-          val: string,
-        ) => {
-          maybeSingle: () => Promise<{
-            data: Record<string, unknown> | null;
-            error: { message: string } | null;
-          }>;
-        };
-      };
-    };
-  };
+  select: (cols: string) => SelectChain;
   upsert: (
     row: Record<string, unknown>,
     opts?: { onConflict?: string },
   ) => Promise<{ error: { message: string } | null }>;
-  update: (patch: Record<string, unknown>) => {
-    eq: (
-      col: string,
-      val: string,
-    ) => {
-      eq: (
-        col: string,
-        val: string,
-      ) => {
-        eq: (col: string, val: string) => Promise<{ error: { message: string } | null }>;
-      };
-    };
-  };
+  update: (patch: Record<string, unknown>) => UpdateChain;
 };
 type DbWithCache = {
-  from: (table: "cached_guides" | "cached_attractions") => AnyTable;
+  from: (table: "cached_guides" | "cached_attractions" | "cached_museum_highlights") => AnyTable;
 };
 
 // Lazy + memoized: don't crash module load if vars are missing,
@@ -285,6 +269,82 @@ async function bumpAttractionsHit(key: AttractionsKey): Promise<void> {
       .eq("query_normalized", normalizeName(key.query))
       .eq("language", key.language)
       .eq("filters_key", filtersKey(key.filters));
+  } catch {
+    /* analytics-only */
+  }
+}
+
+/* ─── Museum highlights ─── */
+
+export type MuseumHighlightsKey = {
+  /** Stable id from src/lib/topMuseums.ts (e.g. "louvre"). */
+  museumId: string;
+  /** Language code: "en", "ka", "es", "zh-cn", … */
+  language: string;
+};
+
+export async function getCachedMuseumHighlights(key: MuseumHighlightsKey): Promise<unknown | null> {
+  const db = getDb();
+  if (!db) return null;
+  try {
+    const { data, error } = await db
+      .from("cached_museum_highlights")
+      .select("payload")
+      .eq("museum_id", key.museumId)
+      .eq("language", key.language)
+      .maybeSingle();
+    if (error) {
+      console.warn("[sharedCache] getCachedMuseumHighlights error", error.message);
+      return null;
+    }
+    if (!data) return null;
+    void bumpMuseumHighlightsHit(key);
+    return data.payload;
+  } catch (err) {
+    console.warn("[sharedCache] getCachedMuseumHighlights threw", err);
+    return null;
+  }
+}
+
+export async function putCachedMuseumHighlights(
+  key: MuseumHighlightsKey,
+  payload: unknown,
+): Promise<void> {
+  const db = getDb();
+  if (!db) return;
+  try {
+    const { error } = await db.from("cached_museum_highlights").upsert(
+      {
+        museum_id: key.museumId,
+        language: key.language,
+        payload: payload as never,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "museum_id,language" },
+    );
+    if (error) console.warn("[sharedCache] putCachedMuseumHighlights error", error.message);
+  } catch (err) {
+    console.warn("[sharedCache] putCachedMuseumHighlights threw", err);
+  }
+}
+
+async function bumpMuseumHighlightsHit(key: MuseumHighlightsKey): Promise<void> {
+  const db = getDb();
+  if (!db) return;
+  try {
+    const { data } = await db
+      .from("cached_museum_highlights")
+      .select("hit_count")
+      .eq("museum_id", key.museumId)
+      .eq("language", key.language)
+      .maybeSingle();
+    if (!data) return;
+    const current = typeof data.hit_count === "number" ? data.hit_count : 0;
+    await db
+      .from("cached_museum_highlights")
+      .update({ hit_count: current + 1 })
+      .eq("museum_id", key.museumId)
+      .eq("language", key.language);
   } catch {
     /* analytics-only */
   }

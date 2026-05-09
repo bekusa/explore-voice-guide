@@ -552,3 +552,48 @@ export function detectQueryLanguage(text: string, fallback = "en"): string {
   if (!topCount) return fallback;
   return top === "latin" ? fallback : top;
 }
+
+/* ─── Museum highlights ─── */
+
+export type MuseumHighlight = {
+  /** Display name in the user's language. */
+  name: string;
+  /** English source name preserved for technical handles. */
+  name_en?: string;
+  /** Short period or date label (e.g. "Renaissance", "Modern"). */
+  era?: string;
+  /** 1-sentence factual summary. */
+  brief?: string;
+  /** 2-4 sentence vivid story. */
+  story?: string;
+  /** Gallery / wing reference. */
+  location_hint?: string;
+};
+
+export type MuseumHighlightsResponse = {
+  highlights: MuseumHighlight[];
+  error?: string;
+};
+
+const HIGHLIGHTS_URL = "/api/museum-highlights";
+
+/**
+ * Fetch the curated "must-see top 30" payload for one museum. Cached
+ * server-side per (museum_id, language); first hit on a fresh
+ * (museum, lang) tuple takes ~30-60 s (Sonnet generates rich
+ * curator-voice copy), every subsequent visitor reads the cached
+ * row in ~50-100 ms.
+ *
+ * `museumId` must be one of the ids in src/lib/topMuseums.ts.
+ * Anything unknown returns an empty list rather than throwing.
+ */
+export async function fetchMuseumHighlights(
+  museumId: string,
+  language: string,
+): Promise<MuseumHighlight[]> {
+  const data = await postJSON<MuseumHighlightsResponse>(HIGHLIGHTS_URL, {
+    museumId,
+    language,
+  });
+  return Array.isArray(data?.highlights) ? data.highlights : [];
+}

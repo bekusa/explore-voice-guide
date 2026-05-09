@@ -231,3 +231,29 @@ export const MUSEUMS: Museum[] = [
 ];
 
 export const MUSEUMS_BY_ID = new Map<string, Museum>(MUSEUMS.map((m) => [m.id, m]));
+
+/**
+ * Find a museum that matches a free-form attraction name. Used by the
+ * attraction page to decide whether to show the "must-see highlights"
+ * section (only renders for the curated set, since highlights cost a
+ * Sonnet call to generate per museum).
+ *
+ * Matching strategy: case-insensitive contains check against either
+ * the museum's full name or its id. Order is important — iterate
+ * MUSEUMS in declared order so a query like "Louvre Paris" hits the
+ * Louvre row even though "Paris" is also a city in many other names.
+ */
+export function findMuseumByName(name: string | null | undefined): Museum | null {
+  if (!name) return null;
+  const needle = name.trim().toLowerCase();
+  if (!needle) return null;
+  for (const m of MUSEUMS) {
+    if (needle === m.name.toLowerCase()) return m;
+    if (needle === m.id) return m;
+    // Allow short-form matches: "louvre" → "Louvre", "british museum" → "British Museum"
+    if (needle.includes(m.id.replace(/-/g, " "))) return m;
+    if (m.name.toLowerCase().includes(needle) && needle.length >= 5) return m;
+    if (needle.includes(m.name.toLowerCase()) && m.name.length >= 5) return m;
+  }
+  return null;
+}
