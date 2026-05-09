@@ -87,6 +87,16 @@ async function googlePhoto(q: string, city: string | null): Promise<string | nul
  *
  * Tries the user's language first, then English (much wider coverage).
  */
+// Wikipedia API etiquette requires a descriptive User-Agent string
+// per https://meta.wikimedia.org/wiki/User-Agent_policy. Without it
+// requests get rate-limited or rejected outright with no body —
+// which is exactly what hit Beka after the artwork-scope rollout
+// (Cloudflare workers default to a generic UA that Wikipedia treats
+// as a misbehaving bot). Identifies the app + a contact email so
+// the foundation can reach us if we ever start hammering them.
+const WIKI_USER_AGENT = "LokaliApp/1.0 (https://lokali-app.lovable.app; contact@lokali.ge)";
+const WIKI_HEADERS: HeadersInit = { "User-Agent": WIKI_USER_AGENT, Accept: "application/json" };
+
 async function wikipediaPhoto(q: string, lang: string): Promise<string | null> {
   const langs = lang === "en" ? ["en"] : [lang, "en"];
 
@@ -123,7 +133,7 @@ async function wikipediaPhoto(q: string, lang: string): Promise<string | null> {
         `https://${l}.wikipedia.org/w/api.php` +
         `?action=query&format=json&list=search` +
         `&srsearch=${encodeURIComponent(`intitle:"${q}"`)}&srlimit=1&origin=*`;
-      const intitleRes = await fetch(intitleSearchUrl);
+      const intitleRes = await fetch(intitleSearchUrl, { headers: WIKI_HEADERS });
       if (intitleRes.ok) {
         const intitleData = (await intitleRes.json()) as WikiSearchResponse;
         const intitleTitle = intitleData.query?.search?.[0]?.title;
@@ -142,7 +152,7 @@ async function wikipediaPhoto(q: string, lang: string): Promise<string | null> {
         `https://${l}.wikipedia.org/w/api.php` +
         `?action=query&format=json&list=search` +
         `&srsearch=${encodeURIComponent(q)}&srlimit=1&origin=*`;
-      const searchRes = await fetch(searchUrl);
+      const searchRes = await fetch(searchUrl, { headers: WIKI_HEADERS });
       if (!searchRes.ok) continue;
       const searchData = (await searchRes.json()) as WikiSearchResponse;
       const title = searchData.query?.search?.[0]?.title;
@@ -166,7 +176,7 @@ async function tryWikiSummary(lang: string, title: string): Promise<string | nul
   try {
     const summaryUrl =
       `https://${lang}.wikipedia.org/api/rest_v1/page/summary/` + encodeURIComponent(title);
-    const summaryRes = await fetch(summaryUrl);
+    const summaryRes = await fetch(summaryUrl, { headers: WIKI_HEADERS });
     if (!summaryRes.ok) return null;
     const summaryData = (await summaryRes.json()) as WikiSummaryResponse & {
       type?: string;
