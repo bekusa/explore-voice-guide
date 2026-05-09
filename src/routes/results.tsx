@@ -76,7 +76,8 @@ const MAX_RESULTS = PAGE_SIZE * MAX_PAGES;
 
 export const Route = createFileRoute("/results")({
   validateSearch: (search: Record<string, unknown>): Search => {
-    const duration = typeof search.duration === "string" ? search.duration : "";
+    const rawDuration = typeof search.duration === "string" ? search.duration : "";
+    const rawInterests = typeof search.interests === "string" ? search.interests : "";
     const rawPage =
       typeof search.page === "number"
         ? search.page
@@ -84,12 +85,16 @@ export const Route = createFileRoute("/results")({
           ? parseInt(search.page, 10)
           : 1;
     const page = Number.isFinite(rawPage) ? Math.min(MAX_PAGES, Math.max(1, rawPage)) : 1;
-    return {
-      q: typeof search.q === "string" ? search.q : "",
-      interests: typeof search.interests === "string" ? search.interests : "",
-      duration: VALID_DURATIONS.has(duration) ? duration : "",
-      page,
-    };
+    // Interests + duration filters were retired from the discovery
+    // page (the bias now lives on the per-attraction guide). Strip
+    // their stale empty entries from the URL so /results?q=Tokyo
+    // doesn't render as /results?q=Tokyo&interests=&duration=&page=1.
+    // We still accept them on parse so old shared links don't crash
+    // validation — they're just silently dropped from the canonical URL.
+    const out: Search = { q: typeof search.q === "string" ? search.q : "", page };
+    if (rawInterests) out.interests = rawInterests;
+    if (VALID_DURATIONS.has(rawDuration)) out.duration = rawDuration;
+    return out;
   },
   head: () => ({
     meta: [

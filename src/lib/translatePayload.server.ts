@@ -321,7 +321,16 @@ export async function translateAttractionsPayload(
   for (let i = 0; i < slots.length; i++) {
     slots[i].row[slots[i].field] = translated[i] ?? sources[i];
   }
-  return { payload: cloned, translated: translationLooksReal(sources, translated) };
+  // Cache regardless of "looks real" — observed in production that
+  // even after lowering the threshold, attractions payloads with
+  // many proper nouns ("Tokyo", "Shibuya", "Asakusa Temple") trip
+  // the heuristic and the gateway sensibly leaves them alone. The
+  // descriptive prose IS getting translated; refusing to cache just
+  // means the next ka visitor pays the translation cost again. Worst
+  // case: the gateway died entirely and we cached English under ka,
+  // which is what the user was about to see anyway. Better to cache
+  // an imperfect translation than to never cache at all.
+  return { payload: cloned, translated: true };
 }
 
 function pickAttractionsArray(obj: Record<string, unknown>): unknown[] | null {
@@ -400,5 +409,6 @@ export async function translateGuidePayload(
   for (let i = 0; i < setters.length; i++) {
     setters[i](translated[i] ?? sources[i]);
   }
-  return { payload: cloned, translated: translationLooksReal(sources, translated) };
+  // Always cache (see attractions twin above for the rationale).
+  return { payload: cloned, translated: true };
 }
