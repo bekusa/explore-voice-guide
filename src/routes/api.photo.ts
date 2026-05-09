@@ -90,9 +90,54 @@ async function googlePhoto(q: string, city: string | null): Promise<string | nul
 async function wikipediaPhoto(q: string, lang: string): Promise<string | null> {
   const langs = lang === "en" ? ["en"] : [lang, "en"];
 
+  // Beka observed full-text search misfire: "The Lacemaker Louvre Paris"
+  // ranked the Louvre's own Wikipedia page above Vermeer's painting
+  // because the Louvre article mentions every famous work it holds,
+  // and "Liberty Leading the People" matched a Tbilisi bank because
+  // bare-text search ranks any page with "Liberty". Three-stage
+  // strategy now tries the most-specific lookup first and only falls
+  // back to the noisy text search if nothing else hits.
+  //
+  // Stage 1 — direct REST summary by exact title. Many famous artworks
+  // have a Wikipedia page named exactly the artwork's English title.
+  // The summary endpoint returns the lead image without a search step,
+  // so disambiguation noise can't push the wrong page to the top.
+  //
+  // Stage 2 — `srsearch=intitle:"{name}"` requires the phrase in the
+  // page title, filtering out any article that just MENTIONS the
+  // term in its body (museums, banks, biographies). Helps for items
+  // whose canonical Wikipedia title has a parenthetical disambiguator
+  // ("The Lacemaker (Vermeer)", "Liberty Leading the People").
+  //
+  // Stage 3 — original full-text search. Last resort for items that
+  // don't have their own article (very rare for top-30 highlights).
   for (const l of langs) {
+    // Stage 1: bare exact-title lookup.
+    const directTitle = q.trim().replace(/\s+/g, "_");
+    const direct = await tryWikiSummary(l, directTitle);
+    if (direct) return direct;
+
+    // Stage 2: intitle: phrase search.
     try {
-      // Step 1 — find the best matching page title
+      const intitleSearchUrl =
+        `https://${l}.wikipedia.org/w/api.php` +
+        `?action=query&format=json&list=search` +
+        `&srsearch=${encodeURIComponent(`intitle:"${q}"`)}&srlimit=1&origin=*`;
+      const intitleRes = await fetch(intitleSearchUrl);
+      if (intitleRes.ok) {
+        const intitleData = (await intitleRes.json()) as WikiSearchResponse;
+        const intitleTitle = intitleData.query?.search?.[0]?.title;
+        if (intitleTitle) {
+          const fromIntitle = await tryWikiSummary(l, intitleTitle);
+          if (fromIntitle) return fromIntitle;
+        }
+      }
+    } catch {
+      /* fall through */
+    }
+
+    // Stage 3: original full-text search (last resort).
+    try {
       const searchUrl =
         `https://${l}.wikipedia.org/w/api.php` +
         `?action=query&format=json&list=search` +
@@ -102,20 +147,38 @@ async function wikipediaPhoto(q: string, lang: string): Promise<string | null> {
       const searchData = (await searchRes.json()) as WikiSearchResponse;
       const title = searchData.query?.search?.[0]?.title;
       if (!title) continue;
-
-      // Step 2 — get summary with thumbnail
-      const summaryUrl =
-        `https://${l}.wikipedia.org/api/rest_v1/page/summary/` + encodeURIComponent(title);
-      const summaryRes = await fetch(summaryUrl);
-      if (!summaryRes.ok) continue;
-      const summaryData = (await summaryRes.json()) as WikiSummaryResponse;
-      const src = summaryData.thumbnail?.source ?? summaryData.originalimage?.source ?? null;
+      const src = await tryWikiSummary(l, title);
       if (src) return src;
     } catch {
       // try next language
     }
   }
   return null;
+}
+
+/**
+ * Fetch the lead image for a single Wikipedia page by exact title.
+ * Returns null on 404, disambiguation pages (no thumbnail), or any
+ * other failure. Quiet on errors so the caller can keep trying
+ * fallback strategies.
+ */
+async function tryWikiSummary(lang: string, title: string): Promise<string | null> {
+  try {
+    const summaryUrl =
+      `https://${lang}.wikipedia.org/api/rest_v1/page/summary/` + encodeURIComponent(title);
+    const summaryRes = await fetch(summaryUrl);
+    if (!summaryRes.ok) return null;
+    const summaryData = (await summaryRes.json()) as WikiSummaryResponse & {
+      type?: string;
+    };
+    // Skip disambiguation pages — their thumbnails are usually wrong
+    // or absent; better to fall through to the next strategy and let
+    // intitle: pick the most relevant disambiguated page.
+    if (summaryData.type === "disambiguation") return null;
+    return summaryData.thumbnail?.source ?? summaryData.originalimage?.source ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export const Route = createFileRoute("/api/photo")({

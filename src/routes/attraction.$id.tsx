@@ -1728,24 +1728,23 @@ function HighlightCard({ h, rank, museum }: { h: MuseumHighlight; rank: number; 
   useEffect(() => {
     if (!queryName) return;
     let cancelled = false;
-    // Disambiguate by appending the museum name AND city to the
-    // search query. Without this, "Mona Lisa" matched a Tbilisi
-    // beauty salon and "Liberty Leading the People" matched Liberty
-    // Bank — Wikipedia's full-text search ranks any page with the
-    // term, not the artwork specifically. "Mona Lisa Louvre Paris"
-    // pins it to the painting. Tried in order:
-    //   1. "{name} {museum} {city}" — most specific, usually wins
-    //   2. "{name} {museum}"        — drops city when the museum name
-    //                                  alone is unique enough (Uffizi,
-    //                                  Hermitage, etc.)
-    //   3. "{name}"                 — bare-name fallback for objects
-    //                                  whose Wikipedia article doesn't
-    //                                  mention the museum (rare).
+    // Search candidate order matters. wikipediaPhoto on the server
+    // tries (1) direct page summary by exact title (2) intitle:
+    // phrase search (3) full-text search — in that order. Stage 1
+    // and 2 only hit a clean artwork page when the query IS the
+    // artwork name; "The Lacemaker Louvre Paris" passes none of
+    // those filters and falls through to noisy text search.
+    //
+    // So bare name comes FIRST. We only augment with museum context
+    // for items the artwork name alone disambiguates badly (rare —
+    // famous paintings have unique titles). The previous "more
+    // specific first" sequence is what gave Beka the Liberty Bank
+    // and Vermeer-as-Louvre-building thumbnails.
     (async () => {
       const candidates = [
-        `${queryName} ${museum.name} ${museum.city}`,
-        `${queryName} ${museum.name}`,
         queryName,
+        `${queryName} ${museum.name}`,
+        `${queryName} ${museum.name} ${museum.city}`,
       ];
       for (const q of candidates) {
         if (cancelled) return;
