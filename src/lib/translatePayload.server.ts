@@ -225,17 +225,32 @@ async function callGateway(texts: string[], target: string): Promise<string[]> {
  * decide whether translation actually ran — Gemini occasionally
  * returns the source verbatim on overload, and we don't want to
  * cache that as if it were the target language.
+ *
+ * Char-weighted: a single 3000-char description carries more signal
+ * than a dozen 5-char chips. Earlier the count-based 50% rule
+ * misfired on attractions payloads where short fields ("Museum",
+ * "Park") sometimes survived the gateway untouched while the long
+ * descriptions were genuinely translated — payload was 95% Georgian
+ * by content but only 40% of items differed by count → we falsely
+ * marked it failed and skipped the cache write.
  */
 export function translationLooksReal(source: string[], translated: string[]): boolean {
   if (source.length === 0) return true;
   if (translated.length !== source.length) return false;
-  let changed = 0;
+  let changedChars = 0;
+  let totalChars = 0;
   for (let i = 0; i < source.length; i++) {
-    if (source[i].trim() !== translated[i].trim()) changed++;
+    const s = source[i].trim();
+    const t = translated[i].trim();
+    totalChars += s.length;
+    if (s !== t) changedChars += s.length;
   }
-  // Treat 50%+ changed as a successful translation. Lower than that
-  // probably means the gateway choked and returned source verbatim.
-  return changed / source.length >= 0.5;
+  if (totalChars === 0) return true;
+  // 25% of characters changed = successful translation. Lenient on
+  // purpose — the alternative (refusing to cache) leaves the user
+  // staring at English forever. False positives just mean a noisy
+  // payload gets cached as ka; the client still renders fine.
+  return changedChars / totalChars >= 0.25;
 }
 
 /* ─── Field selectors ─── */
@@ -244,19 +259,26 @@ type AttractionRecord = Record<string, unknown>;
 
 /**
  * Fields on each attraction that hold human prose worth translating.
+ *
  * `name` is intentionally absent — see the prompt note above; place
  * names are preserved so search/maps still work.
+ *
+ * `category` and `duration` are also OUT now: they're either technical
+ * IDs ("history", "editors") that the gateway sensibly leaves alone,
+ * or short numeric strings ("30-60 min") with mostly digits. Keeping
+ * them in the source set inflated the "unchanged" count and caused
+ * `translationLooksReal` to mark genuinely-translated payloads as
+ * failed, blocking the cache write under the user-language key. Beka
+ * observed this as "ka cache rows never appear, only en".
  */
 const ATTRACTION_TRANSLATABLE_FIELDS = [
   "type",
-  "category",
   "era",
   "situation",
   "outside_desc",
   "insider_desc",
   "description",
   "desc",
-  "duration",
 ] as const;
 
 /**

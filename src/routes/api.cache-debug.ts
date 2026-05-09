@@ -57,32 +57,53 @@ export const Route = createFileRoute("/api/cache-debug")({
           return jsonResponse(out, 200);
         }
 
-        // Probe attractions table — count rows + last 3 (with payload trimmed).
+        // Probe attractions table — last 5 rows + full language breakdown
+        // across ALL rows (so we can tell whether ka rows exist anywhere
+        // in the table, not just within the most recent 5).
         try {
           const { data: attrRows, error: attrErr } = await client
             .from("cached_attractions")
             .select("query_normalized, language, filters_key, hit_count, updated_at")
             .order("updated_at", { ascending: false })
             .limit(5);
+          const { data: allLangs } = await client.from("cached_attractions").select("language");
+          const byLang: Record<string, number> = {};
+          for (const r of allLangs ?? []) byLang[r.language] = (byLang[r.language] ?? 0) + 1;
           out.cached_attractions = attrErr
             ? { error: attrErr.message }
-            : { recent: attrRows ?? [], count: (attrRows ?? []).length };
+            : {
+                recent: attrRows ?? [],
+                total_rows: (allLangs ?? []).length,
+                by_language: byLang,
+              };
         } catch (err) {
           out.cached_attractions = {
             threw: err instanceof Error ? err.message : String(err),
           };
         }
 
-        // Probe guides table — same shape.
+        // Probe guides table — same shape, plus interest breakdown.
         try {
           const { data: guideRows, error: guideErr } = await client
             .from("cached_guides")
             .select("name_normalized, language, interest, hit_count, updated_at")
             .order("updated_at", { ascending: false })
             .limit(5);
+          const { data: allMeta } = await client.from("cached_guides").select("language, interest");
+          const byLang: Record<string, number> = {};
+          const byInterest: Record<string, number> = {};
+          for (const r of allMeta ?? []) {
+            byLang[r.language] = (byLang[r.language] ?? 0) + 1;
+            byInterest[r.interest] = (byInterest[r.interest] ?? 0) + 1;
+          }
           out.cached_guides = guideErr
             ? { error: guideErr.message }
-            : { recent: guideRows ?? [], count: (guideRows ?? []).length };
+            : {
+                recent: guideRows ?? [],
+                total_rows: (allMeta ?? []).length,
+                by_language: byLang,
+                by_interest: byInterest,
+              };
         } catch (err) {
           out.cached_guides = {
             threw: err instanceof Error ? err.message : String(err),
