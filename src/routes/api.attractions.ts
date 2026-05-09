@@ -73,7 +73,7 @@ export const Route = createFileRoute("/api/attractions")({
               cachedEn,
               userLang,
             );
-            if (ok) void putCachedAttractions(key, translated);
+            if (ok) await putCachedAttractions(key, translated);
             return jsonResponse(translated, 200, ok ? "TRANSLATED" : "TRANSLATE-FAILED");
           }
         }
@@ -102,7 +102,7 @@ export const Route = createFileRoute("/api/attractions")({
           // a dud row that short-circuits future requests forever.
           if (parsed !== undefined && hasAttractions(parsed)) {
             const enKey = { ...key, language: "en" };
-            void putCachedAttractions(enKey, parsed);
+            await putCachedAttractions(enKey, parsed);
           }
 
           // Empty / unparseable Claude output → friendly empty list (NOT cached).
@@ -116,7 +116,7 @@ export const Route = createFileRoute("/api/attractions")({
               parsed,
               userLang,
             );
-            if (ok) void putCachedAttractions(key, translated);
+            if (ok) await putCachedAttractions(key, translated);
             return jsonResponse(translated, 200, ok ? "MISS-TRANSLATED" : "MISS-NO-TRANS");
           }
 
@@ -330,7 +330,7 @@ async function handleExtensionRequest(
   const cachedEnPayload = await getCachedAttractions(enKey);
   const cachedEnArr = extractAttractionsArray(cachedEnPayload);
   const mergedEn = mergeAttractions(cachedEnArr, newEn).slice(0, 30);
-  void putCachedAttractions(enKey, { attractions: mergedEn });
+  await putCachedAttractions(enKey, { attractions: mergedEn });
 
   // English-speaking user → return new English items, done.
   if (!wantsTranslation) {
@@ -349,7 +349,7 @@ async function handleExtensionRequest(
     const cachedUserLangPayload = await getCachedAttractions(key);
     const cachedUserLangArr = extractAttractionsArray(cachedUserLangPayload);
     const mergedUserLang = mergeAttractions(cachedUserLangArr, newTranslated).slice(0, 30);
-    void putCachedAttractions(key, { attractions: mergedUserLang });
+    await putCachedAttractions(key, { attractions: mergedUserLang });
     return jsonResponse({ attractions: newTranslated }, 200, "EXTEND-TRANSLATED");
   }
 

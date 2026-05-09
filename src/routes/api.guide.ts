@@ -48,7 +48,7 @@ export const Route = createFileRoute("/api/guide")({
               cachedEn,
               userLang,
             );
-            if (ok) void putCachedGuide(key, translated);
+            if (ok) await putCachedGuide(key, translated);
             return jsonResponse(translated, 200, ok ? "TRANSLATED" : "TRANSLATE-FAILED");
           }
         }
@@ -75,7 +75,7 @@ export const Route = createFileRoute("/api/guide")({
           // row and short-circuit every future request forever.
           if (parsed !== undefined && hasGuideScript(parsed)) {
             const enKey = { ...key, language: "en" };
-            void putCachedGuide(enKey, parsed);
+            await putCachedGuide(enKey, parsed);
           }
 
           // Empty / scriptless Claude output → friendly empty guide (NOT cached).
@@ -88,7 +88,7 @@ export const Route = createFileRoute("/api/guide")({
               parsed,
               userLang,
             );
-            if (ok) void putCachedGuide(key, translated);
+            if (ok) await putCachedGuide(key, translated);
             return jsonResponse(translated, 200, ok ? "MISS-TRANSLATED" : "MISS-NO-TRANS");
           }
 
