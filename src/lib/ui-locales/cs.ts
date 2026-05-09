@@ -399,4 +399,7 @@ export const CS: Partial<Record<UiKey, string>> = {
   "player.resume": "Pokračovat",
   "player.pause": "Pauza",
   "player.stop": "Stop",
+  "player.restart": "Přehrát od začátku",
+  "player.back10": "O 10 sekund zpět",
+  "player.forward10": "O 10 sekund vpřed",
 };

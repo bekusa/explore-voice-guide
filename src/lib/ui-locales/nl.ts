@@ -402,4 +402,7 @@ export const NL: Partial<Record<UiKey, string>> = {
   "player.resume": "Hervatten",
   "player.pause": "Pauzeren",
   "player.stop": "Stoppen",
+  "player.restart": "Opnieuw starten",
+  "player.back10": "10 seconden terug",
+  "player.forward10": "10 seconden vooruit",
 };

@@ -401,4 +401,7 @@ export const ID: Partial<Record<UiKey, string>> = {
   "player.resume": "Lanjutkan",
   "player.pause": "Jeda",
   "player.stop": "Berhenti",
+  "player.restart": "Mulai ulang",
+  "player.back10": "Mundur 10 detik",
+  "player.forward10": "Maju 10 detik",
 };

@@ -400,4 +400,7 @@ export const UK: Partial<Record<UiKey, string>> = {
   "player.resume": "Продовжити",
   "player.pause": "Пауза",
   "player.stop": "Стоп",
+  "player.restart": "Спочатку",
+  "player.back10": "Назад на 10 секунд",
+  "player.forward10": "Вперед на 10 секунд",
 };

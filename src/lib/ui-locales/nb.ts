@@ -402,4 +402,7 @@ export const NB: Partial<Record<UiKey, string>> = {
   "player.resume": "Fortsett",
   "player.pause": "Pause",
   "player.stop": "Stopp",
+  "player.restart": "Start på nytt",
+  "player.back10": "10 sekunder tilbake",
+  "player.forward10": "10 sekunder frem",
 };

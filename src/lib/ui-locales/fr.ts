@@ -403,4 +403,7 @@ export const FR: Partial<Record<UiKey, string>> = {
   "player.resume": "Reprendre",
   "player.pause": "Pause",
   "player.stop": "Arrêter",
+  "player.restart": "Recommencer",
+  "player.back10": "Reculer de 10 secondes",
+  "player.forward10": "Avancer de 10 secondes",
 };

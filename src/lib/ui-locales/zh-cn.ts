@@ -393,4 +393,7 @@ export const ZH_CN: Partial<Record<UiKey, string>> = {
   "player.resume": "继续",
   "player.pause": "暂停",
   "player.stop": "停止",
+  "player.restart": "从头播放",
+  "player.back10": "后退10秒",
+  "player.forward10": "前进10秒",
 };

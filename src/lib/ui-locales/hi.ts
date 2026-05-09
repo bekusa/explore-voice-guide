@@ -399,4 +399,7 @@ export const HI: Partial<Record<UiKey, string>> = {
   "player.resume": "जारी रखें",
   "player.pause": "रोकें",
   "player.stop": "रोकना",
+  "player.restart": "शुरू से चलाएं",
+  "player.back10": "10 सेकंड पीछे",
+  "player.forward10": "10 सेकंड आगे",
 };

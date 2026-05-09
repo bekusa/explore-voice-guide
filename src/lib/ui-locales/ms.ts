@@ -404,4 +404,7 @@ export const MS: Partial<Record<UiKey, string>> = {
   "player.resume": "Sambung",
   "player.pause": "Jeda",
   "player.stop": "Berhenti",
+  "player.restart": "Mula semula",
+  "player.back10": "Undur 10 saat",
+  "player.forward10": "Maju 10 saat",
 };

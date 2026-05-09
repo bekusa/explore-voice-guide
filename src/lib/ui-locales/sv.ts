@@ -401,4 +401,7 @@ export const SV: Partial<Record<UiKey, string>> = {
   "player.resume": "Fortsätt",
   "player.pause": "Pausa",
   "player.stop": "Stoppa",
+  "player.restart": "Börja om",
+  "player.back10": "10 sekunder tillbaka",
+  "player.forward10": "10 sekunder framåt",
 };

@@ -401,4 +401,7 @@ export const VI: Partial<Record<UiKey, string>> = {
   "player.resume": "Tiếp tục",
   "player.pause": "Tạm dừng",
   "player.stop": "Dừng",
+  "player.restart": "Phát lại từ đầu",
+  "player.back10": "Lùi 10 giây",
+  "player.forward10": "Tiến 10 giây",
 };

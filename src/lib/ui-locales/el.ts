@@ -411,4 +411,7 @@ export const EL: Partial<Record<UiKey, string>> = {
   "player.resume": "Συνέχεια",
   "player.pause": "Παύση",
   "player.stop": "Σταμάτημα",
+  "player.restart": "Από την αρχή",
+  "player.back10": "Πίσω 10 δευτερόλεπτα",
+  "player.forward10": "Μπροστά 10 δευτερόλεπτα",
 };

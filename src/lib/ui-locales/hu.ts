@@ -401,4 +401,7 @@ export const HU: Partial<Record<UiKey, string>> = {
   "player.resume": "Folytatás",
   "player.pause": "Szünet",
   "player.stop": "Stop",
+  "player.restart": "Újraindítás",
+  "player.back10": "10 másodperccel vissza",
+  "player.forward10": "10 másodperccel előre",
 };

@@ -397,4 +397,7 @@ export const TH: Partial<Record<UiKey, string>> = {
   "player.resume": "เล่นต่อ",
   "player.pause": "หยุดชั่วคราว",
   "player.stop": "หยุด",
+  "player.restart": "เริ่มใหม่",
+  "player.back10": "ย้อนกลับ 10 วินาที",
+  "player.forward10": "ข้ามไป 10 วินาที",
 };

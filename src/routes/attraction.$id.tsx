@@ -9,6 +9,9 @@ import {
   Play,
   Pause,
   Square,
+  Rewind,
+  FastForward,
+  RotateCcw,
   X,
   Loader2,
   Bookmark,
@@ -228,7 +231,7 @@ function AttractionPage() {
         ) : null
       }
     >
-      <div className="relative min-h-full bg-background text-foreground">
+      <div className="relative min-h-full bg-background pb-10 text-foreground">
         {/* Hero */}
         <section className="relative h-[420px] w-full overflow-hidden">
           {heroPhoto ? (
@@ -1434,12 +1437,41 @@ function InlineAudioPanel({
         <span>{fmt(progress.total)}</span>
       </div>
 
-      {/* Controls — Beka's spec: explicit Play and Pause buttons
-          (instead of one toggle) plus Stop. Each button is always
-          visible; only its `disabled` state changes with audio status,
-          so the user always knows which transport actions are
-          available without having to read icon mid-flight. */}
-      <div className="mt-3 flex items-center justify-center gap-3">
+      {/* Controls — full transport row per Beka's spec:
+            [Restart] [-10s] [Play] [Pause] [+10s] [Stop]
+          Play and Pause are the two primary gold/outlined chips in
+          the centre; Restart and ±10s skips flank them as smaller
+          secondaries. Each button is always visible — only its
+          `disabled` state changes with audio status — so the user
+          can see every available transport action at a glance. */}
+      <div className="mt-3 flex items-center justify-center gap-2">
+        <button
+          onClick={() => {
+            const a = audioRef.current;
+            if (!a) return;
+            a.currentTime = 0;
+            // If currently paused, kick it back into play so "restart"
+            // means "go back to 0 AND start over", not "rewind silently".
+            a.play().catch(() => {});
+          }}
+          disabled={!audioUrl}
+          aria-label={t("player.restart")}
+          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+        </button>
+        <button
+          onClick={() => {
+            const a = audioRef.current;
+            if (!a) return;
+            a.currentTime = Math.max(0, a.currentTime - 10);
+          }}
+          disabled={!audioUrl}
+          aria-label={t("player.back10")}
+          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
+        >
+          <Rewind className="h-3.5 w-3.5 fill-current" />
+        </button>
         <button
           onClick={() => {
             const a = audioRef.current;
@@ -1467,12 +1499,25 @@ function InlineAudioPanel({
           <Pause className="h-5 w-5 fill-current" />
         </button>
         <button
+          onClick={() => {
+            const a = audioRef.current;
+            if (!a) return;
+            const cap = Number.isFinite(a.duration) ? a.duration : a.currentTime + 10;
+            a.currentTime = Math.min(cap, a.currentTime + 10);
+          }}
+          disabled={!audioUrl}
+          aria-label={t("player.forward10")}
+          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
+        >
+          <FastForward className="h-3.5 w-3.5 fill-current" />
+        </button>
+        <button
           onClick={stop}
           disabled={!audioUrl}
           aria-label={t("player.stop")}
-          className="grid h-10 w-10 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
+          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
         >
-          <Square className="h-3.5 w-3.5 fill-current" />
+          <Square className="h-3 w-3 fill-current" />
         </button>
       </div>
     </div>

@@ -399,4 +399,7 @@ export const KA: Partial<Record<UiKey, string>> = {
   "player.resume": "გაგრძელება",
   "player.pause": "პაუზა",
   "player.stop": "გაჩერება",
+  "player.restart": "თავიდან დაწყება",
+  "player.back10": "10 წამით უკან",
+  "player.forward10": "10 წამით წინ",
 };

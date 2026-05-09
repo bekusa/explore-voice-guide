@@ -402,4 +402,7 @@ export const BN: Partial<Record<UiKey, string>> = {
   "player.resume": "চালু রাখুন",
   "player.pause": "বিরতি",
   "player.stop": "থামান",
+  "player.restart": "শুরু থেকে",
+  "player.back10": "১০ সেকেন্ড পিছনে",
+  "player.forward10": "১০ সেকেন্ড সামনে",
 };

@@ -402,4 +402,7 @@ export const RO: Partial<Record<UiKey, string>> = {
   "player.resume": "Reia",
   "player.pause": "Pauză",
   "player.stop": "Stop",
+  "player.restart": "Reia de la început",
+  "player.back10": "Înapoi 10 secunde",
+  "player.forward10": "Înainte 10 secunde",
 };

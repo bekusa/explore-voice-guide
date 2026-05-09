@@ -402,4 +402,7 @@ export const FI: Partial<Record<UiKey, string>> = {
   "player.resume": "Jatka",
   "player.pause": "Tauko",
   "player.stop": "Pysäytä",
+  "player.restart": "Aloita alusta",
+  "player.back10": "10 sekuntia taaksepäin",
+  "player.forward10": "10 sekuntia eteenpäin",
 };

@@ -400,4 +400,7 @@ export const PL: Partial<Record<UiKey, string>> = {
   "player.resume": "Wznów",
   "player.pause": "Pauza",
   "player.stop": "Stop",
+  "player.restart": "Od początku",
+  "player.back10": "Cofnij o 10 sekund",
+  "player.forward10": "Przewiń o 10 sekund",
 };

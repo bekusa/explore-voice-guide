@@ -399,4 +399,7 @@ export const KO: Partial<Record<UiKey, string>> = {
   "player.resume": "재개",
   "player.pause": "일시정지",
   "player.stop": "정지",
+  "player.restart": "처음부터",
+  "player.back10": "10초 뒤로",
+  "player.forward10": "10초 앞으로",
 };

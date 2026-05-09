@@ -396,4 +396,7 @@ export const AR: Partial<Record<UiKey, string>> = {
   "player.resume": "استئناف",
   "player.pause": "إيقاف مؤقت",
   "player.stop": "إيقاف",
+  "player.restart": "إعادة التشغيل",
+  "player.back10": "إرجاع 10 ثوانٍ",
+  "player.forward10": "تقديم 10 ثوانٍ",
 };

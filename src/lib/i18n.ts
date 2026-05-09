@@ -488,6 +488,12 @@ export const UI_STRINGS = {
   "player.resume": "Resume",
   "player.pause": "Pause",
   "player.stop": "Stop",
+  // Transport extras — Beka asked for restart-from-beginning and
+  // ±10s skip buttons alongside Play/Pause/Stop. Aria labels only;
+  // the buttons themselves render icons (no text).
+  "player.restart": "Restart",
+  "player.back10": "Skip back 10 seconds",
+  "player.forward10": "Skip forward 10 seconds",
 } as const;
 
 export type UiKey = keyof typeof UI_STRINGS;

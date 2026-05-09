@@ -405,4 +405,7 @@ export const TR: Partial<Record<UiKey, string>> = {
   "player.resume": "Devam",
   "player.pause": "Duraklat",
   "player.stop": "Durdur",
+  "player.restart": "Baştan başlat",
+  "player.back10": "10 saniye geri",
+  "player.forward10": "10 saniye ileri",
 };

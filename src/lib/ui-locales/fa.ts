@@ -399,4 +399,7 @@ export const FA: Partial<Record<UiKey, string>> = {
   "player.resume": "ادامه",
   "player.pause": "مکث",
   "player.stop": "توقف",
+  "player.restart": "شروع مجدد",
+  "player.back10": "۱۰ ثانیه به عقب",
+  "player.forward10": "۱۰ ثانیه به جلو",
 };

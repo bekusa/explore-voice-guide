@@ -400,4 +400,7 @@ export const ES: Partial<Record<UiKey, string>> = {
   "player.resume": "Reanudar",
   "player.pause": "Pausa",
   "player.stop": "Detener",
+  "player.restart": "Reiniciar",
+  "player.back10": "Retroceder 10 segundos",
+  "player.forward10": "Avanzar 10 segundos",
 };

@@ -402,4 +402,7 @@ export const JA: Partial<Record<UiKey, string>> = {
   "player.resume": "再開",
   "player.pause": "一時停止",
   "player.stop": "停止",
+  "player.restart": "最初から",
+  "player.back10": "10秒戻る",
+  "player.forward10": "10秒進む",
 };

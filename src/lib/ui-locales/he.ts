@@ -394,4 +394,7 @@ export const HE: Partial<Record<UiKey, string>> = {
   "player.resume": "המשך",
   "player.pause": "השהה",
   "player.stop": "עצור",
+  "player.restart": "התחל מחדש",
+  "player.back10": "10 שניות אחורה",
+  "player.forward10": "10 שניות קדימה",
 };

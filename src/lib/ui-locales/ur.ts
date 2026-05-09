@@ -398,4 +398,7 @@ export const UR: Partial<Record<UiKey, string>> = {
   "player.resume": "دوبارہ شروع",
   "player.pause": "روکیں",
   "player.stop": "بند کریں",
+  "player.restart": "شروع سے چلائیں",
+  "player.back10": "10 سیکنڈ پیچھے",
+  "player.forward10": "10 سیکنڈ آگے",
 };

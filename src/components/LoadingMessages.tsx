@@ -31,11 +31,12 @@ const DEFAULT_STEPS: UiKey[] = [
 
 export function LoadingMessages({
   steps = DEFAULT_STEPS,
-  // Beka asked for the rotation 5× slower than the original 3 s tempo,
-  // so each message holds for 15 s. With LLM fetches typically running
-  // 5-15 s, most users will see one or two messages instead of the
-  // strip flickering through all five.
-  intervalMs = 15000,
+  // Back to a 3 s tempo. We tried 15 s briefly when guide fetches
+  // ran on Sonnet (30-60 s loads), but attractions are now on Haiku
+  // and finish in 5-10 s — at 15 s the user only ever saw the first
+  // message. 3 s lets all five steps show during a typical fetch
+  // and the strip feels alive without flickering.
+  intervalMs = 3000,
   className = "",
 }: {
   steps?: UiKey[];
