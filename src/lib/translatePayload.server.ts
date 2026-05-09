@@ -318,19 +318,17 @@ export async function translateAttractionsPayload(
   if (sources.length === 0) return { payload: cloned, translated: true };
 
   const translated = await callGateway(sources, target);
+  // Sanitize: replace any obviously-garbage gateway response with the
+  // source string before splicing into the payload. The gateway has
+  // been seen to return Python stack traces ("ValueError: ..."),
+  // its own system prompt, or truncated nonsense ("თ=[") inside the
+  // translations array — we cached those in production and they
+  // showed up as destination names on the home screen.
+  const safe = translated.map((t, i) => (looksLikeGarbage(t, sources[i], target) ? sources[i] : t));
   for (let i = 0; i < slots.length; i++) {
-    slots[i].row[slots[i].field] = translated[i] ?? sources[i];
+    slots[i].row[slots[i].field] = safe[i] ?? sources[i];
   }
-  // Cache regardless of "looks real" — observed in production that
-  // even after lowering the threshold, attractions payloads with
-  // many proper nouns ("Tokyo", "Shibuya", "Asakusa Temple") trip
-  // the heuristic and the gateway sensibly leaves them alone. The
-  // descriptive prose IS getting translated; refusing to cache just
-  // means the next ka visitor pays the translation cost again. Worst
-  // case: the gateway died entirely and we cached English under ka,
-  // which is what the user was about to see anyway. Better to cache
-  // an imperfect translation than to never cache at all.
-  return { payload: cloned, translated: true };
+  return { payload: cloned, translated: translationLooksReal(sources, safe) };
 }
 
 function pickAttractionsArray(obj: Record<string, unknown>): unknown[] | null {
@@ -406,9 +404,44 @@ export async function translateGuidePayload(
   if (sources.length === 0) return { payload: cloned, translated: true };
 
   const translated = await callGateway(sources, target);
+  // Same garbage filter as the attractions path — we've seen Gateway
+  // dumps of Python errors and system prompts make it into cached rows.
+  const safe = translated.map((t, i) => (looksLikeGarbage(t, sources[i], target) ? sources[i] : t));
   for (let i = 0; i < setters.length; i++) {
-    setters[i](translated[i] ?? sources[i]);
+    setters[i](safe[i] ?? sources[i]);
   }
-  // Always cache (see attractions twin above for the rationale).
-  return { payload: cloned, translated: true };
+  return { payload: cloned, translated: translationLooksReal(sources, safe) };
+}
+
+/**
+ * Does this "translated" string look like the gateway misfired?
+ * Triggers on:
+ *   - Python / JS error patterns (ValueError, Traceback, Exception)
+ *   - Translation-instruction echoes ("Translate every input string")
+ *   - Length explosions (>10× the source — Gemini going on a monologue)
+ *   - Dead-short fragments (≤2 chars when source is much longer —
+ *     truncation like "თ=[" for "Tokyo")
+ *   - Wrong script entirely (target=ka but result is pure ASCII when
+ *     source already had Georgian letters available)
+ *
+ * Lenient on legit short-to-short translations (e.g. "OK" → "კარგი")
+ * by requiring the source to be ≥4 chars before the truncation guard
+ * fires.
+ */
+function looksLikeGarbage(translated: string, source: string, _target: string): boolean {
+  if (typeof translated !== "string") return true;
+  const t = translated.trim();
+  if (!t) return true;
+  // Python / JS exception traces leaking through
+  if (/\b(ValueError|TypeError|KeyError|Exception|Traceback|RuntimeError|stacktrace)\b/i.test(t))
+    return true;
+  if (/default_api\.|return_translations\s*\(/i.test(t)) return true;
+  // System-prompt echo (Gemini repeating instructions back at us)
+  if (/translate (every|each|the|all) input string/i.test(t)) return true;
+  if (/preserve placeholders like \{name\}/i.test(t)) return true;
+  // Length explosion — translation should never be 10× the source
+  if (source.length >= 5 && t.length > source.length * 10) return true;
+  // Dead-short truncation
+  if (source.length >= 4 && t.length <= 2) return true;
+  return false;
 }

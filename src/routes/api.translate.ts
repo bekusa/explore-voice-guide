@@ -175,7 +175,17 @@ export const Route = createFileRoute("/api/translate")({
           // Guard array length
           const aligned = out.length === texts.length ? out : texts.map((t, i) => out[i] ?? t);
 
-          return Response.json({ translations: aligned });
+          // Anti-garbage: the gateway has been seen to leak Python
+          // tracebacks, system-prompt echoes, and truncated nonsense
+          // ("თ=[" for "Tokyo") into the translations array. Detect
+          // those patterns and substitute the source string back so
+          // we never cache them. Beka observed corrupted destination
+          // names on the home screen as a result of this.
+          const sanitized = aligned.map((t, i) =>
+            looksLikeGatewayGarbage(t, texts[i]) ? texts[i] : t,
+          );
+
+          return Response.json({ translations: sanitized });
         } catch {
           return Response.json({ translations: texts });
         }
@@ -183,3 +193,17 @@ export const Route = createFileRoute("/api/translate")({
     },
   },
 });
+
+function looksLikeGatewayGarbage(translated: string, source: string): boolean {
+  if (typeof translated !== "string") return true;
+  const t = translated.trim();
+  if (!t) return true;
+  if (/\b(ValueError|TypeError|KeyError|Exception|Traceback|RuntimeError|stacktrace)\b/i.test(t))
+    return true;
+  if (/default_api\.|return_translations\s*\(/i.test(t)) return true;
+  if (/translate (every|each|the|all) input string/i.test(t)) return true;
+  if (/preserve placeholders like \{name\}/i.test(t)) return true;
+  if (source.length >= 5 && t.length > source.length * 10) return true;
+  if (source.length >= 4 && t.length <= 2) return true;
+  return false;
+}

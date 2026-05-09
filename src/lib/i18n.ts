@@ -14,14 +14,15 @@
  */
 
 const STORAGE_KEY = "tg.lang";
-// v4 — bumped from v3 because the previous cache could pin the source
-// English text under a non-English key when LOVABLE_API_KEY was
-// missing/misconfigured: /api/translate degraded to "return source"
-// silently, those identity translations got cached, and `t()` then
-// returned English forever even after the key was fixed. v4 wipes
-// the slate; the new translateBatch identity-guard below stops the
-// poisoning from happening again.
-const CACHE_KEY = "tg.translations.v4";
+// v5 — bumped from v4 because the gateway started leaking garbage
+// into the translations array (Python tracebacks, system-prompt
+// echoes like "shows how to correctly specify placeholders…",
+// truncated nonsense like "თ=[" for "Tokyo"). v4 caches captured
+// that garbage and the home screen Time Machine ended up rendering
+// destination names like "ბარსელონა]))ა)) ValueError(". v5 wipes
+// every browser; the new looksLikeGatewayGarbage filter on the
+// server side keeps the new cache clean.
+const CACHE_KEY = "tg.translations.v5";
 const CHANGE_EVENT = "tg:lang-changed";
 const MAX_CACHE_ENTRIES = 5000;
 
