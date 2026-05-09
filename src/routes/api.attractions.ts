@@ -94,7 +94,18 @@ export const Route = createFileRoute("/api/attractions")({
             interests: key.filters.interests,
             duration: key.filters.duration,
           });
-          const text = await callClaude({ system, user, maxTokens: 4096 });
+          // Haiku, not Sonnet — Beka observed first-page loads taking
+          // ~45 s with Sonnet's slower throughput (50 tok/s × 4096 max
+          // tokens). Haiku at ~150 tok/s cuts the same 10-item list
+          // to ~10-15 s and the structured-list quality is identical
+          // to the eye. Sonnet stays on the guide route where the
+          // long narrative actually benefits from the bigger model.
+          const text = await callClaude({
+            model: "claude-haiku-4-5",
+            system,
+            user,
+            maxTokens: 3072,
+          });
           const parsed = parseClaudeJson(text);
 
           // Persist the English baseline only when at least one
@@ -297,9 +308,15 @@ async function handleExtensionRequest(
       interests: key.filters.interests,
       duration: key.filters.duration,
     });
-    // Bigger maxTokens because extension calls can ask for up to 30
+    // Haiku here too — same reasoning as the first-page call. Bigger
+    // maxTokens because extension calls can ask for up to 30 more
     // attractions — each row averages ~120-180 tokens.
-    const text = await callClaude({ system, user, maxTokens: 6144 });
+    const text = await callClaude({
+      model: "claude-haiku-4-5",
+      system,
+      user,
+      maxTokens: 6144,
+    });
     parsed = parseClaudeJson(text);
   } catch (err) {
     return new Response(

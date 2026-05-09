@@ -480,13 +480,19 @@ function ResultCard({
       return;
     }
     let cancelled = false;
-    fetchPlacePhoto(attraction.name, language, cityContext).then((url) => {
+    // Use the English name when present — translated names like
+    // "თავისუფლების ქანდაკება" misfired the photo lookup against
+    // Tbilisi's Freedom Square instead of New York's Statue of Liberty.
+    // name_en is set by translateAttractionsPayload on every translated
+    // row; English baseline rows fall back to `name`.
+    const queryName = attraction.name_en ?? attraction.name;
+    fetchPlacePhoto(queryName, "en", cityContext).then((url) => {
       if (!cancelled && url) setPhoto(url);
     });
     return () => {
       cancelled = true;
     };
-  }, [attraction.name, attraction.image_url, language, cityContext]);
+  }, [attraction.name, attraction.name_en, attraction.image_url, language, cityContext]);
 
   // Live "Offline" state — flips when a download finishes / cache cleared.
   const [cached, setCached] = useState(false);

@@ -65,8 +65,14 @@ export const Route = createFileRoute("/api/guide")({
             language: "en",
             interest: key.interest,
           });
-          // Big maxTokens — the narrated script can run 1500-3000
-          // words, plus key_facts/tips/look_for/nearby chips.
+          // Sonnet stays here even though it's slower — Beka's call:
+          // "Attraction Guide დააბრუნე ისევ Sonnet-ზე, რადგან მანდ
+          // ხარისხი მნიშვნელოვანია". The narrated guide is the
+          // headline content the user actually listens to, and the
+          // prose quality difference between Sonnet and Haiku is
+          // audible on a 1500-3000 word script. The attractions list
+          // stays on Haiku where the structured-list output reads the
+          // same either way and the latency win is worth keeping.
           const text = await callClaude({ system, user, maxTokens: 8192 });
           const parsed = parseClaudeJson(text);
 

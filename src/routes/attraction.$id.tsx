@@ -167,20 +167,26 @@ function AttractionPage() {
   // Hero photo: prefer n8n's image_url, otherwise lazy-fetch from
   // Google Places / Wikipedia. Reset when the place changes.
   useEffect(() => {
-    const name = attraction?.name ?? fallbackName;
+    // Photo lookups MUST use the English name (Google Places +
+    // Wikipedia are far more reliable in English, and a localised
+    // search like "თავისუფლების ქანდაკება" actually matched Tbilisi's
+    // Freedom Square instead of the New York Statue of Liberty).
+    // `name_en` is set by translateAttractionsPayload on every
+    // translated row; English baseline rows just have `name`.
+    const queryName = attraction?.name_en ?? attraction?.name ?? fallbackName;
     if (attraction?.image_url) {
       setHeroPhoto(attraction.image_url);
       return;
     }
     setHeroPhoto(null);
     let cancelled = false;
-    fetchPlacePhoto(name, language).then((url) => {
+    fetchPlacePhoto(queryName, "en").then((url) => {
       if (!cancelled && url) setHeroPhoto(url);
     });
     return () => {
       cancelled = true;
     };
-  }, [attraction?.name, attraction?.image_url, fallbackName, language]);
+  }, [attraction?.name, attraction?.name_en, attraction?.image_url, fallbackName, language]);
 
   // Inline audio player state. Replaces the old /player page — Play
   // now opens a sticky panel at the bottom of this screen so the user
