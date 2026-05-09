@@ -415,20 +415,18 @@ export async function translateGuidePayload(
 
 /**
  * Does this "translated" string look like the gateway misfired?
- * Triggers on:
- *   - Python / JS error patterns (ValueError, Traceback, Exception)
- *   - Translation-instruction echoes ("Translate every input string")
- *   - Length explosions (>10× the source — Gemini going on a monologue)
- *   - Dead-short fragments (≤2 chars when source is much longer —
- *     truncation like "თ=[" for "Tokyo")
- *   - Wrong script entirely (target=ka but result is pure ASCII when
- *     source already had Georgian letters available)
  *
- * Lenient on legit short-to-short translations (e.g. "OK" → "კარგი")
- * by requiring the source to be ≥4 chars before the truncation guard
- * fires.
+ * Beka observed a parade of failure modes from the Lovable AI Gateway:
+ *   - Python tracebacks leaking through ("ValueError(...)")
+ *   - Gemini echoing its own system prompt back as the translation
+ *   - Truncated nonsense ("თ=[" for "Tokyo")
+ *   - Length explosions (5-char source → 500-char monologue)
+ *   - Trailing bracket junk ("टोक्यो)) flores", "रोम]))")
+ *   - Wrong target language entirely (target=hi, response in English)
+ *
+ * Each check below maps to one of those observed failures.
  */
-function looksLikeGarbage(translated: string, source: string, _target: string): boolean {
+function looksLikeGarbage(translated: string, source: string, target: string): boolean {
   if (typeof translated !== "string") return true;
   const t = translated.trim();
   if (!t) return true;
@@ -443,5 +441,49 @@ function looksLikeGarbage(translated: string, source: string, _target: string): 
   if (source.length >= 5 && t.length > source.length * 10) return true;
   // Dead-short truncation
   if (source.length >= 4 && t.length <= 2) return true;
+  // Trailing bracket junk — "टोक्यो))", "रोम]))", "ბარსელონა]))ა))"
+  // Real translations don't end with stray closing brackets/parens.
+  if (/[)\]}>]{2,}\s*$/.test(t)) return true;
+  // Mid-string bracket junk: ")) flores", "]) extra"
+  if (/[)\]}>]{2,}\s+\S/.test(t)) return true;
+  // Wrong-script result for a descriptive (≥8 char) source. If the
+  // user asked for Hindi and got pure ASCII back ("Gorbachev resigned
+  // on 25 December…"), that's the gateway returning English under a
+  // Hindi key — exactly what cached the wrong-language UI strings.
+  if (source.length >= 8 && hasWrongScript(t, target)) return true;
+  return false;
+}
+
+/**
+ * True when the translated text doesn't contain any character from
+ * the target language's expected script. Only checks for non-Latin
+ * targets — for European languages we can't reliably distinguish a
+ * legit Spanish translation from an English passthrough by script
+ * alone. Returns false for any target we don't have a script range
+ * for (so we never reject European-language results just for being
+ * Latin).
+ */
+function hasWrongScript(text: string, target: string): boolean {
+  const lc = (target || "").toLowerCase();
+  // Each entry: [language prefix, regex of expected script range]
+  const scriptOf: Array<[string, RegExp]> = [
+    ["ka", /[\u10A0-\u10FF]/], // Georgian
+    ["hi", /[\u0900-\u097F]/], // Devanagari (Hindi)
+    ["bn", /[\u0980-\u09FF]/], // Bengali
+    ["ur", /[\u0600-\u06FF]/], // Urdu (Arabic script)
+    ["ru", /[\u0400-\u04FF]/], // Cyrillic
+    ["uk", /[\u0400-\u04FF]/], // Cyrillic
+    ["ar", /[\u0600-\u06FF]/], // Arabic
+    ["fa", /[\u0600-\u06FF]/], // Persian
+    ["he", /[\u0590-\u05FF]/], // Hebrew
+    ["el", /[\u0370-\u03FF]/], // Greek
+    ["th", /[\u0E00-\u0E7F]/], // Thai
+    ["ja", /[\u3040-\u30FF\u4E00-\u9FFF]/], // Japanese
+    ["ko", /[\uAC00-\uD7AF]/], // Korean
+    ["zh", /[\u4E00-\u9FFF]/], // Chinese
+  ];
+  for (const [prefix, rx] of scriptOf) {
+    if (lc.startsWith(prefix)) return !rx.test(text);
+  }
   return false;
 }

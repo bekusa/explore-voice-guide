@@ -14,15 +14,15 @@
  */
 
 const STORAGE_KEY = "tg.lang";
-// v5 — bumped from v4 because the gateway started leaking garbage
-// into the translations array (Python tracebacks, system-prompt
-// echoes like "shows how to correctly specify placeholders…",
-// truncated nonsense like "თ=[" for "Tokyo"). v4 caches captured
-// that garbage and the home screen Time Machine ended up rendering
-// destination names like "ბარსელონა]))ა)) ValueError(". v5 wipes
-// every browser; the new looksLikeGatewayGarbage filter on the
-// server side keeps the new cache clean.
-const CACHE_KEY = "tg.translations.v5";
+// v6 — bumped from v5 because the gateway garbage kept arriving in
+// new shapes the v5 filter didn't catch: trailing bracket junk
+// ("टोक्यो)) flores", "रोम]))"), and English text returned for
+// non-English targets (Hindi UI showed "Gorbachev resigned on 25
+// December 1991…" inside cards labelled in Devanagari). v6 cache
+// pairs with a beefed-up looksLikeGatewayGarbage filter that
+// rejects bracket junk and wrong-script results before they reach
+// localStorage.
+const CACHE_KEY = "tg.translations.v6";
 const CHANGE_EVENT = "tg:lang-changed";
 const MAX_CACHE_ENTRIES = 5000;
 

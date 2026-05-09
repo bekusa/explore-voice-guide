@@ -176,13 +176,14 @@ export const Route = createFileRoute("/api/translate")({
           const aligned = out.length === texts.length ? out : texts.map((t, i) => out[i] ?? t);
 
           // Anti-garbage: the gateway has been seen to leak Python
-          // tracebacks, system-prompt echoes, and truncated nonsense
-          // ("თ=[" for "Tokyo") into the translations array. Detect
-          // those patterns and substitute the source string back so
-          // we never cache them. Beka observed corrupted destination
-          // names on the home screen as a result of this.
+          // tracebacks, system-prompt echoes, truncated nonsense
+          // ("टोक्यो)) flores"), and wrong-language results into the
+          // translations array. Detect those patterns and substitute
+          // the source string back so we never cache them. Beka saw
+          // corrupted destination names on the home screen because
+          // this filter wasn't running before.
           const sanitized = aligned.map((t, i) =>
-            looksLikeGatewayGarbage(t, texts[i]) ? texts[i] : t,
+            looksLikeGatewayGarbage(t, texts[i], target) ? texts[i] : t,
           );
 
           return Response.json({ translations: sanitized });
@@ -194,7 +195,7 @@ export const Route = createFileRoute("/api/translate")({
   },
 });
 
-function looksLikeGatewayGarbage(translated: string, source: string): boolean {
+function looksLikeGatewayGarbage(translated: string, source: string, target: string): boolean {
   if (typeof translated !== "string") return true;
   const t = translated.trim();
   if (!t) return true;
@@ -205,5 +206,36 @@ function looksLikeGatewayGarbage(translated: string, source: string): boolean {
   if (/preserve placeholders like \{name\}/i.test(t)) return true;
   if (source.length >= 5 && t.length > source.length * 10) return true;
   if (source.length >= 4 && t.length <= 2) return true;
+  // Trailing / mid-string bracket junk — "टोक्यो))", "रोम]))"
+  if (/[)\]}>]{2,}\s*$/.test(t)) return true;
+  if (/[)\]}>]{2,}\s+\S/.test(t)) return true;
+  // Wrong-script result for descriptive text (≥8 chars). Prevents
+  // English (or any other language) from being cached under a Hindi/
+  // Georgian/Arabic key.
+  if (source.length >= 8 && hasWrongScript(t, target)) return true;
+  return false;
+}
+
+function hasWrongScript(text: string, target: string): boolean {
+  const lc = (target || "").toLowerCase();
+  const scriptOf: Array<[string, RegExp]> = [
+    ["ka", /[\u10A0-\u10FF]/],
+    ["hi", /[\u0900-\u097F]/],
+    ["bn", /[\u0980-\u09FF]/],
+    ["ur", /[\u0600-\u06FF]/],
+    ["ru", /[\u0400-\u04FF]/],
+    ["uk", /[\u0400-\u04FF]/],
+    ["ar", /[\u0600-\u06FF]/],
+    ["fa", /[\u0600-\u06FF]/],
+    ["he", /[\u0590-\u05FF]/],
+    ["el", /[\u0370-\u03FF]/],
+    ["th", /[\u0E00-\u0E7F]/],
+    ["ja", /[\u3040-\u30FF\u4E00-\u9FFF]/],
+    ["ko", /[\uAC00-\uD7AF]/],
+    ["zh", /[\u4E00-\u9FFF]/],
+  ];
+  for (const [prefix, rx] of scriptOf) {
+    if (lc.startsWith(prefix)) return !rx.test(text);
+  }
   return false;
 }
