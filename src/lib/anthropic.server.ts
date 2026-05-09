@@ -97,30 +97,50 @@ export async function callClaude(opts: ClaudeCallOpts): Promise<string> {
  *      rule occasionally, especially under load or with terse prompts.
  *   3. Leading prose / commentary before the JSON object — strips
  *      everything up to the first `{` or `[`.
+ *   4. Unescaped control characters (real \n \r \t) inside string
+ *      values — Sonnet emits these constantly when narrating long
+ *      multi-paragraph stories, and strict JSON.parse rejects them.
+ *      We re-escape on the second pass.
  * Returns undefined on anything unparseable so callers can decide
  * whether to surface an empty result or retry.
  */
 export function parseClaudeJson(text: string): unknown {
   const trimmed = text.trim();
 
-  // Pure JSON
+  // 1. Pure JSON
   try {
     return JSON.parse(trimmed);
   } catch {
     /* fall through */
   }
 
-  // Strip markdown fence (```json ... ``` or ``` ... ```)
+  // 2. Same again, but with control-char repair inside strings —
+  // catches "story": "First paragraph.\n\nSecond paragraph." where
+  // the \n is a real newline in the wire bytes (Sonnet does this on
+  // every long-form payload).
+  try {
+    return JSON.parse(repairJsonStrings(trimmed));
+  } catch {
+    /* fall through */
+  }
+
+  // 3. Strip markdown fence (```json ... ``` or ``` ... ```)
   const fence = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
   if (fence) {
+    const inner = fence[1].trim();
     try {
-      return JSON.parse(fence[1].trim());
+      return JSON.parse(inner);
+    } catch {
+      /* fall through */
+    }
+    try {
+      return JSON.parse(repairJsonStrings(inner));
     } catch {
       /* fall through */
     }
   }
 
-  // Locate first `{` or `[` and try to parse from there
+  // 4. Locate first `{` or `[` and try to parse from there
   const firstBrace = trimmed.search(/[{[]/);
   if (firstBrace > 0) {
     const tail = trimmed.slice(firstBrace);
@@ -129,7 +149,62 @@ export function parseClaudeJson(text: string): unknown {
     } catch {
       /* fall through */
     }
+    try {
+      return JSON.parse(repairJsonStrings(tail));
+    } catch {
+      /* fall through */
+    }
   }
 
   return undefined;
+}
+
+/**
+ * Walk the text, and inside JSON string literals re-escape unescaped
+ * control characters (real \n, \r, \t, plus stray backslashes that
+ * aren't part of a valid escape). Untouched outside strings so the
+ * JSON structure itself isn't disturbed. Mirror of the same helper
+ * in src/lib/api.ts client-side.
+ */
+function repairJsonStrings(text: string): string {
+  let inStr = false;
+  let escape = false;
+  let out = "";
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inStr) {
+      if (escape) {
+        out += c;
+        escape = false;
+        continue;
+      }
+      if (c === "\\") {
+        out += c;
+        escape = true;
+        continue;
+      }
+      if (c === '"') {
+        out += c;
+        inStr = false;
+        continue;
+      }
+      if (c === "\n") {
+        out += "\\n";
+        continue;
+      }
+      if (c === "\r") {
+        out += "\\r";
+        continue;
+      }
+      if (c === "\t") {
+        out += "\\t";
+        continue;
+      }
+      out += c;
+      continue;
+    }
+    if (c === '"') inStr = true;
+    out += c;
+  }
+  return out;
 }
