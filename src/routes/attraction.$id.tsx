@@ -1732,19 +1732,32 @@ function HighlightCard({ h, rank, museum }: { h: MuseumHighlight; rank: number; 
     // tries (1) direct page summary by exact title (2) intitle:
     // phrase search (3) full-text search — in that order. Stage 1
     // and 2 only hit a clean artwork page when the query IS the
-    // artwork name; "The Lacemaker Louvre Paris" passes none of
-    // those filters and falls through to noisy text search.
+    // artwork name.
     //
-    // So bare name comes FIRST. We only augment with museum context
-    // for items the artwork name alone disambiguates badly (rare —
-    // famous paintings have unique titles). The previous "more
-    // specific first" sequence is what gave Beka the Liberty Bank
-    // and Vermeer-as-Louvre-building thumbnails.
+    // Strip any parenthetical disambiguator the curator added —
+    // "The Cloisters (entire building and collection)" → "The Cloisters"
+    // — so the direct page lookup gets a clean shot.
+    //
+    // Then try a sequence that forces artwork-style disambiguation:
+    //   1. bare base name                     — direct page hit
+    //   2. base + "painting" / "sculpture"    — disambiguates from
+    //      films, songs, books with the same title (Beka's Lacemaker
+    //      came back as Isabelle Huppert's 1977 movie because the
+    //      bare title page redirects to the film)
+    //   3. base + museum                      — for ambiguous items
+    //   4. base + museum + city               — last resort
+    const baseName = queryName.replace(/\s*\([^)]*\)\s*$/g, "").trim() || queryName;
+    // Crude but effective bucket guess. If we knew the medium for
+    // each highlight we'd use it; we don't, so include the most
+    // common artwork media as separate candidates.
     (async () => {
       const candidates = [
-        queryName,
-        `${queryName} ${museum.name}`,
-        `${queryName} ${museum.name} ${museum.city}`,
+        baseName,
+        `${baseName} painting`,
+        `${baseName} sculpture`,
+        `${baseName} artwork`,
+        `${baseName} ${museum.name}`,
+        `${baseName} ${museum.name} ${museum.city}`,
       ];
       for (const q of candidates) {
         if (cancelled) return;
