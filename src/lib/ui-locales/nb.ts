@@ -113,7 +113,8 @@ export const NB: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Tale støttes ikke på denne enheten",
   "toast.couldNotLoadGuide": "Kunne ikke laste guiden",
   "toast.tryAgainPlease": "Prøv igjen.",
-  "toast.guideOfflineDesc": "Denne guiden er ikke lastet ned ennå. Koble til én gang for å mellomlagre den.",
+  "toast.guideOfflineDesc":
+    "Denne guiden er ikke lastet ned ennå. Koble til én gang for å mellomlagre den.",
   "toast.couldNotLoadAttractions": "Kunne ikke laste severdigheter",
   "toast.allSet": "Alt klart",
   "toast.allSetDesc": "Velkommen til Voices.",
@@ -186,7 +187,8 @@ export const NB: Partial<Record<UiKey, string>> = {
   "set.youOnline": "Du er tilkoblet",
   "set.youOffline": "Du er frakoblet",
   "set.onlineHelp": "Last ned guider nå så de fortsetter å spilles uten signal.",
-  "set.offlineHelp": "Mellomlagrede guider fungerer fortsatt — andre lastes når du kobler til igjen.",
+  "set.offlineHelp":
+    "Mellomlagrede guider fungerer fortsatt — andre lastes når du kobler til igjen.",
   "set.savedSummaryOne": "{saved} lagret · {cached} guide mellomlagret",
   "set.savedSummaryMany": "{saved} lagret · {cached} guider mellomlagret",
   "set.cacheSize": "{flag} {native} · ~{kb} KB på denne enheten",
@@ -205,7 +207,8 @@ export const NB: Partial<Record<UiKey, string>> = {
   "set.appVersion": "Lokali · v1.0",
   "set.searchLanguages": "Søk språk…",
   "set.noLanguagesMatch": "Ingen språk matcher",
-  "set.noNativeVoice": "Ingen innfødt stemme funnet for dette språket. Talen vil bruke en generisk stemme.",
+  "set.noNativeVoice":
+    "Ingen innfødt stemme funnet for dette språket. Talen vil bruke en generisk stemme.",
   "set.noVoiceForLang": "Ingen innfødt stemme funnet på denne enheten for {code}.",
   "set.installVoicesHelp":
     "Vi faller tilbake til nettleserens standard. Installer flere stemmer i operativsystemets tilgjengelighetsinnstillinger.",
@@ -229,6 +232,11 @@ export const NB: Partial<Record<UiKey, string>> = {
   "notif.day": "d",
 
   "results.searching": "Søker…",
+  "loading.searching": "Vi leter etter informasjon…",
+  "loading.checkingSources": "Vi sjekker de nyeste kildene…",
+  "loading.selectingDetails": "Vi velger ut de mest talende detaljene…",
+  "loading.preparingRecommendations": "Vi forbereder anbefalinger laget for deg…",
+  "loading.almostReady": "Nesten klart…",
   "results.countOne": "{n} resultat for",
   "results.countMany": "{n} resultater for",
   "results.placeholder": "Land, by eller severdighet…",

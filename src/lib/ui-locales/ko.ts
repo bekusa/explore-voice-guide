@@ -228,6 +228,11 @@ export const KO: Partial<Record<UiKey, string>> = {
   "notif.day": "일",
 
   "results.searching": "검색 중…",
+  "loading.searching": "정보를 찾고 있어요…",
+  "loading.checkingSources": "최신 자료를 확인하고 있어요…",
+  "loading.selectingDetails": "가장 인상적인 세부 정보를 고르고 있어요…",
+  "loading.preparingRecommendations": "당신만을 위한 추천을 준비하고 있어요…",
+  "loading.almostReady": "거의 다 됐어요…",
   "results.countOne": "결과 {n}개:",
   "results.countMany": "결과 {n}개:",
   "results.placeholder": "국가, 도시 또는 명소…",

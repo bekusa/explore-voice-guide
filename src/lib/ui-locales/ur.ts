@@ -229,6 +229,11 @@ export const UR: Partial<Record<UiKey, string>> = {
   "notif.day": "د",
 
   "results.searching": "تلاش جاری ہے…",
+  "loading.searching": "معلومات تلاش کی جا رہی ہیں…",
+  "loading.checkingSources": "تازہ ترین ذرائع کی جانچ کی جا رہی ہے…",
+  "loading.selectingDetails": "سب سے دلچسپ تفصیلات منتخب کی جا رہی ہیں…",
+  "loading.preparingRecommendations": "آپ کے لیے خاص تجاویز تیار کی جا رہی ہیں…",
+  "loading.almostReady": "تقریباً تیار ہے…",
   "results.countOne": "{n} نتیجہ برائے",
   "results.countMany": "{n} نتائج برائے",
   "results.placeholder": "ملک، شہر یا مقامِ دلچسپی…",

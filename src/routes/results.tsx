@@ -18,6 +18,7 @@ import {
   Star,
 } from "lucide-react";
 import { toast } from "sonner";
+import { LoadingMessages } from "@/components/LoadingMessages";
 import { MobileFrame } from "@/components/MobileFrame";
 import { UnescoBadge } from "@/components/UnescoBadge";
 import { isUnescoSite } from "@/lib/unesco";
@@ -299,7 +300,12 @@ function ResultsPage() {
 
         {/* Body */}
         <section className="px-6 pt-4">
-          {loading && <SkeletonList />}
+          {loading && (
+            <>
+              <LoadingMessages className="mb-4 mt-2" />
+              <SkeletonList />
+            </>
+          )}
 
           {!loading && results && results.length === 0 && <EmptyState query={q} />}
 

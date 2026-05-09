@@ -113,7 +113,8 @@ export const FI: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Puhetta ei tueta tällä laitteella",
   "toast.couldNotLoadGuide": "Opasta ei voitu ladata",
   "toast.tryAgainPlease": "Yritä uudelleen.",
-  "toast.guideOfflineDesc": "Tätä opasta ei ole vielä ladattu. Yhdistä kerran tallentaaksesi sen välimuistiin.",
+  "toast.guideOfflineDesc":
+    "Tätä opasta ei ole vielä ladattu. Yhdistä kerran tallentaaksesi sen välimuistiin.",
   "toast.couldNotLoadAttractions": "Nähtävyyksiä ei voitu ladata",
   "toast.allSet": "Kaikki valmista",
   "toast.allSetDesc": "Tervetuloa Voicesiin.",
@@ -144,7 +145,8 @@ export const FI: Partial<Record<UiKey, string>> = {
   "saved.emptyYet": "vielä",
   "saved.emptyHelp": "Napauta kirjanmerkkiä paikan kohdalla pitääksesi sen offline-tilassa.",
   "saved.exploreCta": "Tutki paikkoja",
-  "saved.clearConfirm": "Tyhjennetäänkö kaikki tallennetut paikat? Tämä ei poista välimuistissa olevaa ääntä.",
+  "saved.clearConfirm":
+    "Tyhjennetäänkö kaikki tallennetut paikat? Tämä ei poista välimuistissa olevaa ääntä.",
   "saved.clear": "Tyhjennä",
 
   // Map page
@@ -155,8 +157,7 @@ export const FI: Partial<Record<UiKey, string>> = {
   "map.centerLoc": "Keskitä omaan sijaintiin",
   "map.empty": "Ei pinnejä",
   "map.emptyYet": "vielä",
-  "map.emptyHelp":
-    "Tallenna paikka etusivulta tai kohdesivulta, niin se ilmestyy tähän kartalle.",
+  "map.emptyHelp": "Tallenna paikka etusivulta tai kohdesivulta, niin se ilmestyy tähän kartalle.",
   "map.findCta": "Etsi paikkoja",
   "map.loading": "Kartta latautuu…",
 
@@ -186,7 +187,8 @@ export const FI: Partial<Record<UiKey, string>> = {
   "set.youOnline": "Olet verkossa",
   "set.youOffline": "Olet offline-tilassa",
   "set.onlineHelp": "Lataa oppaat nyt, niin ne soivat edelleen ilman signaalia.",
-  "set.offlineHelp": "Välimuistissa olevat oppaat toimivat edelleen — muut latautuvat, kun yhdistät uudelleen.",
+  "set.offlineHelp":
+    "Välimuistissa olevat oppaat toimivat edelleen — muut latautuvat, kun yhdistät uudelleen.",
   "set.savedSummaryOne": "{saved} tallennettu · {cached} opas välimuistissa",
   "set.savedSummaryMany": "{saved} tallennettu · {cached} opasta välimuistissa",
   "set.cacheSize": "{flag} {native} · ~{kb} KB tällä laitteella",
@@ -229,6 +231,11 @@ export const FI: Partial<Record<UiKey, string>> = {
   "notif.day": "pv",
 
   "results.searching": "Haetaan…",
+  "loading.searching": "Etsimme tietoa…",
+  "loading.checkingSources": "Tarkistamme tuoreimmat lähteet…",
+  "loading.selectingDetails": "Poimimme puhuttelevimmat yksityiskohdat…",
+  "loading.preparingRecommendations": "Valmistelemme suosituksia juuri sinulle…",
+  "loading.almostReady": "Melkein valmista…",
   "results.countOne": "{n} tulos haulle",
   "results.countMany": "{n} tulosta haulle",
   "results.placeholder": "Maa, kaupunki tai nähtävyys…",
@@ -310,7 +317,8 @@ export const FI: Partial<Record<UiKey, string>> = {
   "auth.beginJourney": "Aloita matkasi",
   "auth.signInCont": "Kirjaudu sisään jatkaaksesi",
   "auth.createAcct": "Luo tilisi",
-  "auth.subtitle": "Tallenna kierroksia, synkronoi lukuja ja avaa elokuvallinen kerronta omalla kielelläsi.",
+  "auth.subtitle":
+    "Tallenna kierroksia, synkronoi lukuja ja avaa elokuvallinen kerronta omalla kielelläsi.",
   "auth.name": "Nimi",
   "auth.yourName": "Nimesi",
   "auth.emailPlaceholder": "sina@esimerkki.com",

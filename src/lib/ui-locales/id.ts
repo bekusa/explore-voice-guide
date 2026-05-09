@@ -113,8 +113,7 @@ export const ID: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Suara tidak didukung di perangkat ini",
   "toast.couldNotLoadGuide": "Tidak bisa memuat pemandu",
   "toast.tryAgainPlease": "Silakan coba lagi.",
-  "toast.guideOfflineDesc":
-    "Pemandu ini belum diunduh. Sambungkan sekali untuk meng-cache-nya.",
+  "toast.guideOfflineDesc": "Pemandu ini belum diunduh. Sambungkan sekali untuk meng-cache-nya.",
   "toast.couldNotLoadAttractions": "Tidak bisa memuat atraksi",
   "toast.allSet": "Semua siap",
   "toast.allSetDesc": "Selamat datang di Voices.",
@@ -138,8 +137,7 @@ export const ID: Partial<Record<UiKey, string>> = {
   "saved.your": "Tempat",
   "saved.placesOne": "milikmu",
   "saved.placesMany": "milikmu",
-  "saved.storedHelp":
-    "Tersimpan di perangkat ini — narasi berjalan tanpa koneksi.",
+  "saved.storedHelp": "Tersimpan di perangkat ini — narasi berjalan tanpa koneksi.",
   "saved.guideCached": "Pemandu di-cache",
   "saved.removeAria": "Hapus {name}",
   "saved.empty": "Tidak ada yang tersimpan",
@@ -188,7 +186,8 @@ export const ID: Partial<Record<UiKey, string>> = {
   "set.youOnline": "Kamu daring",
   "set.youOffline": "Kamu luring",
   "set.onlineHelp": "Unduh pemandu sekarang agar tetap berjalan tanpa sinyal.",
-  "set.offlineHelp": "Pemandu yang di-cache tetap berjalan — yang lain akan dimuat saat tersambung kembali.",
+  "set.offlineHelp":
+    "Pemandu yang di-cache tetap berjalan — yang lain akan dimuat saat tersambung kembali.",
   "set.savedSummaryOne": "{saved} tersimpan · {cached} pemandu di-cache",
   "set.savedSummaryMany": "{saved} tersimpan · {cached} pemandu di-cache",
   "set.cacheSize": "{flag} {native} · ~{kb} KB di perangkat ini",
@@ -207,8 +206,7 @@ export const ID: Partial<Record<UiKey, string>> = {
   "set.appVersion": "Lokali · v1.0",
   "set.searchLanguages": "Cari bahasa…",
   "set.noLanguagesMatch": "Tidak ada bahasa yang cocok",
-  "set.noNativeVoice":
-    "Tidak ada suara asli untuk bahasa ini. Suara umum akan digunakan.",
+  "set.noNativeVoice": "Tidak ada suara asli untuk bahasa ini. Suara umum akan digunakan.",
   "set.noVoiceForLang": "Tidak ada suara asli untuk {code} di perangkat ini.",
   "set.installVoicesHelp":
     "Kami akan kembali ke bawaan peramban. Pasang suara tambahan di pengaturan aksesibilitas sistem operasimu.",
@@ -232,6 +230,11 @@ export const ID: Partial<Record<UiKey, string>> = {
   "notif.day": "h",
 
   "results.searching": "Mencari…",
+  "loading.searching": "Mencari informasi…",
+  "loading.checkingSources": "Memeriksa sumber terbaru…",
+  "loading.selectingDetails": "Memilih detail yang paling berkesan…",
+  "loading.preparingRecommendations": "Menyiapkan rekomendasi khusus untukmu…",
+  "loading.almostReady": "Hampir selesai…",
   "results.countOne": "{n} hasil untuk",
   "results.countMany": "{n} hasil untuk",
   "results.placeholder": "Negara, kota, atau landmark…",
@@ -314,8 +317,7 @@ export const ID: Partial<Record<UiKey, string>> = {
   "auth.beginJourney": "Mulai perjalananmu",
   "auth.signInCont": "Masuk untuk melanjutkan",
   "auth.createAcct": "Buat akunmu",
-  "auth.subtitle":
-    "Simpan tur, sinkronkan bab, dan buka narasi sinematik dalam bahasamu.",
+  "auth.subtitle": "Simpan tur, sinkronkan bab, dan buka narasi sinematik dalam bahasamu.",
   "auth.name": "Nama",
   "auth.yourName": "Namamu",
   "auth.emailPlaceholder": "kamu@contoh.com",

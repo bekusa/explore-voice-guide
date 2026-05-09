@@ -224,6 +224,11 @@ export const ZH_TW: Partial<Record<UiKey, string>> = {
   "notif.day": "天",
 
   "results.searching": "搜尋中…",
+  "loading.searching": "正在搜尋資訊…",
+  "loading.checkingSources": "正在查閱最新來源…",
+  "loading.selectingDetails": "正在挑選最動人的細節…",
+  "loading.preparingRecommendations": "正在為您準備專屬推薦…",
+  "loading.almostReady": "馬上就好…",
   "results.countOne": "{n} 筆結果:",
   "results.countMany": "{n} 筆結果:",
   "results.placeholder": "國家、城市或地標…",

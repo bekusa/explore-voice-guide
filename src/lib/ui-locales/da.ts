@@ -113,7 +113,8 @@ export const DA: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Tale understøttes ikke på denne enhed",
   "toast.couldNotLoadGuide": "Kunne ikke indlæse guiden",
   "toast.tryAgainPlease": "Prøv igen.",
-  "toast.guideOfflineDesc": "Denne guide er ikke downloadet endnu. Forbind én gang for at mellemlagre den.",
+  "toast.guideOfflineDesc":
+    "Denne guide er ikke downloadet endnu. Forbind én gang for at mellemlagre den.",
   "toast.couldNotLoadAttractions": "Kunne ikke indlæse seværdigheder",
   "toast.allSet": "Alt klar",
   "toast.allSetDesc": "Velkommen til Voices.",
@@ -155,8 +156,7 @@ export const DA: Partial<Record<UiKey, string>> = {
   "map.centerLoc": "Centrér på min placering",
   "map.empty": "Ingen nåle",
   "map.emptyYet": "endnu",
-  "map.emptyHelp":
-    "Gem et sted fra hjem- eller destinationssiden, så dukker det op her på kortet.",
+  "map.emptyHelp": "Gem et sted fra hjem- eller destinationssiden, så dukker det op her på kortet.",
   "map.findCta": "Find steder",
   "map.loading": "Indlæser kort…",
 
@@ -186,7 +186,8 @@ export const DA: Partial<Record<UiKey, string>> = {
   "set.youOnline": "Du er online",
   "set.youOffline": "Du er offline",
   "set.onlineHelp": "Download guides nu, så de bliver ved med at spille uden signal.",
-  "set.offlineHelp": "Mellemlagrede guides fungerer stadig — andre indlæses, når du forbinder igen.",
+  "set.offlineHelp":
+    "Mellemlagrede guides fungerer stadig — andre indlæses, når du forbinder igen.",
   "set.savedSummaryOne": "{saved} gemt · {cached} guide mellemlagret",
   "set.savedSummaryMany": "{saved} gemt · {cached} guides mellemlagret",
   "set.cacheSize": "{flag} {native} · ~{kb} KB på denne enhed",
@@ -205,7 +206,8 @@ export const DA: Partial<Record<UiKey, string>> = {
   "set.appVersion": "Lokali · v1.0",
   "set.searchLanguages": "Søg sprog…",
   "set.noLanguagesMatch": "Ingen sprog matcher",
-  "set.noNativeVoice": "Ingen indfødt stemme fundet til dette sprog. Tale vil bruge en generisk stemme.",
+  "set.noNativeVoice":
+    "Ingen indfødt stemme fundet til dette sprog. Tale vil bruge en generisk stemme.",
   "set.noVoiceForLang": "Ingen indfødt stemme fundet på denne enhed til {code}.",
   "set.installVoicesHelp":
     "Vi falder tilbage til browserstandarden. Installér flere stemmer i operativsystemets tilgængelighedsindstillinger.",
@@ -229,6 +231,11 @@ export const DA: Partial<Record<UiKey, string>> = {
   "notif.day": "d",
 
   "results.searching": "Søger…",
+  "loading.searching": "Vi søger oplysninger…",
+  "loading.checkingSources": "Vi tjekker de nyeste kilder…",
+  "loading.selectingDetails": "Vi vælger de mest sigende detaljer…",
+  "loading.preparingRecommendations": "Vi forbereder anbefalinger til dig…",
+  "loading.almostReady": "Næsten klar…",
   "results.countOne": "{n} resultat for",
   "results.countMany": "{n} resultater for",
   "results.placeholder": "Land, by eller seværdighed…",

@@ -231,6 +231,11 @@ export const RO: Partial<Record<UiKey, string>> = {
   "notif.day": "z",
 
   "results.searching": "Se caută…",
+  "loading.searching": "Căutăm informații…",
+  "loading.checkingSources": "Verificăm cele mai recente surse…",
+  "loading.selectingDetails": "Alegem cele mai grăitoare detalii…",
+  "loading.preparingRecommendations": "Pregătim recomandări numai pentru tine…",
+  "loading.almostReady": "Aproape gata…",
   "results.countOne": "{n} rezultat pentru",
   "results.countMany": "{n} rezultate pentru",
   "results.placeholder": "Țară, oraș sau loc…",

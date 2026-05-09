@@ -138,8 +138,7 @@ export const MS: Partial<Record<UiKey, string>> = {
   "saved.your": "Tempat",
   "saved.placesOne": "anda",
   "saved.placesMany": "anda",
-  "saved.storedHelp":
-    "Disimpan pada peranti ini — naratif berjalan tanpa sambungan.",
+  "saved.storedHelp": "Disimpan pada peranti ini — naratif berjalan tanpa sambungan.",
   "saved.guideCached": "Panduan di-cache",
   "saved.removeAria": "Buang {name}",
   "saved.empty": "Tiada apa-apa disimpan",
@@ -210,8 +209,7 @@ export const MS: Partial<Record<UiKey, string>> = {
   "set.appVersion": "Lokali · v1.0",
   "set.searchLanguages": "Cari bahasa…",
   "set.noLanguagesMatch": "Tiada bahasa yang sepadan",
-  "set.noNativeVoice":
-    "Tiada suara asli untuk bahasa ini. Suara generik akan digunakan.",
+  "set.noNativeVoice": "Tiada suara asli untuk bahasa ini. Suara generik akan digunakan.",
   "set.noVoiceForLang": "Tiada suara asli untuk {code} pada peranti ini.",
   "set.installVoicesHelp":
     "Kami akan kembali kepada lalai pelayar. Pasang suara tambahan dalam tetapan kebolehcapaian sistem pengendalian anda.",
@@ -227,8 +225,7 @@ export const MS: Partial<Record<UiKey, string>> = {
   "notif.clearAll": "Kosongkan semua",
   "notif.dismiss": "Tutup",
   "notif.emptyTitle": "Tiada pemberitahuan",
-  "notif.emptyHelp":
-    "Petua, kemas kini perjalanan, dan idea pengembaraan akan muncul di sini.",
+  "notif.emptyHelp": "Petua, kemas kini perjalanan, dan idea pengembaraan akan muncul di sini.",
   "notif.backHome": "Kembali ke laman utama",
   "notif.now": "kini",
   "notif.min": "m",
@@ -236,6 +233,11 @@ export const MS: Partial<Record<UiKey, string>> = {
   "notif.day": "h",
 
   "results.searching": "Mencari…",
+  "loading.searching": "Mencari maklumat…",
+  "loading.checkingSources": "Menyemak sumber terkini…",
+  "loading.selectingDetails": "Memilih butiran yang paling menarik…",
+  "loading.preparingRecommendations": "Menyediakan cadangan khas untuk anda…",
+  "loading.almostReady": "Hampir siap…",
   "results.countOne": "{n} hasil untuk",
   "results.countMany": "{n} hasil untuk",
   "results.placeholder": "Negara, bandar, atau mercu tanda…",
@@ -253,8 +255,7 @@ export const MS: Partial<Record<UiKey, string>> = {
   "dest.exploreTitle": "Terokai",
   "dest.chooseDest": "Pilih destinasi",
   "dest.searchAny": "Mana-mana bandar, negara, atau mercu tanda…",
-  "dest.searchHint":
-    "Tekan Enter untuk menjelajah ke mana-mana di Bumi dengan Lokali AI.",
+  "dest.searchHint": "Tekan Enter untuk menjelajah ke mana-mana di Bumi dengan Lokali AI.",
   "dest.allCount": "Semua ({n})",
   "dest.countOne": "{n} destinasi",
   "dest.countMany": "{n} destinasi",
@@ -319,8 +320,7 @@ export const MS: Partial<Record<UiKey, string>> = {
   "auth.beginJourney": "Mulakan perjalanan anda",
   "auth.signInCont": "Log masuk untuk meneruskan",
   "auth.createAcct": "Buat akaun anda",
-  "auth.subtitle":
-    "Simpan lawatan, segerakkan bab, dan buka naratif sinematik dalam bahasa anda.",
+  "auth.subtitle": "Simpan lawatan, segerakkan bab, dan buka naratif sinematik dalam bahasa anda.",
   "auth.name": "Nama",
   "auth.yourName": "Nama anda",
   "auth.emailPlaceholder": "anda@contoh.com",
@@ -376,12 +376,9 @@ export const MS: Partial<Record<UiKey, string>> = {
   "attr.onTheMap": "Di atas",
   "attr.mapWord": "peta",
   "attr.openInGmaps": "Buka dalam Google Maps",
-  "attr.savedNearbyOne":
-    "{n} tempat tersimpan berhampiran — ketik pin untuk membuka.",
-  "attr.savedNearbyMany":
-    "{n} tempat tersimpan berhampiran — ketik pin untuk membuka.",
-  "attr.tapDirections":
-    "Ketik untuk membuka arah dari lokasi semasa anda.",
+  "attr.savedNearbyOne": "{n} tempat tersimpan berhampiran — ketik pin untuk membuka.",
+  "attr.savedNearbyMany": "{n} tempat tersimpan berhampiran — ketik pin untuk membuka.",
+  "attr.tapDirections": "Ketik untuk membuka arah dari lokasi semasa anda.",
   "attr.begin": "Mula",
   "attr.listen": "Dengar",
   "attr.get": "Dapatkan",

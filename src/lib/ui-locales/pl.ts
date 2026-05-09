@@ -229,6 +229,11 @@ export const PL: Partial<Record<UiKey, string>> = {
   "notif.day": "d",
 
   "results.searching": "Szukam…",
+  "loading.searching": "Szukamy informacji…",
+  "loading.checkingSources": "Sprawdzamy najnowsze źródła…",
+  "loading.selectingDetails": "Wybieramy najbardziej wymowne szczegóły…",
+  "loading.preparingRecommendations": "Przygotowujemy rekomendacje specjalnie dla Ciebie…",
+  "loading.almostReady": "Już prawie gotowe…",
   "results.countOne": "{n} wynik dla",
   "results.countMany": "{n} wyników dla",
   "results.placeholder": "Kraj, miasto lub miejsce…",

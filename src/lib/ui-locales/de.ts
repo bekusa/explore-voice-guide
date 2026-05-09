@@ -113,7 +113,8 @@ export const DE: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Sprache wird auf diesem Gerät nicht unterstützt",
   "toast.couldNotLoadGuide": "Guide konnte nicht geladen werden",
   "toast.tryAgainPlease": "Bitte versuch es noch einmal.",
-  "toast.guideOfflineDesc": "Dieser Guide ist noch nicht heruntergeladen. Verbinde dich einmal, um ihn zwischenzuspeichern.",
+  "toast.guideOfflineDesc":
+    "Dieser Guide ist noch nicht heruntergeladen. Verbinde dich einmal, um ihn zwischenzuspeichern.",
   "toast.couldNotLoadAttractions": "Sehenswürdigkeiten konnten nicht geladen werden",
   "toast.allSet": "Alles bereit",
   "toast.allSetDesc": "Willkommen bei Voices.",
@@ -144,7 +145,8 @@ export const DE: Partial<Record<UiKey, string>> = {
   "saved.emptyYet": "noch",
   "saved.emptyHelp": "Tippe auf das Lesezeichen bei einem Ort, um ihn offline zu behalten.",
   "saved.exploreCta": "Orte entdecken",
-  "saved.clearConfirm": "Alle gespeicherten Orte löschen? Zwischengespeicherte Audios bleiben erhalten.",
+  "saved.clearConfirm":
+    "Alle gespeicherten Orte löschen? Zwischengespeicherte Audios bleiben erhalten.",
   "saved.clear": "Löschen",
 
   // Map page
@@ -186,7 +188,8 @@ export const DE: Partial<Record<UiKey, string>> = {
   "set.youOnline": "Du bist online",
   "set.youOffline": "Du bist offline",
   "set.onlineHelp": "Lade Guides jetzt herunter, damit sie ohne Signal weiterlaufen.",
-  "set.offlineHelp": "Zwischengespeicherte Guides funktionieren weiter — andere laden, sobald du wieder verbunden bist.",
+  "set.offlineHelp":
+    "Zwischengespeicherte Guides funktionieren weiter — andere laden, sobald du wieder verbunden bist.",
   "set.savedSummaryOne": "{saved} gespeichert · {cached} Guide zwischengespeichert",
   "set.savedSummaryMany": "{saved} gespeichert · {cached} Guides zwischengespeichert",
   "set.cacheSize": "{flag} {native} · ~{kb} KB auf diesem Gerät",
@@ -205,7 +208,8 @@ export const DE: Partial<Record<UiKey, string>> = {
   "set.appVersion": "Lokali · v1.0",
   "set.searchLanguages": "Sprachen suchen…",
   "set.noLanguagesMatch": "Keine Sprachen gefunden",
-  "set.noNativeVoice": "Keine native Stimme für diese Sprache gefunden. Es wird eine generische Stimme verwendet.",
+  "set.noNativeVoice":
+    "Keine native Stimme für diese Sprache gefunden. Es wird eine generische Stimme verwendet.",
   "set.noVoiceForLang": "Keine native Stimme auf diesem Gerät für {code} gefunden.",
   "set.installVoicesHelp":
     "Wir greifen auf den Browser-Standard zurück. Installier zusätzliche Stimmen in den Bedienungshilfen deines Betriebssystems.",
@@ -229,6 +233,11 @@ export const DE: Partial<Record<UiKey, string>> = {
   "notif.day": "T",
 
   "results.searching": "Suche läuft…",
+  "loading.searching": "Wir suchen Informationen…",
+  "loading.checkingSources": "Wir prüfen die neuesten Quellen…",
+  "loading.selectingDetails": "Wir wählen die aussagekräftigsten Details…",
+  "loading.preparingRecommendations": "Wir bereiten Empfehlungen nur für dich vor…",
+  "loading.almostReady": "Fast fertig…",
   "results.countOne": "{n} Ergebnis für",
   "results.countMany": "{n} Ergebnisse für",
   "results.placeholder": "Land, Stadt oder Sehenswürdigkeit…",
@@ -310,7 +319,8 @@ export const DE: Partial<Record<UiKey, string>> = {
   "auth.beginJourney": "Beginn deine Reise",
   "auth.signInCont": "Melde dich an, um fortzufahren",
   "auth.createAcct": "Konto erstellen",
-  "auth.subtitle": "Speichere Touren, synchronisiere Kapitel und schalte filmische Erzählungen in deiner Sprache frei.",
+  "auth.subtitle":
+    "Speichere Touren, synchronisiere Kapitel und schalte filmische Erzählungen in deiner Sprache frei.",
   "auth.name": "Name",
   "auth.yourName": "Dein Name",
   "auth.emailPlaceholder": "du@beispiel.com",
@@ -366,8 +376,10 @@ export const DE: Partial<Record<UiKey, string>> = {
   "attr.onTheMap": "Auf der",
   "attr.mapWord": "Karte",
   "attr.openInGmaps": "In Google Maps öffnen",
-  "attr.savedNearbyOne": "{n} gespeicherter Ort in der Nähe — tippe auf einen Pin, um ihn zu öffnen.",
-  "attr.savedNearbyMany": "{n} gespeicherte Orte in der Nähe — tippe auf einen Pin, um ihn zu öffnen.",
+  "attr.savedNearbyOne":
+    "{n} gespeicherter Ort in der Nähe — tippe auf einen Pin, um ihn zu öffnen.",
+  "attr.savedNearbyMany":
+    "{n} gespeicherte Orte in der Nähe — tippe auf einen Pin, um ihn zu öffnen.",
   "attr.tapDirections": "Tippe, um die Route von deinem aktuellen Standort zu öffnen.",
   "attr.begin": "Starten",
   "attr.listen": "Anhören",

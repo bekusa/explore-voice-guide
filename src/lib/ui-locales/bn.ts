@@ -230,6 +230,11 @@ export const BN: Partial<Record<UiKey, string>> = {
   "notif.day": "দি",
 
   "results.searching": "খোঁজা হচ্ছে…",
+  "loading.searching": "তথ্য খুঁজছি…",
+  "loading.checkingSources": "সর্বশেষ উৎসগুলো যাচাই করছি…",
+  "loading.selectingDetails": "সবচেয়ে চিত্তাকর্ষক বিবরণ বেছে নিচ্ছি…",
+  "loading.preparingRecommendations": "আপনার জন্য সুপারিশ তৈরি করছি…",
+  "loading.almostReady": "প্রায় প্রস্তুত…",
   "results.countOne": "{n}টি ফলাফল — অনুসন্ধান",
   "results.countMany": "{n}টি ফলাফল — অনুসন্ধান",
   "results.placeholder": "দেশ, শহর বা দর্শনীয় স্থান…",

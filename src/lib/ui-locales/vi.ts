@@ -230,6 +230,11 @@ export const VI: Partial<Record<UiKey, string>> = {
   "notif.day": "n",
 
   "results.searching": "Đang tìm…",
+  "loading.searching": "Đang tìm thông tin…",
+  "loading.checkingSources": "Đang kiểm tra các nguồn mới nhất…",
+  "loading.selectingDetails": "Đang chọn những chi tiết ấn tượng nhất…",
+  "loading.preparingRecommendations": "Đang chuẩn bị gợi ý dành riêng cho bạn…",
+  "loading.almostReady": "Sắp xong rồi…",
   "results.countOne": "{n} kết quả cho",
   "results.countMany": "{n} kết quả cho",
   "results.placeholder": "Quốc gia, thành phố hoặc địa danh…",

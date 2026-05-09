@@ -228,6 +228,11 @@ export const CS: Partial<Record<UiKey, string>> = {
   "notif.day": "d",
 
   "results.searching": "Hledám…",
+  "loading.searching": "Hledáme informace…",
+  "loading.checkingSources": "Ověřujeme nejnovější zdroje…",
+  "loading.selectingDetails": "Vybíráme ty nejvýmluvnější detaily…",
+  "loading.preparingRecommendations": "Připravujeme doporučení šitá na míru…",
+  "loading.almostReady": "Téměř hotovo…",
   "results.countOne": "{n} výsledek pro",
   "results.countMany": "{n} výsledků pro",
   "results.placeholder": "Země, město nebo místo…",

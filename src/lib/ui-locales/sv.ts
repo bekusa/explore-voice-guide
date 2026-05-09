@@ -113,7 +113,8 @@ export const SV: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Tal stöds inte på den här enheten",
   "toast.couldNotLoadGuide": "Kunde inte ladda guiden",
   "toast.tryAgainPlease": "Försök igen.",
-  "toast.guideOfflineDesc": "Den här guiden är inte nedladdad ännu. Anslut en gång för att cacha den.",
+  "toast.guideOfflineDesc":
+    "Den här guiden är inte nedladdad ännu. Anslut en gång för att cacha den.",
   "toast.couldNotLoadAttractions": "Kunde inte ladda sevärdheter",
   "toast.allSet": "Klart",
   "toast.allSetDesc": "Välkommen till Voices.",
@@ -205,7 +206,8 @@ export const SV: Partial<Record<UiKey, string>> = {
   "set.appVersion": "Lokali · v1.0",
   "set.searchLanguages": "Sök språk…",
   "set.noLanguagesMatch": "Inga språk matchar",
-  "set.noNativeVoice": "Ingen inhemsk röst hittades för det här språket. Tal kommer att använda en generisk röst.",
+  "set.noNativeVoice":
+    "Ingen inhemsk röst hittades för det här språket. Tal kommer att använda en generisk röst.",
   "set.noVoiceForLang": "Ingen inhemsk röst hittades på den här enheten för {code}.",
   "set.installVoicesHelp":
     "Vi faller tillbaka på webbläsarens standard. Installera fler röster i operativsystemets tillgänglighetsinställningar.",
@@ -229,6 +231,11 @@ export const SV: Partial<Record<UiKey, string>> = {
   "notif.day": "d",
 
   "results.searching": "Söker…",
+  "loading.searching": "Vi söker information…",
+  "loading.checkingSources": "Vi kontrollerar de senaste källorna…",
+  "loading.selectingDetails": "Vi väljer ut de mest talande detaljerna…",
+  "loading.preparingRecommendations": "Vi förbereder rekommendationer just för dig…",
+  "loading.almostReady": "Nästan klart…",
   "results.countOne": "{n} resultat för",
   "results.countMany": "{n} resultat för",
   "results.placeholder": "Land, stad eller sevärdhet…",

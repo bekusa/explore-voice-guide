@@ -230,6 +230,11 @@ export const TR: Partial<Record<UiKey, string>> = {
   "notif.day": "g",
 
   "results.searching": "Aranıyor…",
+  "loading.searching": "Bilgi arıyoruz…",
+  "loading.checkingSources": "En güncel kaynakları kontrol ediyoruz…",
+  "loading.selectingDetails": "En çarpıcı ayrıntıları seçiyoruz…",
+  "loading.preparingRecommendations": "Sana özel öneriler hazırlıyoruz…",
+  "loading.almostReady": "Neredeyse hazır…",
   "results.countOne": "{n} sonuç:",
   "results.countMany": "{n} sonuç:",
   "results.placeholder": "Ülke, şehir veya yer…",

@@ -309,6 +309,15 @@ export const UI_STRINGS = {
   "notif.day": "d",
 
   "results.searching": "Searching…",
+  // Rotating loading messages — shown while the LLM is generating a
+  // fresh attractions list or guide. Cache hits skip these entirely.
+  // The component cycles through them every ~3s in order, so order
+  // matters: each step should feel like progress toward the next.
+  "loading.searching": "Searching for information…",
+  "loading.checkingSources": "Checking the latest sources…",
+  "loading.selectingDetails": "Picking the most telling details…",
+  "loading.preparingRecommendations": "Preparing recommendations just for you…",
+  "loading.almostReady": "Almost ready…",
   "results.countOne": "{n} result for",
   "results.countMany": "{n} results for",
   "results.placeholder": "Country, city, or landmark…",

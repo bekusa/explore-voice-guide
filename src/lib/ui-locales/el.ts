@@ -235,6 +235,11 @@ export const EL: Partial<Record<UiKey, string>> = {
   "notif.day": "η",
 
   "results.searching": "Αναζήτηση…",
+  "loading.searching": "Αναζητούμε πληροφορίες…",
+  "loading.checkingSources": "Ελέγχουμε τις πιο πρόσφατες πηγές…",
+  "loading.selectingDetails": "Επιλέγουμε τις πιο εύγλωττες λεπτομέρειες…",
+  "loading.preparingRecommendations": "Ετοιμάζουμε προτάσεις ειδικά για εσάς…",
+  "loading.almostReady": "Σχεδόν έτοιμο…",
   "results.countOne": "{n} αποτέλεσμα για",
   "results.countMany": "{n} αποτελέσματα για",
   "results.placeholder": "Χώρα, πόλη ή αξιοθέατο…",

@@ -231,6 +231,11 @@ export const JA: Partial<Record<UiKey, string>> = {
   "notif.day": "日",
 
   "results.searching": "検索中…",
+  "loading.searching": "情報を探しています…",
+  "loading.checkingSources": "最新の情報源を確認しています…",
+  "loading.selectingDetails": "もっとも印象的なディテールを選んでいます…",
+  "loading.preparingRecommendations": "あなたにぴったりのおすすめを準備しています…",
+  "loading.almostReady": "もうすぐ完成です…",
   "results.countOne": "{n}件の結果:",
   "results.countMany": "{n}件の結果:",
   "results.placeholder": "国、都市、または名所…",

@@ -228,6 +228,11 @@ export const FA: Partial<Record<UiKey, string>> = {
   "notif.day": "ر",
 
   "results.searching": "در حال جستجو…",
+  "loading.searching": "در حال جست‌وجوی اطلاعات…",
+  "loading.checkingSources": "در حال بررسی تازه‌ترین منابع…",
+  "loading.selectingDetails": "در حال انتخاب گویاترین جزئیات…",
+  "loading.preparingRecommendations": "در حال آماده‌سازی پیشنهادهای ویژهٔ شما…",
+  "loading.almostReady": "تقریباً آماده است…",
   "results.countOne": "{n} نتیجه برای",
   "results.countMany": "{n} نتیجه برای",
   "results.placeholder": "کشور، شهر یا مکان دیدنی…",

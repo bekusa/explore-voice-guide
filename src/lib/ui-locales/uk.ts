@@ -229,6 +229,11 @@ export const UK: Partial<Record<UiKey, string>> = {
   "notif.day": "д",
 
   "results.searching": "Шукаю…",
+  "loading.searching": "Шукаємо інформацію…",
+  "loading.checkingSources": "Перевіряємо найсвіжіші джерела…",
+  "loading.selectingDetails": "Обираємо найвиразніші деталі…",
+  "loading.preparingRecommendations": "Готуємо рекомендації спеціально для вас…",
+  "loading.almostReady": "Майже готово…",
   "results.countOne": "{n} результат для",
   "results.countMany": "{n} результатів для",
   "results.placeholder": "Країна, місто або місцина…",

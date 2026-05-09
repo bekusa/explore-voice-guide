@@ -227,6 +227,11 @@ export const AR: Partial<Record<UiKey, string>> = {
   "notif.day": "ي",
 
   "results.searching": "جارٍ البحث…",
+  "loading.searching": "نبحث عن المعلومات…",
+  "loading.checkingSources": "نتحقق من أحدث المصادر…",
+  "loading.selectingDetails": "نختار أكثر التفاصيل دلالةً…",
+  "loading.preparingRecommendations": "نُعدّ توصيات مخصصة لك…",
+  "loading.almostReady": "أوشكنا على الانتهاء…",
   "results.countOne": "{n} نتيجة لـ",
   "results.countMany": "{n} نتائج لـ",
   "results.placeholder": "دولة أو مدينة أو معلم…",

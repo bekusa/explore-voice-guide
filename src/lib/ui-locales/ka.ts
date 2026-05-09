@@ -228,6 +228,11 @@ export const KA: Partial<Record<UiKey, string>> = {
   "notif.day": "დღ",
 
   "results.searching": "მიმდინარეობს ძებნა…",
+  "loading.searching": "ვეძებთ ინფორმაციას…",
+  "loading.checkingSources": "ვამოწმებთ განახლებულ წყაროებს…",
+  "loading.selectingDetails": "ვარჩევთ ყველაზე მნიშვნელოვან დეტალებს…",
+  "loading.preparingRecommendations": "ვამზადებთ შენზე მორგებულ რეკომენდაციებს…",
+  "loading.almostReady": "თითქმის მზად არის…",
   "results.countOne": "{n} შედეგი მოთხოვნისთვის",
   "results.countMany": "{n} შედეგი მოთხოვნისთვის",
   "results.placeholder": "ქვეყანა, ქალაქი ან ღირსშესანიშნაობა…",

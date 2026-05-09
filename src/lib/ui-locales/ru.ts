@@ -228,6 +228,11 @@ export const RU: Partial<Record<UiKey, string>> = {
   "notif.day": "д",
 
   "results.searching": "Ищу…",
+  "loading.searching": "Ищем информацию…",
+  "loading.checkingSources": "Проверяем свежие источники…",
+  "loading.selectingDetails": "Выбираем самые красноречивые детали…",
+  "loading.preparingRecommendations": "Готовим рекомендации специально для вас…",
+  "loading.almostReady": "Почти готово…",
   "results.countOne": "{n} результат для",
   "results.countMany": "{n} результатов для",
   "results.placeholder": "Страна, город или место…",

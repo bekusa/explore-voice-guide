@@ -155,8 +155,7 @@ export const TH: Partial<Record<UiKey, string>> = {
   "map.centerLoc": "วางตำแหน่งของฉันไว้ตรงกลาง",
   "map.empty": "ไม่มีหมุด",
   "map.emptyYet": "เลย",
-  "map.emptyHelp":
-    "บันทึกสถานที่จากหน้าแรกหรือหน้าจุดหมาย แล้วจะปรากฏที่นี่บนแผนที่",
+  "map.emptyHelp": "บันทึกสถานที่จากหน้าแรกหรือหน้าจุดหมาย แล้วจะปรากฏที่นี่บนแผนที่",
   "map.findCta": "ค้นหาสถานที่",
   "map.loading": "กำลังโหลดแผนที่…",
 
@@ -205,8 +204,7 @@ export const TH: Partial<Record<UiKey, string>> = {
   "set.appVersion": "Lokali · v1.0",
   "set.searchLanguages": "ค้นหาภาษา…",
   "set.noLanguagesMatch": "ไม่มีภาษาที่ตรงกัน",
-  "set.noNativeVoice":
-    "ไม่พบเสียงพื้นเมืองสำหรับภาษานี้ จะใช้เสียงทั่วไปแทน",
+  "set.noNativeVoice": "ไม่พบเสียงพื้นเมืองสำหรับภาษานี้ จะใช้เสียงทั่วไปแทน",
   "set.noVoiceForLang": "ไม่พบเสียงพื้นเมืองสำหรับ {code} บนอุปกรณ์นี้",
   "set.installVoicesHelp":
     "เราจะใช้ค่าเริ่มต้นของเบราว์เซอร์แทน ติดตั้งเสียงเพิ่มเติมในการตั้งค่าการช่วยการเข้าถึงของระบบปฏิบัติการของคุณ",
@@ -230,6 +228,11 @@ export const TH: Partial<Record<UiKey, string>> = {
   "notif.day": "ว",
 
   "results.searching": "กำลังค้นหา…",
+  "loading.searching": "กำลังค้นหาข้อมูล…",
+  "loading.checkingSources": "กำลังตรวจสอบแหล่งข้อมูลล่าสุด…",
+  "loading.selectingDetails": "กำลังคัดเลือกรายละเอียดที่น่าสนใจที่สุด…",
+  "loading.preparingRecommendations": "กำลังเตรียมคำแนะนำเฉพาะสำหรับคุณ…",
+  "loading.almostReady": "ใกล้เสร็จแล้ว…",
   "results.countOne": "{n} ผลลัพธ์สำหรับ",
   "results.countMany": "{n} ผลลัพธ์สำหรับ",
   "results.placeholder": "ประเทศ เมือง หรือสถานที่สำคัญ…",
@@ -312,8 +315,7 @@ export const TH: Partial<Record<UiKey, string>> = {
   "auth.beginJourney": "เริ่มการเดินทางของคุณ",
   "auth.signInCont": "เข้าสู่ระบบเพื่อดำเนินต่อ",
   "auth.createAcct": "สร้างบัญชีของคุณ",
-  "auth.subtitle":
-    "บันทึกทัวร์ ซิงก์บท และปลดล็อกการบรรยายแบบภาพยนตร์ในภาษาของคุณ",
+  "auth.subtitle": "บันทึกทัวร์ ซิงก์บท และปลดล็อกการบรรยายแบบภาพยนตร์ในภาษาของคุณ",
   "auth.name": "ชื่อ",
   "auth.yourName": "ชื่อของคุณ",
   "auth.emailPlaceholder": "you@example.com",
@@ -337,13 +339,11 @@ export const TH: Partial<Record<UiKey, string>> = {
   "onb.step2": "ขั้นที่ 2 จาก 2",
   "onb.chooseLang": "เลือกภาษาของคุณ",
   "onb.pickVoice": "เลือกเสียง",
-  "onb.voiceHelp":
-    "ออดิโอไกด์ของคุณจะถูกบรรยายด้วยเสียงนี้ บางอุปกรณ์มีเสียงระบบที่สมบูรณ์กว่า",
+  "onb.voiceHelp": "ออดิโอไกด์ของคุณจะถูกบรรยายด้วยเสียงนี้ บางอุปกรณ์มีเสียงระบบที่สมบูรณ์กว่า",
   "onb.searchLang": "ค้นหาภาษา…",
   "onb.continue": "ดำเนินต่อ",
   "onb.back": "ย้อนกลับ",
-  "onb.noNativeVoice":
-    "ไม่พบเสียงพื้นเมืองบนอุปกรณ์นี้ ออดิโอไกด์จะใช้เสียงสำรอง",
+  "onb.noNativeVoice": "ไม่พบเสียงพื้นเมืองบนอุปกรณ์นี้ ออดิโอไกด์จะใช้เสียงสำรอง",
   "onb.voiceCountOne": "มีเสียง {n} เสียงบนอุปกรณ์นี้",
   "onb.voiceCountMany": "มีเสียง {n} เสียงบนอุปกรณ์นี้",
   "onb.previewVoice": "ฟังตัวอย่างเสียง",

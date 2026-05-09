@@ -230,6 +230,11 @@ export const HU: Partial<Record<UiKey, string>> = {
   "notif.day": "n",
 
   "results.searching": "Keresés…",
+  "loading.searching": "Információt keresünk…",
+  "loading.checkingSources": "Ellenőrizzük a legfrissebb forrásokat…",
+  "loading.selectingDetails": "Kiválogatjuk a legbeszédesebb részleteket…",
+  "loading.preparingRecommendations": "Személyre szabott ajánlásokat készítünk…",
+  "loading.almostReady": "Mindjárt kész…",
   "results.countOne": "{n} találat erre:",
   "results.countMany": "{n} találat erre:",
   "results.placeholder": "Ország, város vagy nevezetesség…",

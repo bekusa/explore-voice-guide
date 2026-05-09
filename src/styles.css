@@ -293,6 +293,19 @@
 .animate-wave {
   animation: wave 1.2s ease-in-out infinite;
 }
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.45s ease-out both;
+}
 
 /* Leaflet — themed to match the cinematic UI */
 .leaflet-container {

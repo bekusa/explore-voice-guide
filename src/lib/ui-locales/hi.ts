@@ -155,8 +155,7 @@ export const HI: Partial<Record<UiKey, string>> = {
   "map.centerLoc": "मेरे स्थान पर केंद्रित करें",
   "map.empty": "कोई पिन नहीं",
   "map.emptyYet": "अभी तक",
-  "map.emptyHelp":
-    "होम या डेस्टिनेशन पेज से कोई जगह सहेजें — वह यहाँ मानचित्र पर दिखेगी।",
+  "map.emptyHelp": "होम या डेस्टिनेशन पेज से कोई जगह सहेजें — वह यहाँ मानचित्र पर दिखेगी।",
   "map.findCta": "जगहें खोजें",
   "map.loading": "मानचित्र लोड हो रहा है…",
 
@@ -205,8 +204,7 @@ export const HI: Partial<Record<UiKey, string>> = {
   "set.appVersion": "Lokali · v1.0",
   "set.searchLanguages": "भाषाएँ खोजें…",
   "set.noLanguagesMatch": "कोई भाषा मेल नहीं खाती",
-  "set.noNativeVoice":
-    "इस भाषा के लिए कोई मूल आवाज़ नहीं मिली। एक सामान्य आवाज़ इस्तेमाल होगी।",
+  "set.noNativeVoice": "इस भाषा के लिए कोई मूल आवाज़ नहीं मिली। एक सामान्य आवाज़ इस्तेमाल होगी।",
   "set.noVoiceForLang": "इस डिवाइस पर {code} के लिए कोई मूल आवाज़ नहीं मिली।",
   "set.installVoicesHelp":
     "हम ब्राउज़र डिफ़ॉल्ट पर लौट आएँगे। अपने ऑपरेटिंग सिस्टम की एक्सेसिबिलिटी सेटिंग्स में अतिरिक्त आवाज़ें इंस्टॉल करें।",
@@ -230,6 +228,11 @@ export const HI: Partial<Record<UiKey, string>> = {
   "notif.day": "दि",
 
   "results.searching": "खोज रहे हैं…",
+  "loading.searching": "जानकारी खोज रहे हैं…",
+  "loading.checkingSources": "नवीनतम स्रोतों की जाँच कर रहे हैं…",
+  "loading.selectingDetails": "सबसे रोचक विवरण चुन रहे हैं…",
+  "loading.preparingRecommendations": "आपके लिए ख़ास सिफारिशें तैयार कर रहे हैं…",
+  "loading.almostReady": "लगभग तैयार है…",
   "results.countOne": "{n} परिणाम — खोज",
   "results.countMany": "{n} परिणाम — खोज",
   "results.placeholder": "देश, शहर या स्थल…",
@@ -312,8 +315,7 @@ export const HI: Partial<Record<UiKey, string>> = {
   "auth.beginJourney": "अपनी यात्रा शुरू करें",
   "auth.signInCont": "जारी रखने के लिए साइन इन करें",
   "auth.createAcct": "अपना खाता बनाएँ",
-  "auth.subtitle":
-    "टूर सहेजें, अध्याय सिंक करें, और अपनी भाषा में सिनेमाई वर्णन अनलॉक करें।",
+  "auth.subtitle": "टूर सहेजें, अध्याय सिंक करें, और अपनी भाषा में सिनेमाई वर्णन अनलॉक करें।",
   "auth.name": "नाम",
   "auth.yourName": "आपका नाम",
   "auth.emailPlaceholder": "you@example.com",

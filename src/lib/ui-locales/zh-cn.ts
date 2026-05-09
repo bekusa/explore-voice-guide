@@ -225,6 +225,11 @@ export const ZH_CN: Partial<Record<UiKey, string>> = {
   "notif.day": "天",
 
   "results.searching": "搜索中…",
+  "loading.searching": "正在搜索信息…",
+  "loading.checkingSources": "正在查阅最新来源…",
+  "loading.selectingDetails": "正在挑选最精彩的细节…",
+  "loading.preparingRecommendations": "正在为您准备专属推荐…",
+  "loading.almostReady": "马上就好…",
   "results.countOne": "{n} 条结果:",
   "results.countMany": "{n} 条结果:",
   "results.placeholder": "国家、城市或地标…",

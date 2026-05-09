@@ -113,7 +113,8 @@ export const NL: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Spraak niet ondersteund op dit apparaat",
   "toast.couldNotLoadGuide": "Kon de gids niet laden",
   "toast.tryAgainPlease": "Probeer het opnieuw.",
-  "toast.guideOfflineDesc": "Deze gids is nog niet gedownload. Verbind één keer om hem in cache te zetten.",
+  "toast.guideOfflineDesc":
+    "Deze gids is nog niet gedownload. Verbind één keer om hem in cache te zetten.",
   "toast.couldNotLoadAttractions": "Kon bezienswaardigheden niet laden",
   "toast.allSet": "Helemaal klaar",
   "toast.allSetDesc": "Welkom bij Voices.",
@@ -205,7 +206,8 @@ export const NL: Partial<Record<UiKey, string>> = {
   "set.appVersion": "Lokali · v1.0",
   "set.searchLanguages": "Talen zoeken…",
   "set.noLanguagesMatch": "Geen talen gevonden",
-  "set.noNativeVoice": "Geen native stem gevonden voor deze taal. De spraak gebruikt een algemene stem.",
+  "set.noNativeVoice":
+    "Geen native stem gevonden voor deze taal. De spraak gebruikt een algemene stem.",
   "set.noVoiceForLang": "Geen native stem op dit apparaat gevonden voor {code}.",
   "set.installVoicesHelp":
     "We vallen terug op de browserstandaard. Installeer extra stemmen in de toegankelijkheidsinstellingen van je besturingssysteem.",
@@ -229,6 +231,11 @@ export const NL: Partial<Record<UiKey, string>> = {
   "notif.day": "d",
 
   "results.searching": "Zoeken…",
+  "loading.searching": "We zoeken informatie…",
+  "loading.checkingSources": "We controleren de nieuwste bronnen…",
+  "loading.selectingDetails": "We kiezen de meest sprekende details…",
+  "loading.preparingRecommendations": "We bereiden aanbevelingen speciaal voor jou voor…",
+  "loading.almostReady": "Bijna klaar…",
   "results.countOne": "{n} resultaat voor",
   "results.countMany": "{n} resultaten voor",
   "results.placeholder": "Land, stad of bezienswaardigheid…",
@@ -310,7 +317,8 @@ export const NL: Partial<Record<UiKey, string>> = {
   "auth.beginJourney": "Begin je reis",
   "auth.signInCont": "Log in om door te gaan",
   "auth.createAcct": "Maak je account aan",
-  "auth.subtitle": "Bewaar tours, sync hoofdstukken en ontgrendel filmische vertellingen in je taal.",
+  "auth.subtitle":
+    "Bewaar tours, sync hoofdstukken en ontgrendel filmische vertellingen in je taal.",
   "auth.name": "Naam",
   "auth.yourName": "Je naam",
   "auth.emailPlaceholder": "jij@voorbeeld.com",

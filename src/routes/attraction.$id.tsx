@@ -26,6 +26,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
+import { LoadingMessages } from "@/components/LoadingMessages";
 import { MobileFrame } from "@/components/MobileFrame";
 import { UnescoBadge } from "@/components/UnescoBadge";
 import { isUnescoSite } from "@/lib/unesco";
@@ -782,6 +783,11 @@ function StopsSection({ script, loading }: { script: string; loading: boolean })
             {t("attr.theWord")} <span className="italic text-primary">{t("attr.stopsWord")}</span>
           </h2>
         </div>
+        {/* Rotating progress copy — gives the user something thoughtful
+            to read while the LLM is generating the narrated guide
+            (5-10s on a fresh fetch). Skipped on cache hits because
+            this branch only runs while loading is true. */}
+        <LoadingMessages className="mt-4" />
         <div className="mt-4 space-y-2.5">
           {[0, 1, 2, 3, 4, 5, 6].map((i) => (
             <div

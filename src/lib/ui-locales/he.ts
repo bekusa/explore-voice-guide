@@ -226,6 +226,11 @@ export const HE: Partial<Record<UiKey, string>> = {
   "notif.day": "י׳",
 
   "results.searching": "מחפש…",
+  "loading.searching": "מחפשים מידע…",
+  "loading.checkingSources": "בודקים את המקורות העדכניים ביותר…",
+  "loading.selectingDetails": "בוחרים את הפרטים המעניינים ביותר…",
+  "loading.preparingRecommendations": "מכינים המלצות במיוחד עבורך…",
+  "loading.almostReady": "כמעט מוכן…",
   "results.countOne": "תוצאה {n} עבור",
   "results.countMany": "{n} תוצאות עבור",
   "results.placeholder": "מדינה, עיר או אתר…",
