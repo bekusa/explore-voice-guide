@@ -235,7 +235,7 @@ function AttractionPage() {
                 showing "Museum" twice felt redundant. UNESCO badge
                 stays because it's a globally recognised credential
                 and worth the visual weight. */}
-            {isUnescoSite(a?.name ?? fallbackName, {
+            {isUnescoSite(a?.name_en ?? a?.name ?? fallbackName, {
               city: typeof a?.city === "string" ? a.city : null,
               type: a?.type ?? a?.category ?? null,
               description: a?.outside_desc ?? a?.description ?? null,

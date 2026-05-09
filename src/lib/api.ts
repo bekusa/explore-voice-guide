@@ -3,7 +3,22 @@
  */
 
 export type Attraction = {
+  /**
+   * Display name. May be in the user's language (e.g. "ძველი თბილისი")
+   * for non-English locales — translatePayload.server.ts now translates
+   * this field along with the description prose so result cards read
+   * natively in the user's selected language.
+   */
   name: string;
+  /**
+   * The original English name, preserved during translation. Use this
+   * for any technical handle that needs to stay stable across locales:
+   * UNESCO catalogue matching, Wikipedia/Google Places photo lookups,
+   * shareable slugs across users in different languages. Only set on
+   * payloads that came through translateAttractionsPayload — English
+   * baseline rows just have `name`.
+   */
+  name_en?: string;
   description?: string;
   /** New n8n workflow shape: short factual outside-view description. */
   outside_desc?: string;

@@ -601,7 +601,7 @@ function ResultCard({
             >
               {attraction.name}
             </h3>
-            {isUnescoSite(attraction.name, {
+            {isUnescoSite(attraction.name_en ?? attraction.name, {
               city: cityChip,
               type: attraction.type ?? attraction.category,
               description: attraction.outside_desc ?? attraction.description,

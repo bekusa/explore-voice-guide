@@ -238,18 +238,20 @@ type AttractionRecord = Record<string, unknown>;
 /**
  * Fields on each attraction that hold human prose worth translating.
  *
- * `name` is intentionally absent — see the prompt note above; place
- * names are preserved so search/maps still work.
+ * `name` is now included — Beka observed result cards rendering
+ * "Old Town Tbilisi" / "Narikala Fortress" in English even when the
+ * user had Georgian selected, which broke immersion. We preserve the
+ * English original under `name_en` (set just before the translation
+ * pass) so UNESCO matching, photo lookups, and slug stability still
+ * have a stable English handle.
  *
- * `category` and `duration` are also OUT now: they're either technical
- * IDs ("history", "editors") that the gateway sensibly leaves alone,
- * or short numeric strings ("30-60 min") with mostly digits. Keeping
- * them in the source set inflated the "unchanged" count and caused
- * `translationLooksReal` to mark genuinely-translated payloads as
- * failed, blocking the cache write under the user-language key. Beka
- * observed this as "ka cache rows never appear, only en".
+ * `category` and `duration` stay OUT: they're either technical IDs
+ * ("history", "editors") that the gateway sensibly leaves alone, or
+ * short numeric strings ("30-60 min") with mostly digits. Including
+ * them inflates the "unchanged" count and trips the looksReal gate.
  */
 const ATTRACTION_TRANSLATABLE_FIELDS = [
+  "name",
   "type",
   "era",
   "situation",
@@ -284,6 +286,15 @@ export async function translateAttractionsPayload(
   for (const item of list) {
     if (!item || typeof item !== "object") continue;
     const row = item as AttractionRecord;
+    // Preserve the English source name under `name_en` BEFORE the
+    // translation pass overwrites `name` with the localized form.
+    // Frontend UNESCO matching, photo lookups, and any future
+    // technical operation that needs a stable handle should read
+    // `name_en` (set on every translated row from now on), falling
+    // back to `name` when it isn't present (English baseline rows).
+    if (typeof row.name === "string" && row.name.trim().length > 0 && !row.name_en) {
+      row.name_en = row.name;
+    }
     for (const field of ATTRACTION_TRANSLATABLE_FIELDS) {
       const v = row[field];
       if (typeof v === "string" && v.trim().length > 0) {
