@@ -14,7 +14,14 @@
  */
 
 const STORAGE_KEY = "tg.lang";
-const CACHE_KEY = "tg.translations.v3";
+// v4 — bumped from v3 because the previous cache could pin the source
+// English text under a non-English key when LOVABLE_API_KEY was
+// missing/misconfigured: /api/translate degraded to "return source"
+// silently, those identity translations got cached, and `t()` then
+// returned English forever even after the key was fixed. v4 wipes
+// the slate; the new translateBatch identity-guard below stops the
+// poisoning from happening again.
+const CACHE_KEY = "tg.translations.v4";
 const CHANGE_EVENT = "tg:lang-changed";
 const MAX_CACHE_ENTRIES = 5000;
 
@@ -553,10 +560,15 @@ export async function translateBatch(texts: string[], lang: string): Promise<str
     if (!res.ok) throw new Error(`translate failed: ${res.status}`);
     const data = (await res.json()) as { translations?: string[] };
     const out = data.translations ?? texts;
-    setCachedTranslations(
-      texts.map((s, i) => ({ source: s, text: out[i] ?? s })),
-      l,
-    );
+    // Identity guard: if the gateway echoed the source back unchanged
+    // (typical when LOVABLE_API_KEY is missing — /api/translate
+    // degrades to "return source"), do NOT cache that pair. Caching
+    // would pin English under the target-lang key and `t()` would
+    // never re-attempt. Only persist genuine translations.
+    const cacheable = texts
+      .map((s, i) => ({ source: s, text: out[i] ?? s }))
+      .filter(({ source, text }) => text.trim().length > 0 && text !== source);
+    if (cacheable.length > 0) setCachedTranslations(cacheable, l);
     return out;
   })();
 
