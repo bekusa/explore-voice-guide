@@ -1648,39 +1648,7 @@ function MuseumHighlightsSection({
       <ol className="mt-4 flex flex-col gap-3" start={(safePage - 1) * PAGE_SIZE + 1}>
         {slice.map((h, i) => {
           const rank = (safePage - 1) * PAGE_SIZE + i + 1;
-          return (
-            <li
-              key={`${h.name_en ?? h.name}-${rank}`}
-              className="rounded-2xl border border-border bg-card p-4 transition-smooth hover:border-primary/40"
-            >
-              <div className="flex items-start gap-3">
-                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-primary/40 bg-primary/10 text-[11px] font-bold text-primary">
-                  {rank}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-display text-[16px] font-medium leading-tight text-foreground">
-                    {h.name}
-                  </h3>
-                  {h.era && (
-                    <p className="mt-1 text-[10.5px] uppercase tracking-[0.18em] text-primary/80">
-                      {h.era}
-                    </p>
-                  )}
-                </div>
-              </div>
-              {h.brief && (
-                <p className="mt-3 text-[13px] leading-[1.55] text-foreground/85">{h.brief}</p>
-              )}
-              {h.story && (
-                <p className="mt-2 text-[12.5px] leading-[1.65] text-muted-foreground">{h.story}</p>
-              )}
-              {h.location_hint && (
-                <p className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/30 px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                  <MapPin className="h-2.5 w-2.5" /> {h.location_hint}
-                </p>
-              )}
-            </li>
-          );
+          return <HighlightCard key={`${h.name_en ?? h.name}-${rank}`} h={h} rank={rank} />;
         })}
       </ol>
 
@@ -1725,5 +1693,94 @@ function MuseumHighlightsSection({
         </nav>
       )}
     </section>
+  );
+}
+
+/**
+ * HighlightCard — single museum-highlight row with a Wikipedia-sourced
+ * thumbnail. The photo is fetched lazily per card so the section
+ * renders text-first; the image fades in once Wikipedia returns.
+ *
+ * fetchPlacePhoto already memoizes per (name, lang, city) in an
+ * in-memory map, so re-renders within the same session don't re-hit
+ * the network. Cross-session caching happens at the route level
+ * (the highlights payload itself caches in Supabase).
+ */
+function HighlightCard({ h, rank }: { h: MuseumHighlight; rank: number }) {
+  const [photo, setPhoto] = useState<string | null>(null);
+  const queryName = h.name_en ?? h.name;
+  useEffect(() => {
+    if (!queryName) return;
+    let cancelled = false;
+    // Wikipedia lookups work much better in English regardless of UI
+    // language — "Mona Lisa" hits the right page; "მონა ლიზა" rarely
+    // does. Same approach as the attraction-page hero photo.
+    fetchPlacePhoto(queryName, "en").then((url) => {
+      if (!cancelled && url) setPhoto(url);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [queryName]);
+
+  return (
+    <li className="overflow-hidden rounded-2xl border border-border bg-card transition-smooth hover:border-primary/40">
+      {photo && (
+        <div className="relative h-[160px] w-full overflow-hidden bg-secondary">
+          <img
+            src={photo}
+            alt={h.name}
+            loading="lazy"
+            onError={() => setPhoto(null)}
+            className="h-full w-full object-cover"
+          />
+          {/* Rank pill on top of image */}
+          <div className="absolute left-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-primary/60 bg-background/70 text-[11px] font-bold text-primary backdrop-blur-md">
+            {rank}
+          </div>
+        </div>
+      )}
+      <div className="p-4">
+        {/* When there's no photo yet, show the rank inline next to title */}
+        {!photo && (
+          <div className="mb-3 flex items-start gap-3">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-primary/40 bg-primary/10 text-[11px] font-bold text-primary">
+              {rank}
+            </span>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-display text-[16px] font-medium leading-tight text-foreground">
+                {h.name}
+              </h3>
+              {h.era && (
+                <p className="mt-1 text-[10.5px] uppercase tracking-[0.18em] text-primary/80">
+                  {h.era}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+        {photo && (
+          <div className="mb-2">
+            <h3 className="font-display text-[16px] font-medium leading-tight text-foreground">
+              {h.name}
+            </h3>
+            {h.era && (
+              <p className="mt-1 text-[10.5px] uppercase tracking-[0.18em] text-primary/80">
+                {h.era}
+              </p>
+            )}
+          </div>
+        )}
+        {h.brief && <p className="mt-2 text-[13px] leading-[1.55] text-foreground/85">{h.brief}</p>}
+        {h.story && (
+          <p className="mt-2 text-[12.5px] leading-[1.65] text-muted-foreground">{h.story}</p>
+        )}
+        {h.location_hint && (
+          <p className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/30 px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <MapPin className="h-2.5 w-2.5" /> {h.location_hint}
+          </p>
+        )}
+      </div>
+    </li>
   );
 }
