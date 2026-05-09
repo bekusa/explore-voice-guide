@@ -125,6 +125,81 @@ export const Route = createFileRoute("/api/cache-debug")({
           };
         }
 
+        // Translation probe — the cache pattern (only language="en" rows,
+        // never "ka") strongly suggests the Lovable AI Gateway is
+        // returning identity translations or erroring out, and the
+        // server then refuses to cache those as Georgian (correct
+        // behaviour: don't pin English under a ka key). Hit the
+        // gateway directly with a tiny known payload and report
+        // verbatim what comes back.
+        const lovableKey = process.env.LOVABLE_API_KEY;
+        if (lovableKey) {
+          const probeStrings = ["Begin journey", "Save", "About this place"];
+          try {
+            const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${lovableKey}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: "google/gemini-2.5-flash",
+                messages: [
+                  {
+                    role: "system",
+                    content:
+                      "You are a translator. Translate every input string to Georgian. Return JSON via the tool.",
+                  },
+                  { role: "user", content: JSON.stringify({ strings: probeStrings }) },
+                ],
+                tools: [
+                  {
+                    type: "function",
+                    function: {
+                      name: "return_translations",
+                      parameters: {
+                        type: "object",
+                        properties: {
+                          translations: {
+                            type: "array",
+                            items: { type: "string" },
+                          },
+                        },
+                        required: ["translations"],
+                      },
+                    },
+                  },
+                ],
+                tool_choice: {
+                  type: "function",
+                  function: { name: "return_translations" },
+                },
+              }),
+            });
+            const upstreamText = await upstream.text();
+            let parsedJson: unknown;
+            try {
+              parsedJson = JSON.parse(upstreamText);
+            } catch {
+              parsedJson = null;
+            }
+            out.translation_probe = {
+              http_status: upstream.status,
+              http_ok: upstream.ok,
+              body_preview: upstreamText.slice(0, 800),
+              body_parsed_ok: parsedJson !== null,
+              source: probeStrings,
+            };
+          } catch (err) {
+            out.translation_probe = {
+              threw: err instanceof Error ? err.message : String(err),
+              source: probeStrings,
+            };
+          }
+        } else {
+          out.translation_probe = { skipped: "LOVABLE_API_KEY missing" };
+        }
+
         out.status = "ok";
         return jsonResponse(out, 200);
       },
