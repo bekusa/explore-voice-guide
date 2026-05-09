@@ -262,19 +262,23 @@ function ResultsPage() {
   return (
     <MobileFrame>
       <div className="relative min-h-full bg-background pb-16 text-foreground">
-        {/* Header */}
-        <header className="sticky top-0 z-30 border-b border-border bg-background/85 px-6 pt-12 pb-4 backdrop-blur-xl">
-          <div className="flex items-center gap-3">
+        {/* Header — tightened per Beka's request: top padding cut from
+            pt-12 to pt-7 (still clears the iOS notch but stops wasting
+            space), buttons h-9 instead of h-10, search field py-2
+            instead of py-2.5, and the meta line moved from mt-3 to
+            mt-2. Net trim ≈ 30 px without changing the layout. */}
+        <header className="sticky top-0 z-30 border-b border-border bg-background/85 px-6 pt-7 pb-3 backdrop-blur-xl">
+          <div className="flex items-center gap-2.5">
             <Link
               to="/"
               aria-label={t("nav.back")}
-              className="grid h-10 w-10 place-items-center rounded-full border border-border bg-card transition-smooth hover:bg-secondary"
+              className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card transition-smooth hover:bg-secondary"
             >
               <ArrowLeft className="h-4 w-4" />
             </Link>
             <form
               onSubmit={submit}
-              className="flex flex-1 items-center gap-3 rounded-full border border-border bg-card px-4 py-2.5 shadow-soft"
+              className="flex flex-1 items-center gap-2.5 rounded-full border border-border bg-card px-3.5 py-2 shadow-soft"
             >
               <Search className="h-4 w-4 text-muted-foreground" strokeWidth={2.2} />
               <input
@@ -285,7 +289,7 @@ function ResultsPage() {
               />
             </form>
           </div>
-          <p className="mt-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+          <p className="mt-2 text-[10.5px] uppercase tracking-[0.2em] text-muted-foreground">
             {loading
               ? t("results.searching")
               : results
