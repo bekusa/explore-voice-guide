@@ -40,7 +40,14 @@ export function MobileFrame({
           ? "pb-[200px]"
           : "";
   return (
-    <div className="min-h-screen w-full bg-background flex items-center justify-center overflow-x-hidden md:p-8">
+    // Use min-h-[100dvh] (dynamic viewport) instead of min-h-screen
+    // (= 100vh, the LARGEST height incl. browser chrome). On iOS
+    // Safari `vh > dvh` whenever the address bar is visible — the
+    // flex centering then pushed the inner phone container down a
+    // few pixels and left an empty strip at the top in the browser.
+    // Beka caught this on his phone. md:items-center keeps the
+    // desktop preview centred vertically inside the desktop window.
+    <div className="min-h-[100dvh] w-full bg-background flex items-start justify-center overflow-x-hidden md:items-center md:p-8">
       <div className="relative w-full h-[100dvh] md:w-[420px] md:h-[860px] md:rounded-[3rem] md:border md:border-border md:shadow-elegant overflow-hidden bg-background">
         {/* overflow-x-hidden on the inner scroll container too —
             Beka caught the page sliding left on mobile when a child

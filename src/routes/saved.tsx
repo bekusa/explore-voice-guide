@@ -137,7 +137,13 @@ function SavedRow({ item }: { item: SavedItem }) {
         to="/attraction/$id"
         params={{ id: slug }}
         search={{ name: item.name }}
-        className="flex flex-1 items-center gap-3"
+        // min-w-0 is REQUIRED on this flex child — without it the
+        // default min-width:auto lets long attraction names blow the
+        // Link out past its allotted width, pushing the trash button
+        // off the right edge of the card. The inner text container
+        // already has min-w-0 + truncate, but truncation only kicks
+        // in once every flex parent above it is also minable.
+        className="flex min-w-0 flex-1 items-center gap-3"
       >
         <div className="h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-xl bg-secondary">
           {showImg ? (

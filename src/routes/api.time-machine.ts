@@ -214,12 +214,30 @@ function isEnglish(lang: string): boolean {
 /**
  * Does this payload carry the narrative content we expect? `body`
  * is the long first-person prose — without it the rest of the JSON
- * is just metadata, not worth caching or returning.
+ * is just metadata, not worth caching or returning. Tolerates a few
+ * variant keys Claude has been observed to use under temperature
+ * (`narrative`, `story`, `text`) and rewrites the payload in-place
+ * so downstream consumers always see `body`.
  */
 function hasBody(payload: unknown): boolean {
   if (!payload || typeof payload !== "object") return false;
   const obj = payload as Record<string, unknown>;
-  return typeof obj.body === "string" && obj.body.trim().length > 50;
+  // Promote any variant key into the canonical `body` slot. Done
+  // here instead of a second pass so callers can rely on a single
+  // shape contract.
+  if (typeof obj.body !== "string" || !obj.body.trim()) {
+    for (const alt of ["narrative", "story", "text", "content", "monologue"] as const) {
+      const v = obj[alt];
+      if (typeof v === "string" && v.trim().length > 30) {
+        obj.body = v;
+        break;
+      }
+    }
+  }
+  // Threshold dropped 50 → 30 chars — Beka had a generation come
+  // back with a short but valid body that we incorrectly rejected
+  // and surfaced as an error to the user.
+  return typeof obj.body === "string" && obj.body.trim().length > 30;
 }
 
 function jsonResponse(

@@ -207,18 +207,26 @@ export function HomeScreen() {
               className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
             {query.trim() ? (
+              // Symbol-only submit — Beka caught the SEARCH text
+              // overflowing the input pill in non-Latin locales (the
+              // word translates much wider in Georgian, German, etc.).
+              // The arrow inside the gold circle is universal and
+              // pairs with the Search magnifier on the left for a
+              // clean "type → tap arrow" flow.
               <button
                 type="submit"
-                className="h-9 shrink-0 rounded-full bg-gradient-gold px-4 text-[11px] font-bold uppercase tracking-[0.16em] text-primary-foreground transition-smooth active:scale-95 hover:scale-105"
+                aria-label={t("home.search")}
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-gold text-primary-foreground transition-smooth active:scale-95 hover:scale-105"
               >
-                {t("home.search")}
+                <ArrowRight className="h-4 w-4" />
               </button>
             ) : (
               <Link
                 to="/destinations"
-                className="h-9 shrink-0 inline-flex items-center rounded-full border border-border bg-secondary/60 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground transition-smooth hover:text-foreground"
+                aria-label={t("home.browse")}
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-secondary/60 text-muted-foreground transition-smooth hover:text-foreground"
               >
-                {t("home.browse")}
+                <ArrowRight className="h-4 w-4" />
               </Link>
             )}
           </form>
