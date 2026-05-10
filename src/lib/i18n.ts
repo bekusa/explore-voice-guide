@@ -460,7 +460,7 @@ export const UI_STRINGS = {
   "attr.pickFocus": "pick what to focus on.",
   "attr.theWord": "The",
   "attr.story": "story",
-  "attr.stopsWord": "stops",
+  "attr.stopsWord": "tour",
   "attr.aboutWord": "About",
   "attr.thisPlace": "this place",
   "attr.keyFacts": "Key facts",

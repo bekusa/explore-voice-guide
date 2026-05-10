@@ -361,7 +361,7 @@ export const RO: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "alege pe ce să te concentrezi.",
   "attr.theWord": "",
   "attr.story": "povestea",
-  "attr.stopsWord": "opririle",
+  "attr.stopsWord": "tur",
   "attr.aboutWord": "Despre",
   "attr.thisPlace": "acest loc",
   "attr.keyFacts": "Date esențiale",

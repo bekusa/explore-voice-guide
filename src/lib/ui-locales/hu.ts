@@ -360,7 +360,7 @@ export const HU: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "válaszd ki, mire koncentrálj.",
   "attr.theWord": "A",
   "attr.story": "történet",
-  "attr.stopsWord": "megállók",
+  "attr.stopsWord": "túra",
   "attr.aboutWord": "Erről",
   "attr.thisPlace": "a helyről",
   "attr.keyFacts": "Kulcsadatok",

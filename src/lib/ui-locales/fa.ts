@@ -358,7 +358,7 @@ export const FA: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "انتخاب کنید بر چه تمرکز شود.",
   "attr.theWord": "این",
   "attr.story": "داستان",
-  "attr.stopsWord": "ایستگاه‌ها",
+  "attr.stopsWord": "تور",
   "attr.aboutWord": "درباره‌ی",
   "attr.thisPlace": "این مکان",
   "attr.keyFacts": "نکات کلیدی",

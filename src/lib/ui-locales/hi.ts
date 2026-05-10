@@ -358,7 +358,7 @@ export const HI: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "तय करें कि किस पर ध्यान देना है।",
   "attr.theWord": "यह",
   "attr.story": "कहानी",
-  "attr.stopsWord": "पड़ाव",
+  "attr.stopsWord": "दौरा",
   "attr.aboutWord": "के बारे में",
   "attr.thisPlace": "यह जगह",
   "attr.keyFacts": "मुख्य तथ्य",

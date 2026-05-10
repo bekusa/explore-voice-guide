@@ -172,10 +172,9 @@ function SavedRow({ item }: { item: SavedItem }) {
                 {a.rating.toFixed(2)}
               </span>
             )}
-            <span className="inline-flex items-center gap-1">
-              <Bookmark className="h-2.5 w-2.5" />
-              {new Date(item.savedAt).toLocaleDateString()}
-            </span>
+            {/* Save-date chip removed per Beka — felt like UI clutter
+                in the meta row. The savedAt timestamp is still on the
+                stored object for sort order, just not surfaced. */}
           </div>
         </div>
       </Link>

@@ -356,7 +356,7 @@ export const TH: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "เลือกว่าจะโฟกัสที่อะไร",
   "attr.theWord": "เรื่อง",
   "attr.story": "เล่า",
-  "attr.stopsWord": "จุดแวะ",
+  "attr.stopsWord": "ทัวร์",
   "attr.aboutWord": "เกี่ยวกับ",
   "attr.thisPlace": "สถานที่นี้",
   "attr.keyFacts": "ข้อมูลสำคัญ",

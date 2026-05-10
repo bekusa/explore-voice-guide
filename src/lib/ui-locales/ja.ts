@@ -361,7 +361,7 @@ export const JA: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "焦点を選びましょう。",
   "attr.theWord": "この",
   "attr.story": "物語",
-  "attr.stopsWord": "立ち寄り先",
+  "attr.stopsWord": "ツアー",
   "attr.aboutWord": "について",
   "attr.thisPlace": "この場所",
   "attr.keyFacts": "ポイント",

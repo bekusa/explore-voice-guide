@@ -370,7 +370,7 @@ export const EL: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "διάλεξε σε τι να εστιάσεις.",
   "attr.theWord": "Η",
   "attr.story": "ιστορία",
-  "attr.stopsWord": "στάσεις",
+  "attr.stopsWord": "περιήγηση",
   "attr.aboutWord": "Για",
   "attr.thisPlace": "αυτό το μέρος",
   "attr.keyFacts": "Βασικά στοιχεία",

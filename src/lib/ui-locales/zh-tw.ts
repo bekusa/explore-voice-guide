@@ -351,7 +351,7 @@ export const ZH_TW: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "選擇關注重點。",
   "attr.theWord": "這段",
   "attr.story": "故事",
-  "attr.stopsWord": "站點",
+  "attr.stopsWord": "之旅",
   "attr.aboutWord": "關於",
   "attr.thisPlace": "這個地方",
   "attr.keyFacts": "關鍵資訊",

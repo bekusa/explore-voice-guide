@@ -361,7 +361,7 @@ export const FI: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "valitse, mihin haluat keskittyä.",
   "attr.theWord": "Koko",
   "attr.story": "tarina",
-  "attr.stopsWord": "pysähdykset",
+  "attr.stopsWord": "kierros",
   "attr.aboutWord": "Tietoa",
   "attr.thisPlace": "tästä paikasta",
   "attr.keyFacts": "Keskeiset faktat",

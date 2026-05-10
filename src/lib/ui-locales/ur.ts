@@ -357,7 +357,7 @@ export const UR: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "چنیں کہ کس چیز پر توجہ ہو۔",
   "attr.theWord": "یہ",
   "attr.story": "کہانی",
-  "attr.stopsWord": "پڑاؤ",
+  "attr.stopsWord": "دورہ",
   "attr.aboutWord": "بارے میں",
   "attr.thisPlace": "یہ مقام",
   "attr.keyFacts": "اہم حقائق",

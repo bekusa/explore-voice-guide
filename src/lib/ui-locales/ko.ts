@@ -358,7 +358,7 @@ export const KO: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "어디에 집중할지 골라요.",
   "attr.theWord": "이",
   "attr.story": "이야기",
-  "attr.stopsWord": "정류지",
+  "attr.stopsWord": "투어",
   "attr.aboutWord": "에 대하여",
   "attr.thisPlace": "이 장소",
   "attr.keyFacts": "핵심 정보",

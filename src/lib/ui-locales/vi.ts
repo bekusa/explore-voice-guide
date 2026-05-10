@@ -360,7 +360,7 @@ export const VI: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "chọn điều bạn muốn tập trung vào.",
   "attr.theWord": "",
   "attr.story": "câu chuyện",
-  "attr.stopsWord": "điểm dừng",
+  "attr.stopsWord": "tour",
   "attr.aboutWord": "Về",
   "attr.thisPlace": "nơi này",
   "attr.keyFacts": "Thông tin then chốt",

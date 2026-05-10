@@ -40,9 +40,17 @@ export function MobileFrame({
           ? "pb-[200px]"
           : "";
   return (
-    <div className="min-h-screen w-full bg-background flex items-center justify-center md:p-8">
+    <div className="min-h-screen w-full bg-background flex items-center justify-center overflow-x-hidden md:p-8">
       <div className="relative w-full h-[100dvh] md:w-[420px] md:h-[860px] md:rounded-[3rem] md:border md:border-border md:shadow-elegant overflow-hidden bg-background">
-        <div className={`h-full w-full overflow-y-auto scrollbar-hide ${bottomPad}`}>
+        {/* overflow-x-hidden on the inner scroll container too —
+            Beka caught the page sliding left on mobile when a child
+            (long city pill, oversized chip row) blew past the
+            viewport edge. The outer overflow:hidden clips visually
+            but doesn't stop the horizontal swipe gesture; the inner
+            overflow-x-hidden does. */}
+        <div
+          className={`h-full w-full overflow-y-auto overflow-x-hidden scrollbar-hide ${bottomPad}`}
+        >
           {children}
         </div>
         {floatingPanel && (

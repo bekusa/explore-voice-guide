@@ -361,7 +361,7 @@ export const NL: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "kies waar je je op wilt richten.",
   "attr.theWord": "Het",
   "attr.story": "verhaal",
-  "attr.stopsWord": "stops",
+  "attr.stopsWord": "rondleiding",
   "attr.aboutWord": "Over",
   "attr.thisPlace": "deze plek",
   "attr.keyFacts": "Belangrijkste feiten",

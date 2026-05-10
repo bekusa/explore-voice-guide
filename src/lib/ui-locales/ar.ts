@@ -355,7 +355,7 @@ export const AR: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "اختر ما تريد التركيز عليه.",
   "attr.theWord": "ال",
   "attr.story": "قصة",
-  "attr.stopsWord": "محطات",
+  "attr.stopsWord": "جولة",
   "attr.aboutWord": "عن",
   "attr.thisPlace": "هذا المكان",
   "attr.keyFacts": "حقائق رئيسية",

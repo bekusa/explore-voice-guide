@@ -358,7 +358,7 @@ export const CS: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "vyber, na co se zaměřit.",
   "attr.theWord": "Tento",
   "attr.story": "příběh",
-  "attr.stopsWord": "zastávky",
+  "attr.stopsWord": "prohlídka",
   "attr.aboutWord": "O",
   "attr.thisPlace": "tomto místě",
   "attr.keyFacts": "Klíčová fakta",

@@ -360,7 +360,7 @@ export const DA: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "vælg, hvad du vil fokusere på.",
   "attr.theWord": "Hele",
   "attr.story": "historien",
-  "attr.stopsWord": "stop",
+  "attr.stopsWord": "tur",
   "attr.aboutWord": "Om",
   "attr.thisPlace": "dette sted",
   "attr.keyFacts": "Nøglefakta",

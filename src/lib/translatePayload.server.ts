@@ -103,6 +103,12 @@ async function callGatewayChunk(
     `Translate every input string into ${targetName}.`,
     `Preserve placeholders like {name}, {n}, {city} EXACTLY.`,
     `Preserve URLs, numbers, em-dashes, and the literal "|" character.`,
+    // Beka observed Georgian guide descriptions arriving as one
+    // unbroken wall of text where the English source had clean
+    // paragraph breaks. The translator must keep the source's
+    // line / paragraph structure character-for-character — every
+    // \\n stays a \\n, every blank-line gap stays a blank-line gap.
+    `CRITICAL: Preserve ALL line breaks and paragraph breaks from the source EXACTLY. If the source has "\\n\\n" between paragraphs, the translation must too. Do not concatenate paragraphs.`,
     `Do not translate proper nouns of places ("Marina Bay Sands", "Colosseum") — keep them in their original form.`,
     `Keep tone natural and travel-magazine quality.`,
     `RESPOND WITH ONLY VALID JSON. No markdown fences, no preamble, no commentary.`,

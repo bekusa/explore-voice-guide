@@ -363,7 +363,7 @@ export const MS: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "pilih apa yang ingin difokuskan.",
   "attr.theWord": "Sang",
   "attr.story": "kisah",
-  "attr.stopsWord": "hentian",
+  "attr.stopsWord": "lawatan",
   "attr.aboutWord": "Tentang",
   "attr.thisPlace": "tempat ini",
   "attr.keyFacts": "Fakta utama",

@@ -364,7 +364,7 @@ export const TR: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "neye odaklanacağını seç.",
   "attr.theWord": "",
   "attr.story": "hikâye",
-  "attr.stopsWord": "duraklar",
+  "attr.stopsWord": "tur",
   "attr.aboutWord": "Hakkında",
   "attr.thisPlace": "bu yer",
   "attr.keyFacts": "Önemli bilgiler",

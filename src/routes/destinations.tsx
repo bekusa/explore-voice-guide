@@ -49,7 +49,10 @@ function DestinationsPage() {
       <div className="relative h-[100dvh] w-full overflow-hidden bg-background text-foreground md:h-[860px]">
         <div className="h-full overflow-y-auto pb-10 scrollbar-hide">
           {/* Header */}
-          <div className="sticky top-0 z-20 border-b border-border bg-background/85 px-5 pb-3 pt-12 backdrop-blur-xl">
+          {/* Header trimmed per Beka — pt-12 → pt-7 (still clears
+              the iOS notch), title font 20 → 17, eyebrow text 10 → 9.
+              Net trim ≈ 30 px without losing any affordance. */}
+          <div className="sticky top-0 z-20 border-b border-border bg-background/85 px-5 pb-3 pt-7 backdrop-blur-xl">
             <div className="flex items-center gap-2">
               <Link
                 to="/"
@@ -59,11 +62,11 @@ function DestinationsPage() {
                 <ArrowLeft className="h-3.5 w-3.5" />
               </Link>
               <div>
-                <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
+                <div className="text-[9px] font-semibold uppercase tracking-[0.22em] text-primary">
                   {t("dest.exploreTitle")}
                 </div>
                 <h1
-                  className="text-[20px] font-medium leading-tight tracking-[-0.02em]"
+                  className="text-[17px] font-medium leading-tight tracking-[-0.02em]"
                   style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
                 >
                   {t("dest.chooseDest")}
@@ -71,7 +74,7 @@ function DestinationsPage() {
               </div>
             </div>
 
-            <div className="mt-3 flex items-center gap-2.5 rounded-full border border-border bg-card px-3.5 py-2.5 transition-smooth focus-within:border-primary/60">
+            <div className="mt-2 flex items-center gap-2.5 rounded-full border border-border bg-card px-3.5 py-2 transition-smooth focus-within:border-primary/60">
               <Search className="h-3.5 w-3.5 text-muted-foreground" />
               <input
                 value={query}

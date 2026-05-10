@@ -16,6 +16,7 @@ import { Route as ResultsRouteImport } from './routes/results'
 import { Route as PlayerRouteImport } from './routes/player'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as MuseumsRouteImport } from './routes/museums'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as LanguageRouteImport } from './routes/language'
 import { Route as DestinationsRouteImport } from './routes/destinations'
@@ -27,6 +28,7 @@ import { Route as ApiTtsRouteImport } from './routes/api.tts'
 import { Route as ApiTranslateRouteImport } from './routes/api.translate'
 import { Route as ApiPhotoRouteImport } from './routes/api.photo'
 import { Route as ApiN8nTestRouteImport } from './routes/api.n8n-test'
+import { Route as ApiMuseumHighlightsRouteImport } from './routes/api.museum-highlights'
 import { Route as ApiGuideRouteImport } from './routes/api.guide'
 import { Route as ApiCacheDebugRouteImport } from './routes/api.cache-debug'
 import { Route as ApiAttractionsRouteImport } from './routes/api.attractions'
@@ -64,6 +66,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MuseumsRoute = MuseumsRouteImport.update({
+  id: '/museums',
+  path: '/museums',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MapRoute = MapRouteImport.update({
@@ -121,6 +128,11 @@ const ApiN8nTestRoute = ApiN8nTestRouteImport.update({
   path: '/api/n8n-test',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMuseumHighlightsRoute = ApiMuseumHighlightsRouteImport.update({
+  id: '/api/museum-highlights',
+  path: '/api/museum-highlights',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGuideRoute = ApiGuideRouteImport.update({
   id: '/api/guide',
   path: '/api/guide',
@@ -143,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/destinations': typeof DestinationsRoute
   '/language': typeof LanguageRoute
   '/map': typeof MapRoute
+  '/museums': typeof MuseumsRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
@@ -153,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/cache-debug': typeof ApiCacheDebugRoute
   '/api/guide': typeof ApiGuideRoute
+  '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/n8n-test': typeof ApiN8nTestRoute
   '/api/photo': typeof ApiPhotoRoute
   '/api/translate': typeof ApiTranslateRoute
@@ -166,6 +180,7 @@ export interface FileRoutesByTo {
   '/destinations': typeof DestinationsRoute
   '/language': typeof LanguageRoute
   '/map': typeof MapRoute
+  '/museums': typeof MuseumsRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
@@ -176,6 +191,7 @@ export interface FileRoutesByTo {
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/cache-debug': typeof ApiCacheDebugRoute
   '/api/guide': typeof ApiGuideRoute
+  '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/n8n-test': typeof ApiN8nTestRoute
   '/api/photo': typeof ApiPhotoRoute
   '/api/translate': typeof ApiTranslateRoute
@@ -190,6 +206,7 @@ export interface FileRoutesById {
   '/destinations': typeof DestinationsRoute
   '/language': typeof LanguageRoute
   '/map': typeof MapRoute
+  '/museums': typeof MuseumsRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
@@ -200,6 +217,7 @@ export interface FileRoutesById {
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/cache-debug': typeof ApiCacheDebugRoute
   '/api/guide': typeof ApiGuideRoute
+  '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/n8n-test': typeof ApiN8nTestRoute
   '/api/photo': typeof ApiPhotoRoute
   '/api/translate': typeof ApiTranslateRoute
@@ -215,6 +233,7 @@ export interface FileRouteTypes {
     | '/destinations'
     | '/language'
     | '/map'
+    | '/museums'
     | '/notifications'
     | '/onboarding'
     | '/player'
@@ -225,6 +244,7 @@ export interface FileRouteTypes {
     | '/api/attractions'
     | '/api/cache-debug'
     | '/api/guide'
+    | '/api/museum-highlights'
     | '/api/n8n-test'
     | '/api/photo'
     | '/api/translate'
@@ -238,6 +258,7 @@ export interface FileRouteTypes {
     | '/destinations'
     | '/language'
     | '/map'
+    | '/museums'
     | '/notifications'
     | '/onboarding'
     | '/player'
@@ -248,6 +269,7 @@ export interface FileRouteTypes {
     | '/api/attractions'
     | '/api/cache-debug'
     | '/api/guide'
+    | '/api/museum-highlights'
     | '/api/n8n-test'
     | '/api/photo'
     | '/api/translate'
@@ -261,6 +283,7 @@ export interface FileRouteTypes {
     | '/destinations'
     | '/language'
     | '/map'
+    | '/museums'
     | '/notifications'
     | '/onboarding'
     | '/player'
@@ -271,6 +294,7 @@ export interface FileRouteTypes {
     | '/api/attractions'
     | '/api/cache-debug'
     | '/api/guide'
+    | '/api/museum-highlights'
     | '/api/n8n-test'
     | '/api/photo'
     | '/api/translate'
@@ -285,6 +309,7 @@ export interface RootRouteChildren {
   DestinationsRoute: typeof DestinationsRoute
   LanguageRoute: typeof LanguageRoute
   MapRoute: typeof MapRoute
+  MuseumsRoute: typeof MuseumsRoute
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
   PlayerRoute: typeof PlayerRoute
@@ -295,6 +320,7 @@ export interface RootRouteChildren {
   ApiAttractionsRoute: typeof ApiAttractionsRoute
   ApiCacheDebugRoute: typeof ApiCacheDebugRoute
   ApiGuideRoute: typeof ApiGuideRoute
+  ApiMuseumHighlightsRoute: typeof ApiMuseumHighlightsRoute
   ApiN8nTestRoute: typeof ApiN8nTestRoute
   ApiPhotoRoute: typeof ApiPhotoRoute
   ApiTranslateRoute: typeof ApiTranslateRoute
@@ -352,6 +378,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/museums': {
+      id: '/museums'
+      path: '/museums'
+      fullPath: '/museums'
+      preLoaderRoute: typeof MuseumsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/map': {
@@ -431,6 +464,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiN8nTestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/museum-highlights': {
+      id: '/api/museum-highlights'
+      path: '/api/museum-highlights'
+      fullPath: '/api/museum-highlights'
+      preLoaderRoute: typeof ApiMuseumHighlightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/guide': {
       id: '/api/guide'
       path: '/api/guide'
@@ -461,6 +501,7 @@ const rootRouteChildren: RootRouteChildren = {
   DestinationsRoute: DestinationsRoute,
   LanguageRoute: LanguageRoute,
   MapRoute: MapRoute,
+  MuseumsRoute: MuseumsRoute,
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
   PlayerRoute: PlayerRoute,
@@ -471,6 +512,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAttractionsRoute: ApiAttractionsRoute,
   ApiCacheDebugRoute: ApiCacheDebugRoute,
   ApiGuideRoute: ApiGuideRoute,
+  ApiMuseumHighlightsRoute: ApiMuseumHighlightsRoute,
   ApiN8nTestRoute: ApiN8nTestRoute,
   ApiPhotoRoute: ApiPhotoRoute,
   ApiTranslateRoute: ApiTranslateRoute,
@@ -481,3 +523,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

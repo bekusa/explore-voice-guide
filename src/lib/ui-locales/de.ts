@@ -363,7 +363,7 @@ export const DE: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "wähl, worauf du dich konzentrieren willst.",
   "attr.theWord": "Die",
   "attr.story": "Geschichte",
-  "attr.stopsWord": "Stopps",
+  "attr.stopsWord": "Rundgang",
   "attr.aboutWord": "Über",
   "attr.thisPlace": "diesen Ort",
   "attr.keyFacts": "Wichtige Fakten",

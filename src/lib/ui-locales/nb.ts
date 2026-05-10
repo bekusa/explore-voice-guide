@@ -361,7 +361,7 @@ export const NB: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "velg hva du vil fokusere på.",
   "attr.theWord": "Hele",
   "attr.story": "historien",
-  "attr.stopsWord": "stopp",
+  "attr.stopsWord": "omvisning",
   "attr.aboutWord": "Om",
   "attr.thisPlace": "dette stedet",
   "attr.keyFacts": "Nøkkelfakta",

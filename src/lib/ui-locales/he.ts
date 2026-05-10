@@ -353,7 +353,7 @@ export const HE: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "בחרו על מה להתמקד.",
   "attr.theWord": "ה",
   "attr.story": "סיפור",
-  "attr.stopsWord": "תחנות",
+  "attr.stopsWord": "סיור",
   "attr.aboutWord": "על",
   "attr.thisPlace": "המקום הזה",
   "attr.keyFacts": "עובדות מרכזיות",

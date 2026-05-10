@@ -361,7 +361,7 @@ export const BN: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "কোন দিকে মনোযোগ দেবেন তা বাছুন।",
   "attr.theWord": "এই",
   "attr.story": "গল্প",
-  "attr.stopsWord": "স্টপ",
+  "attr.stopsWord": "ট্যুর",
   "attr.aboutWord": "সম্পর্কে",
   "attr.thisPlace": "এই জায়গা",
   "attr.keyFacts": "মূল তথ্য",

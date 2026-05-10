@@ -369,7 +369,7 @@ export const KA: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "აირჩიე, რაზე გაამახვილო ყურადღება.",
   "attr.theWord": "მისი",
   "attr.story": "ისტორია",
-  "attr.stopsWord": "გაჩერებები",
+  "attr.stopsWord": "ტური",
   "attr.aboutWord": "ამის",
   "attr.thisPlace": "შესახებ",
   "attr.keyFacts": "მთავარი ფაქტები",

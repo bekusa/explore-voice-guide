@@ -106,8 +106,11 @@ export function HomeScreen() {
           <div className="absolute inset-0 bg-gradient-hero" />
           <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background/60 to-transparent" />
 
-          {/* top bar */}
-          <div className="absolute left-5 right-5 top-12 z-[5] flex items-start justify-between">
+          {/* top bar — trimmed top-12 → top-7 to match the rest of
+              the app's header padding and close the awkward gap Beka
+              flagged on mobile (city pill truncated, small empty
+              strip above the icon row). */}
+          <div className="absolute left-5 right-5 top-7 z-[5] flex items-start justify-between">
             <div className="min-w-0">
               <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-primary">
                 {t("home.whereNext")}
@@ -170,13 +173,20 @@ export function HomeScreen() {
             <p className="mt-4 max-w-[320px] text-[14px] leading-[1.55] text-foreground/75">
               {heroBlurb}
             </p>
+            {/* Beka noticed the "Open {city}" verb pushed the button
+                wider than the gold pill in some non-English locales —
+                e.g. Spanish "Abrir Roma" or German "Öffnen Rom" trim
+                fine, but longer compound verbs overflow. Drop the
+                verb, keep just the city name with the arrow doing
+                the action signaling. */}
             <Link
               to="/destination/$slug"
               params={{ slug: heroDest.slug }}
-              className="mt-6 inline-flex h-12 items-center gap-2 rounded-full bg-gradient-gold px-6 text-[12px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
+              aria-label={t("home.openCity", { city: heroCity })}
+              className="mt-6 inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
             >
-              {t("home.openCity", { city: heroCity })}
-              <ArrowRight className="h-3.5 w-3.5" />
+              <span className="truncate">{heroCity}</span>
+              <ArrowRight className="h-3.5 w-3.5 shrink-0" />
             </Link>
           </div>
         </section>

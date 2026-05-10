@@ -359,7 +359,7 @@ export const UK: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "обери, на чому зосередитись.",
   "attr.theWord": "",
   "attr.story": "історія",
-  "attr.stopsWord": "зупинки",
+  "attr.stopsWord": "екскурсія",
   "attr.aboutWord": "Про",
   "attr.thisPlace": "це місце",
   "attr.keyFacts": "Ключові факти",

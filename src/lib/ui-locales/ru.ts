@@ -358,7 +358,7 @@ export const RU: Partial<Record<UiKey, string>> = {
   "attr.pickFocus": "выбери, на чём сосредоточиться.",
   "attr.theWord": "",
   "attr.story": "история",
-  "attr.stopsWord": "точки",
+  "attr.stopsWord": "экскурсия",
   "attr.aboutWord": "Об",
   "attr.thisPlace": "этом месте",
   "attr.keyFacts": "Ключевые факты",
