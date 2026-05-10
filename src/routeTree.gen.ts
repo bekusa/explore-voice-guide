@@ -26,6 +26,7 @@ import { Route as DestinationSlugRouteImport } from './routes/destination.$slug'
 import { Route as AttractionIdRouteImport } from './routes/attraction.$id'
 import { Route as ApiTtsRouteImport } from './routes/api.tts'
 import { Route as ApiTranslateRouteImport } from './routes/api.translate'
+import { Route as ApiTimeMachineRouteImport } from './routes/api.time-machine'
 import { Route as ApiPhotoRouteImport } from './routes/api.photo'
 import { Route as ApiN8nTestRouteImport } from './routes/api.n8n-test'
 import { Route as ApiMuseumHighlightsRouteImport } from './routes/api.museum-highlights'
@@ -118,6 +119,11 @@ const ApiTranslateRoute = ApiTranslateRouteImport.update({
   path: '/api/translate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTimeMachineRoute = ApiTimeMachineRouteImport.update({
+  id: '/api/time-machine',
+  path: '/api/time-machine',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPhotoRoute = ApiPhotoRouteImport.update({
   id: '/api/photo',
   path: '/api/photo',
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/n8n-test': typeof ApiN8nTestRoute
   '/api/photo': typeof ApiPhotoRoute
+  '/api/time-machine': typeof ApiTimeMachineRoute
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
@@ -194,6 +201,7 @@ export interface FileRoutesByTo {
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/n8n-test': typeof ApiN8nTestRoute
   '/api/photo': typeof ApiPhotoRoute
+  '/api/time-machine': typeof ApiTimeMachineRoute
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
@@ -220,6 +228,7 @@ export interface FileRoutesById {
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/n8n-test': typeof ApiN8nTestRoute
   '/api/photo': typeof ApiPhotoRoute
+  '/api/time-machine': typeof ApiTimeMachineRoute
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | '/api/museum-highlights'
     | '/api/n8n-test'
     | '/api/photo'
+    | '/api/time-machine'
     | '/api/translate'
     | '/api/tts'
     | '/attraction/$id'
@@ -272,6 +282,7 @@ export interface FileRouteTypes {
     | '/api/museum-highlights'
     | '/api/n8n-test'
     | '/api/photo'
+    | '/api/time-machine'
     | '/api/translate'
     | '/api/tts'
     | '/attraction/$id'
@@ -297,6 +308,7 @@ export interface FileRouteTypes {
     | '/api/museum-highlights'
     | '/api/n8n-test'
     | '/api/photo'
+    | '/api/time-machine'
     | '/api/translate'
     | '/api/tts'
     | '/attraction/$id'
@@ -323,6 +335,7 @@ export interface RootRouteChildren {
   ApiMuseumHighlightsRoute: typeof ApiMuseumHighlightsRoute
   ApiN8nTestRoute: typeof ApiN8nTestRoute
   ApiPhotoRoute: typeof ApiPhotoRoute
+  ApiTimeMachineRoute: typeof ApiTimeMachineRoute
   ApiTranslateRoute: typeof ApiTranslateRoute
   ApiTtsRoute: typeof ApiTtsRoute
   AttractionIdRoute: typeof AttractionIdRoute
@@ -450,6 +463,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTranslateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/time-machine': {
+      id: '/api/time-machine'
+      path: '/api/time-machine'
+      fullPath: '/api/time-machine'
+      preLoaderRoute: typeof ApiTimeMachineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/photo': {
       id: '/api/photo'
       path: '/api/photo'
@@ -515,6 +535,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMuseumHighlightsRoute: ApiMuseumHighlightsRoute,
   ApiN8nTestRoute: ApiN8nTestRoute,
   ApiPhotoRoute: ApiPhotoRoute,
+  ApiTimeMachineRoute: ApiTimeMachineRoute,
   ApiTranslateRoute: ApiTranslateRoute,
   ApiTtsRoute: ApiTtsRoute,
   AttractionIdRoute: AttractionIdRoute,

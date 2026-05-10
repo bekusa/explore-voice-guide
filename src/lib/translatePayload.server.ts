@@ -537,3 +537,48 @@ export async function translateMuseumHighlightsPayload(
   }
   return { payload: cloned, translated: translationLooksReal(sources, safe) };
 }
+
+/* ─── Time Machine payload ─── */
+
+const TIME_MACHINE_TRANSLATABLE_FIELDS = ["title", "intro", "body", "epilogue"] as const;
+
+/**
+ * Translate a Time Machine simulation payload — the same chunked-
+ * translate + sanitize pattern as the guide translator. The `body`
+ * field is the long multi-paragraph first-person narrative; the
+ * chunker in `callGateway` will hand it off as its own oversized
+ * chunk so it doesn't starve the shorter title / intro / epilogue
+ * fields. Paragraph breaks (\n\n) inside `body` must survive — see
+ * the system prompt in callGatewayChunk.
+ */
+export async function translateTimeMachinePayload(
+  payload: unknown,
+  target: string,
+): Promise<{ payload: unknown; translated: boolean }> {
+  if (isEnglish(target)) return { payload, translated: true };
+  if (!payload || typeof payload !== "object") return { payload, translated: false };
+
+  const cloned = JSON.parse(JSON.stringify(payload)) as Record<string, unknown>;
+
+  const sources: string[] = [];
+  const setters: Array<(value: string) => void> = [];
+
+  for (const field of TIME_MACHINE_TRANSLATABLE_FIELDS) {
+    const v = cloned[field];
+    if (typeof v === "string" && v.trim().length > 0) {
+      sources.push(v);
+      setters.push((value) => {
+        cloned[field] = value;
+      });
+    }
+  }
+
+  if (sources.length === 0) return { payload: cloned, translated: true };
+
+  const translated = await callGateway(sources, target);
+  const safe = translated.map((t, i) => (looksLikeGarbage(t, sources[i], target) ? sources[i] : t));
+  for (let i = 0; i < setters.length; i++) {
+    setters[i](safe[i] ?? sources[i]);
+  }
+  return { payload: cloned, translated: translationLooksReal(sources, safe) };
+}

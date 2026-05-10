@@ -247,3 +247,114 @@ export function buildMuseumHighlightsUser(args: MuseumHighlightsPromptArgs): str
     "Now return the JSON. First character must be `{`, no markdown fences, no commentary.",
   ].join("\n");
 }
+
+/* ───────── Time Machine prompt ───────── */
+
+export type TimeMachinePromptArgs = {
+  /**
+   * Display name of the historical moment as it appears in the Time
+   * Machine card grid (e.g. "Pompeii", "The Bastille",
+   * "Baghdad — The Mongol Sack").
+   */
+  name: string;
+  /** Year/date label from the card ("August 23, 79 AD", "1789", "1258"). */
+  year: string;
+  /** Era label ("Roman Empire", "Age of Enlightenment", "Middle Ages"). */
+  era: string;
+  /** Country / location ("Italy", "France", "Iraq"). */
+  country: string;
+  /**
+   * The "situation" string from the Time Machine card — the precise
+   * narrative seed Beka wrote for each moment. This is the single
+   * most important context: it pins down WHEN in the day, what's
+   * happening, and where the witness stands. Example for Pompeii:
+   * "A city of 20,000 going about its ordinary day. Markets open,
+   * bread baking. Vesuvius looms on the horizon — no one thinks
+   * twice. In 6 hours, everything will be buried under 6 meters
+   * of ash."
+   */
+  situation: string;
+  /**
+   * Role chosen in the "Choose your role *" dropdown — controls the
+   * point of view. One of: merchant, soldier, servant, foreigner,
+   * child, healer, spy, survivor.
+   */
+  role: string;
+  /** Always "en" today — the frontend translates downstream. */
+  language: string;
+};
+
+/**
+ * Map the role's id to a richer brief — what this person sees, knows,
+ * and cares about. Keeps the user prompt tight while giving Claude
+ * enough texture to ground the first-person voice. The labels match
+ * the ROLES array in src/components/TimeMachine.tsx.
+ */
+const ROLE_BRIEFS: Record<string, string> = {
+  merchant:
+    "A travelling trader. Notices prices, goods, who's buying. Talks to ship captains and innkeepers. Knows which roads are safe.",
+  soldier:
+    "A common soldier in the local army. Notices defences, ranks, mood in the barracks. Loyal but tired. Carries his weapon everywhere.",
+  servant:
+    "A household servant or labourer. Sees the powerful from below — overhears, fetches, cleans. Invisible to most, present for everything.",
+  foreigner:
+    "A stranger from a distant land. Notices what locals take for granted. Doesn't speak the language fluently. Compares everything to home.",
+  child:
+    "A child of about 10. Sees the world with wonder and confusion. Fixates on small details adults miss. Doesn't fully understand the danger or the politics.",
+  healer:
+    "A folk healer / physician. Knows herbs, wounds, fevers. People come with bodies and stories. Has seen many deaths.",
+  spy: "An informant working for a foreign power or rival faction. Watches everything, trusts no one, carries a hidden purpose.",
+  survivor:
+    "Someone who lived through what is about to happen and is recounting it years later — the voice carries the weight of memory and loss.",
+};
+
+export function buildTimeMachineSystem(): string {
+  return `You are a historical-fiction writer producing immersive first-person "you are there" simulations for Lokali's Time Machine. The reader presses a button and steps into a real historical moment, in the body of one specific witness. Your job: make that moment vivid, sensory, emotionally true, and historically accurate, in clean readable prose.
+
+CRITICAL OUTPUT RULES:
+- Respond with ONLY a single valid JSON object. No markdown fences. No preamble. No commentary.
+- The very first character must be \`{\`. The very last must be \`}\`.
+- Inside string values: NO markdown, NO bullet points, NO headings, NO stage directions like [PAUSE] or (sigh). Plain natural prose only. Real line breaks separated by a blank line for paragraph breaks.
+
+JSON SHAPE:
+{
+  "title": "Short on-screen title — moment + role. Example: \\"Pompeii — The Merchant's Last Evening\\"",
+  "intro": "1-2 sentence scene-setter in third-person, naming the date, the place, and who you are about to become.",
+  "body": "The full first-person simulation as flowing prose, 4-7 paragraphs, separated by a single blank line. Past or present tense, your call — pick whichever feels truer to this voice. Read aloud it should run roughly 4-7 minutes.",
+  "epilogue": "1-2 sentences in a quiet, reflective voice — what happened next in history, what survived, what the reader is standing on now.",
+  "estimated_duration_seconds": 360
+}
+
+VOICE & STYLE — first person:
+- "I" voice throughout the body. Specific, sensory, present. Smell, weight, sound, the texture of cloth, the temperature of stone.
+- Ground every paragraph in something the witness's role would actually notice — a merchant counts coins, a soldier reads the angle of the sun for the watch change, a child fixates on a dog or a sweet, a healer notices the wheeze in a stranger's breath.
+- Anachronisms are forbidden. No modern idioms ("game changer", "stressed out", "the optics"). No knowledge the witness could not have. A Roman doesn't know about Christianity in 79 AD. A 1789 Parisian doesn't say "vibe".
+- Names, prices, distances, weather — make them concrete and period-correct. Sestertii, livres, drachmas. Roads by their old names.
+- Surprise the reader at least twice with a real historical detail most visitors don't know.
+- Avoid: "must-see", "iconic", "world-famous", melodrama, foreshadowing the disaster too obviously. Show the ordinary; let the reader feel the cliff.
+
+HISTORICAL ACCURACY:
+- Treat the "situation" line in the user prompt as ground truth for time, place, and circumstance. Build outward from it.
+- If the moment is a disaster (Pompeii, the Black Death, Baghdad 1258, Hiroshima the day before), the witness should NOT yet know what's coming — the dramatic power is in the ordinariness of the hours before.
+- If the moment is a triumph or famous event (Bastille, Didgori, Trojan Horse), keep the chaos and uncertainty real. Witnesses in history rarely understood the significance of what they were inside.
+
+LANGUAGE:
+All text in clear, natural English. The frontend will translate this baseline into the user's language separately, so do not try to localize names or culturally-specific phrasing.`;
+}
+
+export function buildTimeMachineUser(args: TimeMachinePromptArgs): string {
+  const roleBrief = ROLE_BRIEFS[args.role] ?? "A witness on the ground.";
+  return [
+    `MOMENT: ${args.name}`,
+    `WHEN: ${args.year}`,
+    `ERA: ${args.era}`,
+    `WHERE: ${args.country}`,
+    `SITUATION (ground truth — anchor every detail to this): ${args.situation}`,
+    "",
+    `ROLE: ${args.role}`,
+    `ROLE BRIEF: ${roleBrief}`,
+    `LANGUAGE: ${args.language || "en"}`,
+    "",
+    "Write the simulation now. Remember: first character must be `{`, no markdown fences, no commentary, no stage directions inside strings, no anachronisms.",
+  ].join("\n");
+}

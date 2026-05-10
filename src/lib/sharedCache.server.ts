@@ -66,7 +66,13 @@ type AnyTable = {
   update: (patch: Record<string, unknown>) => UpdateChain;
 };
 type DbWithCache = {
-  from: (table: "cached_guides" | "cached_attractions" | "cached_museum_highlights") => AnyTable;
+  from: (
+    table:
+      | "cached_guides"
+      | "cached_attractions"
+      | "cached_museum_highlights"
+      | "cached_time_machine",
+  ) => AnyTable;
 };
 
 // Lazy + memoized: don't crash module load if vars are missing,
@@ -344,6 +350,88 @@ async function bumpMuseumHighlightsHit(key: MuseumHighlightsKey): Promise<void> 
       .from("cached_museum_highlights")
       .update({ hit_count: current + 1 })
       .eq("museum_id", key.museumId)
+      .eq("language", key.language);
+  } catch {
+    /* analytics-only */
+  }
+}
+
+/* ─── Time Machine simulations ─── */
+
+export type TimeMachineKey = {
+  /** Stable id from ATTRACTIONS in src/components/TimeMachine.tsx (e.g. "pompeii_day"). */
+  attractionId: string;
+  /**
+   * Role chosen by the user — one of: merchant, soldier, servant,
+   * foreigner, child, healer, spy, survivor. Lowercased.
+   */
+  role: string;
+  /** Language code: "en", "ka", "es", "zh-cn", … */
+  language: string;
+};
+
+export async function getCachedTimeMachine(key: TimeMachineKey): Promise<unknown | null> {
+  const db = getDb();
+  if (!db) return null;
+  try {
+    const { data, error } = await db
+      .from("cached_time_machine")
+      .select("payload")
+      .eq("attraction_id", key.attractionId)
+      .eq("role", key.role)
+      .eq("language", key.language)
+      .maybeSingle();
+    if (error) {
+      console.warn("[sharedCache] getCachedTimeMachine error", error.message);
+      return null;
+    }
+    if (!data) return null;
+    void bumpTimeMachineHit(key);
+    return data.payload;
+  } catch (err) {
+    console.warn("[sharedCache] getCachedTimeMachine threw", err);
+    return null;
+  }
+}
+
+export async function putCachedTimeMachine(key: TimeMachineKey, payload: unknown): Promise<void> {
+  const db = getDb();
+  if (!db) return;
+  try {
+    const { error } = await db.from("cached_time_machine").upsert(
+      {
+        attraction_id: key.attractionId,
+        role: key.role,
+        language: key.language,
+        payload: payload as never,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "attraction_id,role,language" },
+    );
+    if (error) console.warn("[sharedCache] putCachedTimeMachine error", error.message);
+  } catch (err) {
+    console.warn("[sharedCache] putCachedTimeMachine threw", err);
+  }
+}
+
+async function bumpTimeMachineHit(key: TimeMachineKey): Promise<void> {
+  const db = getDb();
+  if (!db) return;
+  try {
+    const { data } = await db
+      .from("cached_time_machine")
+      .select("hit_count")
+      .eq("attraction_id", key.attractionId)
+      .eq("role", key.role)
+      .eq("language", key.language)
+      .maybeSingle();
+    if (!data) return;
+    const current = typeof data.hit_count === "number" ? data.hit_count : 0;
+    await db
+      .from("cached_time_machine")
+      .update({ hit_count: current + 1 })
+      .eq("attraction_id", key.attractionId)
+      .eq("role", key.role)
       .eq("language", key.language);
   } catch {
     /* analytics-only */
