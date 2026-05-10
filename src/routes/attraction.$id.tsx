@@ -434,6 +434,7 @@ function AttractionPage() {
             museum={matchedMuseum}
             highlights={highlights}
             loading={loadingHighlights}
+            language={language}
           />
         )}
 
@@ -1589,6 +1590,7 @@ function MuseumHighlightsSection({
   museum,
   highlights,
   loading,
+  language,
 }: {
   /** The matched museum — used to scope the per-highlight photo lookup
    *  so "Mona Lisa" doesn't resolve to a hair salon and "Liberty
@@ -1596,6 +1598,9 @@ function MuseumHighlightsSection({
   museum: Museum;
   highlights: MuseumHighlight[] | null;
   loading: boolean;
+  /** User's language — passed down to the per-card mini player so its
+   *  TTS request lands in the right voice. */
+  language: string;
 }) {
   const t = useT();
   const [page, setPage] = useState(1);
@@ -1663,6 +1668,7 @@ function MuseumHighlightsSection({
               h={h}
               rank={rank}
               museum={museum}
+              language={language}
             />
           );
         })}
@@ -1722,8 +1728,91 @@ function MuseumHighlightsSection({
  * the network. Cross-session caching happens at the route level
  * (the highlights payload itself caches in Supabase).
  */
-function HighlightCard({ h, rank, museum }: { h: MuseumHighlight; rank: number; museum: Museum }) {
+function HighlightCard({
+  h,
+  rank,
+  museum,
+  language,
+}: {
+  h: MuseumHighlight;
+  rank: number;
+  museum: Museum;
+  language: string;
+}) {
+  const t = useT();
   const [photo, setPhoto] = useState<string | null>(null);
+
+  // Per-card audio state — Beka asked for individual narrate buttons
+  // on each highlight card, separate from the page-level Begin/Listen
+  // button. TTS narrates `brief + story` (~50-100 words) so each clip
+  // is a tight 15-30 s read. Audio blob is generated on first Play
+  // press and held in component state for replay.
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const ttsText = [h.brief, h.story].filter((s) => s && s.trim().length > 0).join(" ");
+
+  const ensureAudio = async (): Promise<string | null> => {
+    if (audioUrl) return audioUrl;
+    if (!ttsText) return null;
+    setGenerating(true);
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ script: ttsText, language }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      if (blob.size < 200 || !blob.type.toLowerCase().includes("audio")) {
+        throw new Error("Invalid audio response");
+      }
+      const url = URL.createObjectURL(blob);
+      setAudioUrl(url);
+      return url;
+    } catch {
+      return null;
+    } finally {
+      setGenerating(false);
+    }
+  };
+  const handlePlay = async () => {
+    if (!audioUrl) {
+      // Fetch + autoPlay via the <audio> mount below.
+      await ensureAudio();
+      return;
+    }
+    const a = audioRef.current;
+    if (a && a.paused) a.play().catch(() => {});
+  };
+  const handlePause = () => {
+    const a = audioRef.current;
+    if (a && !a.paused) a.pause();
+  };
+  const handleStop = () => {
+    const a = audioRef.current;
+    if (!a) return;
+    a.pause();
+    a.currentTime = 0;
+    setPlaying(false);
+    setPaused(false);
+  };
+  // Cleanup blob URL on unmount.
+  useEffect(() => {
+    const a = audioRef.current;
+    return () => {
+      if (a) {
+        a.pause();
+        a.src = "";
+      }
+      setAudioUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+    };
+  }, []);
   const queryName = h.name_en ?? h.name;
   useEffect(() => {
     if (!queryName) return;
@@ -1837,6 +1926,68 @@ function HighlightCard({ h, rank, museum }: { h: MuseumHighlight; rank: number; 
           <p className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/30 px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             <MapPin className="h-2.5 w-2.5" /> {h.location_hint}
           </p>
+        )}
+
+        {/* Per-card mini player — narrate just this highlight's
+            brief + story. Beka's spec: tight Play / Pause / Stop
+            buttons inside the card, separate from the page-level
+            Begin/Listen which narrates the full guide. */}
+        {ttsText && (
+          <div className="mt-3 flex items-center gap-1.5">
+            {audioUrl && (
+              <audio
+                ref={audioRef}
+                src={audioUrl}
+                preload="auto"
+                autoPlay
+                onPlay={() => {
+                  setPlaying(true);
+                  setPaused(false);
+                }}
+                onPause={() => {
+                  const a = audioRef.current;
+                  if (a && a.currentTime >= a.duration - 0.05) return;
+                  setPaused(true);
+                }}
+                onEnded={() => {
+                  setPlaying(false);
+                  setPaused(false);
+                }}
+                style={{ display: "none" }}
+              />
+            )}
+            <button
+              type="button"
+              onClick={handlePlay}
+              disabled={generating || (playing && !paused)}
+              aria-label={t("player.resume")}
+              className="grid h-7 w-7 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-soft transition-smooth hover:scale-[1.04] disabled:opacity-50"
+            >
+              {generating ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Play className="h-3 w-3 translate-x-[0.5px] fill-current" />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={handlePause}
+              disabled={!playing || paused}
+              aria-label={t("player.pause")}
+              className="grid h-7 w-7 place-items-center rounded-full border border-primary/40 bg-card text-foreground transition-smooth hover:border-primary/70 disabled:opacity-50"
+            >
+              <Pause className="h-3 w-3 fill-current" />
+            </button>
+            <button
+              type="button"
+              onClick={handleStop}
+              disabled={!audioUrl}
+              aria-label={t("player.stop")}
+              className="grid h-7 w-7 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
+            >
+              <Square className="h-2.5 w-2.5 fill-current" />
+            </button>
+          </div>
         )}
       </div>
     </li>
