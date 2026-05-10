@@ -415,15 +415,11 @@ function AttractionPage() {
         {/* Tips — list with rotating icons */}
         <TipsSection items={guide?.tips} />
 
-        {/* Nearby — clickable links to nearby attractions. Tapping
-            navigates to /attraction/$id for that place, which kicks off
-            the same n8n fetch flow and gives the user a continuous
-            wandering-from-place-to-place experience. */}
-        <NearbyLinks items={guide?.nearby_suggestions} />
+        {/* Nearby section retired per Beka's request — felt redundant
+            next to the Map below it, and the LLM-suggested neighbours
+            were often unevenly curated. The data is still in
+            guide.nearby_suggestions if we want to bring it back later. */}
 
-        {/* Map — pinned at the very bottom. Leaflet (same stack as
-            /map) so the visual matches the Saved-places map; secondary
-            pins drop for any saved place within ~5 km of this one. */}
         {/* Must-see highlights — only renders when the attraction is
             one of the curated MUSEUMS. Self-paginates 10 per page,
             three pages max. Quiet skeleton while the first fetch is
@@ -438,6 +434,10 @@ function AttractionPage() {
           />
         )}
 
+        {/* Map — kept as the LAST section before the floating audio
+            player / TabBar, per Beka's spec ("ჩამოსქროლვისას მხოლოდ
+            რუკა გადმოდის footer-ის წინ"). Removing Nearby above made
+            this naturally land at the bottom. */}
         <MapSection lat={a?.lat} lng={a?.lng} name={a?.name ?? fallbackName} currentSlug={id} />
 
         {/* The audio player itself lives in MobileFrame's floatingPanel

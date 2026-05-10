@@ -20,7 +20,7 @@ import { DESTINATIONS, type Destination } from "@/lib/destinations";
 import { HOME_CITIES } from "@/lib/cityList";
 import { CityCard } from "@/components/CityCard";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
-import { attractionSlug } from "@/lib/api";
+import { attractionSlug, fetchPlacePhoto } from "@/lib/api";
 import {
   ATTRACTIONS as TIME_MACHINE_ATTRACTIONS,
   type Attraction as TimeMachineAttraction,
@@ -317,6 +317,21 @@ export function HomeScreen() {
 function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
   const [name] = useTranslated([museum.name]);
   const slug = attractionSlug(museum.name);
+  // Wikipedia-sourced photo via the same fetchPlacePhoto helper the
+  // attraction page hero uses. scope="artwork" forces the Wikipedia-
+  // only path so Tbilisi-biased Google Places results don't pollute
+  // the strip. Falls back to the LoremFlickr seed image (museum.image)
+  // until Wikipedia returns.
+  const [photo, setPhoto] = useState<string | null>(museum.image);
+  useEffect(() => {
+    let cancelled = false;
+    fetchPlacePhoto(museum.name, "en", museum.city, "artwork").then((url) => {
+      if (!cancelled && url) setPhoto(url);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [museum.name, museum.city]);
   return (
     <Link
       to="/attraction/$id"
@@ -325,18 +340,20 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
       className="group relative h-[170px] w-[240px] flex-shrink-0 overflow-hidden rounded-2xl border border-border bg-card transition-smooth hover:border-primary/50 active:scale-[0.98]"
     >
       <img
-        src={museum.image}
+        src={photo ?? museum.image}
         alt={name}
         loading="lazy"
+        onError={() => setPhoto(museum.image)}
         className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-background/10" />
       <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-primary/50 bg-background/55 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-md">
         #{rank}
       </div>
+      {/* Beka asked to drop the decorative emoji from museum cards —
+          the photo is doing the visual work. */}
       <div className="absolute inset-x-3.5 bottom-3.5">
-        <div className="text-[18px] leading-none">{museum.emoji}</div>
-        <div className="mt-1.5 font-display text-[15px] font-medium leading-tight text-foreground line-clamp-2">
+        <div className="font-display text-[15px] font-medium leading-tight text-foreground line-clamp-2">
           {name}
         </div>
       </div>

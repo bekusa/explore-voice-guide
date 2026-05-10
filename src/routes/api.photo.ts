@@ -53,10 +53,19 @@ async function googlePhoto(q: string, city: string | null): Promise<string | nul
   variants.push(q);
 
   for (const variant of variants) {
+    // `locationbias=ipbias` neutralises the API key's region setting.
+    // Beka's Google Cloud project is registered in Georgia, so bare
+    // findplacefromtext calls were ranking Tbilisi-area matches above
+    // anything we passed via the city query (Liberty Bank for "Liberty
+    // Leading the People", a Tbilisi suburb for "The Lacemaker"). With
+    // ipbias the request gets re-biased to whichever Cloudflare edge
+    // node served it — globally neutral. The "name + city" variant
+    // stays in the input string so legitimate Tbilisi searches still
+    // win when the city is Tbilisi.
     const findUrl =
       `https://maps.googleapis.com/maps/api/place/findplacefromtext/json` +
       `?input=${encodeURIComponent(variant)}` +
-      `&inputtype=textquery&fields=photos&key=${GOOGLE_KEY}`;
+      `&inputtype=textquery&fields=photos&locationbias=ipbias&language=en&key=${GOOGLE_KEY}`;
 
     const findRes = await fetch(findUrl);
     if (!findRes.ok) continue;

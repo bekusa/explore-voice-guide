@@ -1,10 +1,11 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, MapPin } from "lucide-react";
 import { MobileFrame } from "@/components/MobileFrame";
 import { useT } from "@/hooks/useT";
 import { useTranslated } from "@/hooks/useT";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
-import { attractionSlug } from "@/lib/api";
+import { attractionSlug, fetchPlacePhoto } from "@/lib/api";
 
 /**
  * /museums — full grid of all 20 curated museums.
@@ -93,6 +94,19 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
   // English `name` ensures the photo lookup and guide fetch land on
   // the right place even when the user is browsing in Georgian.
   const slug = attractionSlug(museum.name);
+  // Wikipedia-sourced photo via the artwork-scope path (Google
+  // Places skipped). Falls back to the LoremFlickr seed until
+  // Wikipedia returns. See the matching change on the home strip.
+  const [photo, setPhoto] = useState<string | null>(museum.image);
+  useEffect(() => {
+    let cancelled = false;
+    fetchPlacePhoto(museum.name, "en", museum.city, "artwork").then((url) => {
+      if (!cancelled && url) setPhoto(url);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [museum.name, museum.city]);
   return (
     <Link
       to="/attraction/$id"
@@ -101,9 +115,10 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
       className="group relative h-[200px] overflow-hidden rounded-2xl border border-border bg-card transition-smooth hover:border-primary/50 active:scale-[0.98]"
     >
       <img
-        src={museum.image}
+        src={photo ?? museum.image}
         alt={name}
         loading="lazy"
+        onError={() => setPhoto(museum.image)}
         className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/10" />
@@ -114,9 +129,9 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
         #{rank}
       </div>
 
+      {/* Beka asked to drop the decorative emoji from museum cards. */}
       <div className="absolute inset-x-4 bottom-3.5">
-        <div className="text-[18px] leading-none">{museum.emoji}</div>
-        <h3 className="mt-1.5 font-display text-[18px] font-medium leading-tight text-foreground line-clamp-2">
+        <h3 className="font-display text-[18px] font-medium leading-tight text-foreground line-clamp-2">
           {name}
         </h3>
         <p className="mt-1.5 inline-flex items-center gap-1.5 text-[10.5px] text-foreground/70">
