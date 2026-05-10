@@ -33,6 +33,7 @@ import { Route as ApiMuseumHighlightsRouteImport } from './routes/api.museum-hig
 import { Route as ApiGuideRouteImport } from './routes/api.guide'
 import { Route as ApiCacheDebugRouteImport } from './routes/api.cache-debug'
 import { Route as ApiAttractionsRouteImport } from './routes/api.attractions'
+import { Route as TimeMachineIdRoleRouteImport } from './routes/time-machine.$id.$role'
 
 const TimeMachineRoute = TimeMachineRouteImport.update({
   id: '/time-machine',
@@ -154,6 +155,11 @@ const ApiAttractionsRoute = ApiAttractionsRouteImport.update({
   path: '/api/attractions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TimeMachineIdRoleRoute = TimeMachineIdRoleRouteImport.update({
+  id: '/$id/$role',
+  path: '/$id/$role',
+  getParentRoute: () => TimeMachineRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -168,7 +174,7 @@ export interface FileRoutesByFullPath {
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
   '/settings': typeof SettingsRoute
-  '/time-machine': typeof TimeMachineRoute
+  '/time-machine': typeof TimeMachineRouteWithChildren
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/cache-debug': typeof ApiCacheDebugRoute
   '/api/guide': typeof ApiGuideRoute
@@ -180,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
   '/destination/$slug': typeof DestinationSlugRoute
+  '/time-machine/$id/$role': typeof TimeMachineIdRoleRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -194,7 +201,7 @@ export interface FileRoutesByTo {
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
   '/settings': typeof SettingsRoute
-  '/time-machine': typeof TimeMachineRoute
+  '/time-machine': typeof TimeMachineRouteWithChildren
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/cache-debug': typeof ApiCacheDebugRoute
   '/api/guide': typeof ApiGuideRoute
@@ -206,6 +213,7 @@ export interface FileRoutesByTo {
   '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
   '/destination/$slug': typeof DestinationSlugRoute
+  '/time-machine/$id/$role': typeof TimeMachineIdRoleRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -221,7 +229,7 @@ export interface FileRoutesById {
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
   '/settings': typeof SettingsRoute
-  '/time-machine': typeof TimeMachineRoute
+  '/time-machine': typeof TimeMachineRouteWithChildren
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/cache-debug': typeof ApiCacheDebugRoute
   '/api/guide': typeof ApiGuideRoute
@@ -233,6 +241,7 @@ export interface FileRoutesById {
   '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
   '/destination/$slug': typeof DestinationSlugRoute
+  '/time-machine/$id/$role': typeof TimeMachineIdRoleRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -261,6 +270,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/attraction/$id'
     | '/destination/$slug'
+    | '/time-machine/$id/$role'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -287,6 +297,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/attraction/$id'
     | '/destination/$slug'
+    | '/time-machine/$id/$role'
   id:
     | '__root__'
     | '/'
@@ -313,6 +324,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/attraction/$id'
     | '/destination/$slug'
+    | '/time-machine/$id/$role'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -328,7 +340,7 @@ export interface RootRouteChildren {
   ResultsRoute: typeof ResultsRoute
   SavedRoute: typeof SavedRoute
   SettingsRoute: typeof SettingsRoute
-  TimeMachineRoute: typeof TimeMachineRoute
+  TimeMachineRoute: typeof TimeMachineRouteWithChildren
   ApiAttractionsRoute: typeof ApiAttractionsRoute
   ApiCacheDebugRoute: typeof ApiCacheDebugRoute
   ApiGuideRoute: typeof ApiGuideRoute
@@ -512,8 +524,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAttractionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/time-machine/$id/$role': {
+      id: '/time-machine/$id/$role'
+      path: '/$id/$role'
+      fullPath: '/time-machine/$id/$role'
+      preLoaderRoute: typeof TimeMachineIdRoleRouteImport
+      parentRoute: typeof TimeMachineRoute
+    }
   }
 }
+
+interface TimeMachineRouteChildren {
+  TimeMachineIdRoleRoute: typeof TimeMachineIdRoleRoute
+}
+
+const TimeMachineRouteChildren: TimeMachineRouteChildren = {
+  TimeMachineIdRoleRoute: TimeMachineIdRoleRoute,
+}
+
+const TimeMachineRouteWithChildren = TimeMachineRoute._addFileChildren(
+  TimeMachineRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -528,7 +559,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResultsRoute: ResultsRoute,
   SavedRoute: SavedRoute,
   SettingsRoute: SettingsRoute,
-  TimeMachineRoute: TimeMachineRoute,
+  TimeMachineRoute: TimeMachineRouteWithChildren,
   ApiAttractionsRoute: ApiAttractionsRoute,
   ApiCacheDebugRoute: ApiCacheDebugRoute,
   ApiGuideRoute: ApiGuideRoute,

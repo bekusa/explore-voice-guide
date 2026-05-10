@@ -407,8 +407,10 @@ function TimeMachineMomentCard({
       </div>
 
       <div className="absolute inset-x-3.5 bottom-3.5">
-        <div className="text-[18px] leading-none">{attraction.emoji}</div>
-        <div className="mt-1.5 font-display text-[15px] font-medium leading-tight text-foreground line-clamp-2">
+        {/* Decorative emoji removed per Beka — same call we made on
+            the museum strip; the photo + rank/year pills already
+            carry the visual weight. */}
+        <div className="font-display text-[15px] font-medium leading-tight text-foreground line-clamp-2">
           {name}
         </div>
         <div className="mt-1 text-[10.5px] leading-snug text-foreground/65">{era}</div>

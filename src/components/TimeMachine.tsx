@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
   Bookmark,
@@ -12,11 +12,9 @@ import {
   MapPin,
   Play,
   Star,
-  X,
 } from "lucide-react";
 import { MobileFrame } from "@/components/MobileFrame";
 import { useT, useTranslated } from "@/hooks/useT";
-import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import type { UiKey } from "@/lib/i18n";
 // Catalog + role whitelist live in lib/timeMachineData.ts so the
 // /api/time-machine server route can import them without dragging
@@ -143,7 +141,7 @@ interface TimeMachineProps {
 
 export default function TimeMachine({ onResult, initialId }: TimeMachineProps) {
   const t = useT();
-  const lang = usePreferredLanguage();
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [tierFilter, setTierFilter] = useState<"ALL" | Tier>("ALL");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -169,10 +167,6 @@ export default function TimeMachine({ onResult, initialId }: TimeMachineProps) {
   const [saved, setSaved] = useState<Set<string>>(new Set());
   const [cached, setCached] = useState<Set<string>>(new Set());
   const [downloading, setDownloading] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [stage, setStage] = useState(0);
-  const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ title: string; body: string } | null>(null);
 
   const toggleSave = (id: string) =>
     setSaved((s) => {
@@ -203,72 +197,26 @@ export default function TimeMachine({ onResult, initialId }: TimeMachineProps) {
     });
   }, [query, tierFilter]);
 
-  // Cycle loading stages
-  useEffect(() => {
-    if (!loading) return;
-    setStage(0);
-    const id = setInterval(() => setStage((s) => (s + 1) % LOADING_STAGES.length), 2200);
-    return () => clearInterval(id);
-  }, [loading]);
-
   /**
-   * Generate the immersive first-person simulation for one (moment,
-   * role, language) triple via /api/time-machine.
+   * Hand off to the rich /time-machine/$id/$role result page. The
+   * page itself owns the simulation fetch, loading skeleton, audio
+   * player, save toggle, and the cinematic chrome — same visual
+   * idiom as /attraction/$id (Beka's spec: "უნდა იყოს იგივე ფორმატის
+   * რაც Attraction შედეგად გამოდის").
    *
-   * History: this used to navigate to /attraction/$id as a fallback
-   * because the n8n simulation webhook didn't exist. That fallback
-   * was actively broken — many Time Machine moments (Library of
-   * Alexandria, Colossus of Rhodes, the Trojan Horse, the Bastille,
-   * Pompeii at 79 AD) have no present-day attraction to land on, and
-   * Beka caught "Baghdad — The Mongol Sack" routing to a present-day
-   * Baghdad museum. The Time Machine is fundamentally a generation
-   * surface, not a lookup surface.
+   * History: this used to POST inline + show a plain text overlay,
+   * which itself had replaced an even worse navigate-to-/attraction
+   * placeholder. The current pattern keeps URL state clean (browser
+   * back works, simulations are shareable, refresh re-fetches) and
+   * matches the reading experience of the rest of the app.
    */
-  const handleStart = async (attraction: Attraction, roleValue: string) => {
-    setError(null);
+  const handleStart = (attraction: Attraction, roleValue: string) => {
     setSelectedId(attraction.id);
-    setLoading(true);
-    setResult(null);
-    try {
-      const res = await fetch("/api/time-machine", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          attractionId: attraction.id,
-          role: roleValue,
-          language: lang,
-        }),
-      });
-      const data = (await res.json().catch(() => null)) as {
-        title?: string;
-        intro?: string;
-        body?: string;
-        epilogue?: string;
-        error?: string;
-      } | null;
-      if (!res.ok || !data || !data.body || data.error) {
-        setError(data?.error ?? `Simulation failed (${res.status})`);
-        return;
-      }
-      // Stitch intro + body + epilogue into one scrollable narrative.
-      // The result overlay is a plain `whitespace-pre-wrap` block, so
-      // double newlines between sections give us readable spacing
-      // without any markup. Falsy values are skipped so older cached
-      // payloads (body-only) still render cleanly.
-      const sections = [data.intro, data.body, data.epilogue]
-        .filter((s): s is string => typeof s === "string" && s.trim().length > 0)
-        .map((s) => s.trim())
-        .join("\n\n");
-      setResult({
-        title: data.title?.trim() || attraction.name,
-        body: sections,
-      });
-      onResult?.(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Network error");
-    } finally {
-      setLoading(false);
-    }
+    onResult?.({ navigated_to: attraction.id, role: roleValue });
+    void navigate({
+      to: "/time-machine/$id/$role",
+      params: { id: attraction.id, role: roleValue },
+    });
   };
 
   return (
@@ -301,8 +249,6 @@ export default function TimeMachine({ onResult, initialId }: TimeMachineProps) {
             </p>
           </section>
 
-          {error && <p className="px-5 pt-2 text-[11px] text-destructive">{error}</p>}
-
           {/* ─── CARDS GRID (single column on mobile frame) ─── */}
           <section className="px-5 pt-4">
             <div className="flex flex-col gap-3">
@@ -323,7 +269,7 @@ export default function TimeMachine({ onResult, initialId }: TimeMachineProps) {
                   isSaved={saved.has(a.id)}
                   isCached={cached.has(a.id)}
                   isDownloading={downloading === a.id}
-                  loading={loading}
+                  loading={false}
                   onToggleSave={() => toggleSave(a.id)}
                   onDownload={() => downloadOffline(a.id)}
                   onStart={() => {
@@ -340,50 +286,12 @@ export default function TimeMachine({ onResult, initialId }: TimeMachineProps) {
           </section>
         </div>
 
-        {/* ─── RESULT OVERLAY (n8n response) ─── */}
-        {result && !loading && (
-          <div className="absolute inset-0 z-50 flex flex-col bg-background">
-            <div className="flex items-center justify-between border-b border-border px-5 py-4">
-              <div
-                className="truncate text-[16px] font-medium text-primary"
-                style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
-              >
-                {result.title}
-              </div>
-              <button
-                onClick={() => setResult(null)}
-                aria-label={t("tm.close")}
-                className="grid h-8 w-8 place-items-center rounded-full border border-border bg-card hover:border-primary/50"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto px-5 py-5 text-[13px] leading-[1.65] text-foreground/90 whitespace-pre-wrap scrollbar-hide">
-              {result.body}
-            </div>
-          </div>
-        )}
-
-        {/* ─── LOADING OVERLAY ─── */}
-        {loading && (
-          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/90 backdrop-blur-md">
-            <div className="mb-5 text-[56px] animate-spin-slow">{LOADING_STAGES[stage].emoji}</div>
-            <div
-              className="px-6 text-center text-[22px] font-medium text-primary"
-              style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
-            >
-              {t(LOADING_STAGES[stage].titleKey)}
-            </div>
-            <div className="mt-2 px-6 text-center text-[12.5px] italic text-muted-foreground">
-              {t(LOADING_STAGES[stage].subKey)}
-            </div>
-          </div>
-        )}
-
-        <style>{`
-          @keyframes spin-slow { from { transform: rotate(0deg);} to { transform: rotate(360deg);} }
-          .animate-spin-slow { animation: spin-slow 3.5s linear infinite; }
-        `}</style>
+        {/* The result + loading overlays used to live here, but the
+            simulation now opens at /time-machine/$id/$role with the
+            full attraction-page layout. The cycling LOADING_STAGES
+            copy moved to that route's loading skeleton; the role
+            scroller, search, and tier filter are all this component
+            needs to do now. */}
       </div>
     </MobileFrame>
   );
@@ -483,7 +391,8 @@ function TimeMachineCard({
             className="truncate text-[15px] font-semibold leading-tight text-foreground"
             style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
           >
-            <span className="mr-1">{a.emoji}</span>
+            {/* Decorative emoji removed per Beka — same call as the
+                Home strip and museum cards. */}
             {name}
           </h3>
           <p className="my-1.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
