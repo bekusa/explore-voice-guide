@@ -33,7 +33,7 @@ import { Route as ApiMuseumHighlightsRouteImport } from './routes/api.museum-hig
 import { Route as ApiGuideRouteImport } from './routes/api.guide'
 import { Route as ApiCacheDebugRouteImport } from './routes/api.cache-debug'
 import { Route as ApiAttractionsRouteImport } from './routes/api.attractions'
-import { Route as TimeMachineIdRoleRouteImport } from './routes/time-machine_.$id.$role'
+import { Route as TmSimIdRoleRouteImport } from './routes/tm-sim.$id.$role'
 
 const TimeMachineRoute = TimeMachineRouteImport.update({
   id: '/time-machine',
@@ -155,9 +155,9 @@ const ApiAttractionsRoute = ApiAttractionsRouteImport.update({
   path: '/api/attractions',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TimeMachineIdRoleRoute = TimeMachineIdRoleRouteImport.update({
-  id: '/time-machine_/$id/$role',
-  path: '/time-machine/$id/$role',
+const TmSimIdRoleRoute = TmSimIdRoleRouteImport.update({
+  id: '/tm-sim/$id/$role',
+  path: '/tm-sim/$id/$role',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -186,7 +186,7 @@ export interface FileRoutesByFullPath {
   '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
   '/destination/$slug': typeof DestinationSlugRoute
-  '/time-machine/$id/$role': typeof TimeMachineIdRoleRoute
+  '/tm-sim/$id/$role': typeof TmSimIdRoleRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -213,7 +213,7 @@ export interface FileRoutesByTo {
   '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
   '/destination/$slug': typeof DestinationSlugRoute
-  '/time-machine/$id/$role': typeof TimeMachineIdRoleRoute
+  '/tm-sim/$id/$role': typeof TmSimIdRoleRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -241,7 +241,7 @@ export interface FileRoutesById {
   '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
   '/destination/$slug': typeof DestinationSlugRoute
-  '/time-machine_/$id/$role': typeof TimeMachineIdRoleRoute
+  '/tm-sim/$id/$role': typeof TmSimIdRoleRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -270,7 +270,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/attraction/$id'
     | '/destination/$slug'
-    | '/time-machine/$id/$role'
+    | '/tm-sim/$id/$role'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -297,7 +297,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/attraction/$id'
     | '/destination/$slug'
-    | '/time-machine/$id/$role'
+    | '/tm-sim/$id/$role'
   id:
     | '__root__'
     | '/'
@@ -324,7 +324,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/attraction/$id'
     | '/destination/$slug'
-    | '/time-machine_/$id/$role'
+    | '/tm-sim/$id/$role'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -352,7 +352,7 @@ export interface RootRouteChildren {
   ApiTtsRoute: typeof ApiTtsRoute
   AttractionIdRoute: typeof AttractionIdRoute
   DestinationSlugRoute: typeof DestinationSlugRoute
-  TimeMachineIdRoleRoute: typeof TimeMachineIdRoleRoute
+  TmSimIdRoleRoute: typeof TmSimIdRoleRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -525,11 +525,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAttractionsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/time-machine_/$id/$role': {
-      id: '/time-machine_/$id/$role'
-      path: '/time-machine/$id/$role'
-      fullPath: '/time-machine/$id/$role'
-      preLoaderRoute: typeof TimeMachineIdRoleRouteImport
+    '/tm-sim/$id/$role': {
+      id: '/tm-sim/$id/$role'
+      path: '/tm-sim/$id/$role'
+      fullPath: '/tm-sim/$id/$role'
+      preLoaderRoute: typeof TmSimIdRoleRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -560,7 +560,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTtsRoute: ApiTtsRoute,
   AttractionIdRoute: AttractionIdRoute,
   DestinationSlugRoute: DestinationSlugRoute,
-  TimeMachineIdRoleRoute: TimeMachineIdRoleRoute,
+  TmSimIdRoleRoute: TmSimIdRoleRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

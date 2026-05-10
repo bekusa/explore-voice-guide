@@ -214,7 +214,7 @@ export default function TimeMachine({ onResult, initialId }: TimeMachineProps) {
     setSelectedId(attraction.id);
     onResult?.({ navigated_to: attraction.id, role: roleValue });
     void navigate({
-      to: "/time-machine/$id/$role",
+      to: "/tm-sim/$id/$role",
       params: { id: attraction.id, role: roleValue },
     });
   };
