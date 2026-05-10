@@ -21,69 +21,28 @@ import type { UiKey } from "@/lib/i18n";
 // the React UI tree into the worker bundle. We re-export the
 // `Attraction` type for any external caller that still imports it
 // from this module (HomeScreen's TM strip, route file).
-import { ATTRACTIONS as ATTRACTIONS_DATA, type Attraction, type Tier } from "@/lib/timeMachineData";
+import {
+  ATTRACTIONS as ATTRACTIONS_DATA,
+  ROLES_META,
+  type Attraction,
+  type RoleMeta,
+  type Tier,
+} from "@/lib/timeMachineData";
 export type { Attraction, Tier };
 export const ATTRACTIONS = ATTRACTIONS_DATA;
 
-interface Role {
-  value: string;
-  // i18n keys for the localized label and hint — the UI dictionary
-  // owns the actual copy so swapping language updates the dropdown.
+// Single source of truth for the role list now lives in
+// lib/timeMachineData.ts so the catalog dropdown here AND the
+// "switch character" picker on /tm-sim share one definition.
+type Role = Omit<RoleMeta, "labelKey" | "hintKey"> & {
   labelKey: UiKey;
   hintKey: UiKey;
-  emoji: string;
-}
-
-const ROLES: Role[] = [
-  {
-    value: "merchant",
-    labelKey: "tm.role.merchant.label",
-    hintKey: "tm.role.merchant.hint",
-    emoji: "💰",
-  },
-  {
-    value: "soldier",
-    labelKey: "tm.role.soldier.label",
-    hintKey: "tm.role.soldier.hint",
-    emoji: "⚔️",
-  },
-  {
-    value: "servant",
-    labelKey: "tm.role.servant.label",
-    hintKey: "tm.role.servant.hint",
-    emoji: "🧹",
-  },
-  {
-    value: "foreigner",
-    labelKey: "tm.role.foreigner.label",
-    hintKey: "tm.role.foreigner.hint",
-    emoji: "🧭",
-  },
-  {
-    value: "child",
-    labelKey: "tm.role.child.label",
-    hintKey: "tm.role.child.hint",
-    emoji: "🧒",
-  },
-  {
-    value: "healer",
-    labelKey: "tm.role.healer.label",
-    hintKey: "tm.role.healer.hint",
-    emoji: "🌿",
-  },
-  {
-    value: "spy",
-    labelKey: "tm.role.spy.label",
-    hintKey: "tm.role.spy.hint",
-    emoji: "🕵️",
-  },
-  {
-    value: "survivor",
-    labelKey: "tm.role.survivor.label",
-    hintKey: "tm.role.survivor.hint",
-    emoji: "🩹",
-  },
-];
+};
+const ROLES: Role[] = ROLES_META.map((r) => ({
+  ...r,
+  labelKey: r.labelKey as UiKey,
+  hintKey: r.hintKey as UiKey,
+}));
 
 const TIER_STYLE: Record<Tier, string> = {
   MVP: "bg-[#c9972a] text-black",

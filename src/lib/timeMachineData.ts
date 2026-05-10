@@ -513,8 +513,8 @@ export const ATTRACTIONS_BY_ID: Map<string, Attraction> = new Map(
 
 /**
  * Whitelist of valid role values — must stay in lockstep with the
- * ROLES array in src/components/TimeMachine.tsx. Used by the server
- * route to reject unknown roles before paying the Claude latency.
+ * ROLES_META array below. Used by the server route to reject unknown
+ * roles before paying the Claude latency.
  */
 export const TIME_MACHINE_ROLES = [
   "merchant",
@@ -527,3 +527,61 @@ export const TIME_MACHINE_ROLES = [
   "survivor",
 ] as const;
 export type TimeMachineRole = (typeof TIME_MACHINE_ROLES)[number];
+
+/**
+ * UI metadata for each role — emoji + i18n keys for the localised
+ * label and hint. Lives here (not in src/components/TimeMachine.tsx)
+ * because both the catalog dropdown AND the result page's
+ * "switch character" picker need the same data and we don't want
+ * the picker to drag in the entire 600-line catalog component.
+ */
+export type RoleMeta = {
+  value: TimeMachineRole;
+  /** UiKey from src/lib/i18n — kept untyped here to avoid cycling
+   *  this module through the i18n type. Both consumers re-cast on
+   *  import, which is enough type safety. */
+  labelKey: string;
+  hintKey: string;
+  emoji: string;
+};
+
+export const ROLES_META: readonly RoleMeta[] = [
+  {
+    value: "merchant",
+    labelKey: "tm.role.merchant.label",
+    hintKey: "tm.role.merchant.hint",
+    emoji: "💰",
+  },
+  {
+    value: "soldier",
+    labelKey: "tm.role.soldier.label",
+    hintKey: "tm.role.soldier.hint",
+    emoji: "⚔️",
+  },
+  {
+    value: "servant",
+    labelKey: "tm.role.servant.label",
+    hintKey: "tm.role.servant.hint",
+    emoji: "🧹",
+  },
+  {
+    value: "foreigner",
+    labelKey: "tm.role.foreigner.label",
+    hintKey: "tm.role.foreigner.hint",
+    emoji: "🧭",
+  },
+  { value: "child", labelKey: "tm.role.child.label", hintKey: "tm.role.child.hint", emoji: "🧒" },
+  {
+    value: "healer",
+    labelKey: "tm.role.healer.label",
+    hintKey: "tm.role.healer.hint",
+    emoji: "🌿",
+  },
+  { value: "spy", labelKey: "tm.role.spy.label", hintKey: "tm.role.spy.hint", emoji: "🕵️" },
+  {
+    value: "survivor",
+    labelKey: "tm.role.survivor.label",
+    hintKey: "tm.role.survivor.hint",
+    emoji: "🩹",
+  },
+] as const;

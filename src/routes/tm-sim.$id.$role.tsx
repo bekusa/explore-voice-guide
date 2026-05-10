@@ -1,60 +1,56 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
   Bookmark,
   BookmarkCheck,
+  ChevronDown,
   Clock,
   Loader2,
   MapPin,
-  Pause,
   Play,
   RotateCcw,
   Sparkles,
-  Square,
   Star,
   User,
 } from "lucide-react";
-import { toast } from "sonner";
 import { LoadingMessages } from "@/components/LoadingMessages";
+import { InlineAudioPanel } from "@/components/InlineAudioPanel";
 import { MobileFrame } from "@/components/MobileFrame";
-import { ATTRACTIONS_BY_ID, TIME_MACHINE_ROLES } from "@/lib/timeMachineData";
+import { ATTRACTIONS_BY_ID, ROLES_META, TIME_MACHINE_ROLES } from "@/lib/timeMachineData";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { useT, useTranslated } from "@/hooks/useT";
+import type { UiKey } from "@/lib/i18n";
 
 /**
- * /time-machine/$id/$role — the rich result page for one Time Machine
+ * /tm-sim/$id/$role — the rich result page for one Time Machine
  * simulation. Mirrors the visual structure of /attraction/$id (hero
- * image + title + meta chips + action row + stacked content sections)
- * so the user gets a consistent reading experience whether they're
- * browsing a real present-day attraction or stepping into a historical
- * moment.
+ * image + title + meta chips + action row + InlineAudioPanel +
+ * stacked content sections) so the user gets a consistent reading
+ * experience whether they're browsing a real present-day attraction
+ * or stepping into a historical moment.
  *
- * Beka's spec: "Time machine -ის მიერ გამოტანილი ფეიჯი უნდა იყოს იგივე
- * ფორმატის რაც Attraction შედეგად გამოდის" — same format as the
- * attraction result page.
- *
- * Replaces the previous in-page overlay (a plain `whitespace-pre-wrap`
- * block) with a proper page that has a URL, browser back, and shares
- * the cinematic chrome of the rest of the app.
+ * Beka's spec evolution:
+ *   1. "უნდა იყოს იგივე ფორმატის რაც Attraction შედეგად გამოდის" →
+ *      mirror the attraction page chrome.
+ *   2. "სათაური არ შეცვალო" → keep the title pinned to the moment's
+ *      name. This is a historical story; "Pompeii" stays "Pompeii"
+ *      across regenerations and roles, not a per-call AI flourish
+ *      like "Pompeii — The Merchant's Last Evening".
+ *   3. "დაამატე Player-ი" → use the same InlineAudioPanel component
+ *      the attraction page uses (full transport row + scrubber).
+ *   4. "პერსონაჟების არჩევა შეგეძლოს ატრაქციონის ფეიჯიდანაც" → role
+ *      picker on this page so the user can switch character without
+ *      bouncing back to /time-machine.
  */
 type SimulationPayload = {
+  // We deliberately ignore `title` from the payload — see Beka's
+  // spec #2 above. The display title is always the moment's name.
   title?: string;
   intro?: string;
   body?: string;
   epilogue?: string;
   estimated_duration_seconds?: number;
-};
-
-const ROLE_LABELS: Record<string, string> = {
-  merchant: "Merchant",
-  soldier: "Soldier",
-  servant: "Servant",
-  foreigner: "Foreigner",
-  child: "Child",
-  healer: "Healer",
-  spy: "Spy",
-  survivor: "Survivor",
 };
 
 export const Route = createFileRoute("/tm-sim/$id/$role")({
@@ -67,7 +63,7 @@ export const Route = createFileRoute("/tm-sim/$id/$role")({
         {
           name: "description",
           content: moment
-            ? `Step into ${moment.name} (${moment.year}) as a ${ROLE_LABELS[params.role] ?? params.role}.`
+            ? `Step into ${moment.name} (${moment.year}) as a ${params.role}.`
             : "Time Machine simulation.",
         },
       ],
@@ -80,6 +76,7 @@ function TimeMachineSimulationPage() {
   const { id, role } = Route.useParams();
   const lang = usePreferredLanguage();
   const t = useT();
+  const navigate = useNavigate();
 
   const moment = ATTRACTIONS_BY_ID.get(id);
   const validRole = (TIME_MACHINE_ROLES as readonly string[]).includes(role);
@@ -89,10 +86,18 @@ function TimeMachineSimulationPage() {
   const [error, setError] = useState<string | null>(null);
   const [reloadTick, setReloadTick] = useState(0);
 
+  // Audio panel mount state — lifted up to the page so the panel can
+  // sit in MobileFrame's floatingPanel slot (sticky just above the
+  // TabBar) instead of inline in the action row. Same pattern as
+  // /attraction/$id.
+  const [audioOpen, setAudioOpen] = useState(false);
+
+  // Role picker dropdown state.
+  const [rolePickerOpen, setRolePickerOpen] = useState(false);
+
   // Save state — keyed locally per (id, role) so the user can star
   // their favourite simulations without coupling to the existing
-  // savedStore (which is shaped around real attractions and would
-  // need its own schema variant for moments).
+  // savedStore (which is shaped around real attractions).
   const SAVED_KEY = "tm_saved";
   const [saved, setSaved] = useState(false);
   useEffect(() => {
@@ -126,6 +131,9 @@ function TimeMachineSimulationPage() {
     let cancelled = false;
     setLoading(true);
     setError(null);
+    // Close any open audio panel from the previous role/script — its
+    // blob references stale TTS output for a different narrative.
+    setAudioOpen(false);
     fetch("/api/time-machine", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -155,12 +163,23 @@ function TimeMachineSimulationPage() {
     };
   }, [id, role, lang, moment, validRole, reloadTick]);
 
-  // Translate the moment's static fields (year, era, country) so the
-  // hero meta row stays in the user's chosen language. The simulation
-  // itself is already translated server-side by translateTimeMachinePayload.
+  // Translate the moment's static fields so the hero meta row stays
+  // in the user's chosen language. The simulation prose is already
+  // translated server-side by translateTimeMachinePayload.
   const [tName, tYear, tEra, tCountry] = useTranslated(
     moment ? [moment.name, moment.year, moment.era, moment.country] : ["", "", "", ""],
   );
+
+  // Stitch the narrative for TTS. Intro + body + epilogue read as
+  // one continuous monologue; double newlines give Azure a natural
+  // pause between sections without us having to embed SSML. Computed
+  // BEFORE the early returns to keep hook order stable.
+  const ttsScript = useMemo(() => {
+    const parts = [data?.intro, data?.body, data?.epilogue]
+      .filter((s): s is string => typeof s === "string" && s.trim().length > 0)
+      .map((s) => s.trim());
+    return parts.join("\n\n");
+  }, [data?.intro, data?.body, data?.epilogue]);
 
   if (!moment) {
     return (
@@ -177,10 +196,32 @@ function TimeMachineSimulationPage() {
     );
   }
 
-  const heroTitle = data?.title?.trim() || tName || moment.name;
+  // Beka spec #2: the displayed title is ALWAYS the moment's name —
+  // never the LLM-generated `title`, which would shift between
+  // regenerations and roles. "Pompeii" stays "Pompeii".
+  const heroTitle = tName || moment.name;
+
+  const currentRoleMeta = ROLES_META.find((r) => r.value === role);
+  const switchRole = (newRole: string) => {
+    setRolePickerOpen(false);
+    if (newRole === role) return;
+    void navigate({
+      to: "/tm-sim/$id/$role",
+      params: { id, role: newRole },
+    });
+  };
+
+  const floatingPanel = audioOpen ? (
+    <InlineAudioPanel
+      name={heroTitle}
+      script={ttsScript}
+      language={lang}
+      onClose={() => setAudioOpen(false)}
+    />
+  ) : null;
 
   return (
-    <MobileFrame>
+    <MobileFrame floatingPanel={floatingPanel}>
       <div className="relative min-h-full bg-background pb-10 text-foreground">
         {/* ─── Hero ─── */}
         <section className="relative h-[420px] w-full overflow-hidden">
@@ -203,8 +244,6 @@ function TimeMachineSimulationPage() {
           </header>
 
           <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-7 animate-float-up">
-            {/* Tier eyebrow — same visual idiom as the UNESCO badge on
-                the attraction page, lets the hero feel "credentialled". */}
             <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-background/40 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-primary backdrop-blur-md">
               <Sparkles className="h-3 w-3" /> {t("tm.brand")} · {moment.tier}
             </span>
@@ -221,9 +260,6 @@ function TimeMachineSimulationPage() {
               <span className="inline-flex items-center gap-1.5 text-primary">
                 <Star className="h-3 w-3 fill-primary" /> {(moment.score / 10).toFixed(1)}
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-foreground/15 bg-background/30 px-2 py-0.5 backdrop-blur-md">
-                <User className="h-3 w-3" /> {ROLE_LABELS[role] ?? role}
-              </span>
             </div>
             <p className="mt-2 text-[11px] uppercase tracking-[0.18em] text-foreground/55">
               {tEra || moment.era}
@@ -233,13 +269,23 @@ function TimeMachineSimulationPage() {
 
         {/* ─── Action Row ─── */}
         <ActionRow
-          script={data?.body ?? ""}
-          name={heroTitle}
-          language={lang}
+          script={ttsScript}
           loading={loading}
           saved={saved}
+          audioOpen={audioOpen}
+          onPlay={() => setAudioOpen(true)}
           onSave={toggleSave}
           onRegenerate={() => setReloadTick((n) => n + 1)}
+        />
+
+        {/* ─── Role picker — switch character without leaving the page ─── */}
+        <RolePicker
+          currentRole={role}
+          isOpen={rolePickerOpen}
+          onToggle={() => setRolePickerOpen((v) => !v)}
+          onPick={switchRole}
+          currentLabelKey={currentRoleMeta?.labelKey as UiKey | undefined}
+          currentEmoji={currentRoleMeta?.emoji}
         />
 
         {/* ─── Body ─── */}
@@ -257,209 +303,70 @@ function TimeMachineSimulationPage() {
           </section>
         )}
 
-        {/* About — the third-person scene-setter (intro). */}
         <AboutSection text={data?.intro} loading={loading} />
-
-        {/* Story — the long first-person body. Mirrors the
-            insider-voice "Story" section on the attraction page so the
-            two surfaces feel like siblings. */}
         <StorySection text={data?.body} loading={loading} />
-
-        {/* Epilogue — short reflective tie-back to the present. */}
         <EpilogueSection text={data?.epilogue} loading={loading} />
 
         {/* Source-of-truth panel — Beka's hand-written `situation`
-            seed. Useful context for the reader: the simulation is
-            built outward from this fact. Always shown (no LLM call
-            needed). */}
+            seed. Useful context: the simulation is built outward
+            from this fact. Always shown (no LLM call needed). */}
         <SituationSection situation={moment.situation} desc={moment.desc} />
       </div>
     </MobileFrame>
   );
 }
 
-/* ─── Action row — Play (TTS) + Save + Regenerate ─── */
+/* ─── Action row — Play (opens InlineAudioPanel) + Save + Regenerate ─── */
 
 function ActionRow({
   script,
-  name,
-  language,
   loading,
   saved,
+  audioOpen,
+  onPlay,
   onSave,
   onRegenerate,
 }: {
   script: string;
-  name: string;
-  language: string;
   loading: boolean;
   saved: boolean;
+  audioOpen: boolean;
+  onPlay: () => void;
   onSave: () => void;
   onRegenerate: () => void;
 }) {
   const t = useT();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [generating, setGenerating] = useState(false);
-  const [playing, setPlaying] = useState(false);
-  const [paused, setPaused] = useState(false);
-
-  // Cleanup blob URL on unmount.
-  useEffect(() => {
-    return () => {
-      if (audioUrl) URL.revokeObjectURL(audioUrl);
-    };
-  }, [audioUrl]);
-
-  // Drop the cached audio whenever the script changes (regenerate).
-  useEffect(() => {
-    setAudioUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return null;
-    });
-    setPlaying(false);
-    setPaused(false);
-  }, [script]);
-
-  const ensureAudio = async (): Promise<string | null> => {
-    if (audioUrl) return audioUrl;
-    if (!script) return null;
-    setGenerating(true);
-    try {
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ script, language }),
-      });
-      if (!res.ok) {
-        const errText = await res.text().catch(() => "");
-        throw new Error(`HTTP ${res.status}${errText ? `: ${errText.slice(0, 120)}` : ""}`);
-      }
-      const blob = await res.blob();
-      if (blob.size < 500 || !blob.type.toLowerCase().includes("audio")) {
-        throw new Error("Invalid audio response");
-      }
-      const url = URL.createObjectURL(blob);
-      setAudioUrl(url);
-      return url;
-    } catch (err) {
-      toast.error(t("toast.couldNotLoadGuide"), {
-        description: err instanceof Error ? err.message : t("toast.tryAgainPlease"),
-      });
-      return null;
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const onPlay = async () => {
-    const a = audioRef.current;
-    // Resume from pause first — no need to refetch the blob.
-    if (paused && a) {
-      void a.play().catch(() => {
-        /* noop */
-      });
-      setPaused(false);
-      setPlaying(true);
-      return;
-    }
-    const url = await ensureAudio();
-    if (!url) return;
-    // Wait a tick for the <audio> element to mount with the new src.
-    requestAnimationFrame(() => {
-      const el = audioRef.current;
-      if (!el) return;
-      void el.play().then(
-        () => {
-          setPlaying(true);
-          setPaused(false);
-        },
-        () => {
-          /* autoplay blocked; user can press play on the controls */
-        },
-      );
-    });
-  };
-
-  const onPause = () => {
-    const a = audioRef.current;
-    if (!a) return;
-    a.pause();
-    setPaused(true);
-    setPlaying(false);
-  };
-
-  const onStop = () => {
-    const a = audioRef.current;
-    if (!a) return;
-    a.pause();
-    a.currentTime = 0;
-    setPaused(false);
-    setPlaying(false);
-  };
-
   const disabled = loading || !script;
 
   return (
     <section className="px-6 -mt-2 relative z-20">
       <div className="flex items-stretch gap-2.5">
-        {/* Play / Pause primary toggle */}
-        {playing ? (
-          <button
-            onClick={onPause}
-            aria-label={t("attr.beginJourney")}
-            className="group flex flex-1 items-center justify-center gap-2.5 rounded-2xl bg-gradient-gold px-5 py-3.5 text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01]"
-          >
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-primary-foreground/15">
-              <Pause className="h-4 w-4 fill-current" />
+        {/* Play — primary, large, gold. Opens the InlineAudioPanel
+            in the MobileFrame floatingPanel slot. Disabled while the
+            simulation is still streaming or when the panel is already
+            mounted (audio is autoplaying inside it). */}
+        <button
+          onClick={onPlay}
+          disabled={disabled || audioOpen}
+          aria-label={t("attr.beginJourney")}
+          className="group flex flex-1 items-center justify-center gap-2.5 rounded-2xl bg-gradient-gold px-5 py-3.5 text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01] disabled:opacity-70"
+        >
+          <span className="grid h-9 w-9 place-items-center rounded-full bg-primary-foreground/15">
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Play className="h-4 w-4 translate-x-[1px] fill-current" />
+            )}
+          </span>
+          <span className="text-left">
+            <span className="block text-[9px] font-semibold uppercase tracking-[0.22em] opacity-70">
+              {t("attr.begin")}
             </span>
-            <span className="text-left">
-              <span className="block text-[9px] font-semibold uppercase tracking-[0.22em] opacity-70">
-                {t("attr.begin")}
-              </span>
-              <span className="block text-[13px] font-semibold leading-tight">
-                {t("attr.listen")}
-              </span>
+            <span className="block text-[13px] font-semibold leading-tight">
+              {t("attr.listen")}
             </span>
-          </button>
-        ) : (
-          <button
-            onClick={onPlay}
-            disabled={disabled || generating}
-            aria-label={t("attr.beginJourney")}
-            className="group flex flex-1 items-center justify-center gap-2.5 rounded-2xl bg-gradient-gold px-5 py-3.5 text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01] disabled:opacity-70"
-          >
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-primary-foreground/15">
-              {generating ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Play className="h-4 w-4 translate-x-[1px] fill-current" />
-              )}
-            </span>
-            <span className="text-left">
-              <span className="block text-[9px] font-semibold uppercase tracking-[0.22em] opacity-70">
-                {t("attr.begin")}
-              </span>
-              <span className="block text-[13px] font-semibold leading-tight">
-                {t("attr.listen")}
-              </span>
-            </span>
-          </button>
-        )}
-
-        {/* Stop — visible only when audio active */}
-        {(playing || paused) && (
-          <button
-            onClick={onStop}
-            aria-label="Stop"
-            className="grid w-[64px] place-items-center rounded-2xl border border-border/70 bg-card text-foreground transition-smooth hover:border-primary/40"
-          >
-            <span className="flex flex-col items-center gap-1">
-              <Square className="h-4 w-4 fill-current" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.12em]">Stop</span>
-            </span>
-          </button>
-        )}
+          </span>
+        </button>
 
         {/* Save */}
         <button
@@ -484,14 +391,12 @@ function ActionRow({
           </span>
         </button>
 
-        {/* Regenerate — re-runs the LLM (same cache key, so it's
-            actually a re-fetch; only useful if the cache row was
-            cleared or when development cycling). Beka asked for the
-            user to have an explicit way to refresh. */}
+        {/* Refresh — re-fetch from the same cache row, useful when
+            the row was cleared on the server or for development cycling. */}
         <button
           onClick={onRegenerate}
           disabled={loading}
-          aria-label="Regenerate"
+          aria-label="Refresh"
           className="grid w-[64px] place-items-center rounded-2xl border border-border/70 bg-card text-foreground transition-smooth hover:border-primary/40 disabled:opacity-60"
         >
           <span className="flex flex-col items-center gap-1">
@@ -500,19 +405,96 @@ function ActionRow({
           </span>
         </button>
       </div>
+    </section>
+  );
+}
 
-      {audioUrl && (
-        <audio
-          ref={audioRef}
-          src={audioUrl}
-          onEnded={() => {
-            setPlaying(false);
-            setPaused(false);
-          }}
-          className="hidden"
+/* ─── Role picker (chip + dropdown) — switch character in place ─── */
+
+function RolePicker({
+  currentRole,
+  isOpen,
+  onToggle,
+  onPick,
+  currentLabelKey,
+  currentEmoji,
+}: {
+  currentRole: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  onPick: (newRole: string) => void;
+  currentLabelKey: UiKey | undefined;
+  currentEmoji: string | undefined;
+}) {
+  const t = useT();
+  const currentLabel = currentLabelKey ? t(currentLabelKey) : currentRole;
+
+  return (
+    <section className="mt-5 px-6">
+      <div className="mb-1.5 flex items-center justify-between">
+        <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-primary">
+          {t("tm.chooseRole")}
+        </span>
+      </div>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={isOpen}
+        className="flex w-full items-center justify-between rounded-xl border border-border bg-card px-3 py-2.5 text-left text-[12px] font-semibold text-foreground transition-smooth hover:border-primary/50"
+      >
+        <span className="inline-flex items-center gap-2">
+          <User className="h-3.5 w-3.5 text-muted-foreground" />
+          <span>
+            {currentEmoji ? `${currentEmoji}  ` : ""}
+            {currentLabel}
+          </span>
+        </span>
+        <ChevronDown
+          className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
         />
+      </button>
+      {isOpen && (
+        <div className="mt-1.5 max-h-72 overflow-y-auto rounded-xl border border-border bg-card p-1 shadow-lg scrollbar-hide">
+          {ROLES_META.map((r) => (
+            <RoleOption
+              key={r.value}
+              role={r}
+              active={currentRole === r.value}
+              onPick={() => onPick(r.value)}
+            />
+          ))}
+        </div>
       )}
     </section>
+  );
+}
+
+function RoleOption({
+  role,
+  active,
+  onPick,
+}: {
+  role: (typeof ROLES_META)[number];
+  active: boolean;
+  onPick: () => void;
+}) {
+  const t = useT();
+  return (
+    <button
+      type="button"
+      onClick={onPick}
+      className={`flex w-full items-start gap-2 rounded-lg px-2.5 py-2 text-left transition-smooth ${
+        active ? "bg-primary/15 text-primary" : "text-foreground hover:bg-secondary/60"
+      }`}
+    >
+      <span className="text-base leading-tight">{role.emoji}</span>
+      <span className="flex flex-col items-start gap-0.5">
+        <span className="text-[12px] font-semibold">{t(role.labelKey as UiKey)}</span>
+        <span className="text-[10px] italic text-muted-foreground">{t(role.hintKey as UiKey)}</span>
+      </span>
+    </button>
   );
 }
 
@@ -564,9 +546,6 @@ function StorySection({ text, loading }: { text?: string; loading: boolean }) {
             {t("attr.theWord")} <span className="italic text-primary">{t("attr.story")}</span>
           </h2>
         </div>
-        {/* Tall skeleton so the loading state has the same vertical
-            weight as the rendered narrative (avoids the layout jump
-            that Beka caught on the attraction page). */}
         <LoadingMessages />
         <div className="mt-4 space-y-2">
           <div className="h-3 w-full animate-pulse rounded bg-secondary" />
