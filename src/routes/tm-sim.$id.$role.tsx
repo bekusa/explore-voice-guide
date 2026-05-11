@@ -245,7 +245,7 @@ function TimeMachineSimulationPage() {
 
           <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-7 animate-float-up">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-background/40 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-primary backdrop-blur-md">
-              <Sparkles className="h-3 w-3" /> {t("tm.brand")} · {moment.tier}
+              <Sparkles className="h-3 w-3" /> {t("tm.brand")}
             </span>
             <h1 className="mt-4 font-display text-[2.25rem] font-medium leading-[1.05] text-foreground">
               {heroTitle}
@@ -368,12 +368,13 @@ function ActionRow({
           </span>
         </button>
 
-        {/* Save */}
+        {/* Save — wrap-friendly text for non-Latin locales (Georgian
+            "შენახულია" / "ჩამოტვირთვა" used to blow past the 64px slot). */}
         <button
           onClick={onSave}
           aria-pressed={saved}
           aria-label={saved ? t("attr.removeFromSaved") : t("attr.saveForOffline")}
-          className={`grid w-[64px] place-items-center rounded-2xl border px-2 transition-smooth ${
+          className={`grid w-[64px] place-items-center rounded-2xl border px-1.5 py-2 transition-smooth ${
             saved
               ? "border-primary/60 bg-primary/15 text-primary"
               : "border-border/70 bg-card text-foreground hover:border-primary/40"
@@ -385,7 +386,7 @@ function ActionRow({
             ) : (
               <Bookmark className="h-4 w-4" />
             )}
-            <span className="text-[10px] font-semibold uppercase tracking-[0.12em]">
+            <span className="text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] whitespace-normal break-words">
               {saved ? t("card.saved") : t("card.save")}
             </span>
           </span>
@@ -396,12 +397,14 @@ function ActionRow({
         <button
           onClick={onRegenerate}
           disabled={loading}
-          aria-label="Refresh"
+          aria-label={t("tm.refresh")}
           className="grid w-[64px] place-items-center rounded-2xl border border-border/70 bg-card text-foreground transition-smooth hover:border-primary/40 disabled:opacity-60"
         >
           <span className="flex flex-col items-center gap-1">
             <RotateCcw className="h-4 w-4" />
-            <span className="text-[10px] font-semibold uppercase tracking-[0.12em]">Refresh</span>
+            <span className="text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] whitespace-normal break-words">
+              {t("tm.refresh")}
+            </span>
           </span>
         </button>
       </div>

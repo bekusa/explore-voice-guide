@@ -62,6 +62,19 @@ export function InlineAudioPanel({
       });
       if (!res.ok) {
         const errText = await res.text().catch(() => "");
+        // Detect "voice not available for this language" upstream
+        // responses so we can surface a clear toast instead of the
+        // generic "couldn't load guide" message. Beka caught this on
+        // Georgian: Azure doesn't have every language available in
+        // every region of n8n's config, and the user just saw a
+        // generic failure with no clue why. The check is heuristic
+        // — n8n returns the Azure error string verbatim, and
+        // Azure's "not supported" copy uses these phrases.
+        const looksLikeUnsupported =
+          /unsupported|not supported|invalid voice|no voice|language not/i.test(errText);
+        if (looksLikeUnsupported) {
+          throw new Error("VOICE_UNAVAILABLE");
+        }
         throw new Error(`HTTP ${res.status}${errText ? `: ${errText.slice(0, 120)}` : ""}`);
       }
       const blob = await res.blob();
@@ -72,9 +85,16 @@ export function InlineAudioPanel({
       setAudioUrl(url);
       return url;
     } catch (err) {
-      toast.error(t("toast.couldNotLoadGuide"), {
-        description: err instanceof Error ? err.message : t("toast.tryAgainPlease"),
-      });
+      const message = err instanceof Error ? err.message : "";
+      if (message === "VOICE_UNAVAILABLE") {
+        toast.error(t("toast.voiceUnavailableTitle"), {
+          description: t("toast.voiceUnavailableHint"),
+        });
+      } else {
+        toast.error(t("toast.couldNotLoadGuide"), {
+          description: message || t("toast.tryAgainPlease"),
+        });
+      }
       return null;
     } finally {
       setGenerating(false);

@@ -569,12 +569,16 @@ function ActionRow({
           </span>
         </button>
 
-        {/* Save — secondary outline */}
+        {/* Save — secondary outline. The label is allowed to wrap to
+            two lines (whitespace-normal + leading-tight) and the font
+            is smaller (10 → 9 px) so longer non-Latin localisations
+            like "შენახულია" / "ჩამოტვირთვა" fit inside the 64-px
+            fixed-width slot Beka caught overflowing on Georgian. */}
         <button
           onClick={toggleSave}
           aria-label={saved ? t("attr.removeFromSaved") : t("attr.saveForOffline")}
           aria-pressed={saved}
-          className={`grid w-[64px] place-items-center rounded-2xl border px-2 transition-smooth ${
+          className={`grid w-[64px] place-items-center rounded-2xl border px-1.5 py-2 transition-smooth ${
             saved
               ? "border-primary/60 bg-primary/15 text-primary"
               : "border-border/70 bg-card text-foreground hover:border-primary/40"
@@ -586,18 +590,19 @@ function ActionRow({
             ) : (
               <Bookmark className="h-4 w-4" />
             )}
-            <span className="text-[10px] font-semibold uppercase tracking-[0.12em]">
+            <span className="text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] whitespace-normal break-words">
               {saved ? t("card.saved") : t("card.save")}
             </span>
           </span>
         </button>
 
-        {/* Download — secondary outline (or filled when already cached) */}
+        {/* Download — secondary outline (or filled when already cached).
+            Same wrap-friendly text styling as Save above. */}
         <button
           onClick={downloadOffline}
           disabled={downloading}
           aria-label={cached ? t("attr.alreadyDownloaded") : t("card.download")}
-          className={`grid w-[64px] place-items-center rounded-2xl border px-2 transition-smooth disabled:opacity-80 ${
+          className={`grid w-[64px] place-items-center rounded-2xl border px-1.5 py-2 transition-smooth disabled:opacity-80 ${
             cached
               ? "border-emerald-400/50 bg-emerald-500/10 text-emerald-200"
               : "border-border/70 bg-card text-foreground hover:border-primary/40"
@@ -609,7 +614,7 @@ function ActionRow({
             ) : (
               <Download className="h-4 w-4" />
             )}
-            <span className="text-[10px] font-semibold uppercase tracking-[0.12em]">
+            <span className="text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] whitespace-normal break-words">
               {downloading ? t("card.saving") : cached ? t("card.offline") : t("attr.get")}
             </span>
           </span>
@@ -1327,6 +1332,11 @@ function MuseumHighlightsSection({
 }) {
   const t = useT();
   const [page, setPage] = useState(1);
+  // Ref on the section header so changePage() can scroll the
+  // highlights heading back into view when the user taps 1-2-3.
+  // Without this the user lands on the bottom of page N+1's last
+  // card and has to thumb back up to see the new top of the list.
+  const sectionRef = useRef<HTMLElement | null>(null);
   const PAGE_SIZE = 10;
   const MAX_PAGES = 3;
   const total = Math.min(highlights?.length ?? 0, PAGE_SIZE * MAX_PAGES);
@@ -1337,6 +1347,16 @@ function MuseumHighlightsSection({
     const start = (safePage - 1) * PAGE_SIZE;
     return highlights.slice(0, total).slice(start, start + PAGE_SIZE);
   }, [highlights, safePage, total]);
+
+  const changePage = (p: number) => {
+    setPage(p);
+    // Defer one frame so the new slice has time to render before
+    // we scroll — otherwise the browser scrolls to the position
+    // computed against the OLD content and lands slightly off.
+    requestAnimationFrame(() => {
+      sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
 
   // Loading skeleton — three placeholder rows so the section's
   // footprint is roughly correct when content lands and the rest of
@@ -1375,7 +1395,7 @@ function MuseumHighlightsSection({
   }
 
   return (
-    <section className="mt-8 px-6">
+    <section ref={sectionRef} className="mt-8 px-6 scroll-mt-4">
       <div className="flex items-center gap-2">
         <Sparkles className="h-4 w-4 text-primary" />
         <h2 className="font-display text-[20px] text-foreground">{t("highlights.title")}</h2>
@@ -1404,7 +1424,7 @@ function MuseumHighlightsSection({
         >
           <button
             type="button"
-            onClick={() => setPage(safePage - 1)}
+            onClick={() => changePage(safePage - 1)}
             disabled={safePage <= 1}
             className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:border-primary/40 disabled:cursor-not-allowed disabled:opacity-40"
           >
@@ -1416,7 +1436,7 @@ function MuseumHighlightsSection({
               <button
                 key={p}
                 type="button"
-                onClick={() => setPage(p)}
+                onClick={() => changePage(p)}
                 className={`h-9 min-w-[36px] rounded-full border px-3 text-[12px] font-bold transition-smooth ${
                   active
                     ? "border-primary/60 bg-gradient-gold text-primary-foreground shadow-glow"
@@ -1429,7 +1449,7 @@ function MuseumHighlightsSection({
           })}
           <button
             type="button"
-            onClick={() => setPage(safePage + 1)}
+            onClick={() => changePage(safePage + 1)}
             disabled={safePage >= pageCount}
             className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:border-primary/40 disabled:cursor-not-allowed disabled:opacity-40"
           >
@@ -1580,7 +1600,11 @@ function HighlightCard({
         // key carries a Tbilisi regional bias that overrides the
         // city= param we send. Artworks aren't places — Wikipedia
         // is the right source.
-        const url = await fetchPlacePhoto(q, "en", museum.city, "artwork");
+        // Pass the museum name through so /api/photo can try the
+        // museum's own collection API first (currently the Met) and
+        // only fall back to Wikipedia / Google when the museum
+        // doesn't have a usable public API.
+        const url = await fetchPlacePhoto(q, "en", museum.city, "artwork", museum.name);
         if (cancelled) return;
         if (url) {
           setPhoto(url);

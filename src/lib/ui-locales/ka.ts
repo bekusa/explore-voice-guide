@@ -124,6 +124,8 @@ export const KA: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "ეს მოწყობილობა ხმოვან რეჟიმს არ უჭერს მხარს",
   "toast.couldNotLoadGuide": "გიდი ვერ ჩაიტვირთა",
   "toast.tryAgainPlease": "გთხოვთ, ხელახლა სცადე.",
+  "toast.voiceUnavailableTitle": "ხმოვანი ჯერ არ არის ხელმისაწვდომი ამ ენაზე",
+  "toast.voiceUnavailableHint": "სცადე ინგლისური ან სხვა მხარდაჭერილი ენა.",
   "toast.guideOfflineDesc": "ეს გიდი ჯერ არაა ჩამოტვირთული. ერთხელ დაუკავშირდი ქსელს, რომ შეინახო.",
   "toast.couldNotLoadAttractions": "ღირსშესანიშნაობები ვერ ჩაიტვირთა",
   "toast.allSet": "ყველაფერი მზადაა",
@@ -275,7 +277,8 @@ export const KA: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "დროის მანქანა",
-  "tm.brand": "Lokali · დროის მანქანა",
+  "tm.brand": "AI დროის მანქანა",
+  "tm.refresh": "განახლება",
   "tm.travelThrough": "იმოგზაურე",
   "tm.time": "დროში",
   "tm.subtitle": "ჩაძირული სიმულაციები — შედი მომენტში, გახდი მოწმე.",

@@ -106,6 +106,82 @@ async function googlePhoto(q: string, city: string | null): Promise<string | nul
 const WIKI_USER_AGENT = "LokaliApp/1.0 (https://lokali-app.lovable.app; contact@lokali.ge)";
 const WIKI_HEADERS: HeadersInit = { "User-Agent": WIKI_USER_AGENT, Accept: "application/json" };
 
+/**
+ * Met Museum collection lookup. Their public API
+ * (https://collectionapi.metmuseum.org/public/collection/v1) is
+ * unauthenticated, generous on rate limits, and returns curator-
+ * attributed photos of every object in the collection — the
+ * authoritative source for any artwork actually held at the Met.
+ *
+ * Two-step:
+ *   1. /search?q={name}&isHighlight=true → first-page list of
+ *      objectIDs. The `isHighlight` filter keeps the candidates
+ *      tight and biases toward the museum's signature works.
+ *   2. /objects/{id} → full record including `primaryImage` and
+ *      `primaryImageSmall`. We prefer the small one (~ 600 px wide,
+ *      fast load, sized roughly like the highlight card thumbnail).
+ *
+ * Returns null on any miss / failure so the caller falls through
+ * to Wikipedia just like before. Beka asked for the museum's own
+ * site to take priority for accuracy — this is the first museum
+ * to land; British Museum / Louvre / Tate can follow once we
+ * confirm the Met path works in production.
+ */
+type MetSearchResponse = { total?: number; objectIDs?: number[] | null };
+type MetObjectResponse = {
+  primaryImage?: string;
+  primaryImageSmall?: string;
+  isHighlight?: boolean;
+};
+
+async function metMuseumPhoto(q: string): Promise<string | null> {
+  try {
+    const searchUrl =
+      `https://collectionapi.metmuseum.org/public/collection/v1/search` +
+      `?q=${encodeURIComponent(q)}&isHighlight=true`;
+    const searchRes = await fetch(searchUrl);
+    if (!searchRes.ok) return null;
+    const searchData = (await searchRes.json()) as MetSearchResponse;
+    const ids = searchData.objectIDs ?? [];
+    if (!ids.length) return null;
+
+    // Walk the first few candidates; the API ranks highlights by
+    // relevance but the top match occasionally has no image (e.g.
+    // an entry that's just a curator's note). Three retries is
+    // plenty — most highlights resolve on the first hit.
+    for (const id of ids.slice(0, 3)) {
+      const objRes = await fetch(
+        `https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`,
+      );
+      if (!objRes.ok) continue;
+      const obj = (await objRes.json()) as MetObjectResponse;
+      const url = obj.primaryImageSmall || obj.primaryImage;
+      if (url) return url;
+    }
+  } catch {
+    /* swallow — fall through to Wikipedia */
+  }
+  return null;
+}
+
+/**
+ * Maps an arbitrary museum name to a known museum-specific photo
+ * lookup. Returns null when we don't have a dedicated path for
+ * the museum (most of them today — only Met is wired up so far).
+ * Beka wants to expand this list; Louvre, British Museum, MoMA,
+ * Tate, Uffizi, etc. all have programmatic image sources we can
+ * add the same way.
+ */
+async function museumOwnPhoto(museum: string, q: string): Promise<string | null> {
+  const m = museum.toLowerCase();
+  // Met Museum — accept any name that mentions "metropolitan museum"
+  // or "the met" (the dataset has it as "Metropolitan Museum of Art").
+  if (m.includes("metropolitan museum") || /\bthe met\b/i.test(museum)) {
+    return metMuseumPhoto(q);
+  }
+  return null;
+}
+
 async function wikipediaPhoto(q: string, lang: string): Promise<string | null> {
   const langs = lang === "en" ? ["en"] : [lang, "en"];
 
@@ -219,6 +295,13 @@ export const Route = createFileRoute("/api/photo")({
         // override it. Artworks aren't places — Wikipedia is the
         // right source, period.
         const scope = url.searchParams.get("scope")?.trim() || null;
+        // Museum context for artwork-scoped lookups. When we know
+        // which museum an artwork belongs to (e.g. "Metropolitan
+        // Museum of Art" for a Met highlight), try the museum's
+        // own collection API first — Beka asked for those to take
+        // priority because Wikipedia matches a wrong picture often
+        // enough for canon-named artworks to be misleading.
+        const museum = url.searchParams.get("museum")?.trim() || null;
 
         if (!q) {
           return new Response(JSON.stringify({ url: null }), {
@@ -226,7 +309,7 @@ export const Route = createFileRoute("/api/photo")({
           });
         }
 
-        const cacheKey = `${scope ?? ""}:${lang}:${city ?? ""}:${q}`;
+        const cacheKey = `${scope ?? ""}:${lang}:${city ?? ""}:${museum ?? ""}:${q}`;
         if (cache.has(cacheKey)) {
           return new Response(JSON.stringify({ url: cache.get(cacheKey) ?? null }), {
             headers: { "Content-Type": "application/json" },
@@ -236,9 +319,21 @@ export const Route = createFileRoute("/api/photo")({
         let photoUrl: string | null = null;
         const isArtwork = scope === "artwork";
 
-        // Artworks: Wikipedia only. Skip the Google Places step that
-        // keeps polluting results with regional matches.
-        if (!isArtwork) {
+        // Stage 0 (artworks only): museum's own collection API.
+        // Currently only Met Museum is wired up — see museumOwnPhoto
+        // for the dispatch and the planned-additions note.
+        if (isArtwork && museum) {
+          try {
+            photoUrl = await museumOwnPhoto(museum, q);
+          } catch {
+            /* fall through to Wikipedia */
+          }
+        }
+
+        // Stage 1 (non-artworks): Google Places. Skipped for
+        // artworks because the regional bias keeps polluting
+        // results with Tbilisi-area matches.
+        if (!photoUrl && !isArtwork) {
           try {
             photoUrl = await googlePhoto(q, city);
           } catch {

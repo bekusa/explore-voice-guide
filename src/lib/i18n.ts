@@ -206,6 +206,12 @@ export const UI_STRINGS = {
   "toast.speechUnsupported": "Speech not supported on this device",
   "toast.couldNotLoadGuide": "Couldn't load the guide",
   "toast.tryAgainPlease": "Please try again.",
+  // Surfaced when the TTS upstream rejects the request because the
+  // chosen language has no voice configured (e.g., Azure ka-GE not
+  // enabled in n8n). Hint points the user to switch language as a
+  // workaround until the voice is wired up.
+  "toast.voiceUnavailableTitle": "Voice not available for this language yet",
+  "toast.voiceUnavailableHint": "Try switching to English or another supported language.",
   "toast.guideOfflineDesc": "This guide isn't downloaded yet. Connect once to cache it.",
   "toast.couldNotLoadAttractions": "Couldn't load attractions",
   "toast.allSet": "All set",
@@ -367,7 +373,11 @@ export const UI_STRINGS = {
 
   // Time Machine
   "tm.title": "Time Machine",
-  "tm.brand": "Lokali · Time Machine",
+  // Hero eyebrow on the simulation page — short and brand-light per
+  // Beka. Previously "Lokali · Time Machine"; now just "AI Time
+  // Machine" so the chip doesn't read as a corporate tag.
+  "tm.brand": "AI Time Machine",
+  "tm.refresh": "Refresh",
   "tm.travelThrough": "Travel through",
   "tm.time": "time",
   "tm.subtitle": "Immersive simulations — step inside the moment, become the witness.",

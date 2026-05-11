@@ -56,38 +56,67 @@ export async function callClaude(opts: ClaudeCallOpts): Promise<string> {
   const maxTokens = opts.maxTokens ?? 4096;
   const temperature = opts.temperature ?? 0.7;
 
-  const res = await fetch(ANTHROPIC_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: maxTokens,
-      temperature,
-      system: opts.system,
-      messages: [{ role: "user", content: opts.user }],
-    }),
-  });
+  // Up to 3 attempts: initial + 2 retries on 429 (rate limit) or 5xx
+  // (transient upstream). Beka hit the 10K-tok/min budget once when
+  // a fresh-cache Time Machine generation overlapped with a chunked
+  // translation pass; surfacing the bare 429 to the UI looked broken
+  // when in reality we just needed to wait ~30 s. Anthropic returns
+  // `retry-after` in seconds on 429; honour that when present, else
+  // back off exponentially with a small ceiling.
+  const MAX_ATTEMPTS = 3;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    const res = await fetch(ANTHROPIC_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: maxTokens,
+        temperature,
+        system: opts.system,
+        messages: [{ role: "user", content: opts.user }],
+      }),
+    });
 
-  if (!res.ok) {
+    if (res.ok) {
+      const data = (await res.json()) as {
+        content?: Array<{ type?: string; text?: string }>;
+      };
+      const block = (data.content ?? []).find((b) => b?.type === "text");
+      const text = block?.text ?? "";
+      if (!text.trim()) {
+        throw new Error("[anthropic] empty text content in response");
+      }
+      return text;
+    }
+
     const errText = await res.text().catch(() => "");
+    const retryable = res.status === 429 || (res.status >= 500 && res.status < 600);
+    if (retryable && attempt < MAX_ATTEMPTS) {
+      // Anthropic spec: 429 + 5xx may include `retry-after` in
+      // seconds. Cap at 45 s so we don't blow the worker's 100 s
+      // budget on a single sleep; if the cap isn't enough we'll
+      // bubble up the error on the final attempt.
+      const ra = parseInt(res.headers.get("retry-after") ?? "", 10);
+      const waitMs = Number.isFinite(ra) && ra > 0 ? Math.min(45, ra) * 1000 : 2000 * attempt;
+      console.warn(
+        `[anthropic] ${res.status} on attempt ${attempt}/${MAX_ATTEMPTS} — retrying in ${waitMs}ms`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, waitMs));
+      continue;
+    }
+
     throw new Error(
       `[anthropic] ${res.status} ${res.statusText}${errText ? ` — ${errText.slice(0, 300)}` : ""}`,
     );
   }
 
-  const data = (await res.json()) as {
-    content?: Array<{ type?: string; text?: string }>;
-  };
-  const block = (data.content ?? []).find((b) => b?.type === "text");
-  const text = block?.text ?? "";
-  if (!text.trim()) {
-    throw new Error("[anthropic] empty text content in response");
-  }
-  return text;
+  // Unreachable — the loop either returns or throws. TS needs the
+  // explicit throw here because it can't prove the loop always exits.
+  throw new Error("[anthropic] exhausted retries");
 }
 
 /**

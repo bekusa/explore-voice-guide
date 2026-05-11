@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
+  ArrowRight,
   Bookmark,
   BookmarkX,
   ArrowLeft,
@@ -7,6 +8,7 @@ import {
   Star,
   MapPin,
   Headphones,
+  Search,
   WifiOff,
   Trash2,
 } from "lucide-react";
@@ -14,8 +16,9 @@ import { useEffect, useState } from "react";
 import { MobileFrame } from "@/components/MobileFrame";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { clearAll, removeItem, type SavedItem } from "@/lib/savedStore";
-import { attractionSlug } from "@/lib/api";
+import { attractionSlug, fetchPlacePhoto } from "@/lib/api";
 import { useT, useTranslated } from "@/hooks/useT";
+import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 
 export const Route = createFileRoute("/saved")({
   head: () => ({
@@ -39,7 +42,19 @@ export const Route = createFileRoute("/saved")({
 function SavedPage() {
   const items = useSavedItems();
   const t = useT();
+  const navigate = useNavigate();
   const [online, setOnline] = useState(true);
+  const [query, setQuery] = useState("");
+
+  // Same search-bar shape Home uses: any city / landmark / vibe →
+  // /results with the typed query. Beka asked for parity so the user
+  // never has to bounce back to Home just to look something up.
+  function submitSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    void navigate({ to: "/results", search: { q } });
+  }
 
   useEffect(() => {
     if (typeof navigator === "undefined") return;
@@ -96,6 +111,34 @@ function SavedPage() {
               {t("toast.youreOffline")}
             </div>
           )}
+
+          {/* Search — same shape and behaviour as the Home search
+              pill (input + magnifier + symbol-only submit arrow), so
+              the user can look up any city / landmark / vibe without
+              bouncing back to Home. Submits to /results?q=… exactly
+              like Home does. */}
+          <form
+            onSubmit={submitSearch}
+            className="mt-5 flex h-12 items-center gap-3 rounded-full border border-border bg-card px-4 shadow-elegant transition-smooth focus-within:border-primary/60"
+          >
+            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t("home.searchPlaceholder")}
+              enterKeyHint="search"
+              autoComplete="off"
+              className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none"
+            />
+            <button
+              type="submit"
+              aria-label={t("home.search")}
+              disabled={!query.trim()}
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-gold text-primary-foreground transition-smooth active:scale-95 hover:scale-105 disabled:opacity-50"
+            >
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </form>
         </section>
 
         {/* List */}
@@ -129,7 +172,34 @@ function SavedRow({ item }: { item: SavedItem }) {
   const hasGuide = !!item.script;
   const [tName, tDuration] = useTranslated([item.name, a.duration ?? ""]);
   const [imgFailed, setImgFailed] = useState(false);
-  const showImg = (item.imageDataUrl || a.image_url) && !imgFailed;
+  const lang = usePreferredLanguage();
+
+  // Late-bind a thumbnail if the saved item never got one.
+  // Originally we relied on either `item.imageDataUrl` (the base64
+  // hero snapshot recorded at save time) or `a.image_url` (whatever
+  // the attractions API returned for the row). Several saved entries
+  // — Beka caught it on his phone — have neither, so the row was
+  // rendering just the MapPin glyph. Fetch a Wikipedia / Google
+  // Places photo lazily for those rows so the list looks complete.
+  const [fetchedUrl, setFetchedUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (item.imageDataUrl || a.image_url) return; // already have something
+    if (fetchedUrl) return;
+    let cancelled = false;
+    void fetchPlacePhoto(item.name, lang)
+      .then((url) => {
+        if (!cancelled && url) setFetchedUrl(url);
+      })
+      .catch(() => {
+        /* swallow — list falls back to MapPin glyph */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [item.name, item.imageDataUrl, a.image_url, lang, fetchedUrl]);
+
+  const resolvedSrc = item.imageDataUrl || a.image_url || fetchedUrl;
+  const showImg = !!resolvedSrc && !imgFailed;
 
   return (
     <li className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-3 transition-smooth hover:border-primary/40">
@@ -146,9 +216,9 @@ function SavedRow({ item }: { item: SavedItem }) {
         className="flex min-w-0 flex-1 items-center gap-3"
       >
         <div className="h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-xl bg-secondary">
-          {showImg ? (
+          {showImg && resolvedSrc ? (
             <img
-              src={item.imageDataUrl ?? a.image_url}
+              src={resolvedSrc}
               alt={tName ?? item.name}
               className="h-full w-full object-cover"
               loading="lazy"

@@ -185,15 +185,23 @@ async function callGateway(texts: string[], target: string): Promise<string[]> {
   });
   if (current.length > 0) chunks.push(current);
 
-  // Fan out chunks in parallel — each call independent so a slow
-  // long-script translation doesn't block the short-text ones.
-  const results = await Promise.all(
-    chunks.map(async (idxs) => {
-      const slice = idxs.map((i) => texts[i]);
-      const out = await callGatewayChunk(slice, target, apiKey);
-      return { idxs, out };
-    }),
-  );
+  // Serial fan-out — was Promise.all, but Beka hit
+  // "Rate limit of 10000 tokens per minute" on Anthropic when a
+  // cold-cache Time Machine generation overlapped with a chunked
+  // translation pass. Each chunk is its own callClaude (Haiku) and
+  // sending 4-6 of them simultaneously can easily trip the
+  // per-minute token budget — once we exceed it the whole batch
+  // fails together, and the visible "we couldn't load this guide"
+  // toast confuses the user. Running them sequentially keeps the
+  // bursts narrow, lets callClaude's retry-after kick in cleanly
+  // when needed, and adds at most a few seconds of latency on a
+  // cold cache miss (cached-language hits don't touch this path).
+  const results: Array<{ idxs: number[]; out: string[] }> = [];
+  for (const idxs of chunks) {
+    const slice = idxs.map((i) => texts[i]);
+    const out = await callGatewayChunk(slice, target, apiKey);
+    results.push({ idxs, out });
+  }
 
   const merged = texts.slice();
   for (const { idxs, out } of results) {
@@ -441,11 +449,18 @@ function looksLikeGarbage(translated: string, source: string, target: string): b
   if (/[)\]}>]{2,}\s*$/.test(t)) return true;
   // Mid-string bracket junk: ")) flores", "]) extra"
   if (/[)\]}>]{2,}\s+\S/.test(t)) return true;
-  // Wrong-script result for a descriptive (≥8 char) source. If the
-  // user asked for Hindi and got pure ASCII back ("Gorbachev resigned
-  // on 25 December…"), that's the gateway returning English under a
-  // Hindi key — exactly what cached the wrong-language UI strings.
-  if (source.length >= 8 && hasWrongScript(t, target)) return true;
+  // Wrong-script result for a long descriptive source. Threshold
+  // lifted 8 → 30 chars because Beka caught the wrong-script check
+  // misfiring on short proper-noun-only strings: an English source
+  // like "Mona Lisa" or "Louvre" stays Latin in a faithful Georgian
+  // translation (the system prompt explicitly tells Claude to
+  // preserve proper nouns) — at 8 chars the filter wrongly flagged
+  // those as failed and fell back to source. At 30 chars we only
+  // reject genuine "Gorbachev resigned on 25 December…" passthroughs
+  // where the LLM forgot to translate the whole sentence. Proper-
+  // noun mixes inside longer prose are still considered a real
+  // translation because at least one Georgian character will appear.
+  if (source.length >= 30 && hasWrongScript(t, target)) return true;
   return false;
 }
 

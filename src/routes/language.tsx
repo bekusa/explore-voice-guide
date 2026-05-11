@@ -110,7 +110,13 @@ function LanguagePage() {
 
   return (
     <MobileFrame>
-      <div className="relative flex h-full flex-col bg-background text-foreground">
+      {/* The whole page scrolls (not just the list). Previously the
+          page used `flex h-full flex-col` with `flex-1 overflow-y-auto`
+          on the list, which pinned the header + title + search at the
+          top and only let the language list scroll. On small phones
+          that left the language rows squeezed into a 200-300px strip.
+          Beka asked for the entire page to scroll instead. */}
+      <div className="relative min-h-full bg-background text-foreground pb-10">
         {/* Header */}
         <header className="flex items-center justify-between px-6 pt-12">
           <button
@@ -154,8 +160,8 @@ function LanguagePage() {
           </div>
         </div>
 
-        {/* List */}
-        <div className="mt-4 flex-1 overflow-y-auto px-6 pb-10 scrollbar-hide">
+        {/* List — scrolls with the rest of the page now. */}
+        <div className="mt-4 px-6">
           <ul className="flex flex-col gap-2">
             {filtered.map((l) => {
               const isActive = active === l.code;

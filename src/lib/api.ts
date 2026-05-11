@@ -484,19 +484,27 @@ export async function fetchPlacePhoto(
   // region-biased results were returning Tbilisi banks for "Liberty
   // Leading the People") and goes straight to Wikipedia.
   scope: "artwork" | null = null,
+  // Museum name when known. The server route uses this to prefer
+  // the museum's own collection API (when supported — currently the
+  // Met Museum) over Wikipedia for artwork-scoped lookups. Beka
+  // caught Wikipedia matching the wrong picture for several Met
+  // highlights; the Met's own API returns curator-attributed images.
+  museum: string | null = null,
 ): Promise<string | null> {
   const cleaned = name.trim();
   if (!cleaned) return null;
 
   const cleanCity = city?.trim() || "";
-  const cacheKey = `${scope ?? ""}:${language}:${cleanCity}:${cleaned}`;
+  const cleanMuseum = museum?.trim() || "";
+  const cacheKey = `${scope ?? ""}:${language}:${cleanCity}:${cleanMuseum}:${cleaned}`;
   if (photoCache.has(cacheKey)) return photoCache.get(cacheKey) ?? null;
 
   try {
     const cityParam = cleanCity ? `&city=${encodeURIComponent(cleanCity)}` : "";
     const scopeParam = scope ? `&scope=${encodeURIComponent(scope)}` : "";
+    const museumParam = cleanMuseum ? `&museum=${encodeURIComponent(cleanMuseum)}` : "";
     const res = await fetch(
-      `/api/photo?q=${encodeURIComponent(cleaned)}&lang=${encodeURIComponent(language)}${cityParam}${scopeParam}`,
+      `/api/photo?q=${encodeURIComponent(cleaned)}&lang=${encodeURIComponent(language)}${cityParam}${scopeParam}${museumParam}`,
     );
     if (!res.ok) {
       // Don't cache misses — server-side fixes (User-Agent, retry
