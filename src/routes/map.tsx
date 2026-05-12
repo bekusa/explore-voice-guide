@@ -64,9 +64,30 @@ function MapPage() {
   // Initialize Leaflet map (dynamic import keeps SSR happy)
   useEffect(() => {
     let cancelled = false;
+    let ro: ResizeObserver | null = null;
+    const invalidateTimers: number[] = [];
     (async () => {
       const L = (await import("leaflet")).default;
       if (cancelled || !containerRef.current) return;
+
+      // Belt and braces — if for some reason the container hasn't
+      // sized itself yet at init (h-full collapsing through the
+      // overflow-y-auto scroll wrapper, hydration jitter, etc.) the
+      // map paints into a 0×0 canvas and the whole tile area stays
+      // black. Force a concrete pixel height now using the parent's
+      // bounding box. The container has `absolute inset-0` so this
+      // should resolve to the phone height, but reading clientHeight
+      // and stamping it back closes the gap when getBoundingClientRect
+      // reports 0 at mount time.
+      const el = containerRef.current;
+      const ensureSize = () => {
+        if (!el.parentElement) return;
+        const r = el.parentElement.getBoundingClientRect();
+        if (r.height > 0 && el.clientHeight === 0) {
+          el.style.height = `${r.height}px`;
+        }
+      };
+      ensureSize();
 
       const map = L.map(containerRef.current, {
         center: DEFAULT_CENTER,
@@ -78,18 +99,42 @@ function MapPage() {
 
       mapRef.current = map;
       setReady(true);
-      // Leaflet caches the container size at init. If the page
-      // mounts before the layout settles (transitions, MobileFrame
-      // re-flow, etc.) tiles render at 0x0 and the canvas stays
-      // black. Beka caught the empty map after the AiGeneratedFooter
-      // landed; invalidateSize forces a recompute once the DOM
-      // settles. Two ticks — once on the next frame and once after
-      // a short timeout — covers both the typical and the slow path.
-      requestAnimationFrame(() => map.invalidateSize());
-      setTimeout(() => map.invalidateSize(), 250);
+
+      // Leaflet caches the container size at init. If the page mounts
+      // before the layout settles (transitions, MobileFrame re-flow,
+      // dvh recompute on mobile address-bar collapse, etc.) tiles
+      // render at 0x0 and the canvas stays black. We hit this hard on
+      // Lovable's Cloudflare Workers preview — the AiGeneratedFooter,
+      // the language pill row, and the `overflow-y-auto` scroll wrap
+      // each added a measurable layout shift after first paint.
+      //
+      // Fix is layered:
+      //   1. Fire invalidateSize on a cascade of timeouts so we catch
+      //      whichever frame the browser actually settles on. Cheap.
+      //   2. Hook a ResizeObserver to the container — whenever the
+      //      bounding box changes (rotation, dvh shift, parent resize)
+      //      Leaflet recomputes. Survives slow paints and stays useful
+      //      for the lifetime of the page.
+      const invalidate = () => {
+        ensureSize();
+        map.invalidateSize();
+      };
+      requestAnimationFrame(invalidate);
+      invalidateTimers.push(
+        ...[50, 150, 300, 600, 1000, 2000].map((ms) =>
+          window.setTimeout(invalidate, ms),
+        ),
+      );
+      if (typeof ResizeObserver !== "undefined" && el) {
+        ro = new ResizeObserver(() => invalidate());
+        ro.observe(el);
+        if (el.parentElement) ro.observe(el.parentElement);
+      }
     })();
     return () => {
       cancelled = true;
+      invalidateTimers.forEach((t) => window.clearTimeout(t));
+      ro?.disconnect();
       const map = mapRef.current as { remove?: () => void } | null;
       map?.remove?.();
       mapRef.current = null;
@@ -226,8 +271,18 @@ function MapPage() {
     // scroll-area has a single sized child again and the absolute
     // canvas resolves cleanly against it.
     <MobileFrame hideAiFooter>
-      <div className="relative h-full w-full overflow-hidden bg-background text-foreground">
-        {/* Map canvas */}
+      {/* Explicit dvh height instead of `h-full`. Reason: the
+          MobileFrame wraps children in `overflow-y-auto` and `h-full`
+          there has to inherit through the scroll context. On
+          Lovable's Cloudflare preview (and iOS Safari at times)
+          h-full collapsed to 0 before the first paint, which gave
+          Leaflet a 0×0 container and a permanently black canvas. A
+          concrete 100dvh removes the inheritance dependency and the
+          init-time invalidateSize cascade catches the residual
+          jitter from mobile address-bar collapse. */}
+      <div className="relative h-[100dvh] w-full overflow-hidden bg-background text-foreground">
+        {/* Map canvas. inset-0 + z-0 keeps it underneath the absolute
+            header / locate button / empty-state overlay above. */}
         <div ref={containerRef} className="absolute inset-0 z-0 bg-secondary" />
 
         {/* Top bar */}

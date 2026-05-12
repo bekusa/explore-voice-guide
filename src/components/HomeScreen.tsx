@@ -269,9 +269,17 @@ export function HomeScreen() {
                 useEffect that gates on `listening`) so the city
                 doesn't change mid-sentence. */}
             <div className="mt-6 flex flex-wrap items-center gap-2.5">
+              {/* Hero CTA navigates to /results?q={heroDest.city} so
+                  the click on Tbilisi (or Paris, Rome, Bangkok, London)
+                  lands the user on the search results for that city —
+                  same destination as typing the city into the search
+                  bar. Beka's call: skip the destination landing page;
+                  go straight to the discoverable list. heroDest.city is
+                  the English name, which is what /results expects via
+                  the `q` query param. */}
               <Link
-                to="/destination/$slug"
-                params={{ slug: heroDest.slug }}
+                to="/results"
+                search={{ q: heroDest.city }}
                 aria-label={t("home.openCity", { city: heroCity })}
                 className="inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
               >

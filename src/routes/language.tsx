@@ -7,8 +7,43 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { LANGUAGES, type Language } from "@/lib/languages";
-import { setStoredLang } from "@/lib/i18n";
+import { setStoredLang, getStoredLang } from "@/lib/i18n";
 import { useT } from "@/hooks/useT";
+
+/**
+ * Resolve a stored language code (could be short like "en" / "ka" or
+ * full BCP-47 like "en-US" / "ka-GE") to a Language entry in LANGUAGES.
+ *
+ * Why we need this: the localStorage form is the normalised short
+ * code (see `normalizeLang` in lib/i18n.ts — "en-US" → "en") while the
+ * LANGUAGES array uses full BCP-47 codes. A naive
+ * `LANGUAGES.find(l => l.code === active)` with active="ka" returned
+ * undefined and fell through to `LANGUAGES[0]`, which after the A-Z
+ * sort is Arabic 🇸🇦. Beka caught the wrong "Current" pill on the
+ * /language page.
+ *
+ * Lookup order:
+ *   1. Exact match on full code (covers "en-US", "ka-GE", "zh-CN").
+ *   2. Prefix match — and when the prefix is "en", explicitly prefer
+ *      "en-US" over "en-GB" so the default English speaker doesn't
+ *      land on the UK flag. Same logic could apply to "es" / "pt" /
+ *      "zh" but those variants aren't ambiguous in the same way.
+ *   3. Hard fall back to "en-US", not LANGUAGES[0], so the default
+ *      never silently becomes Arabic again.
+ */
+function resolveLanguage(code: string): Language {
+  if (!code) return LANGUAGES.find((l) => l.code === "en-US") ?? LANGUAGES[0];
+  const exact = LANGUAGES.find((l) => l.code === code);
+  if (exact) return exact;
+  const prefix = code.split("-")[0].toLowerCase();
+  if (prefix === "en") {
+    const enUS = LANGUAGES.find((l) => l.code === "en-US");
+    if (enUS) return enUS;
+  }
+  const prefixed = LANGUAGES.find((l) => l.code.toLowerCase().startsWith(`${prefix}-`));
+  if (prefixed) return prefixed;
+  return LANGUAGES.find((l) => l.code === "en-US") ?? LANGUAGES[0];
+}
 
 export const Route = createFileRoute("/language")({
   head: () => ({
@@ -33,7 +68,12 @@ function LanguagePage() {
   const navigate = useNavigate();
   const t = useT();
   const [query, setQuery] = useState("");
-  const [active, setActive] = useState<string>("ka");
+  // Seed `active` from localStorage instead of hardcoded "ka". The
+  // hardcoded default plus a strict `code === active` find() meant
+  // anonymous visitors landed on LANGUAGES[0] = Arabic. Now we read
+  // the stored preference (short form like "en" / "ka") and rely on
+  // resolveLanguage() to map it to a real Language entry below.
+  const [active, setActive] = useState<string>(() => getStoredLang());
   const [pending, setPending] = useState<string | null>(null);
 
   // Load current preferred language from profile
@@ -106,7 +146,11 @@ function LanguagePage() {
     );
   }
 
-  const activeLang = LANGUAGES.find((l) => l.code === active) ?? LANGUAGES[0];
+  // Smart lookup — handles short "en" / "ka" forms from localStorage
+  // AND full "en-US" / "ka-GE" forms from the profiles table. Never
+  // falls back to LANGUAGES[0] (Arabic after the A-Z sort) — uses
+  // en-US as the universal default. See resolveLanguage() comment.
+  const activeLang = resolveLanguage(active);
 
   return (
     <MobileFrame>
@@ -164,7 +208,9 @@ function LanguagePage() {
         <div className="mt-4 px-6">
           <ul className="flex flex-col gap-2">
             {filtered.map((l) => {
-              const isActive = active === l.code;
+              // Compare against the *resolved* full code, otherwise
+              // active="en" wouldn't checkmark the en-US row.
+              const isActive = activeLang.code === l.code;
               const isPending = pending === l.code;
               return (
                 <li key={l.code}>
