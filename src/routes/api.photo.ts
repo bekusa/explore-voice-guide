@@ -330,20 +330,42 @@ export const Route = createFileRoute("/api/photo")({
           }
         }
 
-        // Stage 1 (non-artworks): Google Places. Skipped for
-        // artworks because the regional bias keeps polluting
-        // results with Tbilisi-area matches.
-        if (!photoUrl && !isArtwork) {
+        // Stage 1 (everything): Wikipedia FIRST. Moved up from the
+        // fallback slot per Beka's repeated reports — even with
+        // `locationbias=ipbias` Google Places kept returning
+        // Tbilisi-area lookalikes ("Grand Palace" → a local
+        // restaurant; "The Lacemaker" → a residential street). The
+        // bias is baked into the API key's project region in Google
+        // Cloud Console, which ipbias doesn't override on every
+        // request. Wikipedia is region-neutral and has high-quality
+        // lead images for any place / artwork with an article — the
+        // vast majority of attractions and museum highlights. We
+        // append the city / museum context to the Wikipedia query
+        // for disambiguation ("Grand Palace Bangkok" finds the
+        // article reliably).
+        if (!photoUrl) {
           try {
-            photoUrl = await googlePhoto(q, city);
+            const wikiQ =
+              city && !q.toLowerCase().includes(city.toLowerCase()) ? `${q} ${city}` : q;
+            photoUrl = await wikipediaPhoto(wikiQ, lang);
+            // If the city-qualified query missed, retry bare — some
+            // smaller attractions only have an article under the
+            // plain name.
+            if (!photoUrl && wikiQ !== q) {
+              photoUrl = await wikipediaPhoto(q, lang);
+            }
           } catch {
-            // fall through to Wikipedia
+            /* fall through to Google Places (non-artwork) */
           }
         }
 
-        if (!photoUrl) {
+        // Stage 2 (non-artworks only): Google Places as a fallback
+        // for places Wikipedia doesn't cover (small businesses,
+        // shops, viewpoints). Skipped for artworks — even the
+        // fallback shouldn't pollute artwork lookups.
+        if (!photoUrl && !isArtwork) {
           try {
-            photoUrl = await wikipediaPhoto(q, lang);
+            photoUrl = await googlePhoto(q, city);
           } catch {
             // give up — frontend will show the MapPin placeholder
           }

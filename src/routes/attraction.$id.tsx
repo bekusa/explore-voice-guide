@@ -1646,13 +1646,19 @@ function HighlightCard({
     // each highlight we'd use it; we don't, so include the most
     // common artwork media as separate candidates.
     (async () => {
+      // Museum-qualified queries FIRST — Beka kept catching
+      // ambiguous artwork names landing on the wrong subject
+      // (Lacemaker → Isabelle Huppert film, Wedding Feast at
+      // Cana → some other building). Wikipedia's full-text search
+      // ranks the Met / Louvre canonical article above the
+      // disambiguator when the museum name is in the query.
       const candidates = [
-        baseName,
+        `${baseName} ${museum.name}`,
+        `${baseName} ${museum.name} ${museum.city}`,
         `${baseName} painting`,
         `${baseName} sculpture`,
         `${baseName} artwork`,
-        `${baseName} ${museum.name}`,
-        `${baseName} ${museum.name} ${museum.city}`,
+        baseName,
       ];
       for (const q of candidates) {
         if (cancelled) return;
