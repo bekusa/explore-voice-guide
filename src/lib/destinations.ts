@@ -21,8 +21,14 @@
  * destinationStore + useSelectedDestination still need.
  */
 
-import tbilisiHero from "@/assets/tbilisi-hero.jpg";
-import romeImg from "@/assets/destinations/rome.jpg";
+// WebP — converted from the original JPGs in the pre-Capacitor image
+// optimization pass (Phase 2.4). ImageMagick @ quality 80 brought the
+// 27-image bundle from 4.4 MB → 2.5 MB (-43%) with no visible quality
+// loss in the hero frame at 1280×800. Capacitor's mobile WebView
+// supports WebP natively on iOS 14+ / Android 4.0+, well below our
+// minimum target.
+import tbilisiHero from "@/assets/tbilisi-hero.webp";
+import romeImg from "@/assets/destinations/rome.webp";
 
 export type Destination = {
   slug: string;

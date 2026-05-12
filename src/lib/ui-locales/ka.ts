@@ -171,6 +171,8 @@ export const KA: Partial<Record<UiKey, string>> = {
   "err.notFound": "გვერდი ვერ მოიძებნა",
   "err.notFoundDesc": "ეს გვერდი არ არსებობს ან გადატანილია.",
   "err.goHome": "მთავარზე დაბრუნება",
+  "card.expand": "გაშლა",
+  "card.collapse": "დახურვა",
   "toast.noVoiceAvailable": "ხელმისაწვდომი ხმა არ არის",
   "toast.libCleared": "ოფლაინ ბიბლიოთეკა გასუფთავდა",
   "toast.speechUnsupported": "ეს მოწყობილობა ხმოვან რეჟიმს არ უჭერს მხარს",

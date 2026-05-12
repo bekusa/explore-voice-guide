@@ -4,10 +4,8 @@ import {
   Bookmark,
   BookmarkX,
   ArrowLeft,
-  ChevronDown,
   Clock,
   Star,
-  MapPin,
   Headphones,
   Search,
   WifiOff,
@@ -21,6 +19,7 @@ import { attractionSlug } from "@/lib/api";
 import { useT, useTranslated } from "@/hooks/useT";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
+import { AttractionCardShell } from "@/components/AttractionCardShell";
 
 export const Route = createFileRoute("/saved")({
   head: () => ({
@@ -190,131 +189,82 @@ function SavedRow({ item }: { item: SavedItem }) {
   });
 
   const resolvedSrc = item.imageDataUrl || a.image_url || fetchedUrl;
-  const showImg = !!resolvedSrc && !imgFailed;
+  // The shell expects a `photo: string | null`. We mirror SavedRow's
+  // original "imageDataUrl || image_url || fetched" priority chain
+  // and bail to null on the same conditions (no src OR onError flipped
+  // imgFailed). null → shell renders the MapPin placeholder.
+  const photo = !imgFailed && resolvedSrc ? resolvedSrc : null;
 
   return (
-    <li
-      className={`group overflow-hidden rounded-2xl border bg-card transition-smooth ${
-        open ? "border-primary/60 shadow-glow" : "border-border hover:border-primary/40"
-      }`}
-    >
-      {/* Hero image on top — same restructure Beka asked for on the
-          /results cards. Tapping the image toggles the expandable
-          info section below the title strip. */}
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => setOpen((v) => !v)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setOpen((v) => !v);
-          }
-        }}
-        aria-expanded={open}
-        className="relative block h-[180px] w-full cursor-pointer overflow-hidden bg-secondary"
-      >
-        {showImg && resolvedSrc ? (
-          <img
-            src={resolvedSrc}
-            alt={tName ?? item.name}
-            className="h-full w-full object-cover"
-            loading="lazy"
-            onError={() => setImgFailed(true)}
-          />
-        ) : (
-          <div className="grid h-full w-full place-items-center bg-gradient-card text-muted-foreground">
-            <MapPin className="h-7 w-7 text-primary" />
-          </div>
-        )}
-        {/* Light-theme darkening wash (matches Home + Results). */}
-        <div className="pointer-events-none absolute inset-0 bg-black/0 [.light_&]:bg-black/30" />
-        {hasGuide && (
-          <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-primary/40 bg-background/70 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-primary backdrop-blur-md">
+    <AttractionCardShell
+      as="li"
+      open={open}
+      onToggle={() => setOpen((v) => !v)}
+      photo={photo}
+      imgAlt={tName ?? item.name}
+      onImgError={() => setImgFailed(true)}
+      toggleLabel={{ collapse: t("card.collapse"), expand: t("card.expand") }}
+      topPill={
+        hasGuide ? (
+          <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-background/70 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-primary backdrop-blur-md">
             <Headphones className="h-2.5 w-2.5" /> {t("saved.guideCached")}
           </span>
-        )}
-      </div>
-
-      {/* Title + meta + expand toggle */}
-      <div className="px-4 pt-3">
-        <div className="flex items-start gap-2">
-          <div className="min-w-0 flex-1">
-            <h3 className="truncate text-[16px] font-semibold leading-tight text-foreground">
-              {tName ?? item.name}
-            </h3>
-            {!hasGuide && (
-              <p className="my-1.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                <Headphones className="h-2.5 w-2.5" /> {t("card.audioGuide")}
-              </p>
+        ) : undefined
+      }
+      titleContent={
+        <>
+          <h3 className="truncate text-[16px] font-semibold leading-tight text-foreground">
+            {tName ?? item.name}
+          </h3>
+          {!hasGuide && (
+            <p className="my-1.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <Headphones className="h-2.5 w-2.5" /> {t("card.audioGuide")}
+            </p>
+          )}
+          <div className="mt-1.5 flex items-center gap-2.5 text-[11px] text-muted-foreground">
+            {a.duration && (
+              <span className="inline-flex items-center gap-1">
+                <Clock className="h-2.5 w-2.5" /> {tDuration ?? a.duration}
+              </span>
             )}
-            <div className="mt-1.5 flex items-center gap-2.5 text-[11px] text-muted-foreground">
-              {a.duration && (
-                <span className="inline-flex items-center gap-1">
-                  <Clock className="h-2.5 w-2.5" /> {tDuration ?? a.duration}
-                </span>
-              )}
-              {typeof a.rating === "number" && (
-                <span className="inline-flex items-center gap-1 text-primary">
-                  <Star className="h-2.5 w-2.5 fill-primary" />
-                  {a.rating.toFixed(2)}
-                </span>
-              )}
-            </div>
+            {typeof a.rating === "number" && (
+              <span className="inline-flex items-center gap-1 text-primary">
+                <Star className="h-2.5 w-2.5 fill-primary" />
+                {a.rating.toFixed(2)}
+              </span>
+            )}
           </div>
+        </>
+      }
+      actionCount={2}
+      actions={
+        <>
           <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            aria-expanded={open}
-            aria-label={open ? "Collapse" : "Expand"}
-            className={`grid h-9 w-9 shrink-0 place-items-center rounded-full bg-foreground text-background transition-smooth ${
-              open ? "rotate-180" : ""
-            }`}
+            onClick={() => removeItem(item.id)}
+            aria-label={t("saved.removeAria", { name: item.name })}
+            className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-card px-2 py-2.5 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] text-muted-foreground transition-smooth hover:border-accent/50 hover:text-accent whitespace-normal break-words"
           >
-            <ChevronDown className="h-3.5 w-3.5" />
+            <BookmarkX className="h-4 w-4" />
+            {t("saved.clear")}
           </button>
+
+          <Link
+            to="/attraction/$id"
+            params={{ id: slug }}
+            search={{ name: item.name }}
+            className="flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-gold px-2 py-2.5 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02] whitespace-normal break-words"
+          >
+            <Headphones className="h-4 w-4" />
+            {t("card.details")}
+          </Link>
+        </>
+      }
+      body={
+        <div className="border-t border-border px-4 py-4 mt-3 text-[12px] leading-[1.55] text-muted-foreground">
+          {(a.outside_desc as string | undefined) ?? a.description ?? t("saved.guideCached")}
         </div>
-      </div>
-
-      {/* Actions — always visible: Remove from saved + Details. */}
-      <div className="grid grid-cols-2 gap-2 px-4 pt-3">
-        <button
-          onClick={() => removeItem(item.id)}
-          aria-label={t("saved.removeAria", { name: item.name })}
-          className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-card px-2 py-2.5 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] text-muted-foreground transition-smooth hover:border-accent/50 hover:text-accent whitespace-normal break-words"
-        >
-          <BookmarkX className="h-4 w-4" />
-          {t("saved.clear")}
-        </button>
-
-        <Link
-          to="/attraction/$id"
-          params={{ id: slug }}
-          search={{ name: item.name }}
-          className="flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-gold px-2 py-2.5 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02] whitespace-normal break-words"
-        >
-          <Headphones className="h-4 w-4" />
-          {t("card.details")}
-        </Link>
-      </div>
-
-      {/* Expandable description / extra meta. Saved items don't have
-          full description in storage, so the body just shows the
-          fact-row that was inline before. CSS-grid height anim. */}
-      <div
-        className={`grid transition-all duration-300 ease-out ${
-          open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-        }`}
-      >
-        <div className="overflow-hidden">
-          <div className="border-t border-border px-4 py-4 mt-3 text-[12px] leading-[1.55] text-muted-foreground">
-            {(a.outside_desc as string | undefined) ?? a.description ?? t("saved.guideCached")}
-          </div>
-        </div>
-      </div>
-
-      <div className={`${open ? "pb-0" : "pb-3"}`} />
-    </li>
+      }
+    />
   );
 }
 

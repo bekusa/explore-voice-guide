@@ -216,6 +216,10 @@ export const UI_STRINGS = {
 
   // Near-you / attraction card
   "card.audioGuide": "Audio guide",
+  // aria-labels for the chevron toggle on the museum-highlight-
+  // style cards (/results, /saved). Previously hardcoded English.
+  "card.expand": "Expand",
+  "card.collapse": "Collapse",
   "card.offline": "Offline",
   "card.stops": "{n} stops",
   "card.save": "Save",
