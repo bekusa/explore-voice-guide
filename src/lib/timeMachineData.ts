@@ -30,11 +30,74 @@ export interface Attraction {
   image: string;
 }
 
-// Themed photos via LoremFlickr (keyword-matched, deterministic with lock seed).
-const img = (keywords: string) => {
+// Curated local photos for each Time Machine moment, dropped into
+// `src/assets/destinations/TimeMachine/` by Beka (file naming
+// convention: "Display Name - Country.jpg"). We pick them up via
+// Vite's import.meta.glob so adding a new image is just a matter of
+// dropping the file in — no second edit. The map below points each
+// attraction id at its local image; ids without a curated picture
+// fall back to a deterministic LoremFlickr seed (`img(...)`).
+const TM_IMAGES = import.meta.glob<{ default: string }>("@/assets/destinations/TimeMachine/*.jpg", {
+  eager: true,
+});
+
+/** Look up a curated image by its on-disk filename (without folder). */
+function tmImg(filename: string): string {
+  // Vite returns keys with the FULL resolved path, so we match by suffix.
+  const entry = Object.entries(TM_IMAGES).find(([k]) => k.endsWith("/" + filename));
+  return entry ? entry[1].default : "";
+}
+
+// Per-attraction-id → image filename. Eight ids (jerusalem,
+// hannibal, tutankhamun, baghdad_golden, carthage, kyoto, angkor,
+// great_zimbabwe) don't have curated pictures yet — they fall
+// through to the LoremFlickr fallback below.
+const IMAGE_BY_ID: Record<string, string> = {
+  rhodes_colossus: "Colossus of Rhodes - Greece.jpg",
+  alexandria_library: "Library of Alexandria - Egypt.jpg",
+  pompeii_day: "Pompeii - Italy.jpg",
+  colosseum_opening: "The Colosseum - Italy.jpg",
+  hagia_sophia: "Hagia Sophia - Turkey.jpg",
+  bastille: "The Bastille - France.jpg",
+  titanic: "Titanic - Atlantic Ocean.jpg",
+  thermopylae: "Thermopylae - Greece.jpg",
+  tbilisi_1795: "Tbilisi - Georgia.jpg",
+  giza_last_year: "Giza - Egypt.jpg",
+  hiroshima: "Hiroshima - Japan.jpg",
+  didgori: "Battle of Didgori - Georgia.jpg",
+  trojan_horse: "The Trojan Horse - Troy.jpg",
+  first_contact: "First Contact - Bahamas.jpg",
+  constantinople_fall: "The Fall of Constantinople - Turkey.jpg",
+  machu_picchu: "Machu Picchu - Peru.jpg",
+  stonehenge: "Stonehenge - Britain.jpg",
+  sistine_chapel: "The Sistine Chapel - Italy.jpg",
+  olympia_first: "Olympia - Greece.jpg",
+  black_plague: "The Black Death - Britain.jpg",
+  socrates: "The Trial of Socrates - Greece.jpg",
+  mozart: "Mozart's Requiem - Austria.jpg",
+  samarcand: "Samarkand - Uzbekistan.jpg",
+  baghdad_mongols: "Baghdad - The Mongol Sack - Iraq.jpg",
+  kiev_batu: "Kyiv - Ukraine.jpg",
+};
+
+// Themed photos via LoremFlickr — used as the fallback for any id
+// without a curated local picture in IMAGE_BY_ID. Keyword-matched +
+// deterministic seed so the same keyword always returns the same
+// photo across reloads.
+const flickr = (keywords: string) => {
   const seed = Math.abs([...keywords].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0));
   return `https://loremflickr.com/900/540/${encodeURIComponent(keywords)}?lock=${seed}`;
 };
+
+/** Resolve the image URL for a given attraction id. */
+function img(id: string, fallbackKeywords: string): string {
+  const filename = IMAGE_BY_ID[id];
+  if (filename) {
+    const url = tmImg(filename);
+    if (url) return url;
+  }
+  return flickr(fallbackKeywords);
+}
 
 export const ATTRACTIONS: Attraction[] = [
   // MVP
@@ -50,7 +113,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "The 33-meter bronze statue of Helios is in its 2nd year of construction. 400+ workers on site. The harbor is packed with ships from Egypt, Cyprus, and Carthage. The air smells of molten bronze.",
     desc: "The Colossus of Rhodes — 33m bronze statue of the sun god Helios. Built from the enemy's melted weapons after the Macedonian siege. Took 12 years. Toppled by earthquake in 226 BC.",
-    image: img("rhodes,greece,harbor"),
+    image: img("rhodes_colossus", "rhodes,greece,harbor"),
   },
   {
     id: "alexandria_library",
@@ -64,7 +127,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "700,000+ scrolls in one complex. Euclid, Archimedes, Eratosthenes working in the same halls. Every ship entering the harbor is searched and its manuscripts copied.",
     desc: "The greatest library of the ancient world. Every incoming ship was inspected — manuscripts seized and copied. The most ambitious knowledge project in history.",
-    image: img("library,scrolls,ancient"),
+    image: img("alexandria_library", "library,scrolls,ancient"),
   },
   {
     id: "pompeii_day",
@@ -78,7 +141,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "A city of 20,000 going about its ordinary day. Markets open, bread baking. Vesuvius looms on the horizon — no one thinks twice. In 6 hours, everything will be buried under 6 meters of ash.",
     desc: "Wealthy Roman city of 20,000. In 79 AD Vesuvius buried it under ash. People couldn't flee — they thought it was routine. Forgotten until 1748. The world's most perfectly 'frozen' city.",
-    image: img("pompeii,vesuvius,ruins"),
+    image: img("pompeii_day", "pompeii,vesuvius,ruins"),
   },
   {
     id: "colosseum_opening",
@@ -92,7 +155,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "80,000 people fill the amphitheater. Emperor Titus sits in the imperial box. The 100-day games begin — 9,000 animals will die. The roar of the crowd.",
     desc: "Engineered for 50,000–80,000 spectators. 9,000 animals killed in the opening 100 days. Sometimes flooded for mock naval battles. Functioned for 1,500 years.",
-    image: img("colosseum,rome"),
+    image: img("colosseum_opening", "colosseum,rome"),
   },
   {
     id: "hagia_sophia",
@@ -106,7 +169,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "5 years, 10,000 workers — today the doors open for the first time. A 56-meter dome floats in the air. Emperor Justinian walks in: 'Solomon, I have surpassed you.'",
     desc: "Byzantine masterpiece — Christian cathedral from 537 to 1453, then Ottoman mosque. 56-meter dome was the world's largest for 1,000 years.",
-    image: img("hagia,sophia,istanbul"),
+    image: img("hagia_sophia", "hagia,sophia,istanbul"),
   },
   {
     id: "bastille",
@@ -120,7 +183,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "A crowd of 7,000 surrounds the royal prison. Only 7 inmates inside, 82 soldiers defending. The symbol of royal power trembles. Europe's history is about to change.",
     desc: "Symbol of royal authority. Stormed by 7,000 people. Only 7 prisoners inside. Became the defining moment of the French Revolution.",
-    image: img("paris,fortress"),
+    image: img("bastille", "paris,fortress"),
   },
   {
     id: "titanic",
@@ -134,7 +197,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "2,224 passengers. 11:40 PM — the ship strikes an iceberg. The captain notifies first class. Third-class doors are still locked. The lifeboats are half empty.",
     desc: "The 'unsinkable' liner on its first voyage. 2,224 passengers. Sank in 2 hours 40 minutes. 710 survived. Class inequality determined who lived.",
-    image: img("ocean,liner,ship"),
+    image: img("titanic", "ocean,liner,ship"),
   },
   {
     id: "thermopylae",
@@ -148,7 +211,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "A Persian army of 300,000 stands before a narrow pass. Leonidas in camp: 'Tonight we dine well.' Everyone knows it's their last meal. Someone tonight will show the Persians another way around.",
     desc: "300 Spartans against 300,000. Three days Leonidas held the pass. A traitor revealed a back route. Every last man fell. 'Go tell the Spartans...' — the epitaph.",
-    image: img("spartan,helmet,warrior"),
+    image: img("thermopylae", "spartan,helmet,warrior"),
   },
   {
     id: "tbilisi_1795",
@@ -162,7 +225,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "A Qajar army of 35,000 closes in. The Battle of Krtsanisi has just been lost. The city empties. Tomorrow brings 3 days of looting, slaughter, and thousands taken into captivity.",
     desc: "Agha Mohammad Khan with 35,000 troops. 3 days of plunder, killing, enslavement. Thousands taken to Persia. The most painful tragedy in Georgian history.",
-    image: img("tbilisi,oldcity"),
+    image: img("tbilisi_1795", "tbilisi,oldcity"),
   },
   {
     id: "giza_last_year",
@@ -176,7 +239,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "The Pyramid of Khufu rises to 146 meters. 2.3 million stone blocks. 20,000+ workers. The final sections are being placed. The Pharaoh inspects tomorrow — and there's a miscalculation.",
     desc: "146m tall, 2.3 million blocks. The four corners align with cardinal directions to within 0.05 degrees. How — still debated after 4,500 years.",
-    image: img("pyramid,giza,desert"),
+    image: img("giza_last_year", "pyramid,giza,desert"),
   },
   {
     id: "hiroshima",
@@ -190,7 +253,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "A city of 350,000 living a normal evening. A bridge, a river, a market. Tomorrow at 8:15 AM, the nuclear bomb. But tonight the city is beautiful. The last normal breath.",
     desc: "August 6, 1945 — first nuclear bomb. 80,000 killed instantly. 140,000 by year's end. August 5 was an ordinary warm evening — the last normal night for 140,000 people.",
-    image: img("hiroshima,japan,river"),
+    image: img("hiroshima", "hiroshima,japan,river"),
   },
   {
     id: "jerusalem_crucifixion",
@@ -204,7 +267,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "Passover. Three crosses on Golgotha. The city works as normal — 80,000+ pilgrims. Most don't know the names of the three men on the hill. The sky slowly darkens.",
     desc: "Passover. Golgotha — just outside the city gate. 80,000+ pilgrims. The city went about its business. The sky was changing.",
-    image: img("jerusalem,oldcity"),
+    image: img("jerusalem_crucifixion", "jerusalem,oldcity"),
   },
   {
     id: "didgori",
@@ -218,7 +281,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "A Seljuk-Persian coalition of 400,000+ faces King David IV with 56,000. A narrow gorge, forested ridges. The 'Desperate Attack' trap is set. One of history's most brilliant military operations.",
     desc: "Victory at 6-to-1 odds — one of the most brilliant military triumphs in history. Launched Georgia's Golden Age. David IV was crowned 'Sword of the Messiah.'",
-    image: img("medieval,armor,battle"),
+    image: img("didgori", "medieval,armor,battle"),
   },
   {
     id: "trojan_horse",
@@ -232,7 +295,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "Last day of a 10-year siege. The Greeks 'retreated' — ships gone from the horizon. Left on the shore: a colossal wooden horse. Cassandra screams: 'Don't bring it inside!' The city celebrates.",
     desc: "Cassandra saw everything clearly, but no one believed her. The foundation of Homer's Iliad and Odyssey. Schliemann proved in 1871 that Troy was real.",
-    image: img("troy,ruins,ancient"),
+    image: img("trojan_horse", "troy,ruins,ancient"),
   },
   {
     id: "first_contact",
@@ -246,7 +309,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "Three ships approach the shore. The Taíno people watch — the first Europeans they have ever seen. Neither side understands the other's words. The Taíno offer gold and parrots as gifts.",
     desc: "The Taíno welcomed them with gifts. Columbus wrote: 'Such kind people — they would make good servants.' Within 50 years, the Taíno were virtually extinct.",
-    image: img("caribbean,beach,sailing"),
+    image: img("first_contact", "caribbean,beach,sailing"),
   },
 
   // TOP 10
@@ -262,7 +325,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "80,000 Ottoman soldiers outside the walls — 7,000 Byzantine defenders inside. May 29, 1:30 AM. The walls are breaching. A 1,000-year empire meets its final night.",
     desc: "End of the Byzantine Empire after 1,000 years. Emperor Constantine XI fell in battle. Many historians mark this as the end of the Middle Ages.",
-    image: img("istanbul,walls,ottoman"),
+    image: img("constantinople_fall", "istanbul,walls,ottoman"),
   },
   {
     id: "machu_picchu",
@@ -276,7 +339,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "A living city of 1,000 at 2,430 meters in the Andes. Llamas, the Temple of the Sun, stone walls. No European has ever set foot here. The city is fully alive.",
     desc: "Built around 1450 by Emperor Pachacuti. An epidemic forced its sudden abandonment. In 1911, Hiram Bingham 'rediscovered' it.",
-    image: img("machu,picchu,peru"),
+    image: img("machu_picchu", "machu,picchu,peru"),
   },
   {
     id: "stonehenge",
@@ -290,7 +353,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "The stones have just been erected — up to 25 tons each, hauled 250 km. People from every corner of Europe are converging. The solstice sun rises exactly on the central axis. Everyone weeps.",
     desc: "Built between 3000 and 2000 BC. Stones up to 25 tons from 250 km away. At midsummer, the sun rises perfectly along the central axis. Purpose still debated.",
-    image: img("stonehenge,england"),
+    image: img("stonehenge", "stonehenge,england"),
   },
   {
     id: "sistine_chapel",
@@ -304,7 +367,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "4 years of painting the ceiling. 33-year-old Michelangelo suspended every day. His back, neck, and eyes ache. The Pope sees the ceiling for the first time tomorrow.",
     desc: "Pope Julius II commissioned a sculptor to paint a ceiling. Michelangelo worked suspended for 4 years. 500 years later, restorers found dozens of earlier works beneath his frescoes.",
-    image: img("fresco,renaissance,ceiling"),
+    image: img("sistine_chapel", "fresco,renaissance,ceiling"),
   },
   {
     id: "olympia_first",
@@ -318,7 +381,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "All wars pause — the Olympic Truce. Athletes from every corner of Greece arrive. The Temple of Zeus. Men compete naked. Women are forbidden even to watch.",
     desc: "The first recorded Olympics, held in honor of Zeus. Every four years wars stopped. Winners received an olive wreath. Held 293 times before Roman Emperor Theodosius banned them.",
-    image: img("greek,temple,olympia"),
+    image: img("olympia_first", "greek,temple,olympia"),
   },
   {
     id: "black_plague",
@@ -332,7 +395,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "The plague has just reached London. Someone coughs in the street — it's happened before. The city still lives normally. Within 2 years, half of Europe's population will be dead.",
     desc: "The Black Death, 1347–1351 — killed 30–60% of Europe's population. 50 million people. 'Ring Around the Rosie' is from this era. Death became routine.",
-    image: img("medieval,london,fog"),
+    image: img("black_plague", "medieval,london,fog"),
   },
   {
     id: "socrates",
@@ -346,7 +409,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "A jury of 500 citizens. The charge: corrupting the youth. A 70-year-old philosopher chooses death over exile. 28-year-old Plato sits in the front row, writing everything down.",
     desc: "Socrates charged with corrupting youth. 280 convicted, 220 acquitted. He chose death over exile, drank hemlock. Still called a stain on Athenian democracy.",
-    image: img("athens,marble,statue"),
+    image: img("socrates", "athens,marble,statue"),
   },
   {
     id: "hannibal_alps",
@@ -360,7 +423,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "15 days crossing the Alps. 37 elephants, 40,000 soldiers. November frost. At the summit — Italy visible below for the first time. Hannibal commands: 'That is Rome. We descend.'",
     desc: "The most audacious military maneuver in history. 37 elephants (only 3 survived the winter). Of 80,000, fewer than 40,000 reached Italy. Hannibal fought in Italy 15 years — never took Rome.",
-    image: img("alps,snow,mountain"),
+    image: img("hannibal_alps", "alps,snow,mountain"),
   },
   {
     id: "tutankhamun",
@@ -374,7 +437,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "A 19-year-old pharaoh is dying. The palace falls silent. Only 3 people know what really happened. Tomorrow, a new pharaoh will ask you: 'How did he die?'",
     desc: "Pharaoh at age 9, dead at 19. The cause — a 3,000-year mystery. In 1922, Howard Carter found the only intact royal tomb in Egypt. The 'Pharaoh's Curse' — 26 people died between 1923 and 1936.",
-    image: img("egypt,tomb,gold"),
+    image: img("tutankhamun", "egypt,tomb,gold"),
   },
   {
     id: "mozart",
@@ -388,7 +451,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "35-year-old Mozart is dying. The Requiem — written for his own funeral — is unfinished. The room is cold. Creditors pound the door. The final note never makes it onto paper.",
     desc: "Cause of death still disputed: syphilis, typhus, poisoning? The Requiem was commissioned anonymously. Mozart never finished it. Süssmayr completed it.",
-    image: img("vienna,piano,candle"),
+    image: img("mozart", "vienna,piano,candle"),
   },
 
   // TOP 20
@@ -404,7 +467,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "The world's largest city — 1 million people. The 'House of Wisdom' translates Greek, Persian, and Indian texts. Al-Khwarizmi is right now inventing algebra.",
     desc: "9th–10th century Baghdad — 1 million people, the largest city on Earth. Al-Khwarizmi invented algebra here. This knowledge rescued medieval Europe.",
-    image: img("baghdad,mosque,dome"),
+    image: img("baghdad_golden", "baghdad,mosque,dome"),
   },
   {
     id: "carthage",
@@ -418,7 +481,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "29-year-old Hannibal has just taken command. Carthage, a city of 700,000, prepares for war. Every family is involved. This city will be erased in 146 BC — but for now, it breathes.",
     desc: "Hannibal swore at age 9: 'I will fight Rome until I die.' At 29, he led 40,000 troops and 37 elephants across the Alps.",
-    image: img("tunisia,mediterranean,ruins"),
+    image: img("carthage", "tunisia,mediterranean,ruins"),
   },
   {
     id: "kyoto",
@@ -432,7 +495,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "Tomorrow — the Battle of Sekigahara. 160,000+ samurai will clash. The city is silent. Everyone knows tomorrow's battle will decide Japan's future. Tonight, a lord must be chosen.",
     desc: "October 21, 1600 — Sekigahara, Japan's largest civil war. Tokugawa Ieyasu's victory launched a 265-year dynasty. For samurai, choosing the wrong lord meant death.",
-    image: img("kyoto,temple,japan"),
+    image: img("kyoto", "kyoto,temple,japan"),
   },
   {
     id: "angkor_wat",
@@ -446,7 +509,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "A 400 sq-km complex. 80,000+ people serve it. Angkor — 400,000 souls — is the world's largest city. No European has ever heard of it.",
     desc: "The world's largest religious complex, 400 sq km. In the 12th century, Angkor was the largest city on Earth — nearly 400,000 people.",
-    image: img("angkor,cambodia,temple"),
+    image: img("angkor_wat", "angkor,cambodia,temple"),
   },
   {
     id: "great_zimbabwe",
@@ -460,7 +523,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "Stone walls 11 meters high, built without mortar. 18,000 residents. Gold and ivory trade — including with China. Europe won't hear of this city until 1871.",
     desc: "11-meter stone walls, 18,000 residents. They traded gold and ivory — even with China. Europe didn't know it existed until 1871.",
-    image: img("africa,stone,ruins"),
+    image: img("great_zimbabwe", "africa,stone,ruins"),
   },
   {
     id: "samarcand",
@@ -474,7 +537,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "Samarkand — the world's center of art, science, and wealth. Every merchant between China and Europe passes through. A Georgian envoy has arrived — one word decides war or peace.",
     desc: "Samarkand under Tamerlane — art, science, architecture. Masters brought from across the world, many as captives. The greatest cultural capital of its era.",
-    image: img("samarkand,uzbekistan,tile"),
+    image: img("samarcand", "samarkand,uzbekistan,tile"),
   },
   {
     id: "baghdad_mongols",
@@ -488,7 +551,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "Hulagu Khan's 150,000 troops. 13 days of siege. A 36-day sack begins. The library's books thrown into the Tigris — 'the river ran black with ink.' The Golden Age is over.",
     desc: "February 13, 1258 — Baghdad fell in 13 days. 36 days of looting. 'The river ran black with ink.' 800,000 people. The Islamic Golden Age ended here.",
-    image: img("siege,fire,ruins"),
+    image: img("baghdad_mongols", "siege,fire,ruins"),
   },
   {
     id: "kiev_batu",
@@ -502,7 +565,7 @@ export const ATTRACTIONS: Attraction[] = [
     situation:
       "Batu Khan's 150,000 cavalry. Kyiv — the greatest Slavic city — holds out for 10 days. December 6. The streets go silent. The city is dying.",
     desc: "150,000 Mongol riders. Kyiv held 10 days. The city lay empty for 8 years. A passing merchant in 1246: 'Skulls everywhere, countless bodies on the ground.'",
-    image: img("kyiv,ukraine,ancient"),
+    image: img("kiev_batu", "kyiv,ukraine,ancient"),
   },
 ];
 

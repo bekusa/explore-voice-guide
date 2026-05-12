@@ -45,6 +45,7 @@ export const KA: Partial<Record<UiKey, string>> = {
   "home.featured.sub": "კინემატოგრაფიული გასეირნებები ადგილობრივების მონათხრობით",
   "home.seeAll": "ყველას ნახვა",
   "home.featuredBadge": "გამორჩეული",
+  "ai.generated": "AI-ით გენერირებული შინაარსი",
   "home.openCity": "გახსენი {city}",
   "home.tours.one": "{n} ტური",
   "home.tours.many": "{n} ტური",

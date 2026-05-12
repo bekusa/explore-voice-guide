@@ -434,7 +434,11 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
     <Link
       to="/attraction/$id"
       params={{ id: slug }}
-      search={{ name: museum.name }}
+      // Pass museum.city as the city hint so the attraction page's
+      // hero photo lookup falls into the right country (the Met
+      // straight to New York, the Louvre to Paris, …) instead of
+      // resolving to a Tbilisi-area lookalike.
+      search={{ name: museum.name, city: museum.city }}
       className="group relative h-[170px] w-[240px] flex-shrink-0 overflow-hidden rounded-2xl border border-border bg-card transition-smooth hover:border-primary/50 active:scale-[0.98]"
     >
       <img

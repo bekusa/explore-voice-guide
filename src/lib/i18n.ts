@@ -127,6 +127,11 @@ export const UI_STRINGS = {
   "home.featured.sub": "Cinematic walks, narrated by locals",
   "home.seeAll": "See all",
   "home.featuredBadge": "Featured",
+  // AI Generated Content fineprint shown at the bottom of every
+  // MobileFrame-wrapped page. Transparency note for the LLM-authored
+  // place blurbs, narrated scripts, museum highlights, and Time
+  // Machine simulations.
+  "ai.generated": "AI Generated Content",
   "home.openCity": "Open {city}",
   "home.tours.one": "{n} tour",
   "home.tours.many": "{n} tours",

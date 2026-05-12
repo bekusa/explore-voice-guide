@@ -215,7 +215,7 @@ function SavedRow({ item }: { item: SavedItem }) {
         // in once every flex parent above it is also minable.
         className="flex min-w-0 flex-1 items-center gap-3"
       >
-        <div className="h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-xl bg-secondary">
+        <div className="h-[100px] w-[100px] flex-shrink-0 overflow-hidden rounded-xl bg-secondary">
           {showImg && resolvedSrc ? (
             <img
               src={resolvedSrc}

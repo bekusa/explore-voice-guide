@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
+import { Sparkles } from "lucide-react";
 import { TabBar } from "@/components/TabBar";
+import { useT } from "@/hooks/useT";
 
 /**
  * Mobile-first preview frame. On mobile screens fills viewport.
@@ -59,6 +61,12 @@ export function MobileFrame({
           className={`h-full w-full overflow-y-auto overflow-x-hidden scrollbar-hide ${bottomPad}`}
         >
           {children}
+          {/* AI Generated Content fineprint — sits at the very end of
+              the scrollable area on every page (Beka asked for it
+              everywhere, but ABOVE the menu / floating panel — the
+              bottomPad above already reserves room for both, so
+              this strip lives just above that reserved space). */}
+          <AiGeneratedFooter />
         </div>
         {floatingPanel && (
           <div className={`absolute inset-x-0 z-30 ${hideTabBar ? "bottom-0" : "bottom-[74px]"}`}>
@@ -67,6 +75,24 @@ export function MobileFrame({
         )}
         {!hideTabBar && <TabBar />}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Tiny "AI Generated Content" fineprint anchored at the bottom of the
+ * scrollable area on every MobileFrame-wrapped page. Beka asked for
+ * this everywhere as a transparency note (the place blurbs, narrated
+ * scripts, museum highlights, and Time Machine simulations are all
+ * Claude-generated). Centered, low-key, picks up the user's locale
+ * via `t("ai.generated")`.
+ */
+function AiGeneratedFooter() {
+  const t = useT();
+  return (
+    <div className="mt-6 mb-2 flex items-center justify-center gap-1.5 px-6 text-center text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground/60">
+      <Sparkles className="h-2.5 w-2.5" />
+      <span>{t("ai.generated")}</span>
     </div>
   );
 }

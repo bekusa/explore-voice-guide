@@ -57,11 +57,18 @@ import { getCachedGuide, getCachedGuideData, onGuideCacheChange } from "@/lib/gu
 import { DEFAULT_INTEREST, INTERESTS } from "@/lib/interests";
 import { useT } from "@/hooks/useT";
 
-type Search = { name?: string };
+type Search = { name?: string; city?: string };
 
 export const Route = createFileRoute("/attraction/$id")({
   validateSearch: (search: Record<string, unknown>): Search => ({
     name: typeof search.name === "string" ? search.name : undefined,
+    // City context — passed by /results when the user searched for a
+    // city (e.g. "Bangkok"). The photo lookup uses this to disambiguate
+    // names that resolve to the wrong country without context (Beka
+    // caught "Grand Palace" matching a local restaurant in Tbilisi
+    // because the Google Places key has Tbilisi region bias and we
+    // weren't sending the actual destination city).
+    city: typeof search.city === "string" ? search.city : undefined,
   }),
   head: ({ params }) => {
     const title = unslugAttraction(params.id);
@@ -79,7 +86,7 @@ export const Route = createFileRoute("/attraction/$id")({
 
 function AttractionPage() {
   const { id } = Route.useParams();
-  const { name: searchName } = Route.useSearch();
+  const { name: searchName, city: searchCity } = Route.useSearch();
   const navigate = useNavigate();
   const preferredLanguage = usePreferredLanguage();
   const t = useT();
@@ -188,13 +195,27 @@ function AttractionPage() {
     }
     setHeroPhoto(null);
     let cancelled = false;
-    fetchPlacePhoto(queryName, "en").then((url) => {
+    // Pass the search city through so generic-named places like
+    // "Grand Palace" resolve in the user's actual destination
+    // (Bangkok) rather than the API key's regional default
+    // (Tbilisi). attraction.city wins when the API has it; the
+    // search-bar query is the fallback.
+    const cityHint = (typeof attraction?.city === "string" ? attraction.city : null) || searchCity;
+    fetchPlacePhoto(queryName, "en", cityHint ?? null).then((url) => {
       if (!cancelled && url) setHeroPhoto(url);
     });
     return () => {
       cancelled = true;
     };
-  }, [attraction?.name, attraction?.name_en, attraction?.image_url, fallbackName, language]);
+  }, [
+    attraction?.name,
+    attraction?.name_en,
+    attraction?.image_url,
+    attraction?.city,
+    fallbackName,
+    language,
+    searchCity,
+  ]);
 
   // Museum highlights — only fetched when the attraction matches one
   // of the curated MUSEUMS in src/lib/topMuseums.ts. The match key is

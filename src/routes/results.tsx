@@ -592,7 +592,7 @@ function ResultCard({
         aria-expanded={open}
         className="flex w-full cursor-pointer items-center gap-3 p-3 text-left"
       >
-        <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-xl bg-secondary">
+        <div className="relative h-[100px] w-[100px] shrink-0 overflow-hidden rounded-xl bg-secondary">
           {photo ? (
             <img
               src={photo}
@@ -741,7 +741,12 @@ function ResultCard({
               <Link
                 to="/attraction/$id"
                 params={{ id: slug }}
-                search={{ name: attraction.name }}
+                // Pass the user's city query through so the attraction
+                // page can give the photo lookup a city hint. Without
+                // this, generic names like "Grand Palace" resolved to
+                // a Tbilisi-area restaurant because the Google Places
+                // key has Tbilisi region bias.
+                search={{ name: attraction.name, city: cityContext }}
                 onClick={(e) => e.stopPropagation()}
                 className="flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-gold px-2 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02]"
               >
@@ -766,7 +771,7 @@ function SkeletonList() {
           style={{ animation: `float-up 0.4s ${i * 0.06}s var(--transition-smooth) both` }}
         >
           <div className="flex items-center gap-3 p-3">
-            <div className="h-[72px] w-[72px] shrink-0 animate-pulse rounded-xl bg-secondary" />
+            <div className="h-[100px] w-[100px] shrink-0 animate-pulse rounded-xl bg-secondary" />
             <div className="flex flex-1 flex-col gap-2 pt-1">
               <div className="h-3.5 w-3/5 animate-pulse rounded bg-secondary" />
               <div className="h-3 w-2/5 animate-pulse rounded bg-secondary/70" />
