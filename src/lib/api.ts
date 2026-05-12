@@ -275,13 +275,23 @@ function tolerantParse<T>(text: string): T {
 }
 
 /**
- * Hard timeout for every postJSON call. Picked at 30 s because the
- * heaviest call we make (Claude Sonnet generating a full Lokali
- * guide with key facts + tips + stops) clocks in around 18-22 s on
- * a warm Cloudflare Worker; double that gives us margin on cold
- * starts and slow mobile networks. Anything that runs past 30 s
- * we treat as gone — the LoadingMessages cycle was effectively
- * spinning forever before.
+ * Hard timeout for every postJSON call. Originally set to 30 s in
+ * Phase 4, but that turned out to silently cut off the heaviest
+ * endpoint — `/api/guide` calls Sonnet with maxTokens=8192 and a
+ * structured response (script + key_facts + tips + look_for +
+ * nearby_suggestions). Sonnet's non-streaming Messages API returns
+ * the WHOLE payload at once, so for a full Lokali guide on a complex
+ * attraction the call routinely runs 30-50 s. The 30-s ceiling
+ * killed those mid-generation and the attraction page rendered
+ * About + Story (cheap, from /api/attractions) but no guide chips,
+ * tips, or stops — Beka caught it: "მხოლოდ About this place და
+ * The Story მოაქვს მარტო."
+ *
+ * 90 s gives Sonnet comfortable margin for the worst case (~70 s
+ * generation on a cold Cloudflare Worker) while still bounding
+ * runaway requests. Anything past 90 s is genuinely gone — the
+ * LoadingMessages cycle still has a hard stop, but it's far enough
+ * out that legitimate Sonnet responses always land first.
  *
  * Why a constant rather than per-caller: every fetch helper in this
  * file (fetchAttractions, fetchGuideData, fetchMoreAttractions,
@@ -289,7 +299,7 @@ function tolerantParse<T>(text: string): T {
  * so one ceiling covers all of them. Caller can still race its own
  * AbortController on top if it needs an earlier bail.
  */
-const REQUEST_TIMEOUT_MS = 30_000;
+const REQUEST_TIMEOUT_MS = 90_000;
 
 async function postJSON<T>(url: string, body: unknown): Promise<T> {
   // Wire up an AbortController so the fetch actually stops on timeout
