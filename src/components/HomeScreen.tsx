@@ -166,9 +166,84 @@ export function HomeScreen() {
     e.preventDefault();
     const q = query.trim();
     if (!q) return;
-    // Send the query straight to the n8n-backed /results page so any city,
-    // country or landmark resolves through the Lokali Attractions workflow.
     navigate({ to: "/results", search: { q } });
+  }
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioCacheRef = useRef<Map<string, string>>(new Map());
+  const [audioState, setAudioState] = useState<"idle" | "loading" | "playing">("idle");
+  const [audioError, setAudioError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    setAudioState("idle");
+    setAudioError(null);
+  }, [heroDest.slug]);
+
+  useEffect(() => {
+    const cache = audioCacheRef.current;
+    return () => {
+      audioRef.current?.pause();
+      cache.forEach((url) => URL.revokeObjectURL(url));
+      cache.clear();
+    };
+  }, []);
+
+  async function toggleHeroAudio() {
+    setAudioError(null);
+    if (audioState === "playing" && audioRef.current) {
+      audioRef.current.pause();
+      setAudioState("idle");
+      return;
+    }
+    if (audioState === "loading") return;
+
+    const cacheKey = `${heroDest.slug}::${currentLang.code}`;
+    const cached = audioCacheRef.current.get(cacheKey);
+
+    const playUrl = (url: string) => {
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.addEventListener("ended", () => setAudioState("idle"));
+      audio.addEventListener("error", () => {
+        setAudioState("idle");
+        setAudioError("Couldn't play audio");
+      });
+      audio
+        .play()
+        .then(() => setAudioState("playing"))
+        .catch(() => {
+          setAudioState("idle");
+          setAudioError("Couldn't play audio");
+        });
+    };
+
+    if (cached) {
+      playUrl(cached);
+      return;
+    }
+
+    setAudioState("loading");
+    try {
+      const script = heroBlurb || heroDest.blurb;
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ script, language: currentLang.code }),
+      });
+      if (!res.ok) throw new Error(`TTS failed (${res.status})`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      audioCacheRef.current.set(cacheKey, url);
+      playUrl(url);
+    } catch (err) {
+      console.error("hero TTS error", err);
+      setAudioState("idle");
+      setAudioError("Audio preview unavailable");
+    }
   }
 
   return (
