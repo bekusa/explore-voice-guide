@@ -22,6 +22,7 @@ import { InlineAudioPanel } from "@/components/InlineAudioPanel";
 import { MobileFrame } from "@/components/MobileFrame";
 import type { UiKey } from "@/lib/i18n";
 import { DESTINATIONS, type Destination } from "@/lib/destinations";
+import { LANGUAGES } from "@/lib/languages";
 import { HOME_CITIES } from "@/lib/cityList";
 import { CityCard } from "@/components/CityCard";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
@@ -63,6 +64,27 @@ export function HomeScreen() {
   const selected = useSelectedDestination();
   const t = useT();
   const lang = usePreferredLanguage();
+  // Resolve the user's current language entry so the Home top bar
+  // can show a flag + native name pill. Beka caught the Home pill
+  // defaulting to the Saudi 🇸🇦 flag instead of English — three
+  // causes lined up:
+  //   1. The LANGUAGES array is sorted alphabetically by English
+  //      name, so Arabic is the first entry and any "fall through
+  //      to LANGUAGES[0]" branch lands there.
+  //   2. The prefix match (e.g. lang="en" → l.code.split("-")[0]
+  //      === "en") returns the FIRST English row in alphabetical
+  //      order — "English (UK)" beats "English (US)" by ASCII.
+  //   3. Anonymous users with no profile / no stored preference
+  //      end up at lang="en" specifically, hitting #2.
+  // Fix: when the prefix is "en" prefer en-US explicitly; the
+  // absolute fallback is en-US, never LANGUAGES[0].
+  const prefix = lang.split("-")[0].toLowerCase();
+  const activeLang =
+    LANGUAGES.find((l) => l.code.toLowerCase() === lang.toLowerCase()) ??
+    (prefix === "en" ? LANGUAGES.find((l) => l.code === "en-US") : undefined) ??
+    LANGUAGES.find((l) => l.code.split("-")[0].toLowerCase() === prefix) ??
+    LANGUAGES.find((l) => l.code === "en-US") ??
+    LANGUAGES[0];
   const [query, setQuery] = useState("");
   const [heroIdx, setHeroIdx] = useState(0);
   const [mounted, setMounted] = useState(false);
@@ -184,12 +206,22 @@ export function HomeScreen() {
               >
                 <SettingsIcon className="h-4 w-4" />
               </Link>
+              {/* Language switcher — wider pill with flag + native
+                  name so the user can see at a glance which language
+                  is active. The bare Globe icon was easy to miss
+                  (Beka caught it doing nothing in the field). Pill
+                  keeps the same height as the neighbouring icon
+                  buttons but takes a flexible width so longer
+                  natives like "Português (BR)" still fit. */}
               <Link
                 to="/language"
                 aria-label={t("nav.language")}
-                className="grid h-10 w-10 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
+                className="inline-flex h-10 max-w-[140px] items-center gap-1.5 rounded-full border border-foreground/15 bg-background/40 px-3 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
               >
-                <Globe className="h-4 w-4" />
+                <span className="text-[15px] leading-none">{activeLang.flag}</span>
+                <span className="truncate text-[11px] font-semibold leading-none">
+                  {activeLang.native}
+                </span>
               </Link>
               <Link
                 to="/notifications"
@@ -295,20 +327,26 @@ export function HomeScreen() {
             )}
           </form>
 
-          {/* "Available in every language" badge — confidence-building
-              tagline that surfaces Lokali's multi-language story right
-              under the search pill. Beka asked for this so the user
-              sees the value proposition before they scroll. Both
-              strings are pre-translated per locale (home.everyLang.*)
-              so we never hit the translation gateway for tagline copy. */}
-          <div className="mt-3.5 rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3 text-center">
-            <p className="inline-flex items-center justify-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary">
-              <Globe className="h-3 w-3" />
-              {t("home.everyLang.title")}
-            </p>
-            <p className="mt-1.5 text-[12px] leading-[1.55] text-foreground/75">
-              {t("home.everyLang.sub")}
-            </p>
+          {/* "Available in every language" benefit card — redesigned
+              from the original primary-tinted alert (Beka caught it
+              reading as a warning instead of a feature). New visual:
+              gold gradient sparkle chip on the left + warm prose on
+              the right, no uppercase / no border so it feels like a
+              positive sticker rather than a notice. Same i18n keys
+              (home.everyLang.title / sub) so all 34 locales still
+              cover it without re-translating. */}
+          <div className="mt-3.5 flex items-start gap-3 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent px-4 py-3.5">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow">
+              <Sparkles className="h-4 w-4" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[13.5px] font-semibold leading-tight text-foreground">
+                {t("home.everyLang.title")}
+              </p>
+              <p className="mt-1 text-[11.5px] leading-[1.5] text-muted-foreground">
+                {t("home.everyLang.sub")}
+              </p>
+            </div>
           </div>
         </section>
 
@@ -448,6 +486,10 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
         onError={() => setPhoto(museum.image)}
         className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
       />
+      {/* Light-theme darkening wash — same trick as the hero photo
+          (Beka caught the cards reading too bright on daylight). The
+          dark theme keeps the photo at full punch via opacity 0. */}
+      <div className="pointer-events-none absolute inset-0 bg-black/0 [.light_&]:bg-black/30" />
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-background/10" />
       <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-primary/50 bg-background/55 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-md">
         #{rank}
@@ -486,6 +528,8 @@ function TimeMachineMomentCard({
         loading="lazy"
         className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
       />
+      {/* Light-theme darkening wash, same trick as the museum card. */}
+      <div className="pointer-events-none absolute inset-0 bg-black/0 [.light_&]:bg-black/30" />
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-background/10" />
 
       {/* Rank pill */}
