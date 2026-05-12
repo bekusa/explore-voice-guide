@@ -219,13 +219,41 @@ export function HomeScreen() {
               >
                 <SettingsIcon className="h-4 w-4" />
               </Link>
-              <Link
-                to="/language"
-                aria-label={t("nav.language")}
-                className="grid h-10 w-10 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
-              >
-                <Globe className="h-4 w-4" />
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  aria-label={t("nav.language")}
+                  className="inline-flex h-10 items-center gap-1.5 rounded-full border border-foreground/15 bg-background/40 px-3 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
+                >
+                  <span className="text-base leading-none">{currentLang.flag}</span>
+                  <span className="text-[11px] font-bold uppercase tracking-[0.12em]">
+                    {currentLang.code.split("-")[0]}
+                  </span>
+                  <ChevronDown className="h-3 w-3 opacity-60" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="z-50 max-h-[320px] w-56 overflow-y-auto bg-popover"
+                >
+                  {LANGUAGES.map((l) => (
+                    <DropdownMenuItem
+                      key={l.code}
+                      onSelect={() => setStoredLang(l.code)}
+                      className="flex items-center gap-2"
+                    >
+                      <span className="text-base">{l.flag}</span>
+                      <span className="flex-1 truncate text-sm">{l.native}</span>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        {l.code.split("-")[0]}
+                      </span>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuItem asChild>
+                    <Link to="/language" className="text-xs text-primary">
+                      {t("nav.language")} →
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Link
                 to="/notifications"
                 aria-label={t("nav.notifications")}
