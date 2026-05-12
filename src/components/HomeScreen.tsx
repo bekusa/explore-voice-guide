@@ -51,9 +51,76 @@ const TIME_MACHINE_TOP_10 = [...TIME_MACHINE_ATTRACTIONS]
   .sort((a, b) => b.score - a.score)
   .slice(0, 10);
 
-const HERO_ROTATION = ["tbilisi", "rome", "kyoto", "lisbon", "marrakech"]
-  .map((slug) => DESTINATIONS.find((d) => d.slug === slug))
-  .filter((d): d is Destination => !!d);
+type HeroSlide = {
+  slug: string;
+  city: string;
+  country: string;
+  tagline: string; // "Lokali|City"
+  blurb: string;
+  hero: string;
+};
+
+function makeSlide(
+  slug: string,
+  city: string,
+  country: string,
+  italic: string,
+  blurb: string,
+  fallbackHero: string,
+): HeroSlide {
+  const existing = getDestination(slug);
+  return {
+    slug,
+    city,
+    country,
+    tagline: `Lokali|${italic}`,
+    blurb: existing?.blurb ?? blurb,
+    hero: existing?.hero ?? fallbackHero,
+  };
+}
+
+const HERO_ROTATION: HeroSlide[] = [
+  makeSlide(
+    "tbilisi",
+    "Tbilisi",
+    "Georgia",
+    "Old Tbilisi",
+    "From sulfur baths and crooked balconies to the chants of Sioni — a cinematic walk through the soul of the old town.",
+    "https://images.unsplash.com/photo-1565009100-9e3a9d4b9e0e?auto=format&fit=crop&w=1280&q=80",
+  ),
+  makeSlide(
+    "paris",
+    "Paris",
+    "France",
+    "Romantic Paris",
+    "From Haussmann boulevards to Seine-side bookstalls — the city of light, captured one cinematic frame at a time.",
+    "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1280&q=80",
+  ),
+  makeSlide(
+    "rome",
+    "Rome",
+    "Italy",
+    "Eternal Rome",
+    "Through the Forum's ghosts, baroque fountains and trastevere supper tables — the city that never quite stops being itself.",
+    "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1280&q=80",
+  ),
+  makeSlide(
+    "bangkok",
+    "Bangkok",
+    "Thailand",
+    "Neon Bangkok",
+    "Golden temples, longtail boats on the Chao Phraya and street kitchens steaming until dawn — Bangkok at full voltage.",
+    "https://images.unsplash.com/photo-1508009603885-50cf7c579365?auto=format&fit=crop&w=1280&q=80",
+  ),
+  makeSlide(
+    "london",
+    "London",
+    "United Kingdom",
+    "Storied London",
+    "Royal parks, Soho lanes and the slow tide of the Thames — a thousand years of stories told between Tube stops.",
+    "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=1280&q=80",
+  ),
+];
 
 export function HomeScreen() {
   const navigate = useNavigate();
