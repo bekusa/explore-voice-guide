@@ -173,32 +173,15 @@ export function HomeScreen() {
           <div className="absolute inset-0 bg-gradient-hero" />
           <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background/60 to-transparent" />
 
-          {/* top bar — trimmed top-12 → top-7 to match the rest of
-              the app's header padding and close the awkward gap Beka
-              flagged on mobile (city pill truncated, small empty
-              strip above the icon row). */}
-          <div className="absolute left-5 right-5 top-7 z-[5] flex items-start justify-between">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-primary">
-                {t("home.whereNext")}
-                {!online && (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/15 px-1.5 py-0.5 text-[9px] tracking-[0.16em] text-accent">
-                    <WifiOff className="h-2.5 w-2.5" /> {t("home.offline")}
-                  </span>
-                )}
-              </div>
-              <Link
-                to="/destinations"
-                className="mt-1.5 inline-flex max-w-full items-center gap-1.5 truncate text-[15px] font-semibold text-foreground transition-smooth hover:text-primary"
-              >
-                <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
-                <span className="truncate">
-                  {selectedCity}, {selectedCountry}
-                </span>
-                <ChevronDown className="h-3 w-3 shrink-0 opacity-60" />
-              </Link>
-            </div>
-            <div className="flex shrink-0 gap-2">
+          {/* Top bar — two stacked rows now (was one). Row 1 is the
+              right-aligned icon strip (Settings, language pill,
+              Notifications); Row 2 sits underneath with the
+              "Where next?" eyebrow + city pill on its own line.
+              Beka caught the language pill widening enough to
+              squeeze the city out — putting them on separate rows
+              gives both their full width on every locale. */}
+          <div className="absolute left-5 right-5 top-7 z-[5] flex flex-col gap-3">
+            <div className="flex shrink-0 justify-end gap-2">
               <Link
                 to="/settings"
                 aria-label={t("nav.settings")}
@@ -234,6 +217,30 @@ export function HomeScreen() {
                     {unread > 9 ? "9+" : unread}
                   </span>
                 )}
+              </Link>
+            </div>
+
+            {/* Row 2 — "Where next?" eyebrow + city pill on its own
+                line so the city has the full bar width. The offline
+                chip lives next to the eyebrow when applicable. */}
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-primary">
+                {t("home.whereNext")}
+                {!online && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/15 px-1.5 py-0.5 text-[9px] tracking-[0.16em] text-accent">
+                    <WifiOff className="h-2.5 w-2.5" /> {t("home.offline")}
+                  </span>
+                )}
+              </div>
+              <Link
+                to="/destinations"
+                className="mt-1.5 inline-flex max-w-full items-center gap-1.5 truncate text-[15px] font-semibold text-foreground transition-smooth hover:text-primary"
+              >
+                <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
+                <span className="truncate">
+                  {selectedCity}, {selectedCountry}
+                </span>
+                <ChevronDown className="h-3 w-3 shrink-0 opacity-60" />
               </Link>
             </div>
           </div>
