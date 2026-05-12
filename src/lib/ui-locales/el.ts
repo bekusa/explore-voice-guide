@@ -114,6 +114,8 @@ export const EL: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Η ομιλία δεν υποστηρίζεται σε αυτή τη συσκευή",
   "toast.couldNotLoadGuide": "Ο οδηγός δεν φορτώθηκε",
   "toast.tryAgainPlease": "Δοκίμασε ξανά παρακαλώ.",
+  "toast.voiceUnavailableTitle": "Η φωνή δεν είναι ακόμη διαθέσιμη για αυτή τη γλώσσα",
+  "toast.voiceUnavailableHint": "Δοκίμασε να αλλάξεις σε αγγλικά ή άλλη υποστηριζόμενη γλώσσα.",
   "toast.guideOfflineDesc":
     "Αυτός ο οδηγός δεν έχει κατέβει ακόμα. Συνδέσου μία φορά για να αποθηκευτεί.",
   "toast.couldNotLoadAttractions": "Τα αξιοθέατα δεν φορτώθηκαν",
@@ -276,7 +278,8 @@ export const EL: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "Μηχανή του Χρόνου",
-  "tm.brand": "Lokali · Μηχανή του Χρόνου",
+  "tm.brand": "AI Μηχανή του Χρόνου",
+  "tm.refresh": "Ανανέωση",
   "tm.travelThrough": "Ταξίδεψε μέσα από τον",
   "tm.time": "χρόνο",
   "tm.subtitle": "Βυθιστικές προσομοιώσεις — μπες μέσα στη στιγμή, γίνε ο μάρτυρας.",

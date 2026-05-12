@@ -113,6 +113,8 @@ export const BN: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "এই ডিভাইসে স্পিচ সমর্থিত নয়",
   "toast.couldNotLoadGuide": "গাইড লোড করা যায়নি",
   "toast.tryAgainPlease": "অনুগ্রহ করে আবার চেষ্টা করুন।",
+  "toast.voiceUnavailableTitle": "এই ভাষার জন্য ভয়েস এখনো উপলব্ধ নেই",
+  "toast.voiceUnavailableHint": "ইংরেজি বা অন্য সমর্থিত ভাষায় স্যুইচ করে দেখুন।",
   "toast.guideOfflineDesc": "এই গাইড এখনো ডাউনলোড হয়নি। ক্যাশের জন্য একবার সংযুক্ত হোন।",
   "toast.couldNotLoadAttractions": "দর্শনীয় স্থান লোড করা যায়নি",
   "toast.allSet": "সব প্রস্তুত",
@@ -267,7 +269,8 @@ export const BN: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "টাইম মেশিন",
-  "tm.brand": "Lokali · টাইম মেশিন",
+  "tm.brand": "AI টাইম মেশিন",
+  "tm.refresh": "রিফ্রেশ",
   "tm.travelThrough": "ভ্রমণ করুন",
   "tm.time": "সময়ের ভেতর",
   "tm.subtitle": "গভীর সিমুলেশন — মুহূর্তের ভেতরে পা রাখুন, সাক্ষী হোন।",

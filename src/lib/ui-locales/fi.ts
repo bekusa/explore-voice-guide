@@ -113,6 +113,8 @@ export const FI: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Puhetta ei tueta tällä laitteella",
   "toast.couldNotLoadGuide": "Opasta ei voitu ladata",
   "toast.tryAgainPlease": "Yritä uudelleen.",
+  "toast.voiceUnavailableTitle": "Ääni ei ole vielä saatavilla tälle kielelle",
+  "toast.voiceUnavailableHint": "Vaihda englantiin tai johonkin muuhun tuettuun kieleen.",
   "toast.guideOfflineDesc":
     "Tätä opasta ei ole vielä ladattu. Yhdistä kerran tallentaaksesi sen välimuistiin.",
   "toast.couldNotLoadAttractions": "Nähtävyyksiä ei voitu ladata",
@@ -267,7 +269,8 @@ export const FI: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "Aikakone",
-  "tm.brand": "Lokali · Aikakone",
+  "tm.brand": "AI Aikakone",
+  "tm.refresh": "Päivitä",
   "tm.travelThrough": "Matkusta läpi",
   "tm.time": "ajan",
   "tm.subtitle": "Mukaansatempaavia simulaatioita — astu hetkeen, ole todistaja.",

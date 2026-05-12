@@ -113,6 +113,9 @@ export const NL: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Spraak niet ondersteund op dit apparaat",
   "toast.couldNotLoadGuide": "Kon de gids niet laden",
   "toast.tryAgainPlease": "Probeer het opnieuw.",
+  "toast.voiceUnavailableTitle": "Stem nog niet beschikbaar voor deze taal",
+  "toast.voiceUnavailableHint":
+    "Probeer over te schakelen naar Engels of een andere ondersteunde taal.",
   "toast.guideOfflineDesc":
     "Deze gids is nog niet gedownload. Verbind één keer om hem in cache te zetten.",
   "toast.couldNotLoadAttractions": "Kon bezienswaardigheden niet laden",
@@ -267,7 +270,8 @@ export const NL: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "Tijdmachine",
-  "tm.brand": "Lokali · Tijdmachine",
+  "tm.brand": "AI Tijdmachine",
+  "tm.refresh": "Vernieuwen",
   "tm.travelThrough": "Reis door de",
   "tm.time": "tijd",
   "tm.subtitle": "Meeslepende simulaties — stap het moment binnen, word de getuige.",

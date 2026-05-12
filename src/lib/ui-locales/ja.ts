@@ -113,6 +113,8 @@ export const JA: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "このデバイスでは音声がサポートされていません",
   "toast.couldNotLoadGuide": "ガイドを読み込めませんでした",
   "toast.tryAgainPlease": "もう一度お試しください。",
+  "toast.voiceUnavailableTitle": "この言語の音声はまだ利用できません",
+  "toast.voiceUnavailableHint": "英語または他の対応言語に切り替えてみてください。",
   "toast.guideOfflineDesc":
     "このガイドはまだダウンロードされていません。一度接続してキャッシュしてください。",
   "toast.couldNotLoadAttractions": "観光スポットを読み込めませんでした",
@@ -267,7 +269,8 @@ export const JA: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "タイムマシン",
-  "tm.brand": "Lokali · タイムマシン",
+  "tm.brand": "AI タイムマシン",
+  "tm.refresh": "更新",
   "tm.travelThrough": "旅をする —",
   "tm.time": "時を超えて",
   "tm.subtitle": "没入型シミュレーション — その瞬間に踏み込み、目撃者になろう。",

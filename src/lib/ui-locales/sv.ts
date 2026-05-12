@@ -113,6 +113,8 @@ export const SV: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Tal stöds inte på den här enheten",
   "toast.couldNotLoadGuide": "Kunde inte ladda guiden",
   "toast.tryAgainPlease": "Försök igen.",
+  "toast.voiceUnavailableTitle": "Röst är ännu inte tillgänglig för det här språket",
+  "toast.voiceUnavailableHint": "Försök byta till engelska eller ett annat språk som stöds.",
   "toast.guideOfflineDesc":
     "Den här guiden är inte nedladdad ännu. Anslut en gång för att cacha den.",
   "toast.couldNotLoadAttractions": "Kunde inte ladda sevärdheter",
@@ -267,7 +269,8 @@ export const SV: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "Tidsmaskin",
-  "tm.brand": "Lokali · Tidsmaskin",
+  "tm.brand": "AI Tidsmaskin",
+  "tm.refresh": "Uppdatera",
   "tm.travelThrough": "Res genom",
   "tm.time": "tiden",
   "tm.subtitle": "Uppslukande simuleringar — kliv in i ögonblicket, bli vittnet.",

@@ -113,6 +113,9 @@ export const RU: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Речь не поддерживается на этом устройстве",
   "toast.couldNotLoadGuide": "Не удалось загрузить аудиогид",
   "toast.tryAgainPlease": "Пожалуйста, попробуй ещё раз.",
+  "toast.voiceUnavailableTitle": "Голос для этого языка пока недоступен",
+  "toast.voiceUnavailableHint":
+    "Попробуй переключиться на английский или другой поддерживаемый язык.",
   "toast.guideOfflineDesc": "Этот аудиогид ещё не скачан. Подключись разок, чтобы сохранить его.",
   "toast.couldNotLoadAttractions": "Не удалось загрузить места",
   "toast.allSet": "Готово",
@@ -264,7 +267,8 @@ export const RU: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "Машина времени",
-  "tm.brand": "Lokali · Машина времени",
+  "tm.brand": "AI Машина времени",
+  "tm.refresh": "Обновить",
   "tm.travelThrough": "Путешествуй сквозь",
   "tm.time": "время",
   "tm.subtitle": "Погружающие симуляции — войди в момент, стань свидетелем.",

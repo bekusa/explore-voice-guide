@@ -113,6 +113,8 @@ export const CS: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Řeč není na tomto zařízení podporována",
   "toast.couldNotLoadGuide": "Nepodařilo se načíst průvodce",
   "toast.tryAgainPlease": "Zkus to znovu, prosím.",
+  "toast.voiceUnavailableTitle": "Hlas pro tento jazyk zatím není k dispozici",
+  "toast.voiceUnavailableHint": "Zkus přepnout na angličtinu nebo jiný podporovaný jazyk.",
   "toast.guideOfflineDesc": "Tento průvodce ještě není stažený. Připoj se jednou a ulož ho.",
   "toast.couldNotLoadAttractions": "Nepodařilo se načíst místa",
   "toast.allSet": "Hotovo",
@@ -264,7 +266,8 @@ export const CS: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "Stroj času",
-  "tm.brand": "Lokali · Stroj času",
+  "tm.brand": "AI Stroj času",
+  "tm.refresh": "Obnovit",
   "tm.travelThrough": "Cestuj skrz",
   "tm.time": "čas",
   "tm.subtitle": "Vtahující simulace — vstup do okamžiku, staň se svědkem.",

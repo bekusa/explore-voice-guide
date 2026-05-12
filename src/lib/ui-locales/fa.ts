@@ -113,6 +113,8 @@ export const FA: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "گفتار در این دستگاه پشتیبانی نمی‌شود",
   "toast.couldNotLoadGuide": "بارگذاری راهنما ناموفق بود",
   "toast.tryAgainPlease": "لطفاً دوباره تلاش کنید.",
+  "toast.voiceUnavailableTitle": "صدا برای این زبان هنوز در دسترس نیست",
+  "toast.voiceUnavailableHint": "سعی کنید به انگلیسی یا زبان پشتیبانی‌شده دیگری تغییر دهید.",
   "toast.guideOfflineDesc": "این راهنما هنوز دانلود نشده. یک‌بار آنلاین شوید تا ذخیره شود.",
   "toast.couldNotLoadAttractions": "بارگذاری دیدنی‌ها ناموفق بود",
   "toast.allSet": "همه چیز آماده است",
@@ -264,7 +266,8 @@ export const FA: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "ماشین زمان",
-  "tm.brand": "Lokali · ماشین زمان",
+  "tm.brand": "AI ماشین زمان",
+  "tm.refresh": "بازخوانی",
   "tm.travelThrough": "سفر کنید در",
   "tm.time": "زمان",
   "tm.subtitle": "شبیه‌سازی‌های غرق‌کننده — به لحظه قدم بگذارید، شاهد باشید.",

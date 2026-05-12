@@ -113,6 +113,8 @@ export const RO: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Sinteza vocală nu e suportată pe acest dispozitiv",
   "toast.couldNotLoadGuide": "Ghidul nu a putut fi încărcat",
   "toast.tryAgainPlease": "Te rog încearcă din nou.",
+  "toast.voiceUnavailableTitle": "Vocea nu este încă disponibilă pentru această limbă",
+  "toast.voiceUnavailableHint": "Încearcă să comuți pe engleză sau pe altă limbă acceptată.",
   "toast.guideOfflineDesc":
     "Acest ghid nu e încă descărcat. Conectează-te o dată pentru a-l salva.",
   "toast.couldNotLoadAttractions": "Atracțiile nu au putut fi încărcate",
@@ -267,7 +269,8 @@ export const RO: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "Mașina timpului",
-  "tm.brand": "Lokali · Mașina timpului",
+  "tm.brand": "AI Mașina timpului",
+  "tm.refresh": "Reîmprospătează",
   "tm.travelThrough": "Călătorește prin",
   "tm.time": "timp",
   "tm.subtitle": "Simulări captivante — pășește în clipă, devino martorul.",

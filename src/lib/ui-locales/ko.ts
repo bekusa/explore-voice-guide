@@ -113,6 +113,8 @@ export const KO: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "이 기기는 음성을 지원하지 않아요",
   "toast.couldNotLoadGuide": "가이드를 불러올 수 없었어요",
   "toast.tryAgainPlease": "다시 시도해 주세요.",
+  "toast.voiceUnavailableTitle": "이 언어의 음성은 아직 사용할 수 없습니다",
+  "toast.voiceUnavailableHint": "영어나 다른 지원되는 언어로 전환해 보세요.",
   "toast.guideOfflineDesc": "이 가이드는 아직 다운로드되지 않았어요. 한 번 연결해 캐시하세요.",
   "toast.couldNotLoadAttractions": "명소를 불러올 수 없었어요",
   "toast.allSet": "준비 완료",
@@ -264,7 +266,8 @@ export const KO: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "타임머신",
-  "tm.brand": "Lokali · 타임머신",
+  "tm.brand": "AI 타임머신",
+  "tm.refresh": "새로고침",
   "tm.travelThrough": "여행해요 —",
   "tm.time": "시간 너머로",
   "tm.subtitle": "몰입형 시뮬레이션 — 그 순간 속으로 들어가 목격자가 되어보세요.",

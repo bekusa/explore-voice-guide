@@ -113,6 +113,8 @@ export const MS: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Pertuturan tidak disokong pada peranti ini",
   "toast.couldNotLoadGuide": "Tidak dapat memuatkan panduan",
   "toast.tryAgainPlease": "Sila cuba lagi.",
+  "toast.voiceUnavailableTitle": "Suara belum tersedia untuk bahasa ini",
+  "toast.voiceUnavailableHint": "Cuba tukar ke bahasa Inggeris atau bahasa lain yang disokong.",
   "toast.guideOfflineDesc":
     "Panduan ini belum dimuat turun. Sambungkan sekali untuk meng-cache-nya.",
   "toast.couldNotLoadAttractions": "Tidak dapat memuatkan tarikan",
@@ -270,7 +272,8 @@ export const MS: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "Mesin Masa",
-  "tm.brand": "Lokali · Mesin Masa",
+  "tm.brand": "AI Mesin Masa",
+  "tm.refresh": "Muat semula",
   "tm.travelThrough": "Mengembara menerusi",
   "tm.time": "masa",
   "tm.subtitle": "Simulasi mendalam — masuki detik, jadilah saksi.",

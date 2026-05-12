@@ -113,6 +113,8 @@ export const HU: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "A beszéd nem támogatott ezen az eszközön",
   "toast.couldNotLoadGuide": "Nem sikerült betölteni a vezetőt",
   "toast.tryAgainPlease": "Kérlek próbáld újra.",
+  "toast.voiceUnavailableTitle": "A hang még nem érhető el ehhez a nyelvhez",
+  "toast.voiceUnavailableHint": "Próbálj meg angolra vagy egy másik támogatott nyelvre váltani.",
   "toast.guideOfflineDesc": "Ez a vezető még nincs letöltve. Csatlakozz egyszer a mentéshez.",
   "toast.couldNotLoadAttractions": "Nem sikerült betölteni a látnivalókat",
   "toast.allSet": "Minden kész",
@@ -266,7 +268,8 @@ export const HU: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "Időgép",
-  "tm.brand": "Lokali · Időgép",
+  "tm.brand": "AI Időgép",
+  "tm.refresh": "Frissítés",
   "tm.travelThrough": "Utazz át az",
   "tm.time": "időn",
   "tm.subtitle": "Magával ragadó szimulációk — lépj be a pillanatba, légy a tanú.",

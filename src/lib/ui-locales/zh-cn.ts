@@ -113,6 +113,8 @@ export const ZH_CN: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "此设备不支持语音",
   "toast.couldNotLoadGuide": "无法加载导览",
   "toast.tryAgainPlease": "请重试。",
+  "toast.voiceUnavailableTitle": "此语言的语音暂不可用",
+  "toast.voiceUnavailableHint": "请尝试切换到英语或其他支持的语言。",
   "toast.guideOfflineDesc": "此导览尚未下载。请连接一次以缓存。",
   "toast.couldNotLoadAttractions": "无法加载景点",
   "toast.allSet": "一切就绪",
@@ -261,7 +263,8 @@ export const ZH_CN: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "时光机",
-  "tm.brand": "Lokali · 时光机",
+  "tm.brand": "AI 时光机",
+  "tm.refresh": "刷新",
   "tm.travelThrough": "穿越",
   "tm.time": "时空",
   "tm.subtitle": "沉浸式模拟 — 走进那个瞬间,成为见证者。",

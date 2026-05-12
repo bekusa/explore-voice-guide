@@ -113,6 +113,8 @@ export const HE: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "הדיבור אינו נתמך במכשיר זה",
   "toast.couldNotLoadGuide": "טעינת המדריך נכשלה",
   "toast.tryAgainPlease": "נסו שוב, בבקשה.",
+  "toast.voiceUnavailableTitle": "קול עדיין לא זמין בשפה הזו",
+  "toast.voiceUnavailableHint": "נסו לעבור לאנגלית או לשפה נתמכת אחרת.",
   "toast.guideOfflineDesc": "המדריך עדיין לא הורד. התחברו פעם אחת כדי לשמור אותו.",
   "toast.couldNotLoadAttractions": "טעינת האטרקציות נכשלה",
   "toast.allSet": "הכל מוכן",
@@ -261,7 +263,8 @@ export const HE: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "מכונת הזמן",
-  "tm.brand": "Lokali · מכונת הזמן",
+  "tm.brand": "AI מכונת הזמן",
+  "tm.refresh": "רענן",
   "tm.travelThrough": "צאו למסע דרך",
   "tm.time": "הזמן",
   "tm.subtitle": "סימולציות עוצמתיות — היכנסו לרגע, היו העדים.",

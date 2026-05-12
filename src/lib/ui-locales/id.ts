@@ -113,6 +113,8 @@ export const ID: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Suara tidak didukung di perangkat ini",
   "toast.couldNotLoadGuide": "Tidak bisa memuat pemandu",
   "toast.tryAgainPlease": "Silakan coba lagi.",
+  "toast.voiceUnavailableTitle": "Suara belum tersedia untuk bahasa ini",
+  "toast.voiceUnavailableHint": "Coba beralih ke bahasa Inggris atau bahasa lain yang didukung.",
   "toast.guideOfflineDesc": "Pemandu ini belum diunduh. Sambungkan sekali untuk meng-cache-nya.",
   "toast.couldNotLoadAttractions": "Tidak bisa memuat atraksi",
   "toast.allSet": "Semua siap",
@@ -267,7 +269,8 @@ export const ID: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "Mesin Waktu",
-  "tm.brand": "Lokali · Mesin Waktu",
+  "tm.brand": "AI Mesin Waktu",
+  "tm.refresh": "Muat ulang",
   "tm.travelThrough": "Bertualang menembus",
   "tm.time": "waktu",
   "tm.subtitle": "Simulasi mendalam — masuki momen, jadilah saksi.",

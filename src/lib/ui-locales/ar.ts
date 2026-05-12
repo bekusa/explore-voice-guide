@@ -113,6 +113,8 @@ export const AR: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "النطق غير مدعوم على هذا الجهاز",
   "toast.couldNotLoadGuide": "تعذّر تحميل الدليل",
   "toast.tryAgainPlease": "يرجى المحاولة مجدداً.",
+  "toast.voiceUnavailableTitle": "الصوت غير متاح لهذه اللغة حتى الآن",
+  "toast.voiceUnavailableHint": "حاول التبديل إلى الإنجليزية أو لغة أخرى مدعومة.",
   "toast.guideOfflineDesc": "هذا الدليل لم يُنزّل بعد. اتصل مرة واحدة لحفظه.",
   "toast.couldNotLoadAttractions": "تعذّر تحميل المعالم",
   "toast.allSet": "كل شيء جاهز",
@@ -263,7 +265,8 @@ export const AR: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "آلة الزمن",
-  "tm.brand": "Lokali · آلة الزمن",
+  "tm.brand": "AI آلة الزمن",
+  "tm.refresh": "تحديث",
   "tm.travelThrough": "سافر عبر",
   "tm.time": "الزمن",
   "tm.subtitle": "محاكاة غامرة — ادخل في اللحظة، وكن الشاهد.",

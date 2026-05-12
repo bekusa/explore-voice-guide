@@ -113,6 +113,8 @@ export const TR: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Bu cihazda konuşma desteklenmiyor",
   "toast.couldNotLoadGuide": "Rehber yüklenemedi",
   "toast.tryAgainPlease": "Lütfen tekrar dene.",
+  "toast.voiceUnavailableTitle": "Ses bu dil için henüz mevcut değil",
+  "toast.voiceUnavailableHint": "İngilizceye veya desteklenen başka bir dile geçmeyi dene.",
   "toast.guideOfflineDesc": "Bu rehber henüz indirilmedi. Önbelleğe almak için bir kez bağlan.",
   "toast.couldNotLoadAttractions": "Yerler yüklenemedi",
   "toast.allSet": "Her şey hazır",
@@ -271,7 +273,8 @@ export const TR: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "Zaman Makinesi",
-  "tm.brand": "Lokali · Zaman Makinesi",
+  "tm.brand": "AI Zaman Makinesi",
+  "tm.refresh": "Yenile",
   "tm.travelThrough": "İçinden geç",
   "tm.time": "zaman",
   "tm.subtitle": "İçine girilebilen simülasyonlar — anın içine adım at, tanık ol.",

@@ -113,6 +113,8 @@ export const PL: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Mowa nie jest obsługiwana na tym urządzeniu",
   "toast.couldNotLoadGuide": "Nie udało się wczytać przewodnika",
   "toast.tryAgainPlease": "Spróbuj ponownie.",
+  "toast.voiceUnavailableTitle": "Głos jeszcze niedostępny dla tego języka",
+  "toast.voiceUnavailableHint": "Spróbuj przełączyć się na angielski lub inny obsługiwany język.",
   "toast.guideOfflineDesc":
     "Ten przewodnik nie jest jeszcze pobrany. Połącz się raz, by go zapisać.",
   "toast.couldNotLoadAttractions": "Nie udało się wczytać atrakcji",
@@ -265,7 +267,8 @@ export const PL: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "Wehikuł czasu",
-  "tm.brand": "Lokali · Wehikuł czasu",
+  "tm.brand": "AI Wehikuł czasu",
+  "tm.refresh": "Odśwież",
   "tm.travelThrough": "Podróżuj przez",
   "tm.time": "czas",
   "tm.subtitle": "Immersyjne symulacje — wejdź w chwilę, stań się świadkiem.",

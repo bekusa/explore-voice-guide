@@ -113,6 +113,8 @@ export const VI: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Thiết bị này không hỗ trợ giọng nói",
   "toast.couldNotLoadGuide": "Không tải được hướng dẫn",
   "toast.tryAgainPlease": "Hãy thử lại nhé.",
+  "toast.voiceUnavailableTitle": "Giọng nói chưa khả dụng cho ngôn ngữ này",
+  "toast.voiceUnavailableHint": "Hãy thử chuyển sang tiếng Anh hoặc ngôn ngữ được hỗ trợ khác.",
   "toast.guideOfflineDesc": "Hướng dẫn này chưa được tải xuống. Kết nối một lần để lưu vào bộ nhớ.",
   "toast.couldNotLoadAttractions": "Không tải được các địa điểm",
   "toast.allSet": "Đã sẵn sàng",
@@ -266,7 +268,8 @@ export const VI: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "Cỗ máy thời gian",
-  "tm.brand": "Lokali · Cỗ máy thời gian",
+  "tm.brand": "AI Cỗ máy thời gian",
+  "tm.refresh": "Làm mới",
   "tm.travelThrough": "Du hành xuyên",
   "tm.time": "thời gian",
   "tm.subtitle": "Mô phỏng đắm chìm — bước vào khoảnh khắc, trở thành nhân chứng.",

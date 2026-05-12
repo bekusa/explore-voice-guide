@@ -113,6 +113,8 @@ export const DA: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "Tale understøttes ikke på denne enhed",
   "toast.couldNotLoadGuide": "Kunne ikke indlæse guiden",
   "toast.tryAgainPlease": "Prøv igen.",
+  "toast.voiceUnavailableTitle": "Stemme er endnu ikke tilgængelig for dette sprog",
+  "toast.voiceUnavailableHint": "Prøv at skifte til engelsk eller et andet understøttet sprog.",
   "toast.guideOfflineDesc":
     "Denne guide er ikke downloadet endnu. Forbind én gang for at mellemlagre den.",
   "toast.couldNotLoadAttractions": "Kunne ikke indlæse seværdigheder",
@@ -267,7 +269,8 @@ export const DA: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "Tidsmaskine",
-  "tm.brand": "Lokali · Tidsmaskine",
+  "tm.brand": "AI Tidsmaskine",
+  "tm.refresh": "Opdater",
   "tm.travelThrough": "Rejs gennem",
   "tm.time": "tiden",
   "tm.subtitle": "Medrivende simulationer — træd ind i øjeblikket, bliv vidnet.",

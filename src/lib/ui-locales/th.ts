@@ -113,6 +113,8 @@ export const TH: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "อุปกรณ์นี้ไม่รองรับเสียงพูด",
   "toast.couldNotLoadGuide": "โหลดไกด์ไม่ได้",
   "toast.tryAgainPlease": "กรุณาลองใหม่อีกครั้ง",
+  "toast.voiceUnavailableTitle": "ยังไม่มีเสียงสำหรับภาษานี้",
+  "toast.voiceUnavailableHint": "ลองสลับไปใช้ภาษาอังกฤษหรือภาษาอื่นที่รองรับ",
   "toast.guideOfflineDesc": "ไกด์นี้ยังไม่ได้ดาวน์โหลด เชื่อมต่อหนึ่งครั้งเพื่อแคชไว้",
   "toast.couldNotLoadAttractions": "โหลดสถานที่ไม่ได้",
   "toast.allSet": "พร้อมแล้ว",
@@ -265,7 +267,8 @@ export const TH: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "ไทม์แมชชีน",
-  "tm.brand": "Lokali · ไทม์แมชชีน",
+  "tm.brand": "AI ไทม์แมชชีน",
+  "tm.refresh": "รีเฟรช",
   "tm.travelThrough": "เดินทางผ่าน",
   "tm.time": "กาลเวลา",
   "tm.subtitle": "การจำลองที่ดื่มด่ำ — ก้าวเข้าสู่ห้วงเวลานั้น เป็นพยานด้วยตาตัวเอง",

@@ -113,6 +113,8 @@ export const PT_PT: Partial<Record<UiKey, string>> = {
   "toast.speechUnsupported": "A síntese de voz não é suportada neste dispositivo",
   "toast.couldNotLoadGuide": "Não foi possível carregar o guia",
   "toast.tryAgainPlease": "Por favor, tente novamente.",
+  "toast.voiceUnavailableTitle": "Voz ainda não disponível para esta língua",
+  "toast.voiceUnavailableHint": "Experimenta mudar para inglês ou outra língua suportada.",
   "toast.guideOfflineDesc":
     "Este guia ainda não foi transferido. Ligue-se uma vez para o guardar em cache.",
   "toast.couldNotLoadAttractions": "Não foi possível carregar os locais",
@@ -268,7 +270,8 @@ export const PT_PT: Partial<Record<UiKey, string>> = {
 
   // Time Machine
   "tm.title": "Máquina do Tempo",
-  "tm.brand": "Lokali · Máquina do Tempo",
+  "tm.brand": "AI Máquina do Tempo",
+  "tm.refresh": "Atualizar",
   "tm.travelThrough": "Viaje através do",
   "tm.time": "tempo",
   "tm.subtitle": "Simulações imersivas — entre no momento, torne-se a testemunha.",
