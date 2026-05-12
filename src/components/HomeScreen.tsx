@@ -26,7 +26,8 @@ import { LANGUAGES } from "@/lib/languages";
 import { HOME_CITIES } from "@/lib/cityList";
 import { CityCard } from "@/components/CityCard";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
-import { attractionSlug, fetchPlacePhoto } from "@/lib/api";
+import { attractionSlug } from "@/lib/api";
+import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
 import {
   ATTRACTIONS as TIME_MACHINE_ATTRACTIONS,
   type Attraction as TimeMachineAttraction,
@@ -466,21 +467,18 @@ export function HomeScreen() {
 function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
   const [name] = useTranslated([museum.name]);
   const slug = attractionSlug(museum.name);
-  // Wikipedia-sourced photo via the same fetchPlacePhoto helper the
-  // attraction page hero uses. scope="artwork" forces the Wikipedia-
-  // only path so Tbilisi-biased Google Places results don't pollute
-  // the strip. Falls back to the LoremFlickr seed image (museum.image)
-  // until Wikipedia returns.
-  const [photo, setPhoto] = useState<string | null>(museum.image);
-  useEffect(() => {
-    let cancelled = false;
-    fetchPlacePhoto(museum.name, "en", museum.city, "artwork").then((url) => {
-      if (!cancelled && url) setPhoto(url);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [museum.name, museum.city]);
+  // Wikipedia-sourced photo via the shared hook. scope="artwork"
+  // forces the Wikipedia-only path so Tbilisi-biased Google Places
+  // results don't pollute the strip. Falls back to the LoremFlickr
+  // seed image (museum.image) until Wikipedia returns.
+  const fetched = useLazyPlacePhoto(museum.name, {
+    cityHint: museum.city,
+    scope: "artwork",
+  });
+  // Wikipedia URL can 404 after the page mounts (image deleted, etc.).
+  // Flip imgFailed → falls back to the LoremFlickr seed image.
+  const [imgFailed, setImgFailed] = useState(false);
+  const photo = imgFailed ? museum.image : (fetched ?? museum.image);
   return (
     <Link
       to="/attraction/$id"
@@ -496,7 +494,7 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
         src={photo ?? museum.image}
         alt={name}
         loading="lazy"
-        onError={() => setPhoto(museum.image)}
+        onError={() => setImgFailed(true)}
         className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
       />
       {/* Light-theme darkening wash — same trick as the hero photo

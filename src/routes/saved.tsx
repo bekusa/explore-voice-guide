@@ -17,9 +17,10 @@ import { useEffect, useState } from "react";
 import { MobileFrame } from "@/components/MobileFrame";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { clearAll, removeItem, type SavedItem } from "@/lib/savedStore";
-import { attractionSlug, fetchPlacePhoto } from "@/lib/api";
+import { attractionSlug } from "@/lib/api";
 import { useT, useTranslated } from "@/hooks/useT";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
+import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
 
 export const Route = createFileRoute("/saved")({
   head: () => ({
@@ -182,23 +183,11 @@ function SavedRow({ item }: { item: SavedItem }) {
   // the attractions API returned for the row). Several saved entries
   // — Beka caught it on his phone — have neither, so the row was
   // rendering just the MapPin glyph. Fetch a Wikipedia / Google
-  // Places photo lazily for those rows so the list looks complete.
-  const [fetchedUrl, setFetchedUrl] = useState<string | null>(null);
-  useEffect(() => {
-    if (item.imageDataUrl || a.image_url) return; // already have something
-    if (fetchedUrl) return;
-    let cancelled = false;
-    void fetchPlacePhoto(item.name, lang)
-      .then((url) => {
-        if (!cancelled && url) setFetchedUrl(url);
-      })
-      .catch(() => {
-        /* swallow — list falls back to MapPin glyph */
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [item.name, item.imageDataUrl, a.image_url, lang, fetchedUrl]);
+  // Places photo lazily for those rows via the shared hook.
+  const fetchedUrl = useLazyPlacePhoto(item.name, {
+    lang,
+    skip: !!(item.imageDataUrl || a.image_url),
+  });
 
   const resolvedSrc = item.imageDataUrl || a.image_url || fetchedUrl;
   const showImg = !!resolvedSrc && !imgFailed;

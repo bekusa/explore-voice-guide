@@ -28,10 +28,10 @@ import {
   fetchAttractions,
   fetchGuideFresh,
   fetchMoreAttractions,
-  fetchPlacePhoto,
   type Attraction,
 } from "@/lib/api";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
+import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
@@ -470,27 +470,22 @@ function ResultCard({
 
   const [open, setOpen] = useState(false);
 
-  // n8n-supplied image_url wins; otherwise lazily fetch from Google/Wikipedia.
-  const [photo, setPhoto] = useState<string | null>(attraction.image_url ?? null);
-  useEffect(() => {
-    if (attraction.image_url) {
-      setPhoto(attraction.image_url);
-      return;
-    }
-    let cancelled = false;
-    // Use the English name when present — translated names like
-    // "თავისუფლების ქანდაკება" misfired the photo lookup against
-    // Tbilisi's Freedom Square instead of New York's Statue of Liberty.
-    // name_en is set by translateAttractionsPayload on every translated
-    // row; English baseline rows fall back to `name`.
-    const queryName = attraction.name_en ?? attraction.name;
-    fetchPlacePhoto(queryName, "en", cityContext).then((url) => {
-      if (!cancelled && url) setPhoto(url);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [attraction.name, attraction.name_en, attraction.image_url, language, cityContext]);
+  // n8n-supplied image_url wins; otherwise lazily fetch from
+  // Google / Wikipedia via the shared hook. Use the English name
+  // when present — translated names like "თავისუფლების ქანდაკება"
+  // misfired the photo lookup against Tbilisi's Freedom Square
+  // instead of New York's Statue of Liberty. name_en is set by
+  // translateAttractionsPayload on every translated row; English
+  // baseline rows fall back to `name`.
+  const fetched = useLazyPlacePhoto(attraction.name_en ?? attraction.name, {
+    cityHint: cityContext,
+    skip: !!attraction.image_url,
+  });
+  // <img onError> fires when the resolved URL 404s in the browser
+  // (CDN miss, Wikipedia removed the file, etc.) — flip this and the
+  // card falls back to the MapPin placeholder.
+  const [imgFailed, setImgFailed] = useState(false);
+  const photo = imgFailed ? null : (attraction.image_url ?? fetched);
 
   // Live "Offline" state — flips when a download finishes / cache cleared.
   const [cached, setCached] = useState(false);
@@ -601,7 +596,7 @@ function ResultCard({
             src={photo}
             alt={attraction.name}
             loading="lazy"
-            onError={() => setPhoto(null)}
+            onError={() => setImgFailed(true)}
             className="h-full w-full object-cover"
           />
         ) : (

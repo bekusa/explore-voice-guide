@@ -53,6 +53,7 @@ import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
 import { getCachedGuide, getCachedGuideData, onGuideCacheChange } from "@/lib/guideCache";
 import { DEFAULT_INTEREST, INTERESTS } from "@/lib/interests";
 import { useT } from "@/hooks/useT";
@@ -150,7 +151,24 @@ function AttractionPage() {
   }, [guide, t]);
   // Hero image — n8n's image_url wins; otherwise lazily fetch from
   // Google Places / Wikipedia, same flow as the result cards.
-  const [heroPhoto, setHeroPhoto] = useState<string | null>(null);
+  // Photo lookups MUST use the English name (Google Places + Wikipedia
+  // are far more reliable in English, and a localised search like
+  // "თავისუფლების ქანდაკება" actually matched Tbilisi's Freedom Square
+  // instead of the New York Statue of Liberty). `name_en` is set by
+  // translateAttractionsPayload on every translated row; English
+  // baseline rows just have `name`.
+  // city hint: prefer attraction.city, fall back to the search bar's
+  // city so generic-named places like "Grand Palace" land in the
+  // user's actual destination (Bangkok), not the API key's regional
+  // default (Tbilisi).
+  const heroCity =
+    (typeof attraction?.city === "string" ? attraction.city : null) || searchCity;
+  const heroLookupName = attraction?.name_en ?? attraction?.name ?? fallbackName;
+  const heroFetched = useLazyPlacePhoto(heroLookupName, {
+    cityHint: heroCity,
+    skip: !!attraction?.image_url,
+  });
+  const heroPhoto = attraction?.image_url ?? heroFetched;
 
   useEffect(() => {
     let cancelled = false;
@@ -208,43 +226,7 @@ function AttractionPage() {
     };
   }, [attraction?.name, fallbackName, language, interest]);
 
-  // Hero photo: prefer n8n's image_url, otherwise lazy-fetch from
-  // Google Places / Wikipedia. Reset when the place changes.
-  useEffect(() => {
-    // Photo lookups MUST use the English name (Google Places +
-    // Wikipedia are far more reliable in English, and a localised
-    // search like "თავისუფლების ქანდაკება" actually matched Tbilisi's
-    // Freedom Square instead of the New York Statue of Liberty).
-    // `name_en` is set by translateAttractionsPayload on every
-    // translated row; English baseline rows just have `name`.
-    const queryName = attraction?.name_en ?? attraction?.name ?? fallbackName;
-    if (attraction?.image_url) {
-      setHeroPhoto(attraction.image_url);
-      return;
-    }
-    setHeroPhoto(null);
-    let cancelled = false;
-    // Pass the search city through so generic-named places like
-    // "Grand Palace" resolve in the user's actual destination
-    // (Bangkok) rather than the API key's regional default
-    // (Tbilisi). attraction.city wins when the API has it; the
-    // search-bar query is the fallback.
-    const cityHint = (typeof attraction?.city === "string" ? attraction.city : null) || searchCity;
-    fetchPlacePhoto(queryName, "en", cityHint ?? null).then((url) => {
-      if (!cancelled && url) setHeroPhoto(url);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    attraction?.name,
-    attraction?.name_en,
-    attraction?.image_url,
-    attraction?.city,
-    fallbackName,
-    language,
-    searchCity,
-  ]);
+  // Hero photo handled by useLazyPlacePhoto declared above.
 
   // Museum highlights — only fetched when the attraction matches one
   // of the curated MUSEUMS in src/lib/topMuseums.ts. The match key is

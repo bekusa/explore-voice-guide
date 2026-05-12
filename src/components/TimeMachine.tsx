@@ -83,13 +83,11 @@ const LOADING_STAGES: { emoji: string; titleKey: UiKey; subKey: UiKey }[] = [
 
 interface TimeMachineProps {
   /**
-   * Kept on the props for back-compat with the old simulation flow —
-   * we don't use them now that Details navigates to the attraction
-   * page instead, but the route file still passes them in.
+   * Display language for the catalogue copy. Currently always English
+   * for the Time Machine flow; kept as a prop so we can swap it for
+   * runtime localisation without changing the call site.
    */
   language?: string;
-  webhookUrl?: string;
-  onResult?: (data: unknown) => void;
   /**
    * Optional ID to pre-select on mount. Used by Home's Time Machine
    * strip so tapping a card lands the user directly on that moment
@@ -98,7 +96,7 @@ interface TimeMachineProps {
   initialId?: string | null;
 }
 
-export default function TimeMachine({ onResult, initialId }: TimeMachineProps) {
+export default function TimeMachine({ initialId }: TimeMachineProps) {
   const t = useT();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
@@ -171,7 +169,6 @@ export default function TimeMachine({ onResult, initialId }: TimeMachineProps) {
    */
   const handleStart = (attraction: Attraction, roleValue: string) => {
     setSelectedId(attraction.id);
-    onResult?.({ navigated_to: attraction.id, role: roleValue });
     void navigate({
       to: "/tm-sim/$id/$role",
       params: { id: attraction.id, role: roleValue },

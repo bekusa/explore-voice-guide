@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, MapPin } from "lucide-react";
 import { MobileFrame } from "@/components/MobileFrame";
 import { useT } from "@/hooks/useT";
 import { useTranslated } from "@/hooks/useT";
+import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
-import { attractionSlug, fetchPlacePhoto } from "@/lib/api";
+import { attractionSlug } from "@/lib/api";
 
 /**
  * /museums — full grid of all 20 curated museums.
@@ -97,16 +98,14 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
   // Wikipedia-sourced photo via the artwork-scope path (Google
   // Places skipped). Falls back to the LoremFlickr seed until
   // Wikipedia returns. See the matching change on the home strip.
-  const [photo, setPhoto] = useState<string | null>(museum.image);
-  useEffect(() => {
-    let cancelled = false;
-    fetchPlacePhoto(museum.name, "en", museum.city, "artwork").then((url) => {
-      if (!cancelled && url) setPhoto(url);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [museum.name, museum.city]);
+  const fetched = useLazyPlacePhoto(museum.name, {
+    cityHint: museum.city,
+    scope: "artwork",
+  });
+  // Wikipedia URL may 404 after mount — flip imgFailed → fall back
+  // to the LoremFlickr seed image so the card never goes blank.
+  const [imgFailed, setImgFailed] = useState(false);
+  const photo = imgFailed ? museum.image : (fetched ?? museum.image);
   return (
     <Link
       to="/attraction/$id"
@@ -118,7 +117,7 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
         src={photo ?? museum.image}
         alt={name}
         loading="lazy"
-        onError={() => setPhoto(museum.image)}
+        onError={() => setImgFailed(true)}
         className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/10" />
