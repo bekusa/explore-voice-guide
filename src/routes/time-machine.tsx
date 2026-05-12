@@ -28,12 +28,9 @@ export const Route = createFileRoute("/time-machine")({
 
 function TimeMachinePage() {
   const { id } = Route.useSearch();
-  return (
-    <TimeMachine
-      language="English"
-      webhookUrl="https://your-n8n.app.n8n.cloud/webhook/lokali-time-machine"
-      initialId={id ?? null}
-      onResult={(data) => console.log("Simulation result:", data)}
-    />
-  );
+  // No webhookUrl / onResult — TimeMachine navigates to /tm-sim/$id/$role
+  // and the result page owns the fetch. The placeholder webhook URL
+  // and console.log that used to live here were leftovers from the
+  // pre-/tm-sim architecture; both removed in pre-Capacitor cleanup.
+  return <TimeMachine language="English" initialId={id ?? null} />;
 }

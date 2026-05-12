@@ -121,9 +121,7 @@ function MapPage() {
       };
       requestAnimationFrame(invalidate);
       invalidateTimers.push(
-        ...[50, 150, 300, 600, 1000, 2000].map((ms) =>
-          window.setTimeout(invalidate, ms),
-        ),
+        ...[50, 150, 300, 600, 1000, 2000].map((ms) => window.setTimeout(invalidate, ms)),
       );
       if (typeof ResizeObserver !== "undefined" && el) {
         ro = new ResizeObserver(() => invalidate());

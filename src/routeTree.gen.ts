@@ -22,16 +22,13 @@ import { Route as LanguageRouteImport } from './routes/language'
 import { Route as DestinationsRouteImport } from './routes/destinations'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DestinationSlugRouteImport } from './routes/destination.$slug'
 import { Route as AttractionIdRouteImport } from './routes/attraction.$id'
 import { Route as ApiTtsRouteImport } from './routes/api.tts'
 import { Route as ApiTranslateRouteImport } from './routes/api.translate'
 import { Route as ApiTimeMachineRouteImport } from './routes/api.time-machine'
 import { Route as ApiPhotoRouteImport } from './routes/api.photo'
-import { Route as ApiN8nTestRouteImport } from './routes/api.n8n-test'
 import { Route as ApiMuseumHighlightsRouteImport } from './routes/api.museum-highlights'
 import { Route as ApiGuideRouteImport } from './routes/api.guide'
-import { Route as ApiCacheDebugRouteImport } from './routes/api.cache-debug'
 import { Route as ApiAttractionsRouteImport } from './routes/api.attractions'
 import { Route as TmSimIdRoleRouteImport } from './routes/tm-sim.$id.$role'
 
@@ -100,11 +97,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DestinationSlugRoute = DestinationSlugRouteImport.update({
-  id: '/destination/$slug',
-  path: '/destination/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AttractionIdRoute = AttractionIdRouteImport.update({
   id: '/attraction/$id',
   path: '/attraction/$id',
@@ -130,11 +122,6 @@ const ApiPhotoRoute = ApiPhotoRouteImport.update({
   path: '/api/photo',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiN8nTestRoute = ApiN8nTestRouteImport.update({
-  id: '/api/n8n-test',
-  path: '/api/n8n-test',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiMuseumHighlightsRoute = ApiMuseumHighlightsRouteImport.update({
   id: '/api/museum-highlights',
   path: '/api/museum-highlights',
@@ -143,11 +130,6 @@ const ApiMuseumHighlightsRoute = ApiMuseumHighlightsRouteImport.update({
 const ApiGuideRoute = ApiGuideRouteImport.update({
   id: '/api/guide',
   path: '/api/guide',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiCacheDebugRoute = ApiCacheDebugRouteImport.update({
-  id: '/api/cache-debug',
-  path: '/api/cache-debug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAttractionsRoute = ApiAttractionsRouteImport.update({
@@ -176,16 +158,13 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/time-machine': typeof TimeMachineRoute
   '/api/attractions': typeof ApiAttractionsRoute
-  '/api/cache-debug': typeof ApiCacheDebugRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
-  '/api/n8n-test': typeof ApiN8nTestRoute
   '/api/photo': typeof ApiPhotoRoute
   '/api/time-machine': typeof ApiTimeMachineRoute
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
-  '/destination/$slug': typeof DestinationSlugRoute
   '/tm-sim/$id/$role': typeof TmSimIdRoleRoute
 }
 export interface FileRoutesByTo {
@@ -203,16 +182,13 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/time-machine': typeof TimeMachineRoute
   '/api/attractions': typeof ApiAttractionsRoute
-  '/api/cache-debug': typeof ApiCacheDebugRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
-  '/api/n8n-test': typeof ApiN8nTestRoute
   '/api/photo': typeof ApiPhotoRoute
   '/api/time-machine': typeof ApiTimeMachineRoute
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
-  '/destination/$slug': typeof DestinationSlugRoute
   '/tm-sim/$id/$role': typeof TmSimIdRoleRoute
 }
 export interface FileRoutesById {
@@ -231,16 +207,13 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/time-machine': typeof TimeMachineRoute
   '/api/attractions': typeof ApiAttractionsRoute
-  '/api/cache-debug': typeof ApiCacheDebugRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
-  '/api/n8n-test': typeof ApiN8nTestRoute
   '/api/photo': typeof ApiPhotoRoute
   '/api/time-machine': typeof ApiTimeMachineRoute
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
-  '/destination/$slug': typeof DestinationSlugRoute
   '/tm-sim/$id/$role': typeof TmSimIdRoleRoute
 }
 export interface FileRouteTypes {
@@ -260,16 +233,13 @@ export interface FileRouteTypes {
     | '/settings'
     | '/time-machine'
     | '/api/attractions'
-    | '/api/cache-debug'
     | '/api/guide'
     | '/api/museum-highlights'
-    | '/api/n8n-test'
     | '/api/photo'
     | '/api/time-machine'
     | '/api/translate'
     | '/api/tts'
     | '/attraction/$id'
-    | '/destination/$slug'
     | '/tm-sim/$id/$role'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -287,16 +257,13 @@ export interface FileRouteTypes {
     | '/settings'
     | '/time-machine'
     | '/api/attractions'
-    | '/api/cache-debug'
     | '/api/guide'
     | '/api/museum-highlights'
-    | '/api/n8n-test'
     | '/api/photo'
     | '/api/time-machine'
     | '/api/translate'
     | '/api/tts'
     | '/attraction/$id'
-    | '/destination/$slug'
     | '/tm-sim/$id/$role'
   id:
     | '__root__'
@@ -314,16 +281,13 @@ export interface FileRouteTypes {
     | '/settings'
     | '/time-machine'
     | '/api/attractions'
-    | '/api/cache-debug'
     | '/api/guide'
     | '/api/museum-highlights'
-    | '/api/n8n-test'
     | '/api/photo'
     | '/api/time-machine'
     | '/api/translate'
     | '/api/tts'
     | '/attraction/$id'
-    | '/destination/$slug'
     | '/tm-sim/$id/$role'
   fileRoutesById: FileRoutesById
 }
@@ -342,16 +306,13 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   TimeMachineRoute: typeof TimeMachineRoute
   ApiAttractionsRoute: typeof ApiAttractionsRoute
-  ApiCacheDebugRoute: typeof ApiCacheDebugRoute
   ApiGuideRoute: typeof ApiGuideRoute
   ApiMuseumHighlightsRoute: typeof ApiMuseumHighlightsRoute
-  ApiN8nTestRoute: typeof ApiN8nTestRoute
   ApiPhotoRoute: typeof ApiPhotoRoute
   ApiTimeMachineRoute: typeof ApiTimeMachineRoute
   ApiTranslateRoute: typeof ApiTranslateRoute
   ApiTtsRoute: typeof ApiTtsRoute
   AttractionIdRoute: typeof AttractionIdRoute
-  DestinationSlugRoute: typeof DestinationSlugRoute
   TmSimIdRoleRoute: typeof TmSimIdRoleRoute
 }
 
@@ -448,13 +409,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/destination/$slug': {
-      id: '/destination/$slug'
-      path: '/destination/$slug'
-      fullPath: '/destination/$slug'
-      preLoaderRoute: typeof DestinationSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/attraction/$id': {
       id: '/attraction/$id'
       path: '/attraction/$id'
@@ -490,13 +444,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPhotoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/n8n-test': {
-      id: '/api/n8n-test'
-      path: '/api/n8n-test'
-      fullPath: '/api/n8n-test'
-      preLoaderRoute: typeof ApiN8nTestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/museum-highlights': {
       id: '/api/museum-highlights'
       path: '/api/museum-highlights'
@@ -509,13 +456,6 @@ declare module '@tanstack/react-router' {
       path: '/api/guide'
       fullPath: '/api/guide'
       preLoaderRoute: typeof ApiGuideRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cache-debug': {
-      id: '/api/cache-debug'
-      path: '/api/cache-debug'
-      fullPath: '/api/cache-debug'
-      preLoaderRoute: typeof ApiCacheDebugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/attractions': {
@@ -550,16 +490,13 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   TimeMachineRoute: TimeMachineRoute,
   ApiAttractionsRoute: ApiAttractionsRoute,
-  ApiCacheDebugRoute: ApiCacheDebugRoute,
   ApiGuideRoute: ApiGuideRoute,
   ApiMuseumHighlightsRoute: ApiMuseumHighlightsRoute,
-  ApiN8nTestRoute: ApiN8nTestRoute,
   ApiPhotoRoute: ApiPhotoRoute,
   ApiTimeMachineRoute: ApiTimeMachineRoute,
   ApiTranslateRoute: ApiTranslateRoute,
   ApiTtsRoute: ApiTtsRoute,
   AttractionIdRoute: AttractionIdRoute,
-  DestinationSlugRoute: DestinationSlugRoute,
   TmSimIdRoleRoute: TmSimIdRoleRoute,
 }
 export const routeTree = rootRouteImport
