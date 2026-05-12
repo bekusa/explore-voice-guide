@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { CORS_HEADERS, corsPreflight } from "@/lib/cors.server";
 import { getCachedAttractions, putCachedAttractions } from "@/lib/sharedCache.server";
 import { translateAttractionsPayload } from "@/lib/translatePayload.server";
 import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
@@ -36,8 +37,13 @@ import { buildAttractionsSystem, buildAttractionsUser } from "@/lib/prompts";
  *             EXTEND-EMPTY | EXTEND-NO-TRANS`.
  */
 export const Route = createFileRoute("/api/attractions")({
+  // OPTIONS preflight — Capacitor's WebView origin (capacitor://localhost
+  // on iOS, https://localhost on Android) triggers a CORS preflight on
+  // every POST. Without an OPTIONS handler the actual request never
+  // fires. See src/lib/cors.server.ts for the shared headers.
   server: {
     handlers: {
+      OPTIONS: async () => corsPreflight(),
       POST: async ({ request }) => {
         const rawBody = await request.text();
         const key = extractAttractionsKey(rawBody);
@@ -142,7 +148,10 @@ export const Route = createFileRoute("/api/attractions")({
               attractions: [],
               error: err instanceof Error ? err.message : "Upstream failed",
             }),
-            { status: 502, headers: { "Content-Type": "application/json" } },
+            {
+              status: 502,
+              headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+            },
           );
         }
       },
@@ -210,6 +219,7 @@ function jsonResponse(
   reason?: string,
 ): Response {
   const headers: Record<string, string> = {
+    ...CORS_HEADERS,
     "Content-Type": "application/json",
     "X-Cache": cacheTag,
   };
@@ -324,7 +334,10 @@ async function handleExtensionRequest(
         attractions: [],
         error: err instanceof Error ? err.message : "Upstream failed",
       }),
-      { status: 502, headers: { "Content-Type": "application/json" } },
+      {
+        status: 502,
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      },
     );
   }
 

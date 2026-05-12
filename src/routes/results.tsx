@@ -285,6 +285,11 @@ function ResultsPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t("results.placeholder")}
+                // 200-char cap — keeps a paste of 50 KB of text from
+                // flooding the n8n / Claude call. A real city name or
+                // landmark stays well under this; the limit kicks in
+                // only on accidental / abuse input.
+                maxLength={200}
                 className="flex-1 bg-transparent text-[13px] placeholder:text-muted-foreground focus:outline-none"
               />
             </form>
@@ -336,6 +341,8 @@ function ResultsPage() {
                   label={t("results.pageLabel", { n: safePage, total: pageCount })}
                   prevLabel={t("results.prev")}
                   nextLabel={t("results.next")}
+                  navLabel={t("results.pagination")}
+                  pageButtonLabel={(n) => t("results.goToPage", { n })}
                 />
               )}
             </>
@@ -361,6 +368,8 @@ function Pagination({
   label,
   prevLabel,
   nextLabel,
+  navLabel,
+  pageButtonLabel,
 }: {
   page: number;
   pageCount: number;
@@ -373,6 +382,10 @@ function Pagination({
   label: string;
   prevLabel: string;
   nextLabel: string;
+  /** aria-label for the surrounding <nav> (e.g. "Pagination") */
+  navLabel: string;
+  /** aria-label per page button — receives the page number as `n` */
+  pageButtonLabel: (n: number) => string;
 }) {
   const atStart = page <= 1;
   const atEnd = page >= pageCount;
@@ -381,7 +394,7 @@ function Pagination({
   // 20 extra results land.
   const totalSlots = prefetching ? Math.max(pageCount, MAX_PAGES) : pageCount;
   return (
-    <nav aria-label="Pagination" className="mt-6 flex flex-col items-center gap-3 pb-2">
+    <nav aria-label={navLabel} className="mt-6 flex flex-col items-center gap-3 pb-2">
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -401,7 +414,7 @@ function Pagination({
               type="button"
               onClick={() => onChange(p)}
               disabled={ghost}
-              aria-label={`Go to page ${p}`}
+              aria-label={pageButtonLabel(p)}
               aria-current={active ? "page" : undefined}
               className={`h-10 min-w-[40px] rounded-full border px-3 text-[13px] font-bold transition-smooth ${
                 active

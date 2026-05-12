@@ -145,7 +145,20 @@ function SettingsPage() {
   const updateVoice = async (uri: string) => {
     setVoiceURI(uri);
     if (!user) return;
-    await supabase.from("profiles").update({ preferred_voice: uri }).eq("user_id", user.id);
+    // Surface RLS / network failures instead of falsely toasting
+    // success — Beka caught the original silent path: an expired
+    // Supabase session let the profiles.update() resolve without
+    // actually writing the row, while the user saw "Voice updated".
+    const { error } = await supabase
+      .from("profiles")
+      .update({ preferred_voice: uri })
+      .eq("user_id", user.id);
+    if (error) {
+      toast.error(t("toast.couldNotSave"), {
+        description: error.message,
+      });
+      return;
+    }
     toast.success(t("toast.voiceUpdated"));
     setSection("main");
   };

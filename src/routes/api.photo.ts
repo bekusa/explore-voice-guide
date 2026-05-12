@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { corsJson, corsPreflight } from "@/lib/cors.server";
 
 /**
  * Server-side photo lookup proxy.
@@ -8,15 +9,20 @@ import { createFileRoute } from "@tanstack/react-router";
  * directly from our server avoids the SDK entirely — faster (no script
  * load), CSP-safe, and lets us add a Wikipedia fallback.
  *
- * KEY SETUP: This is a *server-side* Google Cloud key, separate from the
- * referrer-restricted browser key. It is restricted by API only (Places
- * API), so the worst-case if leaked is someone burning through Places
- * quota — they can't use it for Maps, Geocoding, etc. Move to env var
- * (GOOGLE_PLACES_KEY) on Lovable to remove from source entirely.
+ * Key setup: GOOGLE_PLACES_KEY must be set in the Cloudflare Workers
+ * environment. We do NOT ship a fallback literal — the committed key
+ * fallback that lived here previously was flagged by the pre-Capacitor
+ * security review (App Store reviewers grep for the `AIzaSy` prefix on
+ * Google API keys in submitted code, and the key sat in plaintext in
+ * a public GitHub repo). The literal has been removed and the
+ * compromised key needs rotation in Google Cloud Console.
+ *
+ * If the env var isn't set, googlePhoto() short-circuits to null and
+ * the Wikipedia path still works — Google Places is only the fallback
+ * for places Wikipedia doesn't cover.
  */
 const GOOGLE_KEY =
-  (typeof process !== "undefined" && process.env?.GOOGLE_PLACES_KEY) ||
-  "AIzaSyCxphS6qlPY55RpWq30UwpNOpwIyavvMJo";
+  typeof process !== "undefined" ? (process.env?.GOOGLE_PLACES_KEY ?? "") : "";
 
 // Per-worker in-memory cache (resets on cold start, but cheap on a hot worker).
 const cache = new Map<string, string | null>();
@@ -44,6 +50,12 @@ type WikiSummaryResponse = {
  * Batumi") usually disambiguates well.
  */
 async function googlePhoto(q: string, city: string | null): Promise<string | null> {
+  // Short-circuit when GOOGLE_PLACES_KEY isn't set. The committed
+  // literal that used to backstop this was removed in the pre-Capacitor
+  // security pass; without the env var we just skip the Google path
+  // and let Wikipedia (called earlier in the dispatch chain) carry the
+  // lookup. That's already where 80%+ of attractions resolve.
+  if (!GOOGLE_KEY) return null;
   // Build query variants in priority order. If city is provided AND the
   // name doesn't already contain it, try "name + city" first.
   const variants: string[] = [];
@@ -279,6 +291,7 @@ async function tryWikiSummary(lang: string, title: string): Promise<string | nul
 export const Route = createFileRoute("/api/photo")({
   server: {
     handlers: {
+      OPTIONS: async () => corsPreflight(),
       GET: async ({ request }) => {
         const url = new URL(request.url);
         const q = url.searchParams.get("q")?.trim();
@@ -304,16 +317,12 @@ export const Route = createFileRoute("/api/photo")({
         const museum = url.searchParams.get("museum")?.trim() || null;
 
         if (!q) {
-          return new Response(JSON.stringify({ url: null }), {
-            headers: { "Content-Type": "application/json" },
-          });
+          return corsJson({ url: null });
         }
 
         const cacheKey = `${scope ?? ""}:${lang}:${city ?? ""}:${museum ?? ""}:${q}`;
         if (cache.has(cacheKey)) {
-          return new Response(JSON.stringify({ url: cache.get(cacheKey) ?? null }), {
-            headers: { "Content-Type": "application/json" },
-          });
+          return corsJson({ url: cache.get(cacheKey) ?? null });
         }
 
         let photoUrl: string | null = null;
@@ -381,14 +390,16 @@ export const Route = createFileRoute("/api/photo")({
         // a retry from any client picks up the corrected lookup
         // immediately.
         if (photoUrl) cache.set(cacheKey, photoUrl);
-        return new Response(JSON.stringify({ url: photoUrl }), {
-          headers: {
-            "Content-Type": "application/json",
-            "Cache-Control": photoUrl
-              ? "public, max-age=86400"
-              : "no-store, no-cache, must-revalidate",
+        return corsJson(
+          { url: photoUrl },
+          {
+            headers: {
+              "Cache-Control": photoUrl
+                ? "public, max-age=86400"
+                : "no-store, no-cache, must-revalidate",
+            },
           },
-        });
+        );
       },
     },
   },

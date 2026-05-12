@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { CORS_HEADERS, corsPreflight } from "@/lib/cors.server";
 import { getCachedTimeMachine, putCachedTimeMachine } from "@/lib/sharedCache.server";
 import { translateTimeMachinePayload } from "@/lib/translatePayload.server";
 import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
@@ -40,6 +41,7 @@ import { ATTRACTIONS_BY_ID, TIME_MACHINE_ROLES } from "@/lib/timeMachineData";
 export const Route = createFileRoute("/api/time-machine")({
   server: {
     handlers: {
+      OPTIONS: async () => corsPreflight(),
       POST: async ({ request }) => {
         const rawBody = await request.text();
         const key = extractKey(rawBody);
@@ -48,7 +50,7 @@ export const Route = createFileRoute("/api/time-machine")({
             JSON.stringify({
               error: "Missing or invalid attractionId / role / language",
             }),
-            { status: 400, headers: { "Content-Type": "application/json" } },
+            { status: 400, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
           );
         }
         const userLang = key.language;
@@ -90,7 +92,7 @@ export const Route = createFileRoute("/api/time-machine")({
         if (!moment) {
           return new Response(
             JSON.stringify({ error: `Unknown attractionId: ${key.attractionId}` }),
-            { status: 400, headers: { "Content-Type": "application/json" } },
+            { status: 400, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
           );
         }
         try {
@@ -167,7 +169,10 @@ export const Route = createFileRoute("/api/time-machine")({
             JSON.stringify({
               error: err instanceof Error ? err.message : "Upstream failed",
             }),
-            { status: 502, headers: { "Content-Type": "application/json" } },
+            {
+              status: 502,
+              headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+            },
           );
         }
       },
@@ -247,6 +252,7 @@ function jsonResponse(
   reason?: string,
 ): Response {
   const headers: Record<string, string> = {
+    ...CORS_HEADERS,
     "Content-Type": "application/json",
     "X-Cache": cacheTag,
   };

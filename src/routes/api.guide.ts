@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { CORS_HEADERS, corsPreflight } from "@/lib/cors.server";
 import { getCachedGuide, putCachedGuide } from "@/lib/sharedCache.server";
 import { translateGuidePayload } from "@/lib/translatePayload.server";
 import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
@@ -24,6 +25,7 @@ import { buildGuideSystem, buildGuideUser } from "@/lib/prompts";
 export const Route = createFileRoute("/api/guide")({
   server: {
     handlers: {
+      OPTIONS: async () => corsPreflight(),
       POST: async ({ request }) => {
         const rawBody = await request.text();
         const key = extractGuideKey(rawBody);
@@ -108,7 +110,10 @@ export const Route = createFileRoute("/api/guide")({
               script: "",
               error: err instanceof Error ? err.message : "Upstream failed",
             }),
-            { status: 502, headers: { "Content-Type": "application/json" } },
+            {
+              status: 502,
+              headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+            },
           );
         }
       },
@@ -167,6 +172,7 @@ function jsonResponse(
   reason?: string,
 ): Response {
   const headers: Record<string, string> = {
+    ...CORS_HEADERS,
     "Content-Type": "application/json",
     "X-Cache": cacheTag,
   };

@@ -1,26 +1,32 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { useT } from "@/hooks/useT";
 
 import appCss from "../styles.css?url";
 
-const themeBootScript = `(function(){try{var t=localStorage.getItem('tg.theme');if(t==='light'){document.documentElement.classList.add('light');}}catch(e){}})();`;
+// Theme boot script — runs before React hydrates so the light-theme
+// flash is suppressed on first paint. The matching lang boot script
+// underneath sets <html lang> from the stored language so screen
+// readers + Lighthouse pick up the right BCP-47 code immediately
+// (the SSR shell ships lang="en" because we don't know the user's
+// preference at SSR time; the script overrides it client-side).
+const themeBootScript = `(function(){try{var t=localStorage.getItem('tg.theme');if(t==='light'){document.documentElement.classList.add('light');}var l=localStorage.getItem('tg.lang');if(l){document.documentElement.setAttribute('lang',l);}}catch(e){}})();`;
 
 function NotFoundComponent() {
+  const t = useT();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
+        <h2 className="mt-4 text-xl font-semibold text-foreground">{t("err.notFound")}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">{t("err.notFoundDesc")}</p>
         <div className="mt-6">
           <Link
             to="/"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Go home
+            {t("err.goHome")}
           </Link>
         </div>
       </div>
@@ -97,6 +103,17 @@ function RootComponent() {
   useEffect(() => {
     const stored = localStorage.getItem("tg.theme");
     document.documentElement.classList.toggle("light", stored === "light");
+    // Keep <html lang> in sync with the stored language. The boot
+    // script already sets this on first paint; this hook handles
+    // mid-session switches (the user changes language on /language
+    // without a full reload). lang change → re-set the attribute.
+    const syncLang = () => {
+      const l = localStorage.getItem("tg.lang");
+      if (l) document.documentElement.setAttribute("lang", l);
+    };
+    syncLang();
+    window.addEventListener("tg:lang-changed", syncLang);
+    return () => window.removeEventListener("tg:lang-changed", syncLang);
   }, []);
   return (
     <>

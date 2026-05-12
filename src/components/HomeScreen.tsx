@@ -314,6 +314,9 @@ export function HomeScreen() {
               placeholder={t("home.searchPlaceholder")}
               enterKeyHint="search"
               autoComplete="off"
+              // 200-char cap — same as the /results search box. Stops
+              // accidental clipboard floods from going to n8n / Claude.
+              maxLength={200}
               className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
             {query.trim() ? (

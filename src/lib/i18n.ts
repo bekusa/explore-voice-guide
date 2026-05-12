@@ -266,6 +266,13 @@ export const UI_STRINGS = {
   "toast.voiceUpdatedDesc": "{voice} will narrate from now.",
   "toast.profileSaved": "Profile saved",
   "toast.couldNotSave": "Couldn't save",
+  // 404 / NotFoundComponent strings — surfaced when the user lands
+  // on a non-existent route (typo'd URL, stale deep link, deleted
+  // /destination/$slug after the cluster removal). Previously
+  // hardcoded English; translated for App Store + a11y compliance.
+  "err.notFound": "Page not found",
+  "err.notFoundDesc": "The page you're looking for doesn't exist or has been moved.",
+  "err.goHome": "Go home",
   "toast.noVoiceAvailable": "No voice available",
   "toast.libCleared": "Offline library cleared",
   "toast.speechUnsupported": "Speech not supported on this device",
@@ -418,6 +425,11 @@ export const UI_STRINGS = {
   "results.prev": "Previous",
   "results.next": "Next",
   "results.pageLabel": "Page {n} of {total}",
+  // Per-button aria-label on the pagination strip. Previously
+  // hardcoded English ("Go to page 3"); translated for the App
+  // Store / Play Store accessibility review pass.
+  "results.goToPage": "Go to page {n}",
+  "results.pagination": "Pagination",
 
   // Destinations
   "dest.exploreTitle": "Explore",

@@ -9,6 +9,7 @@
  * rate-limited.
  */
 import { createFileRoute } from "@tanstack/react-router";
+import { corsJson, corsPreflight } from "@/lib/cors.server";
 import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
 
 const LANG_NAMES: Record<string, string> = {
@@ -58,6 +59,7 @@ function langName(code: string): string {
 export const Route = createFileRoute("/api/translate")({
   server: {
     handlers: {
+      OPTIONS: async () => corsPreflight(),
       POST: async ({ request }) => {
         let texts: string[] = [];
         let target = "en";
@@ -71,17 +73,14 @@ export const Route = createFileRoute("/api/translate")({
           }
           if (typeof body.target === "string") target = body.target;
         } catch {
-          return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          });
+          return corsJson({ error: "Invalid JSON body" }, { status: 400 });
         }
 
         if (texts.length === 0) {
-          return Response.json({ translations: [] });
+          return corsJson({ translations: [] });
         }
         if (!target || target.toLowerCase().startsWith("en")) {
-          return Response.json({ translations: texts });
+          return corsJson({ translations: texts });
         }
 
         // Migrated from Lovable AI Gateway (Gemini 2.5 Flash) to
@@ -116,7 +115,7 @@ export const Route = createFileRoute("/api/translate")({
           });
           const parsedJson = parseClaudeJson(text) as { translations?: unknown } | undefined;
           if (!parsedJson || !Array.isArray(parsedJson.translations)) {
-            return Response.json({ translations: texts });
+            return corsJson({ translations: texts });
           }
           const out = parsedJson.translations.filter((s): s is string => typeof s === "string");
 
@@ -134,9 +133,9 @@ export const Route = createFileRoute("/api/translate")({
             looksLikeGatewayGarbage(t, texts[i], target) ? texts[i] : t,
           );
 
-          return Response.json({ translations: sanitized });
+          return corsJson({ translations: sanitized });
         } catch {
-          return Response.json({ translations: texts });
+          return corsJson({ translations: texts });
         }
       },
     },

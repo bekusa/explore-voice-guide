@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { CORS_HEADERS, corsPreflight } from "@/lib/cors.server";
 import { getCachedMuseumHighlights, putCachedMuseumHighlights } from "@/lib/sharedCache.server";
 import { translateMuseumHighlightsPayload } from "@/lib/translatePayload.server";
 import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
@@ -28,6 +29,7 @@ import { MUSEUMS_BY_ID } from "@/lib/topMuseums";
 export const Route = createFileRoute("/api/museum-highlights")({
   server: {
     handlers: {
+      OPTIONS: async () => corsPreflight(),
       POST: async ({ request }) => {
         const rawBody = await request.text();
         const key = extractKey(rawBody);
@@ -143,7 +145,10 @@ export const Route = createFileRoute("/api/museum-highlights")({
               highlights: [],
               error: err instanceof Error ? err.message : "Upstream failed",
             }),
-            { status: 502, headers: { "Content-Type": "application/json" } },
+            {
+              status: 502,
+              headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+            },
           );
         }
       },
@@ -219,6 +224,7 @@ function jsonResponse(
   reason?: string,
 ): Response {
   const headers: Record<string, string> = {
+    ...CORS_HEADERS,
     "Content-Type": "application/json",
     "X-Cache": cacheTag,
   };

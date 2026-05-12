@@ -168,6 +168,9 @@ export const KA: Partial<Record<UiKey, string>> = {
   "toast.voiceUpdatedDesc": "ამიერიდან {voice} მოგიყვება.",
   "toast.profileSaved": "პროფილი შენახულია",
   "toast.couldNotSave": "შენახვა ვერ მოხერხდა",
+  "err.notFound": "გვერდი ვერ მოიძებნა",
+  "err.notFoundDesc": "ეს გვერდი არ არსებობს ან გადატანილია.",
+  "err.goHome": "მთავარზე დაბრუნება",
   "toast.noVoiceAvailable": "ხელმისაწვდომი ხმა არ არის",
   "toast.libCleared": "ოფლაინ ბიბლიოთეკა გასუფთავდა",
   "toast.speechUnsupported": "ეს მოწყობილობა ხმოვან რეჟიმს არ უჭერს მხარს",
@@ -306,6 +309,8 @@ export const KA: Partial<Record<UiKey, string>> = {
   "results.prev": "წინა",
   "results.next": "შემდეგი",
   "results.pageLabel": "გვერდი {n} / {total}",
+  "results.goToPage": "გვერდი {n}",
+  "results.pagination": "გვერდები",
 
   // Destinations
   "dest.exploreTitle": "აღმოაჩინე",
