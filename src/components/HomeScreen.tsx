@@ -4,7 +4,7 @@ import {
   ArrowRight,
   Bell,
   ChevronDown,
-  Globe,
+  Headphones,
   MapPin,
   Search,
   Settings as SettingsIcon,
@@ -15,8 +15,16 @@ import {
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useUnreadCount } from "@/hooks/useNotifications";
 import { useSelectedDestination } from "@/hooks/useSelectedDestination";
-import { useT, useTranslated } from "@/hooks/useT";
-import { DESTINATIONS, type Destination } from "@/lib/destinations";
+import { useT, useTranslated, useUiLang } from "@/hooks/useT";
+import { setStoredLang } from "@/lib/i18n";
+import { LANGUAGES } from "@/lib/languages";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { DESTINATIONS, getDestination } from "@/lib/destinations";
 import { HOME_CITIES } from "@/lib/cityList";
 import { CityCard } from "@/components/CityCard";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
