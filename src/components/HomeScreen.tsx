@@ -359,32 +359,66 @@ export function HomeScreen() {
             <p className="mt-4 max-w-[320px] text-[14px] leading-[1.55] text-foreground/75">
               {heroBlurb}
             </p>
-            {/* Beka noticed the "Open {city}" verb pushed the button
-                wider than the gold pill in some non-English locales —
-                e.g. Spanish "Abrir Roma" or German "Öffnen Rom" trim
-                fine, but longer compound verbs overflow. Drop the
-                verb, keep just the city name with the arrow doing
-                the action signaling. */}
-            {getDestination(heroDest.slug) ? (
-              <Link
-                to="/destination/$slug"
-                params={{ slug: heroDest.slug }}
-                aria-label={t("home.openCity", { city: heroCity })}
-                className="mt-6 inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
+            {/* CTA + audio preview button. Beka asked for a one-tap
+                "hear what this city sounds like" affordance right on
+                the hero. The play pill narrates the same blurb shown
+                above in the user's selected language via /api/tts. */}
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              {getDestination(heroDest.slug) ? (
+                <Link
+                  to="/destination/$slug"
+                  params={{ slug: heroDest.slug }}
+                  aria-label={t("home.openCity", { city: heroCity })}
+                  className="inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
+                >
+                  <span className="truncate">{heroCity}</span>
+                  <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+                </Link>
+              ) : (
+                <Link
+                  to="/results"
+                  search={{ q: heroDest.city }}
+                  aria-label={t("home.openCity", { city: heroCity })}
+                  className="inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
+                >
+                  <span className="truncate">{heroCity}</span>
+                  <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+                </Link>
+              )}
+              <button
+                type="button"
+                onClick={toggleHeroAudio}
+                disabled={audioState === "loading"}
+                aria-label={
+                  audioState === "playing"
+                    ? `Pause audio preview for ${heroCity}`
+                    : `Play audio preview for ${heroCity}`
+                }
+                aria-pressed={audioState === "playing"}
+                className="inline-flex h-12 items-center gap-2 rounded-full border border-foreground/20 bg-background/40 px-4 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:border-primary/60 hover:bg-background/60 disabled:opacity-70"
               >
-                <span className="truncate">{heroCity}</span>
-                <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-              </Link>
-            ) : (
-              <Link
-                to="/results"
-                search={{ q: heroDest.city }}
-                aria-label={t("home.openCity", { city: heroCity })}
-                className="mt-6 inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
-              >
-                <span className="truncate">{heroCity}</span>
-                <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-              </Link>
+                <span className="grid h-7 w-7 place-items-center rounded-full bg-gradient-gold text-primary-foreground">
+                  {audioState === "loading" ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : audioState === "playing" ? (
+                    <Pause className="h-3.5 w-3.5 fill-current" />
+                  ) : (
+                    <Play className="h-3.5 w-3.5 fill-current" />
+                  )}
+                </span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.16em]">
+                  {audioState === "playing"
+                    ? "Pause"
+                    : audioState === "loading"
+                      ? "Loading"
+                      : "Listen"}
+                </span>
+              </button>
+            </div>
+            {audioError && (
+              <p className="mt-2 text-[11px] text-accent" role="status">
+                {audioError}
+              </p>
             )}
           </div>
         </section>
