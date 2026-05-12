@@ -128,6 +128,11 @@ export function HomeScreen() {
   const unread = useUnreadCount();
   const selected = useSelectedDestination();
   const t = useT();
+  const uiLang = useUiLang();
+  const currentLang =
+    LANGUAGES.find((l) => l.code.toLowerCase().startsWith(uiLang.toLowerCase())) ??
+    LANGUAGES.find((l) => l.code === "en-US") ??
+    LANGUAGES[0];
   const [query, setQuery] = useState("");
   const [heroIdx, setHeroIdx] = useState(0);
   const [mounted, setMounted] = useState(false);
