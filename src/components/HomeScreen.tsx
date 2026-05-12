@@ -24,7 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DESTINATIONS, getDestination } from "@/lib/destinations";
+import { getDestination } from "@/lib/destinations";
 import { HOME_CITIES } from "@/lib/cityList";
 import { CityCard } from "@/components/CityCard";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
