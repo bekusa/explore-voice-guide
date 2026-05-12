@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
   Bell,
   ChevronDown,
   Headphones,
+  Loader2,
   MapPin,
+  Pause,
+  Play,
   Search,
   Settings as SettingsIcon,
   Sparkles,
@@ -163,9 +166,84 @@ export function HomeScreen() {
     e.preventDefault();
     const q = query.trim();
     if (!q) return;
-    // Send the query straight to the n8n-backed /results page so any city,
-    // country or landmark resolves through the Lokali Attractions workflow.
     navigate({ to: "/results", search: { q } });
+  }
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioCacheRef = useRef<Map<string, string>>(new Map());
+  const [audioState, setAudioState] = useState<"idle" | "loading" | "playing">("idle");
+  const [audioError, setAudioError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    setAudioState("idle");
+    setAudioError(null);
+  }, [heroDest.slug]);
+
+  useEffect(() => {
+    const cache = audioCacheRef.current;
+    return () => {
+      audioRef.current?.pause();
+      cache.forEach((url) => URL.revokeObjectURL(url));
+      cache.clear();
+    };
+  }, []);
+
+  async function toggleHeroAudio() {
+    setAudioError(null);
+    if (audioState === "playing" && audioRef.current) {
+      audioRef.current.pause();
+      setAudioState("idle");
+      return;
+    }
+    if (audioState === "loading") return;
+
+    const cacheKey = `${heroDest.slug}::${currentLang.code}`;
+    const cached = audioCacheRef.current.get(cacheKey);
+
+    const playUrl = (url: string) => {
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.addEventListener("ended", () => setAudioState("idle"));
+      audio.addEventListener("error", () => {
+        setAudioState("idle");
+        setAudioError("Couldn't play audio");
+      });
+      audio
+        .play()
+        .then(() => setAudioState("playing"))
+        .catch(() => {
+          setAudioState("idle");
+          setAudioError("Couldn't play audio");
+        });
+    };
+
+    if (cached) {
+      playUrl(cached);
+      return;
+    }
+
+    setAudioState("loading");
+    try {
+      const script = heroBlurb || heroDest.blurb;
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ script, language: currentLang.code }),
+      });
+      if (!res.ok) throw new Error(`TTS failed (${res.status})`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      audioCacheRef.current.set(cacheKey, url);
+      playUrl(url);
+    } catch (err) {
+      console.error("hero TTS error", err);
+      setAudioState("idle");
+      setAudioError("Audio preview unavailable");
+    }
   }
 
   return (
@@ -281,32 +359,66 @@ export function HomeScreen() {
             <p className="mt-4 max-w-[320px] text-[14px] leading-[1.55] text-foreground/75">
               {heroBlurb}
             </p>
-            {/* Beka noticed the "Open {city}" verb pushed the button
-                wider than the gold pill in some non-English locales —
-                e.g. Spanish "Abrir Roma" or German "Öffnen Rom" trim
-                fine, but longer compound verbs overflow. Drop the
-                verb, keep just the city name with the arrow doing
-                the action signaling. */}
-            {getDestination(heroDest.slug) ? (
-              <Link
-                to="/destination/$slug"
-                params={{ slug: heroDest.slug }}
-                aria-label={t("home.openCity", { city: heroCity })}
-                className="mt-6 inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
+            {/* CTA + audio preview button. Beka asked for a one-tap
+                "hear what this city sounds like" affordance right on
+                the hero. The play pill narrates the same blurb shown
+                above in the user's selected language via /api/tts. */}
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              {getDestination(heroDest.slug) ? (
+                <Link
+                  to="/destination/$slug"
+                  params={{ slug: heroDest.slug }}
+                  aria-label={t("home.openCity", { city: heroCity })}
+                  className="inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
+                >
+                  <span className="truncate">{heroCity}</span>
+                  <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+                </Link>
+              ) : (
+                <Link
+                  to="/results"
+                  search={{ q: heroDest.city }}
+                  aria-label={t("home.openCity", { city: heroCity })}
+                  className="inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
+                >
+                  <span className="truncate">{heroCity}</span>
+                  <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+                </Link>
+              )}
+              <button
+                type="button"
+                onClick={toggleHeroAudio}
+                disabled={audioState === "loading"}
+                aria-label={
+                  audioState === "playing"
+                    ? `Pause audio preview for ${heroCity}`
+                    : `Play audio preview for ${heroCity}`
+                }
+                aria-pressed={audioState === "playing"}
+                className="inline-flex h-12 items-center gap-2 rounded-full border border-foreground/20 bg-background/40 px-4 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:border-primary/60 hover:bg-background/60 disabled:opacity-70"
               >
-                <span className="truncate">{heroCity}</span>
-                <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-              </Link>
-            ) : (
-              <Link
-                to="/results"
-                search={{ q: heroDest.city }}
-                aria-label={t("home.openCity", { city: heroCity })}
-                className="mt-6 inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
-              >
-                <span className="truncate">{heroCity}</span>
-                <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-              </Link>
+                <span className="grid h-7 w-7 place-items-center rounded-full bg-gradient-gold text-primary-foreground">
+                  {audioState === "loading" ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : audioState === "playing" ? (
+                    <Pause className="h-3.5 w-3.5 fill-current" />
+                  ) : (
+                    <Play className="h-3.5 w-3.5 fill-current" />
+                  )}
+                </span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.16em]">
+                  {audioState === "playing"
+                    ? "Pause"
+                    : audioState === "loading"
+                      ? "Loading"
+                      : "Listen"}
+                </span>
+              </button>
+            </div>
+            {audioError && (
+              <p className="mt-2 text-[11px] text-accent" role="status">
+                {audioError}
+              </p>
             )}
           </div>
         </section>
