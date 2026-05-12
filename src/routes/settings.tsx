@@ -29,6 +29,7 @@ import { speakWithVoice, useSpeechVoices, voicesForLanguage } from "@/hooks/useS
 import { LANGUAGES, getPreviewPhrase, type Language } from "@/lib/languages";
 import { clearAll, getSaved, updateItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
+import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { fetchGuideFresh } from "@/lib/api";
 import {
@@ -67,7 +68,15 @@ function SettingsPage() {
   const t = useT();
 
   const [section, setSection] = useState<Section>("main");
-  const [langCode, setLangCode] = useState<string>("ka");
+  // Initialise from the global preferred language so anonymous users
+  // (no Supabase profile to read) still see their *current* UI
+  // language reflected in the Narrator-Voice row instead of the
+  // hardcoded "ka" default. Beka caught the row showing
+  // "🇬🇪 ქართული · 0 voices" while he was browsing in English; this
+  // was the cause — the langCode local state never picked up the
+  // user's actual choice for unauthed sessions.
+  const preferredLang = usePreferredLanguage();
+  const [langCode, setLangCode] = useState<string>(preferredLang || "en");
   const [voiceURI, setVoiceURI] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>("");
   const [savingProfile, setSavingProfile] = useState(false);
@@ -81,6 +90,16 @@ function SettingsPage() {
       document.documentElement.classList.toggle("light", stored === "light");
     }
   }, []);
+
+  // Keep langCode in lock-step with the global preferred language —
+  // useT/useUiLang are reactive (storage events + custom events on
+  // /language picks), so settings should follow without a refresh.
+  // This runs in addition to the Supabase load below: anonymous
+  // users have no profile row, so the global hook is the only
+  // source; signed-in users get the same value via both paths.
+  useEffect(() => {
+    if (preferredLang) setLangCode(preferredLang);
+  }, [preferredLang]);
 
   useEffect(() => {
     if (!user) return;
@@ -416,26 +435,11 @@ function SettingsPage() {
           </div>
           <Divider />
 
-          <div className="flex items-center gap-3 px-4 py-4">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-secondary text-foreground">
-              <Headphones className="h-4 w-4" />
-            </span>
-            <div className="flex-1">
-              <div className="text-[13px] font-semibold">
-                {cacheStats.count === 1
-                  ? t("set.savedSummaryOne", { saved: saved.length, cached: cacheStats.count })
-                  : t("set.savedSummaryMany", { saved: saved.length, cached: cacheStats.count })}
-              </div>
-              <div className="text-[11px] text-muted-foreground">
-                {t("set.cacheSize", {
-                  flag: language.flag,
-                  native: language.native,
-                  kb: Math.max(1, Math.round((estimateBytes() + cacheStats.bytes) / 1024)),
-                })}
-              </div>
-            </div>
-          </div>
-          <Divider />
+          {/* The "Saved Guides Cached" summary row used to live
+              here, but Beka caught it duplicating the count info
+              already surfaced by the Download CTA right below — two
+              rows, same numbers. Removed for the cleaner one-row
+              layout: status (online/offline) + download action. */}
 
           <button
             onClick={downloadAllForOffline}

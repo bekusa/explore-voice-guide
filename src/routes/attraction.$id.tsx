@@ -1228,7 +1228,12 @@ function MapSection({
         </span>
         {t("attr.onTheMap")} <span className="italic text-primary">{t("attr.mapWord")}</span>
       </h2>
-      <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
+      {/* `isolate` traps Leaflet's high internal z-indexes (panes
+          200-700, controls 800) inside this wrapper's stacking
+          context. Without it the marker / control layers can paint
+          over the TabBar (z-40) when the user scrolls the map close
+          to the bottom of the viewport — exactly what Beka caught. */}
+      <div className="mt-4 isolate overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
         <div
           ref={containerRef}
           aria-label={t("attr.mapOf", { name })}

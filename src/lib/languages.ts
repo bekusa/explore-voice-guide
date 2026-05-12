@@ -8,7 +8,11 @@ export interface Language {
   flag: string;
 }
 
-export const LANGUAGES: Language[] = [
+// Source list — order in this array doesn't matter, the export at the
+// bottom sorts alphabetically by English name. Beka asked for the
+// /language picker to be A-Z so users can find their language by
+// scanning instead of hunting through Beka's hand-rolled order.
+const LANGUAGES_RAW: Language[] = [
   { code: "ka-GE", name: "Georgian", native: "ქართული", flag: "🇬🇪" },
   { code: "en-US", name: "English (US)", native: "English", flag: "🇺🇸" },
   { code: "en-GB", name: "English (UK)", native: "English", flag: "🇬🇧" },
@@ -47,6 +51,17 @@ export const LANGUAGES: Language[] = [
   { code: "zh-CN", name: "Chinese (Simplified)", native: "简体中文", flag: "🇨🇳" },
   { code: "zh-TW", name: "Chinese (Traditional)", native: "繁體中文", flag: "🇹🇼" },
 ];
+
+/**
+ * Public LANGUAGES list — alphabetised by English name. We sort once
+ * at module load (cheap, ~37 entries) and freeze the array so
+ * downstream consumers can't reorder it accidentally. The locale
+ * argument forces an English collation so non-Latin natives like
+ * "ქართული" still slot in by their English label ("Georgian" → G).
+ */
+export const LANGUAGES: Language[] = [...LANGUAGES_RAW].sort((a, b) =>
+  a.name.localeCompare(b.name, "en"),
+);
 
 // Sample preview phrase per language (for voice preview on onboarding).
 export const PREVIEW_PHRASES: Record<string, string> = {

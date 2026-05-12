@@ -14,7 +14,7 @@ export function TabBar() {
   const { user, signOut } = useAuth();
   const t = useT();
   return (
-    <nav className="absolute bottom-0 left-0 right-0 z-40 flex h-[74px] items-start justify-around border-t border-border bg-background/85 px-2 pb-4 pt-2 backdrop-blur-xl">
+    <nav className="absolute bottom-0 left-0 right-0 z-50 flex h-[74px] items-start justify-around border-t border-border bg-background/95 px-2 pb-4 pt-2 backdrop-blur-xl">
       <Link
         to="/"
         className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
