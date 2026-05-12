@@ -287,15 +287,27 @@ export function HomeScreen() {
                 fine, but longer compound verbs overflow. Drop the
                 verb, keep just the city name with the arrow doing
                 the action signaling. */}
-            <Link
-              to="/destination/$slug"
-              params={{ slug: heroDest.slug }}
-              aria-label={t("home.openCity", { city: heroCity })}
-              className="mt-6 inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
-            >
-              <span className="truncate">{heroCity}</span>
-              <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-            </Link>
+            {getDestination(heroDest.slug) ? (
+              <Link
+                to="/destination/$slug"
+                params={{ slug: heroDest.slug }}
+                aria-label={t("home.openCity", { city: heroCity })}
+                className="mt-6 inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
+              >
+                <span className="truncate">{heroCity}</span>
+                <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+              </Link>
+            ) : (
+              <Link
+                to="/results"
+                search={{ q: heroDest.city }}
+                aria-label={t("home.openCity", { city: heroCity })}
+                className="mt-6 inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
+              >
+                <span className="truncate">{heroCity}</span>
+                <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+              </Link>
+            )}
           </div>
         </section>
 
