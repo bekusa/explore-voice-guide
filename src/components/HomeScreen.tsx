@@ -321,7 +321,7 @@ export function HomeScreen() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={t("home.searchPlaceholder")}
+              placeholder="Search a city, museum, street, or landmark..."
               enterKeyHint="search"
               autoComplete="off"
               className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none"
