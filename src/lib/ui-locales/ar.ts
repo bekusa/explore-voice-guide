@@ -38,6 +38,39 @@ export const AR: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} جولة",
   "home.tours.many": "{n} جولات",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "جورجيا",
+  "hero.tbilisi.city": "تبليسي",
+  "hero.tbilisi.tagline2": "تبليسي القديمة",
+  "hero.tbilisi.blurb":
+    "من حمّامات الكبريت والشرفات المائلة إلى تراتيل كنيسة سيوني — نزهة سينمائية في روح المدينة القديمة.",
+  "hero.rome.country": "إيطاليا",
+  "hero.rome.city": "روما",
+  "hero.rome.tagline2": "روما الخالدة",
+  "hero.rome.blurb":
+    "عبر أشباح المنتدى الروماني، ونوافير الباروك، وموائد عشاء تراستيفيري — المدينة التي لا تكفّ يوماً عن أن تكون نفسها.",
+  "hero.kyoto.country": "اليابان",
+  "hero.kyoto.city": "كيوتو",
+  "hero.kyoto.tagline2": "كيوتو القديمة",
+  "hero.kyoto.blurb":
+    "أزقّة جيون المضاءة بالفوانيس، ومعابدها المكسوّة بالطحالب، وبواباتها العشرة آلاف الحمراء في فوشيمي — روح اليابان الهادئة القديمة.",
+  "hero.lisbon.country": "البرتغال",
+  "hero.lisbon.city": "لشبونة",
+  "hero.lisbon.tagline2": "نهر التاجة",
+  "hero.lisbon.blurb":
+    "ساوداده، وفادو، وتلال مكسوّة بالقرميد تنحدر نحو الأطلسي — لشبونة تغنّي حزنها بأزرق الأزوليخو.",
+  "hero.marrakech.country": "المغرب",
+  "hero.marrakech.city": "مراكش",
+  "hero.marrakech.tagline2": "المدينة الحمراء",
+  "hero.marrakech.blurb":
+    "مدائن مضاءة بالفوانيس، وأفنية الرياض، ومسرح الطبول في جامع الفنا — فيض من الحواس بأبهى صوره.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "متاح بكل اللغات",
+  "home.everyLang.sub":
+    "دليل صوتي بالذكاء الاصطناعي للشوارع والمعالم والمتاحف والقصص الخفية من حولك.",
+
   // Destination screen
   "dest.currentlyIn": "أنت الآن في",
   "dest.featuredTour": "جولة مميزة",

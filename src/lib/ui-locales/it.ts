@@ -38,6 +38,39 @@ export const IT: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} tour",
   "home.tours.many": "{n} tour",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "Georgia",
+  "hero.tbilisi.city": "Tbilisi",
+  "hero.tbilisi.tagline2": "Vecchia Tbilisi",
+  "hero.tbilisi.blurb":
+    "Dai bagni di zolfo e balconi storti ai canti di Sioni — una passeggiata cinematografica nell'anima della città vecchia.",
+  "hero.rome.country": "Italia",
+  "hero.rome.city": "Roma",
+  "hero.rome.tagline2": "Roma eterna",
+  "hero.rome.blurb":
+    "Tra i fantasmi del Foro, le fontane barocche e le tavolate di Trastevere — la città che non smette mai del tutto di essere sé stessa.",
+  "hero.kyoto.country": "Giappone",
+  "hero.kyoto.city": "Kyoto",
+  "hero.kyoto.tagline2": "Vecchia Kyoto",
+  "hero.kyoto.blurb":
+    "Vicoli illuminati dalle lanterne di Gion, templi coperti di muschio e i diecimila portali vermigli di Fushimi — l'anima antica e silenziosa del Giappone.",
+  "hero.lisbon.country": "Portogallo",
+  "hero.lisbon.city": "Lisbona",
+  "hero.lisbon.tagline2": "il Tago",
+  "hero.lisbon.blurb":
+    "Saudade, fado e colline rivestite di azulejos che si inclinano verso l'Atlantico — Lisbona canta la sua malinconia nel blu degli azulejos.",
+  "hero.marrakech.country": "Marocco",
+  "hero.marrakech.city": "Marrakech",
+  "hero.marrakech.tagline2": "la Città Rossa",
+  "hero.marrakech.blurb":
+    "Medine illuminate dalle lanterne, cortili dei riad e il teatro dei tamburi in trance di Jemaa el-Fnaa — un'esplosione sensoriale, nella sua forma più bella.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "Disponibile in ogni lingua",
+  "home.everyLang.sub":
+    "Audioguida AI per strade, monumenti, musei e storie nascoste attorno a te.",
+
   // Destination screen
   "dest.currentlyIn": "Adesso a",
   "dest.featuredTour": "Tour in evidenza",

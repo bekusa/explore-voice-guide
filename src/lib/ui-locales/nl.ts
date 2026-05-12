@@ -38,6 +38,39 @@ export const NL: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} tour",
   "home.tours.many": "{n} tours",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "Georgië",
+  "hero.tbilisi.city": "Tbilisi",
+  "hero.tbilisi.tagline2": "Oud Tbilisi",
+  "hero.tbilisi.blurb":
+    "Van zwavelbaden en scheve balkons tot de gezangen van Sioni — een filmische wandeling door de ziel van de oude stad.",
+  "hero.rome.country": "Italië",
+  "hero.rome.city": "Rome",
+  "hero.rome.tagline2": "Eeuwige Rome",
+  "hero.rome.blurb":
+    "Tussen de geesten van het Forum, barokke fonteinen en de avondtafels van Trastevere — de stad die nooit helemaal ophoudt zichzelf te zijn.",
+  "hero.kyoto.country": "Japan",
+  "hero.kyoto.city": "Kyoto",
+  "hero.kyoto.tagline2": "Oud Kyoto",
+  "hero.kyoto.blurb":
+    "Lantaarnverlichte steegjes van Gion, mosbegroeide tempels en de tienduizend vermiljoenen poorten van Fushimi — de stille oude ziel van Japan.",
+  "hero.lisbon.country": "Portugal",
+  "hero.lisbon.city": "Lissabon",
+  "hero.lisbon.tagline2": "de Taag",
+  "hero.lisbon.blurb":
+    "Saudade, fado en met tegels beklede heuvels die afhellen naar de Atlantische Oceaan — Lissabon zingt zijn melancholie in azulejo-blauw.",
+  "hero.marrakech.country": "Marokko",
+  "hero.marrakech.city": "Marrakech",
+  "hero.marrakech.tagline2": "de Rode Stad",
+  "hero.marrakech.blurb":
+    "Lantaarnverlichte medina's, riad-binnenplaatsen en het trommeltheater van Jemaa el-Fna — een zintuiglijke overdaad, op haar mooist.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "Beschikbaar in elke taal",
+  "home.everyLang.sub":
+    "AI-audiogids voor straten, bezienswaardigheden, musea en verborgen verhalen om je heen.",
+
   // Destination screen
   "dest.currentlyIn": "Je bent nu in",
   "dest.featuredTour": "Uitgelichte tour",

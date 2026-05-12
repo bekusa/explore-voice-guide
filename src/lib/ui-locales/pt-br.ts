@@ -38,6 +38,39 @@ export const PT_BR: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} roteiro",
   "home.tours.many": "{n} roteiros",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "Geórgia",
+  "hero.tbilisi.city": "Tbilisi",
+  "hero.tbilisi.tagline2": "Velha Tbilisi",
+  "hero.tbilisi.blurb":
+    "Dos banhos de enxofre e varandas tortas aos cânticos de Sioni — uma caminhada cinematográfica pela alma da cidade velha.",
+  "hero.rome.country": "Itália",
+  "hero.rome.city": "Roma",
+  "hero.rome.tagline2": "Roma eterna",
+  "hero.rome.blurb":
+    "Entre os fantasmas do Fórum, fontes barrocas e as mesas de jantar de Trastevere — a cidade que nunca deixa por completo de ser ela mesma.",
+  "hero.kyoto.country": "Japão",
+  "hero.kyoto.city": "Quioto",
+  "hero.kyoto.tagline2": "Velha Quioto",
+  "hero.kyoto.blurb":
+    "Becos iluminados por lanternas em Gion, templos cobertos de musgo e os dez mil portais vermelhos de Fushimi — a alma antiga e silenciosa do Japão.",
+  "hero.lisbon.country": "Portugal",
+  "hero.lisbon.city": "Lisboa",
+  "hero.lisbon.tagline2": "o Tejo",
+  "hero.lisbon.blurb":
+    "Saudade, fado e colinas vestidas de azulejos descendo até o Atlântico — Lisboa canta sua melancolia no azul dos azulejos.",
+  "hero.marrakech.country": "Marrocos",
+  "hero.marrakech.city": "Marraquexe",
+  "hero.marrakech.tagline2": "a Cidade Vermelha",
+  "hero.marrakech.blurb":
+    "Medinas iluminadas por lanternas, pátios de riads e o teatro de tambores em transe da Jemaa el-Fnaa — sobrecarga sensorial, na sua melhor forma.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "Disponível em todos os idiomas",
+  "home.everyLang.sub":
+    "Guia de áudio com IA para ruas, pontos turísticos, museus e histórias escondidas ao seu redor.",
+
   // Destination screen
   "dest.currentlyIn": "Agora em",
   "dest.featuredTour": "Roteiro em destaque",

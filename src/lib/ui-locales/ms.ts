@@ -38,6 +38,39 @@ export const MS: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} lawatan",
   "home.tours.many": "{n} lawatan",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "Georgia",
+  "hero.tbilisi.city": "Tbilisi",
+  "hero.tbilisi.tagline2": "Tbilisi Lama",
+  "hero.tbilisi.blurb":
+    "Daripada permandian sulfur dan beranda-beranda condong ke nyanyian Sioni — perjalanan sinematik melalui jiwa kota lama.",
+  "hero.rome.country": "Itali",
+  "hero.rome.city": "Rom",
+  "hero.rome.tagline2": "Rom abadi",
+  "hero.rome.blurb":
+    "Menerusi bayangan Forum, air pancut barok dan meja makan malam Trastevere — bandar yang tidak pernah berhenti menjadi dirinya sendiri.",
+  "hero.kyoto.country": "Jepun",
+  "hero.kyoto.city": "Kyoto",
+  "hero.kyoto.tagline2": "Kyoto Lama",
+  "hero.kyoto.blurb":
+    "Lorong-lorong Gion bermandi tanglung, kuil berlumut, dan sepuluh ribu pintu gerbang merah Fushimi — jiwa Jepun yang tenang dan purba.",
+  "hero.lisbon.country": "Portugal",
+  "hero.lisbon.city": "Lisbon",
+  "hero.lisbon.tagline2": "Sungai Tagus",
+  "hero.lisbon.blurb":
+    "Saudade, fado, dan bukit-bukit berhias jubin yang condong ke Atlantik — Lisbon menyanyikan melankolinya dalam biru azulejo.",
+  "hero.marrakech.country": "Maghribi",
+  "hero.marrakech.city": "Marrakech",
+  "hero.marrakech.tagline2": "Kota Merah",
+  "hero.marrakech.blurb":
+    "Medina bermandi tanglung, halaman riad, dan teater gendang Jemaa el-Fnaa — banjir deria, dalam bentuk paling indah.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "Tersedia dalam setiap bahasa",
+  "home.everyLang.sub":
+    "Panduan audio AI untuk jalan, mercu tanda, muzium, dan kisah tersembunyi di sekeliling anda.",
+
   // Destination screen
   "dest.currentlyIn": "Kini di",
   "dest.featuredTour": "Lawatan Pilihan",

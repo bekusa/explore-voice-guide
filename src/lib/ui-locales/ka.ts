@@ -49,6 +49,39 @@ export const KA: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} ტური",
   "home.tours.many": "{n} ტური",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "საქართველო",
+  "hero.tbilisi.city": "თბილისი",
+  "hero.tbilisi.tagline2": "ძველი თბილისი",
+  "hero.tbilisi.blurb":
+    "გოგირდის აბანოებიდან და მრუდე აივნებიდან სიონის გალობამდე — კინემატოგრაფიული გასეირნება ძველი ქალაქის სულში.",
+  "hero.rome.country": "იტალია",
+  "hero.rome.city": "რომი",
+  "hero.rome.tagline2": "მარადიული რომი",
+  "hero.rome.blurb":
+    "ფორუმის აჩრდილებში, ბაროკოულ შადრევნებსა და ტრასტეევერეს სუფრებზე — ქალაქი, რომელიც არასოდეს წყვეტს თავის თავად ყოფნას.",
+  "hero.kyoto.country": "იაპონია",
+  "hero.kyoto.city": "კიოტო",
+  "hero.kyoto.tagline2": "ძველი კიოტო",
+  "hero.kyoto.blurb":
+    "გიონის ფანრებიანი ქუჩები, ხავსიანი ტაძრები და ფუშიმის ათი ათასი წითელი კარიბჭე — იაპონიის წყნარი ძველი სული.",
+  "hero.lisbon.country": "პორტუგალია",
+  "hero.lisbon.city": "ლისაბონი",
+  "hero.lisbon.tagline2": "ტეჟო",
+  "hero.lisbon.blurb":
+    "საუდადე, ფადო და კრამიტიანი გორაკები, რომლებიც ატლანტიკისკენ მიემართებიან — ლისაბონი თავის სევდას აზულეჟოს ლურჯში მღერის.",
+  "hero.marrakech.country": "მაროკო",
+  "hero.marrakech.city": "მარაკეში",
+  "hero.marrakech.tagline2": "წითელი ქალაქი",
+  "hero.marrakech.blurb":
+    "ფანრებიანი მედინა, რიადების ეზოები და ჯემაა ელ-ფნაას ბარაბნული თეატრი — სენსორული ზემოქმედება საუკეთესო ფორმით.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "ხელმისაწვდომია ყველა ენაზე",
+  "home.everyLang.sub":
+    "AI აუდიოგიდი ქუჩებზე, ღირსშესანიშნაობებზე, მუზეუმებზე და დაფარულ ისტორიებზე შენ ირგვლივ.",
+
   // Destination screen
   "dest.currentlyIn": "ახლა აქ ხარ",
   "dest.featuredTour": "გამორჩეული ტური",

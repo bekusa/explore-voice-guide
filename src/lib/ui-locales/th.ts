@@ -38,6 +38,39 @@ export const TH: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} ทัวร์",
   "home.tours.many": "{n} ทัวร์",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "จอร์เจีย",
+  "hero.tbilisi.city": "ทบิลีซี",
+  "hero.tbilisi.tagline2": "ทบิลีซีเก่า",
+  "hero.tbilisi.blurb":
+    "จากโรงอาบน้ำกำมะถันและระเบียงเอียง สู่บทสวดของโบสถ์ซีโอนี — การเดินเล่นแบบภาพยนตร์ผ่านจิตวิญญาณของเมืองเก่า",
+  "hero.rome.country": "อิตาลี",
+  "hero.rome.city": "โรม",
+  "hero.rome.tagline2": "โรมนิรันดร์",
+  "hero.rome.blurb":
+    "ผ่านเงาวิญญาณของฟอรัม น้ำพุบารอก และโต๊ะอาหารค่ำของทราสเตเวเร — เมืองที่ไม่เคยหยุดเป็นตัวของตัวเอง",
+  "hero.kyoto.country": "ญี่ปุ่น",
+  "hero.kyoto.city": "เกียวโต",
+  "hero.kyoto.tagline2": "เกียวโตเก่า",
+  "hero.kyoto.blurb":
+    "ตรอกซอกซอยที่ส่องแสงด้วยโคมไฟของกิอง วัดที่ปกคลุมด้วยมอส และประตูสีแดงชาดหมื่นบานของฟูชิมิ — จิตวิญญาณเก่าแก่อันเงียบสงบของญี่ปุ่น",
+  "hero.lisbon.country": "โปรตุเกส",
+  "hero.lisbon.city": "ลิสบอน",
+  "hero.lisbon.tagline2": "แม่น้ำตากุส",
+  "hero.lisbon.blurb":
+    "เซาดาเด ฟาดู และเนินเขาที่ปูด้วยกระเบื้องเอียงลงสู่แอตแลนติก — ลิสบอนขับขานความเศร้าโศกในสีน้ำเงินของอาซูเลโฆ",
+  "hero.marrakech.country": "โมร็อกโก",
+  "hero.marrakech.city": "มาร์ราเกช",
+  "hero.marrakech.tagline2": "เมืองสีแดง",
+  "hero.marrakech.blurb":
+    "เมดินาที่ส่องแสงด้วยโคมไฟ ลานเรียดและโรงละครกลองมึนงงของจามาอา เอล-ฟนา — ประสาทสัมผัสท่วมท้นในรูปแบบที่งดงามที่สุด",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "พร้อมใช้งานในทุกภาษา",
+  "home.everyLang.sub":
+    "ไกด์เสียง AI สำหรับถนน สถานที่สำคัญ พิพิธภัณฑ์ และเรื่องราวซ่อนเร้นรอบตัวคุณ",
+
   // Destination screen
   "dest.currentlyIn": "ขณะนี้อยู่ที่",
   "dest.featuredTour": "ทัวร์แนะนำ",

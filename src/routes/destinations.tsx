@@ -87,15 +87,9 @@ function DestinationsPage() {
             </div>
           </div>
 
-          {/* Results */}
+          {/* Results — count line removed per Beka. */}
           <div className="px-5 pt-4">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-              {results.length === 1
-                ? t("dest.countOne", { n: results.length })
-                : t("dest.countMany", { n: results.length })}
-            </p>
-
-            <div className="mt-3 flex flex-col gap-4">
+            <div className="flex flex-col gap-4">
               {results.map((city) => (
                 <CityCard key={city} city={city} />
               ))}

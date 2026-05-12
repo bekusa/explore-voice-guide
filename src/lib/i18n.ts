@@ -131,6 +131,47 @@ export const UI_STRINGS = {
   "home.tours.one": "{n} tour",
   "home.tours.many": "{n} tours",
 
+  // Hero rotation copy — pre-translated for the five featured cities
+  // on Home (tbilisi / rome / kyoto / lisbon / marrakech). Static keys
+  // mean we don't burn an /api/translate call per visitor for content
+  // we author and can lock in. Each city contributes 4 keys: country,
+  // tagline2 (the italic word/phrase after "Lokali |"), blurb, city.
+  // The literal "Lokali" tagline prefix stays English everywhere —
+  // it's a brand name, not copy.
+  "hero.tbilisi.country": "Georgia",
+  "hero.tbilisi.city": "Tbilisi",
+  "hero.tbilisi.tagline2": "Old Tbilisi",
+  "hero.tbilisi.blurb":
+    "From sulfur baths and crooked balconies to the chants of Sioni — a cinematic walk through the soul of the old town.",
+  "hero.rome.country": "Italy",
+  "hero.rome.city": "Rome",
+  "hero.rome.tagline2": "Eternal Rome",
+  "hero.rome.blurb":
+    "Through the Forum's ghosts, baroque fountains and trastevere supper tables — the city that never quite stops being itself.",
+  "hero.kyoto.country": "Japan",
+  "hero.kyoto.city": "Kyoto",
+  "hero.kyoto.tagline2": "Old Kyoto",
+  "hero.kyoto.blurb":
+    "Lantern-lit alleys of Gion, mossy temples, and the ten thousand vermillion gates of Fushimi — Japan's quiet old soul.",
+  "hero.lisbon.country": "Portugal",
+  "hero.lisbon.city": "Lisbon",
+  "hero.lisbon.tagline2": "the Tagus",
+  "hero.lisbon.blurb":
+    "Saudade, fado, and tile-clad hills tipping toward the Atlantic — Lisbon sings its melancholy in azulejo blue.",
+  "hero.marrakech.country": "Morocco",
+  "hero.marrakech.city": "Marrakech",
+  "hero.marrakech.tagline2": "the Red City",
+  "hero.marrakech.blurb":
+    "Lantern-lit medinas, riad courtyards, and the trance-drum theatre of Jemaa el-Fnaa — sensory overload, in the best way.",
+
+  // "Available in every language" badge under the search bar on Home.
+  // Beka asked for a confidence-building line that surfaces Lokali's
+  // multi-language story right above the fold. Static so we don't
+  // round-trip through the translator for tagline copy.
+  "home.everyLang.title": "Available in every language",
+  "home.everyLang.sub":
+    "AI audio guide for streets, landmarks, museums, and hidden stories around you.",
+
   // Destination screen
   "dest.currentlyIn": "Currently in",
   "dest.featuredTour": "Featured Tour",

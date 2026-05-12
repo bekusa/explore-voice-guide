@@ -38,6 +38,39 @@ export const UR: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} ٹور",
   "home.tours.many": "{n} ٹور",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "جارجیا",
+  "hero.tbilisi.city": "تبلیسی",
+  "hero.tbilisi.tagline2": "پرانا تبلیسی",
+  "hero.tbilisi.blurb":
+    "گندھک کے حماموں اور ٹیڑھے بالکونیوں سے لے کر سیونی کے نغموں تک — پرانے شہر کی روح میں ایک سینمائی چہل قدمی۔",
+  "hero.rome.country": "اٹلی",
+  "hero.rome.city": "روم",
+  "hero.rome.tagline2": "ابدی روم",
+  "hero.rome.blurb":
+    "فورم کی پرچھائیوں، باروک فواروں اور تراستوارے کے رات کے دستر خوانوں سے گزرتے — وہ شہر جو کبھی پوری طرح خود ہونا نہیں چھوڑتا۔",
+  "hero.kyoto.country": "جاپان",
+  "hero.kyoto.city": "کیوتو",
+  "hero.kyoto.tagline2": "پرانا کیوتو",
+  "hero.kyoto.blurb":
+    "گیون کی روشن گلیاں، کائی سے ڈھکے مندر اور فوشیمی کے دس ہزار سرخ دروازے — جاپان کی خاموش قدیم روح۔",
+  "hero.lisbon.country": "پرتگال",
+  "hero.lisbon.city": "لزبن",
+  "hero.lisbon.tagline2": "دریائے تیجو",
+  "hero.lisbon.blurb":
+    "ساوداڈے، فادو اور ٹائلوں سے سجی پہاڑیاں اوقیانوس اطلس کی طرف جھکی ہوئی — لزبن اپنی اداسی ازولیخو کی نیلاہٹ میں گاتا ہے۔",
+  "hero.marrakech.country": "مراکش",
+  "hero.marrakech.city": "مراکش",
+  "hero.marrakech.tagline2": "سرخ شہر",
+  "hero.marrakech.blurb":
+    "روشن مدینے، ریاد کے صحن اور جامع الفنا کی طبلے کی مدہوش کر دینے والی محفلیں — حواس کا سیلاب، بہترین انداز میں۔",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "ہر زبان میں دستیاب",
+  "home.everyLang.sub":
+    "آپ کے ارد گرد گلیوں، یادگاروں، عجائب گھروں اور چھپی کہانیوں کے لیے AI آڈیو گائیڈ۔",
+
   // Destination screen
   "dest.currentlyIn": "اس وقت آپ یہاں ہیں",
   "dest.featuredTour": "نمایاں ٹور",

@@ -38,6 +38,39 @@ export const NB: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} tur",
   "home.tours.many": "{n} turer",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "Georgia",
+  "hero.tbilisi.city": "Tbilisi",
+  "hero.tbilisi.tagline2": "Gamle Tbilisi",
+  "hero.tbilisi.blurb":
+    "Fra svovelbad og skjeve balkonger til Sionis kirkesang — en filmatisk vandring gjennom gamlebyens sjel.",
+  "hero.rome.country": "Italia",
+  "hero.rome.city": "Roma",
+  "hero.rome.tagline2": "Det evige Roma",
+  "hero.rome.blurb":
+    "Gjennom Forums skygger, barokke fontener og kveldsborder i Trastevere — byen som aldri helt slutter å være seg selv.",
+  "hero.kyoto.country": "Japan",
+  "hero.kyoto.city": "Kyoto",
+  "hero.kyoto.tagline2": "Gamle Kyoto",
+  "hero.kyoto.blurb":
+    "Lyktebelyste smug i Gion, mosegrodde templer, og de ti tusen sinoberportene i Fushimi — Japans stille gamle sjel.",
+  "hero.lisbon.country": "Portugal",
+  "hero.lisbon.city": "Lisboa",
+  "hero.lisbon.tagline2": "Tejo-elven",
+  "hero.lisbon.blurb":
+    "Saudade, fado og flisbelagte åser som heller mot Atlanteren — Lisboa synger sin melankoli i azulejo-blått.",
+  "hero.marrakech.country": "Marokko",
+  "hero.marrakech.city": "Marrakech",
+  "hero.marrakech.tagline2": "Den røde byen",
+  "hero.marrakech.blurb":
+    "Lyktebelyste medinaer, riad-gårder og trommeteateret på Jemaa el-Fnaa — sanseoverbelastning, på best mulig måte.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "Tilgjengelig på alle språk",
+  "home.everyLang.sub":
+    "AI-lydguide for gater, severdigheter, museer og skjulte historier rundt deg.",
+
   // Destination screen
   "dest.currentlyIn": "Du er nå i",
   "dest.featuredTour": "Utvalgt tur",

@@ -38,6 +38,39 @@ export const UK: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} маршрут",
   "home.tours.many": "{n} маршрутів",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "Грузія",
+  "hero.tbilisi.city": "Тбілісі",
+  "hero.tbilisi.tagline2": "Старий Тбілісі",
+  "hero.tbilisi.blurb":
+    "Від сірчаних бань і кривих балконів до співів Сіоні — кінематографічна прогулянка крізь душу старого міста.",
+  "hero.rome.country": "Італія",
+  "hero.rome.city": "Рим",
+  "hero.rome.tagline2": "Вічний Рим",
+  "hero.rome.blurb":
+    "Крізь привидів Форуму, барокові фонтани та вечірні столи Трастевере — місто, яке ніколи остаточно не перестає бути собою.",
+  "hero.kyoto.country": "Японія",
+  "hero.kyoto.city": "Кіото",
+  "hero.kyoto.tagline2": "Старе Кіото",
+  "hero.kyoto.blurb":
+    "Освітлені ліхтарями провулки Ґіону, замшілі храми та десять тисяч кіноварних брам Фусімі — тиха давня душа Японії.",
+  "hero.lisbon.country": "Португалія",
+  "hero.lisbon.city": "Лісабон",
+  "hero.lisbon.tagline2": "річка Тежу",
+  "hero.lisbon.blurb":
+    "Саудаде, фаду й облицьовані плиткою пагорби, що нахиляються до Атлантики — Лісабон співає свою меланхолію в синяві азулежу.",
+  "hero.marrakech.country": "Марокко",
+  "hero.marrakech.city": "Марракеш",
+  "hero.marrakech.tagline2": "Червоне місто",
+  "hero.marrakech.blurb":
+    "Освітлені ліхтарями медини, дворики ріадів і барабанний театр Джемаа ель-Фна — сенсорне переповнення в найкращій формі.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "Доступно будь-якою мовою",
+  "home.everyLang.sub":
+    "AI-аудіогід вулицями, пам'ятками, музеями і прихованими історіями довкола тебе.",
+
   // Destination screen
   "dest.currentlyIn": "Зараз у",
   "dest.featuredTour": "Обраний маршрут",

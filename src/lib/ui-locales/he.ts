@@ -38,6 +38,38 @@ export const HE: Partial<Record<UiKey, string>> = {
   "home.tours.one": "סיור {n}",
   "home.tours.many": "{n} סיורים",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "גאורגיה",
+  "hero.tbilisi.city": "טביליסי",
+  "hero.tbilisi.tagline2": "טביליסי הישנה",
+  "hero.tbilisi.blurb":
+    "ממרחצאות הגופרית והמרפסות העקומות ועד מזמורי סיוני — טיול קולנועי בנשמת העיר העתיקה.",
+  "hero.rome.country": "איטליה",
+  "hero.rome.city": "רומא",
+  "hero.rome.tagline2": "רומא הנצחית",
+  "hero.rome.blurb":
+    "בין רוחות הפורום, מזרקות הבארוק ושולחנות הערב של טרסטוורה — העיר שלעולם אינה חדלה לגמרי להיות עצמה.",
+  "hero.kyoto.country": "יפן",
+  "hero.kyoto.city": "קיוטו",
+  "hero.kyoto.tagline2": "קיוטו הישנה",
+  "hero.kyoto.blurb":
+    "סמטאות גיון המוארות בפנסים, מקדשים עטופי טחב ועשרת אלפים שערי הטוֹרי האדומים של פושימי — נשמתה הישנה והשקטה של יפן.",
+  "hero.lisbon.country": "פורטוגל",
+  "hero.lisbon.city": "ליסבון",
+  "hero.lisbon.tagline2": "נהר הטז'ו",
+  "hero.lisbon.blurb":
+    "סאודאדה, פאדו וגבעות עטויות אריחים שגולשות אל האוקיינוס האטלנטי — ליסבון שרה את מלנכוליותה בכחול האזולז'ו.",
+  "hero.marrakech.country": "מרוקו",
+  "hero.marrakech.city": "מרקש",
+  "hero.marrakech.tagline2": "העיר האדומה",
+  "hero.marrakech.blurb":
+    "מדינות מוארות בפנסים, חצרות הריאד והתאטרון המתופף של ג'מאע אל-פנא — הצפת חושים, בצורתה היפה ביותר.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "זמין בכל שפה",
+  "home.everyLang.sub": "מדריך שמע מבוסס AI לרחובות, אתרים, מוזיאונים וסיפורים נסתרים סביבך.",
+
   // Destination screen
   "dest.currentlyIn": "נמצאים כעת ב",
   "dest.featuredTour": "סיור מומלץ",

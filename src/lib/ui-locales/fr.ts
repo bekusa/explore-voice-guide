@@ -38,6 +38,39 @@ export const FR: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} circuit",
   "home.tours.many": "{n} circuits",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "Géorgie",
+  "hero.tbilisi.city": "Tbilissi",
+  "hero.tbilisi.tagline2": "Vieux Tbilissi",
+  "hero.tbilisi.blurb":
+    "Des bains de soufre et balcons de guingois jusqu'aux chants de Sioni — une promenade cinématographique dans l'âme de la vieille ville.",
+  "hero.rome.country": "Italie",
+  "hero.rome.city": "Rome",
+  "hero.rome.tagline2": "Rome éternelle",
+  "hero.rome.blurb":
+    "À travers les fantômes du Forum, les fontaines baroques et les tablées du Trastevere — la ville qui ne cesse jamais tout à fait d'être elle-même.",
+  "hero.kyoto.country": "Japon",
+  "hero.kyoto.city": "Kyoto",
+  "hero.kyoto.tagline2": "Vieux Kyoto",
+  "hero.kyoto.blurb":
+    "Ruelles éclairées aux lanternes de Gion, temples couverts de mousse et les dix mille portiques vermillon de Fushimi — l'âme ancienne et silencieuse du Japon.",
+  "hero.lisbon.country": "Portugal",
+  "hero.lisbon.city": "Lisbonne",
+  "hero.lisbon.tagline2": "le Tage",
+  "hero.lisbon.blurb":
+    "Saudade, fado et collines habillées d'azulejos qui basculent vers l'Atlantique — Lisbonne chante sa mélancolie dans le bleu de l'azulejo.",
+  "hero.marrakech.country": "Maroc",
+  "hero.marrakech.city": "Marrakech",
+  "hero.marrakech.tagline2": "la Ville Rouge",
+  "hero.marrakech.blurb":
+    "Médinas éclairées aux lanternes, patios de riads et le théâtre des tambours en transe de Jemaa el-Fna — débordement sensoriel, dans ce qu'il a de plus beau.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "Disponible dans toutes les langues",
+  "home.everyLang.sub":
+    "Guide audio par IA pour les rues, monuments, musées et histoires cachées autour de toi.",
+
   // Destination screen
   "dest.currentlyIn": "Actuellement à",
   "dest.featuredTour": "Circuit phare",

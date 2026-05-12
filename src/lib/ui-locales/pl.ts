@@ -38,6 +38,39 @@ export const PL: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} trasa",
   "home.tours.many": "{n} tras",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "Gruzja",
+  "hero.tbilisi.city": "Tbilisi",
+  "hero.tbilisi.tagline2": "Stare Tbilisi",
+  "hero.tbilisi.blurb":
+    "Od łaźni siarkowych i krzywych balkonów po śpiewy soboru Sioni — kinowy spacer przez duszę starego miasta.",
+  "hero.rome.country": "Włochy",
+  "hero.rome.city": "Rzym",
+  "hero.rome.tagline2": "Wieczny Rzym",
+  "hero.rome.blurb":
+    "Pośród duchów Forum, barokowych fontann i kolacyjnych stołów Trastevere — miasto, które nigdy całkiem nie przestaje być sobą.",
+  "hero.kyoto.country": "Japonia",
+  "hero.kyoto.city": "Kioto",
+  "hero.kyoto.tagline2": "Stare Kioto",
+  "hero.kyoto.blurb":
+    "Oświetlone latarniami uliczki Gion, omszałe świątynie i dziesięć tysięcy cynobrowych bram Fushimi — cicha, dawna dusza Japonii.",
+  "hero.lisbon.country": "Portugalia",
+  "hero.lisbon.city": "Lizbona",
+  "hero.lisbon.tagline2": "rzeka Tag",
+  "hero.lisbon.blurb":
+    "Saudade, fado i wzgórza wyłożone azulejos opadające ku Atlantykowi — Lizbona śpiewa swoją melancholię w błękicie azulejos.",
+  "hero.marrakech.country": "Maroko",
+  "hero.marrakech.city": "Marrakesz",
+  "hero.marrakech.tagline2": "Czerwone Miasto",
+  "hero.marrakech.blurb":
+    "Oświetlone latarniami mediny, dziedzińce riadów i bębniarski teatr Dżamaa el-Fna — przeładowanie zmysłów w najpiękniejszej formie.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "Dostępne w każdym języku",
+  "home.everyLang.sub":
+    "Audioprzewodnik AI po ulicach, zabytkach, muzeach i ukrytych historiach wokół ciebie.",
+
   // Destination screen
   "dest.currentlyIn": "Jesteś w",
   "dest.featuredTour": "Polecana trasa",

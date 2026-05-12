@@ -38,6 +38,39 @@ export const CS: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} prohlídka",
   "home.tours.many": "{n} prohlídek",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "Gruzie",
+  "hero.tbilisi.city": "Tbilisi",
+  "hero.tbilisi.tagline2": "Staré Tbilisi",
+  "hero.tbilisi.blurb":
+    "Od sirných lázní a křivých balkonů až po zpěvy chrámu Sioni — filmová procházka duší starého města.",
+  "hero.rome.country": "Itálie",
+  "hero.rome.city": "Řím",
+  "hero.rome.tagline2": "Věčný Řím",
+  "hero.rome.blurb":
+    "Mezi duchy Fora, barokními fontánami a večeřemi v Trastevere — město, které nikdy úplně nepřestane být sebou samým.",
+  "hero.kyoto.country": "Japonsko",
+  "hero.kyoto.city": "Kjóto",
+  "hero.kyoto.tagline2": "Staré Kjóto",
+  "hero.kyoto.blurb":
+    "Uličky Gionu osvícené lampiony, mechem porostlé chrámy a deset tisíc rumělkových bran Fušimi — tichá stará duše Japonska.",
+  "hero.lisbon.country": "Portugalsko",
+  "hero.lisbon.city": "Lisabon",
+  "hero.lisbon.tagline2": "řeka Tejo",
+  "hero.lisbon.blurb":
+    "Saudade, fado a kopce obložené dlaždicemi klesající k Atlantiku — Lisabon zpívá svou melancholii v modři azulejos.",
+  "hero.marrakech.country": "Maroko",
+  "hero.marrakech.city": "Marrákeš",
+  "hero.marrakech.tagline2": "Rudé město",
+  "hero.marrakech.blurb":
+    "Mediny osvícené lampiony, dvory riadů a bubnové divadlo Jemaa el-Fnaa — záplava smyslů v té nejlepší formě.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "Dostupné ve všech jazycích",
+  "home.everyLang.sub":
+    "AI audio průvodce ulicemi, památkami, muzei a skrytými příběhy kolem tebe.",
+
   // Destination screen
   "dest.currentlyIn": "Právě v",
   "dest.featuredTour": "Doporučená prohlídka",

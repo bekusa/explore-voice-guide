@@ -38,6 +38,39 @@ export const FI: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} kierros",
   "home.tours.many": "{n} kierrosta",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "Georgia",
+  "hero.tbilisi.city": "Tbilisi",
+  "hero.tbilisi.tagline2": "Vanha Tbilisi",
+  "hero.tbilisi.blurb":
+    "Rikkikylvyistä ja vinoista parvekkeista Sionin kirkon kuoroihin — elokuvallinen kävely vanhan kaupungin sieluun.",
+  "hero.rome.country": "Italia",
+  "hero.rome.city": "Rooma",
+  "hero.rome.tagline2": "Ikuinen Rooma",
+  "hero.rome.blurb":
+    "Forumin haamujen, barokkisuihkulähteiden ja Trasteveren illallispöytien lävitse — kaupunki, joka ei koskaan oikein lakkaa olemasta oma itsensä.",
+  "hero.kyoto.country": "Japani",
+  "hero.kyoto.city": "Kioto",
+  "hero.kyoto.tagline2": "Vanha Kioto",
+  "hero.kyoto.blurb":
+    "Gionin lyhdyin valaistut kujat, sammaltuneet temppelit ja Fushimin kymmenentuhatta vermilionipunaista porttia — Japanin hiljainen vanha sielu.",
+  "hero.lisbon.country": "Portugali",
+  "hero.lisbon.city": "Lissabon",
+  "hero.lisbon.tagline2": "Tejojoki",
+  "hero.lisbon.blurb":
+    "Saudadea, fadoa ja kaakelinvärisiä kukkuloita kallistumassa kohti Atlanttia — Lissabon laulaa melankoliansa azulejon sinessä.",
+  "hero.marrakech.country": "Marokko",
+  "hero.marrakech.city": "Marrakech",
+  "hero.marrakech.tagline2": "Punainen kaupunki",
+  "hero.marrakech.blurb":
+    "Lyhdyin valaistut medinat, riadien pihat ja Jemaa el-Fnaan rumputeatteri — aistien tulva, parhaassa muodossaan.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "Saatavilla joka kielellä",
+  "home.everyLang.sub":
+    "AI-äänioppaasi kaduille, nähtävyyksille, museoihin ja kätkettyihin tarinoihin ympärilläsi.",
+
   // Destination screen
   "dest.currentlyIn": "Olet nyt täällä:",
   "dest.featuredTour": "Esillä oleva kierros",

@@ -38,6 +38,39 @@ export const TR: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} tur",
   "home.tours.many": "{n} tur",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "Gürcistan",
+  "hero.tbilisi.city": "Tiflis",
+  "hero.tbilisi.tagline2": "Eski Tiflis",
+  "hero.tbilisi.blurb":
+    "Kükürtlü hamamlardan ve eğri balkonlardan Sioni'nin ilahilerine — eski şehrin ruhunda sinematik bir yürüyüş.",
+  "hero.rome.country": "İtalya",
+  "hero.rome.city": "Roma",
+  "hero.rome.tagline2": "Ebedi Roma",
+  "hero.rome.blurb":
+    "Forum'un hayaletleri, barok çeşmeler ve Trastevere'nin akşam yemeği masaları arasında — kendisi olmaktan asla tamamen vazgeçmeyen şehir.",
+  "hero.kyoto.country": "Japonya",
+  "hero.kyoto.city": "Kyoto",
+  "hero.kyoto.tagline2": "Eski Kyoto",
+  "hero.kyoto.blurb":
+    "Gion'un fenerlerle aydınlanmış ara sokakları, yosunlu tapınakları ve Fushimi'nin on bin zincifre kapısı — Japonya'nın sessiz, eski ruhu.",
+  "hero.lisbon.country": "Portekiz",
+  "hero.lisbon.city": "Lizbon",
+  "hero.lisbon.tagline2": "Tejo nehri",
+  "hero.lisbon.blurb":
+    "Saudade, fado ve Atlantik'e doğru eğilen karo kaplı tepeler — Lizbon, melankolisini azulejo mavisinde söyler.",
+  "hero.marrakech.country": "Fas",
+  "hero.marrakech.city": "Marakeş",
+  "hero.marrakech.tagline2": "Kızıl Şehir",
+  "hero.marrakech.blurb":
+    "Fenerlerle aydınlanmış medineler, riad avluları ve Jemaa el-Fnaa'nın transa sokan davul tiyatrosu — duyu seli, en güzel haliyle.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "Her dilde mevcut",
+  "home.everyLang.sub":
+    "Etrafındaki sokaklar, simgeler, müzeler ve gizli hikâyeler için AI sesli rehber.",
+
   // Destination screen
   "dest.currentlyIn": "Şu an buradasın",
   "dest.featuredTour": "Öne çıkan tur",

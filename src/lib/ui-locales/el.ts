@@ -38,6 +38,39 @@ export const EL: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} περιήγηση",
   "home.tours.many": "{n} περιηγήσεις",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "Γεωργία",
+  "hero.tbilisi.city": "Τιφλίδα",
+  "hero.tbilisi.tagline2": "Παλιά Τιφλίδα",
+  "hero.tbilisi.blurb":
+    "Από τα θειούχα λουτρά και τα στραβά μπαλκόνια ως τους ύμνους του Σιόνι — μια κινηματογραφική βόλτα μέσα από την ψυχή της παλιάς πόλης.",
+  "hero.rome.country": "Ιταλία",
+  "hero.rome.city": "Ρώμη",
+  "hero.rome.tagline2": "Αιώνια Ρώμη",
+  "hero.rome.blurb":
+    "Μέσα από τα φαντάσματα της Ρωμαϊκής Αγοράς, τα μπαρόκ συντριβάνια και τα δείπνα του Τραστέβερε — η πόλη που δεν παύει ποτέ να είναι ο εαυτός της.",
+  "hero.kyoto.country": "Ιαπωνία",
+  "hero.kyoto.city": "Κιότο",
+  "hero.kyoto.tagline2": "Παλιό Κιότο",
+  "hero.kyoto.blurb":
+    "Φωτισμένα με φανάρια σοκάκια στο Γκιόν, ναοί ντυμένοι στα βρύα και οι δέκα χιλιάδες κόκκινες πύλες του Φουσίμι — η ήσυχη αρχαία ψυχή της Ιαπωνίας.",
+  "hero.lisbon.country": "Πορτογαλία",
+  "hero.lisbon.city": "Λισαβόνα",
+  "hero.lisbon.tagline2": "ο Τάγος",
+  "hero.lisbon.blurb":
+    "Σαουντάντε, φάντο και λόφοι ντυμένοι στα πλακάκια που γέρνουν προς τον Ατλαντικό — η Λισαβόνα τραγουδά τη μελαγχολία της στο μπλε των αζουλέζος.",
+  "hero.marrakech.country": "Μαρόκο",
+  "hero.marrakech.city": "Μαρακές",
+  "hero.marrakech.tagline2": "η Κόκκινη Πόλη",
+  "hero.marrakech.blurb":
+    "Φωτισμένες με φανάρια μεδίνες, αυλές ριάντ και το θέατρο των τυμπάνων στην πλατεία Τζεμάα ελ-Φνα — αισθητηριακή έκσταση, στην καλύτερη της μορφή.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "Διαθέσιμο σε κάθε γλώσσα",
+  "home.everyLang.sub":
+    "Ηχητικός οδηγός AI για δρόμους, αξιοθέατα, μουσεία και κρυμμένες ιστορίες γύρω σου.",
+
   // Destination screen
   "dest.currentlyIn": "Βρίσκεσαι στο",
   "dest.featuredTour": "Προτεινόμενη περιήγηση",

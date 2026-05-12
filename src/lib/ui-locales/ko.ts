@@ -38,6 +38,38 @@ export const KO: Partial<Record<UiKey, string>> = {
   "home.tours.one": "투어 {n}개",
   "home.tours.many": "투어 {n}개",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "조지아",
+  "hero.tbilisi.city": "트빌리시",
+  "hero.tbilisi.tagline2": "옛 트빌리시",
+  "hero.tbilisi.blurb":
+    "유황 목욕탕과 비뚤어진 발코니에서 시오니 성당의 성가까지 — 구시가지의 영혼을 따라 걷는 시네마틱한 산책.",
+  "hero.rome.country": "이탈리아",
+  "hero.rome.city": "로마",
+  "hero.rome.tagline2": "영원한 로마",
+  "hero.rome.blurb":
+    "포룸의 망령, 바로크 분수, 트라스테베레의 저녁 식탁을 지나 — 결코 자신이기를 멈추지 않는 도시.",
+  "hero.kyoto.country": "일본",
+  "hero.kyoto.city": "교토",
+  "hero.kyoto.tagline2": "옛 교토",
+  "hero.kyoto.blurb":
+    "등불이 켜진 기온의 골목, 이끼 낀 사찰, 그리고 후시미의 만 개의 주홍 도리이 — 일본의 고요한 옛 영혼.",
+  "hero.lisbon.country": "포르투갈",
+  "hero.lisbon.city": "리스본",
+  "hero.lisbon.tagline2": "테주강",
+  "hero.lisbon.blurb":
+    "사우다드, 파두, 그리고 대서양으로 기울어진 타일 입힌 언덕들 — 리스본은 그 우수를 아줄레주의 푸름으로 노래한다.",
+  "hero.marrakech.country": "모로코",
+  "hero.marrakech.city": "마라케시",
+  "hero.marrakech.tagline2": "붉은 도시",
+  "hero.marrakech.blurb":
+    "등불이 켜진 메디나, 리아드의 안뜰, 그리고 제마 엘프나의 트랜스 북 극장 — 가장 아름다운 형태의 감각의 홍수.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "모든 언어로 이용 가능",
+  "home.everyLang.sub": "당신 주변의 거리, 명소, 박물관, 숨겨진 이야기를 위한 AI 오디오 가이드.",
+
   // Destination screen
   "dest.currentlyIn": "현재 위치",
   "dest.featuredTour": "추천 투어",

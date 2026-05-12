@@ -38,6 +38,39 @@ export const JA: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n}件のツアー",
   "home.tours.many": "{n}件のツアー",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "ジョージア",
+  "hero.tbilisi.city": "トビリシ",
+  "hero.tbilisi.tagline2": "古都トビリシ",
+  "hero.tbilisi.blurb":
+    "硫黄風呂と傾いたバルコニーから、シオニ大聖堂の聖歌まで — 旧市街の魂を歩く、映画のような散策。",
+  "hero.rome.country": "イタリア",
+  "hero.rome.city": "ローマ",
+  "hero.rome.tagline2": "永遠の都ローマ",
+  "hero.rome.blurb":
+    "フォロ・ロマーノの亡霊たち、バロックの噴水、トラステヴェレの夕食の卓を抜けて — けっして自分であることをやめない街。",
+  "hero.kyoto.country": "日本",
+  "hero.kyoto.city": "京都",
+  "hero.kyoto.tagline2": "古都・京都",
+  "hero.kyoto.blurb":
+    "提灯に照らされた祇園の路地、苔むす寺院、そして伏見の一万本の朱色の鳥居 — 日本の静かな古い魂。",
+  "hero.lisbon.country": "ポルトガル",
+  "hero.lisbon.city": "リスボン",
+  "hero.lisbon.tagline2": "テージョ川",
+  "hero.lisbon.blurb":
+    "サウダージ、ファド、そして大西洋へと傾く瓦葺きの丘 — リスボンはその哀愁をアズレージョの青で歌う。",
+  "hero.marrakech.country": "モロッコ",
+  "hero.marrakech.city": "マラケシュ",
+  "hero.marrakech.tagline2": "赤い都市",
+  "hero.marrakech.blurb":
+    "提灯が灯るメディナ、リヤドの中庭、ジャマ・エル・フナのトランス太鼓劇場 — 最良のかたちでの五感の洪水。",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "すべての言語で利用可能",
+  "home.everyLang.sub":
+    "あなたの周りの通り、ランドマーク、博物館、隠された物語を案内するAIオーディオガイド。",
+
   // Destination screen
   "dest.currentlyIn": "現在地",
   "dest.featuredTour": "注目のツアー",

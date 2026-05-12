@@ -38,6 +38,39 @@ export const HU: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} túra",
   "home.tours.many": "{n} túra",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "Grúzia",
+  "hero.tbilisi.city": "Tbiliszi",
+  "hero.tbilisi.tagline2": "Régi Tbiliszi",
+  "hero.tbilisi.blurb":
+    "Kénes fürdőktől és görbe erkélyektől a Szioni-templom énekéig — filmszerű séta az óváros lelkén át.",
+  "hero.rome.country": "Olaszország",
+  "hero.rome.city": "Róma",
+  "hero.rome.tagline2": "Az örök Róma",
+  "hero.rome.blurb":
+    "A Forum szellemei, barokk szökőkutak és Trastevere vacsoraasztalai közt — a város, amely soha nem szűnik meg önmaga lenni.",
+  "hero.kyoto.country": "Japán",
+  "hero.kyoto.city": "Kiotó",
+  "hero.kyoto.tagline2": "Régi Kiotó",
+  "hero.kyoto.blurb":
+    "Lampionos sikátorok Gionban, mohás templomok és Fusimi tízezer cinóberkapuja — Japán csendes, ősi lelke.",
+  "hero.lisbon.country": "Portugália",
+  "hero.lisbon.city": "Lisszabon",
+  "hero.lisbon.tagline2": "a Tejo folyó",
+  "hero.lisbon.blurb":
+    "Saudade, fado és csempés dombok lejtenek az Atlanti-óceán felé — Lisszabon az azulejo kékjében énekli melankóliáját.",
+  "hero.marrakech.country": "Marokkó",
+  "hero.marrakech.city": "Marrákes",
+  "hero.marrakech.tagline2": "a Vörös Város",
+  "hero.marrakech.blurb":
+    "Lampionos medinák, riad-udvarok és a Dzsemma el-Fna dobszínháza — érzéki túltöltöttség, a legszebb formában.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "Minden nyelven elérhető",
+  "home.everyLang.sub":
+    "AI hangos kalauz utcákhoz, nevezetességekhez, múzeumokhoz és rejtett történetekhez körülötted.",
+
   // Destination screen
   "dest.currentlyIn": "Itt vagy:",
   "dest.featuredTour": "Kiemelt túra",

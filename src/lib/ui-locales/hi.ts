@@ -38,6 +38,39 @@ export const HI: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} टूर",
   "home.tours.many": "{n} टूर",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "जॉर्जिया",
+  "hero.tbilisi.city": "त्बिलिसी",
+  "hero.tbilisi.tagline2": "पुराना त्बिलिसी",
+  "hero.tbilisi.blurb":
+    "सल्फर स्नानागारों और टेढ़ी बालकनियों से लेकर सिओनी के गायन तक — पुराने शहर की आत्मा से होकर एक सिनेमाई सैर।",
+  "hero.rome.country": "इटली",
+  "hero.rome.city": "रोम",
+  "hero.rome.tagline2": "अनंत रोम",
+  "hero.rome.blurb":
+    "फ़ोरम की परछाइयों, बारोक फ़व्वारों और त्रस्तेवेरे की रात्रिभोज मेज़ों से होकर — वह शहर जो कभी पूरी तरह स्वयं होना नहीं छोड़ता।",
+  "hero.kyoto.country": "जापान",
+  "hero.kyoto.city": "क्योटो",
+  "hero.kyoto.tagline2": "पुराना क्योटो",
+  "hero.kyoto.blurb":
+    "गिओन की लालटेन-रोशन गलियाँ, काईदार मंदिर और फुशिमी के दस हज़ार सिंदूरी तोरण — जापान की शांत प्राचीन आत्मा।",
+  "hero.lisbon.country": "पुर्तगाल",
+  "hero.lisbon.city": "लिस्बन",
+  "hero.lisbon.tagline2": "तेजू नदी",
+  "hero.lisbon.blurb":
+    "साउदादे, फ़ादो और टाइलों से सजी पहाड़ियाँ अटलांटिक की ओर ढलती — लिस्बन अपनी उदासी को अज़ुलेज़ो की नीलिमा में गाता है।",
+  "hero.marrakech.country": "मोरक्को",
+  "hero.marrakech.city": "मराकेश",
+  "hero.marrakech.tagline2": "लाल शहर",
+  "hero.marrakech.blurb":
+    "लालटेन-रोशन मदीना, रियाद के आँगन और जेमा अल-फ़ना का ट्रांस-ढोल थिएटर — सर्वोत्तम रूप में इंद्रियों का सैलाब।",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "हर भाषा में उपलब्ध",
+  "home.everyLang.sub":
+    "आपके आसपास की सड़कों, स्थलों, संग्रहालयों और छिपी कहानियों के लिए AI ऑडियो गाइड।",
+
   // Destination screen
   "dest.currentlyIn": "अभी यहाँ हैं",
   "dest.featuredTour": "विशेष टूर",

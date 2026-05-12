@@ -38,6 +38,39 @@ export const RO: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} tur",
   "home.tours.many": "{n} tururi",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "Georgia",
+  "hero.tbilisi.city": "Tbilisi",
+  "hero.tbilisi.tagline2": "Vechiul Tbilisi",
+  "hero.tbilisi.blurb":
+    "De la băile cu sulf și balcoanele strâmbe la cântările de la Sioni — o plimbare cinematografică prin sufletul orașului vechi.",
+  "hero.rome.country": "Italia",
+  "hero.rome.city": "Roma",
+  "hero.rome.tagline2": "Roma eternă",
+  "hero.rome.blurb":
+    "Printre fantomele Forumului, fântânile baroce și mesele de cină din Trastevere — orașul care nu încetează niciodată cu totul să fie el însuși.",
+  "hero.kyoto.country": "Japonia",
+  "hero.kyoto.city": "Kyoto",
+  "hero.kyoto.tagline2": "Vechiul Kyoto",
+  "hero.kyoto.blurb":
+    "Alei luminate cu felinare în Gion, temple acoperite de mușchi și cele zece mii de porți roșii de la Fushimi — sufletul tăcut și străvechi al Japoniei.",
+  "hero.lisbon.country": "Portugalia",
+  "hero.lisbon.city": "Lisabona",
+  "hero.lisbon.tagline2": "râul Tejo",
+  "hero.lisbon.blurb":
+    "Saudade, fado și dealuri îmbrăcate în plăci ceramice ce se înclină spre Atlantic — Lisabona își cântă melancolia în albastrul azulejos.",
+  "hero.marrakech.country": "Maroc",
+  "hero.marrakech.city": "Marrakech",
+  "hero.marrakech.tagline2": "Orașul Roșu",
+  "hero.marrakech.blurb":
+    "Medine luminate cu felinare, curți de riad și teatrul de tobe în transă din Jemaa el-Fnaa — supraîncărcare senzorială, în cea mai frumoasă formă.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "Disponibil în orice limbă",
+  "home.everyLang.sub":
+    "Ghid audio AI pentru străzi, monumente, muzee și povești ascunse din jurul tău.",
+
   // Destination screen
   "dest.currentlyIn": "Acum în",
   "dest.featuredTour": "Tur recomandat",

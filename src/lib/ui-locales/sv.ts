@@ -38,6 +38,39 @@ export const SV: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} tur",
   "home.tours.many": "{n} turer",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "Georgien",
+  "hero.tbilisi.city": "Tbilisi",
+  "hero.tbilisi.tagline2": "Gamla Tbilisi",
+  "hero.tbilisi.blurb":
+    "Från svavelbad och sneda balkonger till Sionis kyrkosång — en filmisk vandring genom gamla stans själ.",
+  "hero.rome.country": "Italien",
+  "hero.rome.city": "Rom",
+  "hero.rome.tagline2": "Det eviga Rom",
+  "hero.rome.blurb":
+    "Genom Forums skuggor, barocka fontäner och kvällsborden i Trastevere — staden som aldrig riktigt slutar vara sig själv.",
+  "hero.kyoto.country": "Japan",
+  "hero.kyoto.city": "Kyoto",
+  "hero.kyoto.tagline2": "Gamla Kyoto",
+  "hero.kyoto.blurb":
+    "Lyktbelysta gränder i Gion, mossiga tempel och de tiotusen cinnoberröda portarna i Fushimi — Japans tysta, gamla själ.",
+  "hero.lisbon.country": "Portugal",
+  "hero.lisbon.city": "Lissabon",
+  "hero.lisbon.tagline2": "Tejofloden",
+  "hero.lisbon.blurb":
+    "Saudade, fado och kakelklädda kullar som lutar mot Atlanten — Lissabon sjunger sin melankoli i azulejo-blått.",
+  "hero.marrakech.country": "Marocko",
+  "hero.marrakech.city": "Marrakech",
+  "hero.marrakech.tagline2": "Den röda staden",
+  "hero.marrakech.blurb":
+    "Lyktbelysta medinor, riad-gårdar och trumteatern på Jemaa el-Fnaa — sinnesöverbelastning, i sin vackraste form.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "Tillgängligt på alla språk",
+  "home.everyLang.sub":
+    "AI-ljudguide för gator, sevärdheter, museer och dolda berättelser runt omkring dig.",
+
   // Destination screen
   "dest.currentlyIn": "Du är just nu i",
   "dest.featuredTour": "Utvald tur",

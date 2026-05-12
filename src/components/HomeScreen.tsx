@@ -1,14 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
   Bell,
   ChevronDown,
-  Headphones,
-  Loader2,
+  Globe,
   MapPin,
-  Pause,
-  Play,
   Search,
   Settings as SettingsIcon,
   Sparkles,
@@ -18,16 +15,9 @@ import {
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useUnreadCount } from "@/hooks/useNotifications";
 import { useSelectedDestination } from "@/hooks/useSelectedDestination";
-import { useT, useTranslated, useUiLang } from "@/hooks/useT";
-import { setStoredLang } from "@/lib/i18n";
-import { LANGUAGES } from "@/lib/languages";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { getDestination } from "@/lib/destinations";
+import { useT, useTranslated } from "@/hooks/useT";
+import type { UiKey } from "@/lib/i18n";
+import { DESTINATIONS, type Destination } from "@/lib/destinations";
 import { HOME_CITIES } from "@/lib/cityList";
 import { CityCard } from "@/components/CityCard";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
@@ -54,76 +44,9 @@ const TIME_MACHINE_TOP_10 = [...TIME_MACHINE_ATTRACTIONS]
   .sort((a, b) => b.score - a.score)
   .slice(0, 10);
 
-type HeroSlide = {
-  slug: string;
-  city: string;
-  country: string;
-  tagline: string; // "Lokali|City"
-  blurb: string;
-  hero: string;
-};
-
-function makeSlide(
-  slug: string,
-  city: string,
-  country: string,
-  italic: string,
-  blurb: string,
-  fallbackHero: string,
-): HeroSlide {
-  const existing = getDestination(slug);
-  return {
-    slug,
-    city,
-    country,
-    tagline: `Lokali|${italic}`,
-    blurb: existing?.blurb ?? blurb,
-    hero: existing?.hero ?? fallbackHero,
-  };
-}
-
-const HERO_ROTATION: HeroSlide[] = [
-  makeSlide(
-    "tbilisi",
-    "Tbilisi",
-    "Georgia",
-    "Old Tbilisi",
-    "From sulfur baths and crooked balconies to the chants of Sioni — a cinematic walk through the soul of the old town.",
-    "https://images.unsplash.com/photo-1565009100-9e3a9d4b9e0e?auto=format&fit=crop&w=1280&q=80",
-  ),
-  makeSlide(
-    "paris",
-    "Paris",
-    "France",
-    "Romantic Paris",
-    "From Haussmann boulevards to Seine-side bookstalls — the city of light, captured one cinematic frame at a time.",
-    "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1280&q=80",
-  ),
-  makeSlide(
-    "rome",
-    "Rome",
-    "Italy",
-    "Eternal Rome",
-    "Through the Forum's ghosts, baroque fountains and trastevere supper tables — the city that never quite stops being itself.",
-    "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1280&q=80",
-  ),
-  makeSlide(
-    "bangkok",
-    "Bangkok",
-    "Thailand",
-    "Neon Bangkok",
-    "Golden temples, longtail boats on the Chao Phraya and street kitchens steaming until dawn — Bangkok at full voltage.",
-    "https://images.unsplash.com/photo-1508009603885-50cf7c579365?auto=format&fit=crop&w=1280&q=80",
-  ),
-  makeSlide(
-    "london",
-    "London",
-    "United Kingdom",
-    "Storied London",
-    "Royal parks, Soho lanes and the slow tide of the Thames — a thousand years of stories told between Tube stops.",
-    "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=1280&q=80",
-  ),
-];
+const HERO_ROTATION = ["tbilisi", "rome", "kyoto", "lisbon", "marrakech"]
+  .map((slug) => DESTINATIONS.find((d) => d.slug === slug))
+  .filter((d): d is Destination => !!d);
 
 export function HomeScreen() {
   const navigate = useNavigate();
@@ -131,11 +54,6 @@ export function HomeScreen() {
   const unread = useUnreadCount();
   const selected = useSelectedDestination();
   const t = useT();
-  const uiLang = useUiLang();
-  const currentLang =
-    LANGUAGES.find((l) => l.code.toLowerCase().startsWith(uiLang.toLowerCase())) ??
-    LANGUAGES.find((l) => l.code === "en-US") ??
-    LANGUAGES[0];
   const [query, setQuery] = useState("");
   const [heroIdx, setHeroIdx] = useState(0);
   const [mounted, setMounted] = useState(false);
@@ -151,99 +69,32 @@ export function HomeScreen() {
 
   const heroDest = HERO_ROTATION[heroIdx];
 
-  // Translate the selected destination + hero copy on the fly.
+  // Selected-destination chips still translate on the fly — selected
+  // can be any of the 30+ catalog entries, so a static dict isn't
+  // practical here.
   const [selectedCity, selectedCountry] = useTranslated([selected.city, selected.country]);
-  const taglineParts = heroDest.tagline.split("|");
-  const [heroCountry, heroPart1, heroPart2, heroBlurb, heroCity] = useTranslated([
-    heroDest.country,
-    taglineParts[0] ?? "",
-    taglineParts[1] ?? "",
-    heroDest.blurb,
-    heroDest.city,
-  ]);
+
+  // Hero rotation strings are PRE-TRANSLATED per locale (see
+  // hero.<slug>.* in src/lib/i18n.ts + locales). Beka asked for this
+  // so the rotation strings — country, italic tagline, blurb, city —
+  // never round-trip through /api/translate. Each 7-second tick
+  // would have otherwise burned five gateway calls per language for
+  // the same hand-authored copy. The literal "Lokali" tagline prefix
+  // stays English everywhere (brand name).
+  const heroKey = heroDest.slug as "tbilisi" | "rome" | "kyoto" | "lisbon" | "marrakech";
+  const heroCountry = t(`hero.${heroKey}.country` as UiKey);
+  const heroPart1 = "Lokali";
+  const heroPart2 = t(`hero.${heroKey}.tagline2` as UiKey);
+  const heroBlurb = t(`hero.${heroKey}.blurb` as UiKey);
+  const heroCity = t(`hero.${heroKey}.city` as UiKey);
 
   function submitSearch(e: React.FormEvent) {
     e.preventDefault();
     const q = query.trim();
     if (!q) return;
+    // Send the query straight to the n8n-backed /results page so any city,
+    // country or landmark resolves through the Lokali Attractions workflow.
     navigate({ to: "/results", search: { q } });
-  }
-
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioCacheRef = useRef<Map<string, string>>(new Map());
-  const [audioState, setAudioState] = useState<"idle" | "loading" | "playing">("idle");
-  const [audioError, setAudioError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-    setAudioState("idle");
-    setAudioError(null);
-  }, [heroDest.slug]);
-
-  useEffect(() => {
-    const cache = audioCacheRef.current;
-    return () => {
-      audioRef.current?.pause();
-      cache.forEach((url) => URL.revokeObjectURL(url));
-      cache.clear();
-    };
-  }, []);
-
-  async function toggleHeroAudio() {
-    setAudioError(null);
-    if (audioState === "playing" && audioRef.current) {
-      audioRef.current.pause();
-      setAudioState("idle");
-      return;
-    }
-    if (audioState === "loading") return;
-
-    const cacheKey = `${heroDest.slug}::${currentLang.code}`;
-    const cached = audioCacheRef.current.get(cacheKey);
-
-    const playUrl = (url: string) => {
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      audio.addEventListener("ended", () => setAudioState("idle"));
-      audio.addEventListener("error", () => {
-        setAudioState("idle");
-        setAudioError("Couldn't play audio");
-      });
-      audio
-        .play()
-        .then(() => setAudioState("playing"))
-        .catch(() => {
-          setAudioState("idle");
-          setAudioError("Couldn't play audio");
-        });
-    };
-
-    if (cached) {
-      playUrl(cached);
-      return;
-    }
-
-    setAudioState("loading");
-    try {
-      const script = heroBlurb || heroDest.blurb;
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ script, language: currentLang.code }),
-      });
-      if (!res.ok) throw new Error(`TTS failed (${res.status})`);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      audioCacheRef.current.set(cacheKey, url);
-      playUrl(url);
-    } catch (err) {
-      console.error("hero TTS error", err);
-      setAudioState("idle");
-      setAudioError("Audio preview unavailable");
-    }
   }
 
   return (
@@ -297,41 +148,13 @@ export function HomeScreen() {
               >
                 <SettingsIcon className="h-4 w-4" />
               </Link>
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  aria-label={t("nav.language")}
-                  className="inline-flex h-10 items-center gap-1.5 rounded-full border border-foreground/15 bg-background/40 px-3 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
-                >
-                  <span className="text-base leading-none">{currentLang.flag}</span>
-                  <span className="text-[11px] font-bold uppercase tracking-[0.12em]">
-                    {currentLang.code.split("-")[0]}
-                  </span>
-                  <ChevronDown className="h-3 w-3 opacity-60" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="z-50 max-h-[320px] w-56 overflow-y-auto bg-popover"
-                >
-                  {LANGUAGES.map((l) => (
-                    <DropdownMenuItem
-                      key={l.code}
-                      onSelect={() => setStoredLang(l.code)}
-                      className="flex items-center gap-2"
-                    >
-                      <span className="text-base">{l.flag}</span>
-                      <span className="flex-1 truncate text-sm">{l.native}</span>
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                        {l.code.split("-")[0]}
-                      </span>
-                    </DropdownMenuItem>
-                  ))}
-                  <DropdownMenuItem asChild>
-                    <Link to="/language" className="text-xs text-primary">
-                      {t("nav.language")} →
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Link
+                to="/language"
+                aria-label={t("nav.language")}
+                className="grid h-10 w-10 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
+              >
+                <Globe className="h-4 w-4" />
+              </Link>
               <Link
                 to="/notifications"
                 aria-label={t("nav.notifications")}
@@ -359,67 +182,21 @@ export function HomeScreen() {
             <p className="mt-4 max-w-[320px] text-[14px] leading-[1.55] text-foreground/75">
               {heroBlurb}
             </p>
-            {/* CTA + audio preview button. Beka asked for a one-tap
-                "hear what this city sounds like" affordance right on
-                the hero. The play pill narrates the same blurb shown
-                above in the user's selected language via /api/tts. */}
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              {getDestination(heroDest.slug) ? (
-                <Link
-                  to="/destination/$slug"
-                  params={{ slug: heroDest.slug }}
-                  aria-label={t("home.openCity", { city: heroCity })}
-                  className="inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
-                >
-                  <span className="truncate">{heroCity}</span>
-                  <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-                </Link>
-              ) : (
-                <Link
-                  to="/results"
-                  search={{ q: heroDest.city }}
-                  aria-label={t("home.openCity", { city: heroCity })}
-                  className="inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
-                >
-                  <span className="truncate">{heroCity}</span>
-                  <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-                </Link>
-              )}
-              <button
-                type="button"
-                onClick={toggleHeroAudio}
-                disabled={audioState === "loading"}
-                aria-label={
-                  audioState === "playing"
-                    ? `Pause audio preview for ${heroCity}`
-                    : `Play audio preview for ${heroCity}`
-                }
-                aria-pressed={audioState === "playing"}
-                className="inline-flex h-12 items-center gap-2 rounded-full border border-foreground/20 bg-background/40 px-4 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:border-primary/60 hover:bg-background/60 disabled:opacity-70"
-              >
-                <span className="grid h-7 w-7 place-items-center rounded-full bg-gradient-gold text-primary-foreground">
-                  {audioState === "loading" ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : audioState === "playing" ? (
-                    <Pause className="h-3.5 w-3.5 fill-current" />
-                  ) : (
-                    <Play className="h-3.5 w-3.5 fill-current" />
-                  )}
-                </span>
-                <span className="text-[11px] font-bold uppercase tracking-[0.16em]">
-                  {audioState === "playing"
-                    ? "Pause"
-                    : audioState === "loading"
-                      ? "Loading"
-                      : "Listen"}
-                </span>
-              </button>
-            </div>
-            {audioError && (
-              <p className="mt-2 text-[11px] text-accent" role="status">
-                {audioError}
-              </p>
-            )}
+            {/* Beka noticed the "Open {city}" verb pushed the button
+                wider than the gold pill in some non-English locales —
+                e.g. Spanish "Abrir Roma" or German "Öffnen Rom" trim
+                fine, but longer compound verbs overflow. Drop the
+                verb, keep just the city name with the arrow doing
+                the action signaling. */}
+            <Link
+              to="/destination/$slug"
+              params={{ slug: heroDest.slug }}
+              aria-label={t("home.openCity", { city: heroCity })}
+              className="mt-6 inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
+            >
+              <span className="truncate">{heroCity}</span>
+              <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+            </Link>
           </div>
         </section>
 
@@ -433,7 +210,7 @@ export function HomeScreen() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search a city, museum, street, or landmark..."
+              placeholder={t("home.searchPlaceholder")}
               enterKeyHint="search"
               autoComplete="off"
               className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none"
@@ -462,22 +239,52 @@ export function HomeScreen() {
               </Link>
             )}
           </form>
+
+          {/* "Available in every language" badge — confidence-building
+              tagline that surfaces Lokali's multi-language story right
+              under the search pill. Beka asked for this so the user
+              sees the value proposition before they scroll. Both
+              strings are pre-translated per locale (home.everyLang.*)
+              so we never hit the translation gateway for tagline copy. */}
+          <div className="mt-3.5 rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3 text-center">
+            <p className="inline-flex items-center justify-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary">
+              <Globe className="h-3 w-3" />
+              {t("home.everyLang.title")}
+            </p>
+            <p className="mt-1.5 text-[12px] leading-[1.55] text-foreground/75">
+              {t("home.everyLang.sub")}
+            </p>
+          </div>
         </section>
 
-        {/* ─── AUDIO GUIDE TAGLINE ─── */}
-        <section className="mt-5 px-5">
-          <div className="flex items-start gap-3 rounded-2xl border border-primary/25 bg-primary/5 px-4 py-3">
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow">
-              <Headphones className="h-4 w-4" />
-            </div>
-            <div className="min-w-0">
-              <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
-                Available in every language
-              </div>
-              <p className="mt-0.5 text-[13px] leading-snug text-foreground/85">
-                AI audio guide for streets, landmarks, museums, and hidden stories around you.
+        {/* ─── TOP MUSEUMS STRIP ─── */}
+        {/* Beka asked to surface museums ABOVE Time Machine — both
+            strips share the same shape, but real museums are the
+            wider audience hook than historical-fiction roleplay,
+            so they should land first. Tapping a card opens the
+            existing /attraction/$id flow keyed by the museum's
+            English name. */}
+        <section className="mt-9">
+          <div className="mb-4 flex items-end justify-between px-5">
+            <div>
+              <h2 className="font-display text-[22px] font-medium leading-tight tracking-[-0.02em] text-foreground">
+                {t("home.museums.title")}
+              </h2>
+              <p className="mt-1 text-[12px] leading-snug text-muted-foreground">
+                {t("home.museums.sub")}
               </p>
             </div>
+            <Link
+              to="/museums"
+              className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary transition-smooth hover:opacity-80"
+            >
+              {t("home.seeAll")} <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
+            {MUSEUMS.slice(0, 10).map((m, i) => (
+              <MuseumCard key={m.id} museum={m} rank={i + 1} />
+            ))}
           </div>
         </section>
 
@@ -502,37 +309,6 @@ export function HomeScreen() {
           <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
             {TIME_MACHINE_TOP_10.map((a, i) => (
               <TimeMachineMomentCard key={a.id} attraction={a} rank={i + 1} />
-            ))}
-          </div>
-        </section>
-
-        {/* ─── TOP MUSEUMS STRIP ─── */}
-        {/* Sibling to the Time Machine strip above — same shape, same
-            visual language, different curation axis. Beka asked for
-            this surface so museum-lovers can dive straight in without
-            having to land on a city first. Tapping a card opens the
-            existing /attraction/$id flow keyed by the museum's
-            English name. */}
-        <section className="mt-9">
-          <div className="mb-4 flex items-end justify-between px-5">
-            <div>
-              <h2 className="font-display text-[22px] font-medium leading-tight tracking-[-0.02em] text-foreground">
-                {t("home.museums.title")}
-              </h2>
-              <p className="mt-1 text-[12px] leading-snug text-muted-foreground">
-                {t("home.museums.sub")}
-              </p>
-            </div>
-            <Link
-              to="/museums"
-              className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary transition-smooth hover:opacity-80"
-            >
-              {t("home.seeAll")} <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
-          <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
-            {MUSEUMS.slice(0, 10).map((m, i) => (
-              <MuseumCard key={m.id} museum={m} rank={i + 1} />
             ))}
           </div>
         </section>

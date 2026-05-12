@@ -38,6 +38,39 @@ export const BN: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n}টি ট্যুর",
   "home.tours.many": "{n}টি ট্যুর",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "জর্জিয়া",
+  "hero.tbilisi.city": "তিবলিসি",
+  "hero.tbilisi.tagline2": "পুরোনো তিবলিসি",
+  "hero.tbilisi.blurb":
+    "সালফার বাথ আর বাঁকা বারান্দা থেকে সিওনির কীর্তন পর্যন্ত — পুরোনো শহরের আত্মার মধ্যে দিয়ে এক সিনেম্যাটিক পদচারণা।",
+  "hero.rome.country": "ইতালি",
+  "hero.rome.city": "রোম",
+  "hero.rome.tagline2": "চিরন্তন রোম",
+  "hero.rome.blurb":
+    "ফোরামের ছায়া, বারোক ঝর্ণা আর ত্রাস্তেভেরের নৈশভোজের টেবিল — যে শহর কখনো নিজে হওয়া থামায় না।",
+  "hero.kyoto.country": "জাপান",
+  "hero.kyoto.city": "কিয়োতো",
+  "hero.kyoto.tagline2": "পুরোনো কিয়োতো",
+  "hero.kyoto.blurb":
+    "গিয়োনের লণ্ঠন-আলোকিত গলি, শ্যাওলায় ঢাকা মন্দির আর ফুশিমির দশ হাজার সিঁদুরে তোরণ — জাপানের নিঃশব্দ পুরোনো আত্মা।",
+  "hero.lisbon.country": "পর্তুগাল",
+  "hero.lisbon.city": "লিসবন",
+  "hero.lisbon.tagline2": "তেজু নদী",
+  "hero.lisbon.blurb":
+    "সাউদাদে, ফাদো আর টালি-মোড়া পাহাড় আটলান্টিকের দিকে গড়িয়ে — লিসবন তার বিষাদ গায় আজুলেজোর নীলে।",
+  "hero.marrakech.country": "মরক্কো",
+  "hero.marrakech.city": "মারাকেশ",
+  "hero.marrakech.tagline2": "লাল শহর",
+  "hero.marrakech.blurb":
+    "লণ্ঠন-আলোকিত মেদিনা, রিয়াদের আঙিনা আর জেমা এল-ফনার ট্রান্স-ঢোলের রঙ্গমঞ্চ — সেরা ঢঙে ইন্দ্রিয়ের প্লাবন।",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "সব ভাষায় উপলব্ধ",
+  "home.everyLang.sub":
+    "তোমার চারপাশের রাস্তা, নিদর্শন, জাদুঘর আর লুকোনো গল্পের জন্য AI অডিও গাইড।",
+
   // Destination screen
   "dest.currentlyIn": "এখন এখানে আছেন",
   "dest.featuredTour": "নির্বাচিত ট্যুর",

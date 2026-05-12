@@ -230,7 +230,7 @@ function ResultsPage() {
     if (page === safePage) return;
     navigate({
       to: "/results",
-      search: (prev: Record<string, unknown>) => ({ ...prev, q, page: safePage }),
+      search: (prev) => ({ ...prev, q, page: safePage }),
       replace: true,
     });
   }, [results, page, safePage, q, navigate]);
@@ -240,7 +240,7 @@ function ResultsPage() {
     if (clamped === safePage) return;
     navigate({
       to: "/results",
-      search: (prev: Record<string, unknown>) => ({ ...prev, q, page: clamped }),
+      search: (prev) => ({ ...prev, q, page: clamped }),
     });
     // Scroll back to the top so page 2 doesn't dump the user mid-list.
     if (typeof window !== "undefined") {
@@ -289,17 +289,15 @@ function ResultsPage() {
               />
             </form>
           </div>
-          <p className="mt-2 text-[10.5px] uppercase tracking-[0.2em] text-muted-foreground">
-            {loading
-              ? t("results.searching")
-              : results
-                ? `${
-                    results.length === 1
-                      ? t("results.countOne", { n: results.length })
-                      : t("results.countMany", { n: results.length })
-                  } “${q}”`
-                : ""}
-          </p>
+          {/* Count line removed per Beka — "30 results for 'Bangkok'"
+              felt like noise once the rest of the row already shows
+              the query in the search field. The "Searching…" status
+              still surfaces while loading. */}
+          {loading && (
+            <p className="mt-2 text-[10.5px] uppercase tracking-[0.2em] text-muted-foreground">
+              {t("results.searching")}
+            </p>
+          )}
         </header>
 
         {/* Body */}

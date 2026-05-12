@@ -38,6 +38,38 @@ export const ZH_CN: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} 条路线",
   "home.tours.many": "{n} 条路线",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "格鲁吉亚",
+  "hero.tbilisi.city": "第比利斯",
+  "hero.tbilisi.tagline2": "老第比利斯",
+  "hero.tbilisi.blurb":
+    "从硫磺浴池与歪斜的阳台,到锡奥尼大教堂的圣咏 — 一场穿越老城灵魂的电影般漫步。",
+  "hero.rome.country": "意大利",
+  "hero.rome.city": "罗马",
+  "hero.rome.tagline2": "永恒之城",
+  "hero.rome.blurb":
+    "穿过古罗马广场的幽影、巴洛克喷泉与特拉斯泰韦雷的晚餐桌 — 这是一座从不真正停止做自己的城市。",
+  "hero.kyoto.country": "日本",
+  "hero.kyoto.city": "京都",
+  "hero.kyoto.tagline2": "古都京都",
+  "hero.kyoto.blurb":
+    "祇园灯火映照的小巷、覆满青苔的寺院,以及伏见一万座朱红色鸟居 — 日本宁静古老的灵魂。",
+  "hero.lisbon.country": "葡萄牙",
+  "hero.lisbon.city": "里斯本",
+  "hero.lisbon.tagline2": "特茹河",
+  "hero.lisbon.blurb":
+    "Saudade、法朵,以及铺满瓷砖、倾向大西洋的山丘 — 里斯本以阿兹勒赫瓷砖的蓝色吟唱它的忧愁。",
+  "hero.marrakech.country": "摩洛哥",
+  "hero.marrakech.city": "马拉喀什",
+  "hero.marrakech.tagline2": "红色之城",
+  "hero.marrakech.blurb":
+    "灯火映照的麦地那、里亚德庭院,以及不眠广场上恍惚的鼓乐剧场 — 最美好形式的感官洪流。",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "支持每一种语言",
+  "home.everyLang.sub": "AI 音频导览,为你身边的街道、地标、博物馆与隐秘故事讲述。",
+
   // Destination screen
   "dest.currentlyIn": "当前所在",
   "dest.featuredTour": "精选路线",

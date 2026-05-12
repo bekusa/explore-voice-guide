@@ -38,6 +38,39 @@ export const FA: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} تور",
   "home.tours.many": "{n} تور",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "گرجستان",
+  "hero.tbilisi.city": "تفلیس",
+  "hero.tbilisi.tagline2": "تفلیس قدیم",
+  "hero.tbilisi.blurb":
+    "از حمام‌های گوگردی و بالکن‌های کج تا نواهای کلیسای سیونی — گردشی سینمایی در روح شهر کهنه.",
+  "hero.rome.country": "ایتالیا",
+  "hero.rome.city": "رم",
+  "hero.rome.tagline2": "رم جاودان",
+  "hero.rome.blurb":
+    "از میان ارواح فروم رومی، فواره‌های باروک و میزهای شام تراستوره — شهری که هرگز از خود بودن دست برنمی‌دارد.",
+  "hero.kyoto.country": "ژاپن",
+  "hero.kyoto.city": "کیوتو",
+  "hero.kyoto.tagline2": "کیوتوی کهن",
+  "hero.kyoto.blurb":
+    "کوچه‌های فانوس‌نشانِ گیون، معابد خزه‌پوش و ده هزار دروازه‌ی شنگرفیِ فوشیمی — جانِ ساکت و کهنِ ژاپن.",
+  "hero.lisbon.country": "پرتغال",
+  "hero.lisbon.city": "لیسبون",
+  "hero.lisbon.tagline2": "رود تجو",
+  "hero.lisbon.blurb":
+    "سائوداده، فادو و تپه‌های کاشی‌کاری‌شده که به سوی اقیانوس اطلس می‌غلتند — لیسبون اندوهش را به آبیِ آزولژو می‌سراید.",
+  "hero.marrakech.country": "مراکش",
+  "hero.marrakech.city": "مراکش",
+  "hero.marrakech.tagline2": "شهر سرخ",
+  "hero.marrakech.blurb":
+    "مدینه‌های فانوس‌نشان، حیاط ریادها و تئاتر طبل‌نوازانِ جامع‌الفنا — انفجاری از حواس، در بهترین شکل ممکن.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "در دسترس به همه زبان‌ها",
+  "home.everyLang.sub":
+    "راهنمای صوتی AI برای خیابان‌ها، بناهای دیدنی، موزه‌ها و داستان‌های پنهان پیرامون شما.",
+
   // Destination screen
   "dest.currentlyIn": "هم‌اکنون در",
   "dest.featuredTour": "تور ویژه",

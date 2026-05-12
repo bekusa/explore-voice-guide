@@ -38,6 +38,39 @@ export const VI: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} hành trình",
   "home.tours.many": "{n} hành trình",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "Gruzia",
+  "hero.tbilisi.city": "Tbilisi",
+  "hero.tbilisi.tagline2": "Tbilisi cổ",
+  "hero.tbilisi.blurb":
+    "Từ những phòng tắm lưu huỳnh và ban công xiêu vẹo đến tiếng kinh của Sioni — một cuộc dạo bước điện ảnh xuyên qua linh hồn phố cổ.",
+  "hero.rome.country": "Ý",
+  "hero.rome.city": "Rome",
+  "hero.rome.tagline2": "Rome vĩnh hằng",
+  "hero.rome.blurb":
+    "Giữa những bóng ma của Forum, đài phun nước baroque và những bàn ăn tối ở Trastevere — thành phố không bao giờ thực sự ngừng là chính mình.",
+  "hero.kyoto.country": "Nhật Bản",
+  "hero.kyoto.city": "Kyoto",
+  "hero.kyoto.tagline2": "Kyoto cổ",
+  "hero.kyoto.blurb":
+    "Những con hẻm rực sáng đèn lồng ở Gion, đền phủ rêu và mười nghìn cổng son đỏ Fushimi — linh hồn cổ kính tĩnh lặng của Nhật Bản.",
+  "hero.lisbon.country": "Bồ Đào Nha",
+  "hero.lisbon.city": "Lisbon",
+  "hero.lisbon.tagline2": "sông Tagus",
+  "hero.lisbon.blurb":
+    "Saudade, fado và những ngọn đồi ốp gạch nghiêng xuống Đại Tây Dương — Lisbon ngân vang nỗi u sầu trong sắc xanh azulejo.",
+  "hero.marrakech.country": "Maroc",
+  "hero.marrakech.city": "Marrakech",
+  "hero.marrakech.tagline2": "Thành phố Đỏ",
+  "hero.marrakech.blurb":
+    "Những medina rực ánh đèn lồng, sân riad và sân khấu trống mê hoặc của Jemaa el-Fnaa — một cơn lũ giác quan, ở dạng đẹp nhất.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "Có sẵn ở mọi ngôn ngữ",
+  "home.everyLang.sub":
+    "Hướng dẫn âm thanh AI cho các con phố, địa danh, bảo tàng và những câu chuyện ẩn mình quanh bạn.",
+
   // Destination screen
   "dest.currentlyIn": "Đang ở",
   "dest.featuredTour": "Hành trình nổi bật",

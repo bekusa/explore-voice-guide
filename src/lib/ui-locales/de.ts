@@ -38,6 +38,39 @@ export const DE: Partial<Record<UiKey, string>> = {
   "home.tours.one": "{n} Tour",
   "home.tours.many": "{n} Touren",
 
+  // Hero rotation copy (5 cities × 4 fields). Pre-translated so the
+  // Home hero doesn't burn an /api/translate round-trip per visitor.
+  "hero.tbilisi.country": "Georgien",
+  "hero.tbilisi.city": "Tiflis",
+  "hero.tbilisi.tagline2": "Alt-Tiflis",
+  "hero.tbilisi.blurb":
+    "Von Schwefelbädern und schiefen Balkonen bis zu den Gesängen der Sioni-Kathedrale — ein filmreifer Spaziergang durch die Seele der Altstadt.",
+  "hero.rome.country": "Italien",
+  "hero.rome.city": "Rom",
+  "hero.rome.tagline2": "Ewiges Rom",
+  "hero.rome.blurb":
+    "Durch die Geister des Forums, barocke Brunnen und die Abendtische Trasteveres — die Stadt, die nie ganz aufhört, sie selbst zu sein.",
+  "hero.kyoto.country": "Japan",
+  "hero.kyoto.city": "Kyoto",
+  "hero.kyoto.tagline2": "Alt-Kyoto",
+  "hero.kyoto.blurb":
+    "Lampengesäumte Gassen in Gion, moosbewachsene Tempel und die zehntausend zinnoberroten Tore von Fushimi — Japans stille alte Seele.",
+  "hero.lisbon.country": "Portugal",
+  "hero.lisbon.city": "Lissabon",
+  "hero.lisbon.tagline2": "der Tejo",
+  "hero.lisbon.blurb":
+    "Saudade, Fado und kachelgesäumte Hügel, die zum Atlantik abfallen — Lissabon besingt seine Melancholie im Blau der Azulejos.",
+  "hero.marrakech.country": "Marokko",
+  "hero.marrakech.city": "Marrakesch",
+  "hero.marrakech.tagline2": "die Rote Stadt",
+  "hero.marrakech.blurb":
+    "Lampengesäumte Medinas, Riad-Innenhöfe und das Trommeltheater des Jemaa el-Fnaa — Reizüberflutung in ihrer schönsten Form.",
+
+  // "Available in every language" badge under the search bar.
+  "home.everyLang.title": "In jeder Sprache verfügbar",
+  "home.everyLang.sub":
+    "KI-Audioguide für Straßen, Sehenswürdigkeiten, Museen und verborgene Geschichten um dich herum.",
+
   // Destination screen
   "dest.currentlyIn": "Du bist gerade in",
   "dest.featuredTour": "Empfohlene Tour",
