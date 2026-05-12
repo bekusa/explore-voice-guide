@@ -119,6 +119,35 @@ function AttractionPage() {
   });
   const [loadingScript, setLoadingScript] = useState(false);
   const script = guide?.script ?? "";
+
+  // What the InlineAudioPanel actually speaks. Originally just the
+  // narrated `script`; Beka asked for the audio to also cover the
+  // Key Facts, What to Look For, and Practical Tips sections so the
+  // user can listen straight through without scrolling. We stitch
+  // them on with translated section headers and double-newlines so
+  // Azure's TTS gives each block a natural pause.
+  const fullScript = useMemo(() => {
+    if (!guide) return "";
+    const parts: string[] = [];
+    if (guide.script) parts.push(guide.script);
+    const join = (items: string[]) =>
+      items
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .join(". ");
+    if (guide.key_facts?.length) {
+      parts.push("\n\n" + t("attr.keyFactsTitle") + ".\n" + join(guide.key_facts) + ".");
+    }
+    if (guide.look_for?.length) {
+      parts.push("\n\n" + t("attr.whatToLook") + ".\n" + join(guide.look_for) + ".");
+    }
+    if (guide.tips?.length) {
+      parts.push(
+        "\n\n" + t("attr.practical") + " " + t("attr.tips") + ".\n" + join(guide.tips) + ".",
+      );
+    }
+    return parts.join("");
+  }, [guide, t]);
   // Hero image — n8n's image_url wins; otherwise lazily fetch from
   // Google Places / Wikipedia, same flow as the result cards.
   const [heroPhoto, setHeroPhoto] = useState<string | null>(null);
@@ -285,7 +314,7 @@ function AttractionPage() {
         playerOpen ? (
           <InlineAudioPanel
             name={a?.name ?? fallbackName}
-            script={script}
+            script={fullScript || script}
             language={language}
             onClose={() => setPlayerOpen(false)}
           />

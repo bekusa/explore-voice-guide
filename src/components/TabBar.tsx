@@ -1,12 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import {
-  Bookmark,
-  Compass,
-  Home as HomeIcon,
-  LogOut,
-  MapPin,
-  User as UserIcon,
-} from "lucide-react";
+import { Bookmark, Home as HomeIcon, LogOut, MapPin, User as UserIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useT } from "@/hooks/useT";
 
@@ -24,14 +17,12 @@ export function TabBar() {
         <HomeIcon className="h-[19px] w-[19px]" />
         <span className="text-[10px] font-medium">{t("nav.home")}</span>
       </Link>
-      <Link
-        to="/destinations"
-        className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
-        activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
-      >
-        <Compass className="h-[19px] w-[19px]" />
-        <span className="text-[10px] font-medium">{t("nav.explore")}</span>
-      </Link>
+      {/* Explore tab removed per Beka — the home page already
+          surfaces destinations via the search bar and the Featured
+          cities strip, so the standalone tab was redundant. The
+          /destinations route itself stays alive (Home's search +
+          city pill still navigate to it); this is just a tab-bar
+          tidy. */}
       <Link
         to="/map"
         className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"

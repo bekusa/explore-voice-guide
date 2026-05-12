@@ -30,54 +30,68 @@ export interface Attraction {
   image: string;
 }
 
-// Curated local photos for each Time Machine moment, dropped into
-// `src/assets/destinations/TimeMachine/` by Beka (file naming
-// convention: "Display Name - Country.jpg"). We pick them up via
-// Vite's import.meta.glob so adding a new image is just a matter of
-// dropping the file in — no second edit. The map below points each
-// attraction id at its local image; ids without a curated picture
-// fall back to a deterministic LoremFlickr seed (`img(...)`).
-const TM_IMAGES = import.meta.glob<{ default: string }>("@/assets/destinations/TimeMachine/*.jpg", {
-  eager: true,
-});
+// Curated local photos for each Time Machine moment. Each one is
+// imported explicitly (rather than via import.meta.glob) — Beka
+// caught the glob path silently failing on Lovable's build, leaving
+// every TM card on a black background. Explicit imports give us a
+// compile-time guarantee that the URL resolves; if a file is moved
+// or renamed, the build breaks loudly instead of degrading silently.
+import imgRhodes from "@/assets/destinations/TimeMachine/Colossus of Rhodes - Greece.jpg";
+import imgAlexandria from "@/assets/destinations/TimeMachine/Library of Alexandria - Egypt.jpg";
+import imgPompeii from "@/assets/destinations/TimeMachine/Pompeii - Italy.jpg";
+import imgColosseum from "@/assets/destinations/TimeMachine/The Colosseum - Italy.jpg";
+import imgHagiaSophia from "@/assets/destinations/TimeMachine/Hagia Sophia - Turkey.jpg";
+import imgBastille from "@/assets/destinations/TimeMachine/The Bastille - France.jpg";
+import imgTitanic from "@/assets/destinations/TimeMachine/Titanic - Atlantic Ocean.jpg";
+import imgThermopylae from "@/assets/destinations/TimeMachine/Thermopylae - Greece.jpg";
+import imgTbilisi from "@/assets/destinations/TimeMachine/Tbilisi - Georgia.jpg";
+import imgGiza from "@/assets/destinations/TimeMachine/Giza - Egypt.jpg";
+import imgHiroshima from "@/assets/destinations/TimeMachine/Hiroshima - Japan.jpg";
+import imgDidgori from "@/assets/destinations/TimeMachine/Battle of Didgori - Georgia.jpg";
+import imgTrojan from "@/assets/destinations/TimeMachine/The Trojan Horse - Troy.jpg";
+import imgFirstContact from "@/assets/destinations/TimeMachine/First Contact - Bahamas.jpg";
+import imgConstantinople from "@/assets/destinations/TimeMachine/The Fall of Constantinople - Turkey.jpg";
+import imgMachu from "@/assets/destinations/TimeMachine/Machu Picchu - Peru.jpg";
+import imgStonehenge from "@/assets/destinations/TimeMachine/Stonehenge - Britain.jpg";
+import imgSistine from "@/assets/destinations/TimeMachine/The Sistine Chapel - Italy.jpg";
+import imgOlympia from "@/assets/destinations/TimeMachine/Olympia - Greece.jpg";
+import imgBlackPlague from "@/assets/destinations/TimeMachine/The Black Death - Britain.jpg";
+import imgSocrates from "@/assets/destinations/TimeMachine/The Trial of Socrates - Greece.jpg";
+import imgMozart from "@/assets/destinations/TimeMachine/Mozart's Requiem - Austria.jpg";
+import imgSamarkand from "@/assets/destinations/TimeMachine/Samarkand - Uzbekistan.jpg";
+import imgBaghdadMongols from "@/assets/destinations/TimeMachine/Baghdad - The Mongol Sack - Iraq.jpg";
+import imgKyiv from "@/assets/destinations/TimeMachine/Kyiv - Ukraine.jpg";
 
-/** Look up a curated image by its on-disk filename (without folder). */
-function tmImg(filename: string): string {
-  // Vite returns keys with the FULL resolved path, so we match by suffix.
-  const entry = Object.entries(TM_IMAGES).find(([k]) => k.endsWith("/" + filename));
-  return entry ? entry[1].default : "";
-}
-
-// Per-attraction-id → image filename. Eight ids (jerusalem,
+// Per-attraction-id → imported image URL. Eight ids (jerusalem,
 // hannibal, tutankhamun, baghdad_golden, carthage, kyoto, angkor,
-// great_zimbabwe) don't have curated pictures yet — they fall
-// through to the LoremFlickr fallback below.
+// great_zimbabwe) don't have curated pictures yet — img() falls
+// through to the LoremFlickr fallback for those.
 const IMAGE_BY_ID: Record<string, string> = {
-  rhodes_colossus: "Colossus of Rhodes - Greece.jpg",
-  alexandria_library: "Library of Alexandria - Egypt.jpg",
-  pompeii_day: "Pompeii - Italy.jpg",
-  colosseum_opening: "The Colosseum - Italy.jpg",
-  hagia_sophia: "Hagia Sophia - Turkey.jpg",
-  bastille: "The Bastille - France.jpg",
-  titanic: "Titanic - Atlantic Ocean.jpg",
-  thermopylae: "Thermopylae - Greece.jpg",
-  tbilisi_1795: "Tbilisi - Georgia.jpg",
-  giza_last_year: "Giza - Egypt.jpg",
-  hiroshima: "Hiroshima - Japan.jpg",
-  didgori: "Battle of Didgori - Georgia.jpg",
-  trojan_horse: "The Trojan Horse - Troy.jpg",
-  first_contact: "First Contact - Bahamas.jpg",
-  constantinople_fall: "The Fall of Constantinople - Turkey.jpg",
-  machu_picchu: "Machu Picchu - Peru.jpg",
-  stonehenge: "Stonehenge - Britain.jpg",
-  sistine_chapel: "The Sistine Chapel - Italy.jpg",
-  olympia_first: "Olympia - Greece.jpg",
-  black_plague: "The Black Death - Britain.jpg",
-  socrates: "The Trial of Socrates - Greece.jpg",
-  mozart: "Mozart's Requiem - Austria.jpg",
-  samarcand: "Samarkand - Uzbekistan.jpg",
-  baghdad_mongols: "Baghdad - The Mongol Sack - Iraq.jpg",
-  kiev_batu: "Kyiv - Ukraine.jpg",
+  rhodes_colossus: imgRhodes,
+  alexandria_library: imgAlexandria,
+  pompeii_day: imgPompeii,
+  colosseum_opening: imgColosseum,
+  hagia_sophia: imgHagiaSophia,
+  bastille: imgBastille,
+  titanic: imgTitanic,
+  thermopylae: imgThermopylae,
+  tbilisi_1795: imgTbilisi,
+  giza_last_year: imgGiza,
+  hiroshima: imgHiroshima,
+  didgori: imgDidgori,
+  trojan_horse: imgTrojan,
+  first_contact: imgFirstContact,
+  constantinople_fall: imgConstantinople,
+  machu_picchu: imgMachu,
+  stonehenge: imgStonehenge,
+  sistine_chapel: imgSistine,
+  olympia_first: imgOlympia,
+  black_plague: imgBlackPlague,
+  socrates: imgSocrates,
+  mozart: imgMozart,
+  samarcand: imgSamarkand,
+  baghdad_mongols: imgBaghdadMongols,
+  kiev_batu: imgKyiv,
 };
 
 // Themed photos via LoremFlickr — used as the fallback for any id
@@ -91,12 +105,7 @@ const flickr = (keywords: string) => {
 
 /** Resolve the image URL for a given attraction id. */
 function img(id: string, fallbackKeywords: string): string {
-  const filename = IMAGE_BY_ID[id];
-  if (filename) {
-    const url = tmImg(filename);
-    if (url) return url;
-  }
-  return flickr(fallbackKeywords);
+  return IMAGE_BY_ID[id] ?? flickr(fallbackKeywords);
 }
 
 export const ATTRACTIONS: Attraction[] = [

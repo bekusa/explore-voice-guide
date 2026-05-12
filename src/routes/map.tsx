@@ -78,6 +78,15 @@ function MapPage() {
 
       mapRef.current = map;
       setReady(true);
+      // Leaflet caches the container size at init. If the page
+      // mounts before the layout settles (transitions, MobileFrame
+      // re-flow, etc.) tiles render at 0x0 and the canvas stays
+      // black. Beka caught the empty map after the AiGeneratedFooter
+      // landed; invalidateSize forces a recompute once the DOM
+      // settles. Two ticks — once on the next frame and once after
+      // a short timeout — covers both the typical and the slow path.
+      requestAnimationFrame(() => map.invalidateSize());
+      setTimeout(() => map.invalidateSize(), 250);
     })();
     return () => {
       cancelled = true;
@@ -211,7 +220,13 @@ function MapPage() {
 
   return (
     <MobileFrame>
-      <div className="relative h-full w-full overflow-hidden bg-background text-foreground">
+      {/* Explicit viewport-height stack instead of h-full. The latter
+          was collapsing to 0 inside MobileFrame's scroll container
+          after the AiGeneratedFooter was added — the scroll area no
+          longer has a single sized child, so h-full had no anchor.
+          h-[100dvh] gives the map a concrete frame to fill, and the
+          inner `absolute inset-0` then resolves correctly. */}
+      <div className="relative h-[100dvh] w-full overflow-hidden bg-background text-foreground">
         {/* Map canvas */}
         <div ref={containerRef} className="absolute inset-0 z-0 bg-secondary" />
 
