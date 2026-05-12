@@ -230,7 +230,7 @@ function ResultsPage() {
     if (page === safePage) return;
     navigate({
       to: "/results",
-      search: (prev) => ({ ...prev, q, page: safePage }),
+      search: (prev: Record<string, unknown>) => ({ ...prev, q, page: safePage }),
       replace: true,
     });
   }, [results, page, safePage, q, navigate]);
@@ -240,7 +240,7 @@ function ResultsPage() {
     if (clamped === safePage) return;
     navigate({
       to: "/results",
-      search: (prev) => ({ ...prev, q, page: clamped }),
+      search: (prev: Record<string, unknown>) => ({ ...prev, q, page: clamped }),
     });
     // Scroll back to the top so page 2 doesn't dump the user mid-list.
     if (typeof window !== "undefined") {
