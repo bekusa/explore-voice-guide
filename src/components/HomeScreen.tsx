@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
   Bell,
   ChevronDown,
   Headphones,
+  Loader2,
   MapPin,
+  Pause,
+  Play,
   Search,
   Settings as SettingsIcon,
   Sparkles,
