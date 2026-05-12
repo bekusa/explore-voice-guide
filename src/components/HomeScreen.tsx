@@ -367,6 +367,7 @@ export function HomeScreen() {
               </p>
             </div>
           </div>
+        </section>
 
         {/* ─── TIME MACHINE STRIP ─── */}
         <section className="mt-9">
