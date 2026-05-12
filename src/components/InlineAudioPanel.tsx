@@ -182,6 +182,18 @@ export function InlineAudioPanel({
             setPlaying(false);
             setPaused(false);
           }}
+          // Toast on decode / network failures so the panel doesn't
+          // hang at 0:00 / 0:00 forever when Azure returns a broken
+          // blob (truncated bytes, wrong Content-Type, expired URL).
+          // Beka caught this on a flaky mobile connection — the
+          // panel was visible but no transport interaction worked.
+          onError={() => {
+            setPlaying(false);
+            setPaused(false);
+            toast.error(t("toast.couldNotLoadGuide"), {
+              description: t("toast.tryAgainPlease"),
+            });
+          }}
           style={{ display: "none" }}
         />
       )}
@@ -199,7 +211,10 @@ export function InlineAudioPanel({
         <button
           onClick={onClose}
           aria-label={t("tm.close")}
-          className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-border bg-card text-muted-foreground transition-smooth hover:text-foreground"
+          // h-11 = 44px = Apple HIG minimum tap target. Previously
+          // h-8 (32px) which fails iOS / Android accessibility audits
+          // and makes the close gesture frustrating with thumbs.
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-border bg-card text-muted-foreground transition-smooth hover:text-foreground"
         >
           <X className="h-3.5 w-3.5" />
         </button>
@@ -228,7 +243,7 @@ export function InlineAudioPanel({
           }}
           disabled={!audioUrl}
           aria-label={t("player.restart")}
-          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
+          className="grid h-11 w-11 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
         >
           <RotateCcw className="h-3.5 w-3.5" />
         </button>
@@ -240,7 +255,7 @@ export function InlineAudioPanel({
           }}
           disabled={!audioUrl}
           aria-label={t("player.back10")}
-          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
+          className="grid h-11 w-11 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
         >
           <Rewind className="h-3.5 w-3.5 fill-current" />
         </button>
@@ -279,7 +294,7 @@ export function InlineAudioPanel({
           }}
           disabled={!audioUrl}
           aria-label={t("player.forward10")}
-          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
+          className="grid h-11 w-11 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
         >
           <FastForward className="h-3.5 w-3.5 fill-current" />
         </button>
@@ -287,7 +302,7 @@ export function InlineAudioPanel({
           onClick={stop}
           disabled={!audioUrl}
           aria-label={t("player.stop")}
-          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
+          className="grid h-11 w-11 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
         >
           <Square className="h-3 w-3 fill-current" />
         </button>

@@ -131,15 +131,15 @@ function OnboardingPage() {
 
   if (checking) {
     return (
-      <div className="grid min-h-screen place-items-center bg-background text-muted-foreground">
+      <div className="grid min-h-[100dvh] place-items-center bg-background text-muted-foreground">
         <Loader2 className="h-5 w-5 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen w-full bg-background text-foreground">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-6 pt-12 pb-10">
+    <div className="min-h-[100dvh] w-full bg-background text-foreground">
+      <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-6 pt-12 pb-10">
         {/* Step indicator */}
         <div className="mb-8 flex items-center gap-2">
           <span

@@ -135,7 +135,11 @@ function SavedPage() {
               type="submit"
               aria-label={t("home.search")}
               disabled={!query.trim()}
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-gold text-primary-foreground transition-smooth active:scale-95 hover:scale-105 disabled:opacity-50"
+              // h-11 = 44px = Apple HIG minimum tap target. Previously
+              // h-8 (32px) — too small for reliable thumb taps on the
+              // search submit, especially landing next to the input
+              // field where misses fall on the search box edge.
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-gold text-primary-foreground transition-smooth active:scale-95 hover:scale-105 disabled:opacity-50"
             >
               <ArrowRight className="h-4 w-4" />
             </button>

@@ -274,17 +274,52 @@ function tolerantParse<T>(text: string): T {
   );
 }
 
+/**
+ * Hard timeout for every postJSON call. Picked at 30 s because the
+ * heaviest call we make (Claude Sonnet generating a full Lokali
+ * guide with key facts + tips + stops) clocks in around 18-22 s on
+ * a warm Cloudflare Worker; double that gives us margin on cold
+ * starts and slow mobile networks. Anything that runs past 30 s
+ * we treat as gone — the LoadingMessages cycle was effectively
+ * spinning forever before.
+ *
+ * Why a constant rather than per-caller: every fetch helper in this
+ * file (fetchAttractions, fetchGuideData, fetchMoreAttractions,
+ * fetchPlacePhoto, fetchMuseumHighlights) routes through postJSON,
+ * so one ceiling covers all of them. Caller can still race its own
+ * AbortController on top if it needs an earlier bail.
+ */
+const REQUEST_TIMEOUT_MS = 30_000;
+
 async function postJSON<T>(url: string, body: unknown): Promise<T> {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    throw new Error(`Request failed (${res.status})`);
+  // Wire up an AbortController so the fetch actually stops on timeout
+  // instead of leaving a dangling socket. Without this, a hung n8n
+  // webhook would keep LoadingMessages cycling indefinitely; Beka
+  // hit this on a flaky mobile network.
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: ac.signal,
+    });
+    if (!res.ok) {
+      throw new Error(`Request failed (${res.status})`);
+    }
+    const text = await res.text();
+    return tolerantParse<T>(text);
+  } catch (err) {
+    // Translate the AbortError to a clearer message so the toast the
+    // UI shows says "timed out" instead of generic "aborted".
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error(`Request timed out after ${REQUEST_TIMEOUT_MS / 1000}s`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
   }
-  const text = await res.text();
-  return tolerantParse<T>(text);
 }
 
 export type AttractionFilters = {
@@ -503,9 +538,23 @@ export async function fetchPlacePhoto(
     const cityParam = cleanCity ? `&city=${encodeURIComponent(cleanCity)}` : "";
     const scopeParam = scope ? `&scope=${encodeURIComponent(scope)}` : "";
     const museumParam = cleanMuseum ? `&museum=${encodeURIComponent(cleanMuseum)}` : "";
-    const res = await fetch(
-      `/api/photo?q=${encodeURIComponent(cleaned)}&lang=${encodeURIComponent(language)}${cityParam}${scopeParam}${museumParam}`,
-    );
+    // 15-s ceiling — shorter than the 30-s POST timeout because
+    // photo lookup is fire-and-forget: the card already renders
+    // with the MapPin placeholder, and a slow Wikipedia / Google
+    // Places lookup just keeps the placeholder there a beat longer.
+    // Better to give up early than to hang the AbortController for
+    // 30 s when nothing is waiting on the result anyway.
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), 15_000);
+    let res: Response;
+    try {
+      res = await fetch(
+        `/api/photo?q=${encodeURIComponent(cleaned)}&lang=${encodeURIComponent(language)}${cityParam}${scopeParam}${museumParam}`,
+        { signal: ac.signal },
+      );
+    } finally {
+      clearTimeout(timer);
+    }
     if (!res.ok) {
       // Don't cache misses — server-side fixes (User-Agent, retry
       // strategy) shouldn't be hidden behind a stale null in browser

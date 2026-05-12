@@ -80,8 +80,8 @@ function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-background text-foreground">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-6 pt-12 pb-10">
+    <div className="min-h-[100dvh] w-full bg-background text-foreground">
+      <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-6 pt-12 pb-10">
         <Link
           to="/"
           className="mb-10 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-smooth"

@@ -91,6 +91,13 @@ function AttractionPage() {
   const navigate = useNavigate();
   const preferredLanguage = usePreferredLanguage();
   const t = useT();
+  // Reactive online flag — used to suppress "couldn't load place"
+  // toasts when the user is offline AND we already have a cached
+  // guide rendering. Beka reported the page worked fine offline
+  // (cached script visible, hero photo cached) but still threw a
+  // red error toast because fetchAttractions threw on the network
+  // failure. With the cache hit, that toast is noise.
+  const online = useOnlineStatus();
 
   const fallbackName = searchName ?? unslugAttraction(id);
   // Detect language from the place name itself so the n8n guide comes
@@ -173,6 +180,12 @@ function AttractionPage() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    // Capture the cached-guide presence at effect-fire time so the
+    // catch block below can tell "user is offline but has a working
+    // page" from "user is online and the lookup just failed". We
+    // capture from `guide` (the live state) rather than re-reading
+    // cache because guide may have been hydrated from cache already.
+    const hadCachedGuide = !!guide?.script;
     fetchAttractions(fallbackName, language)
       .then((list) => {
         if (cancelled) return;
@@ -182,6 +195,12 @@ function AttractionPage() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
+        // Suppress the error toast when the user is offline and we
+        // already have a cached guide rendering — the page is usable
+        // and the red toast just adds noise. We still toast on
+        // genuine online failures (5xx from /api/attractions, rate
+        // limit, etc.) so the user knows refresh might help.
+        if (!online && hadCachedGuide) return;
         toast.error(t("attr.couldNotLoadPlace"), {
           description: err instanceof Error ? err.message : t("toast.tryAgainPlease"),
         });
