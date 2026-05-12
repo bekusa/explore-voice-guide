@@ -352,6 +352,22 @@ export function HomeScreen() {
           </form>
         </section>
 
+        {/* ─── AUDIO GUIDE TAGLINE ─── */}
+        <section className="mt-5 px-5">
+          <div className="flex items-start gap-3 rounded-2xl border border-primary/25 bg-primary/5 px-4 py-3">
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow">
+              <Headphones className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
+                Available in every language
+              </div>
+              <p className="mt-0.5 text-[13px] leading-snug text-foreground/85">
+                AI audio guide for streets, landmarks, museums, and hidden stories around you.
+              </p>
+            </div>
+          </div>
+
         {/* ─── TIME MACHINE STRIP ─── */}
         <section className="mt-9">
           <div className="mb-4 flex items-end justify-between px-5">
