@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Check,
   ChevronRight,
+  Globe,
   Headphones,
   Loader2,
   LogOut,
@@ -364,8 +365,25 @@ function SettingsPage() {
           </Group>
         )}
 
-        {/* Voice (language is on Home only) */}
+        {/* Audio guide */}
         <Group title={t("set.audioGuide")}>
+          {/* Language — explicit row that opens /language. Beka asked
+              for a clear in-Settings entry point because the Globe
+              icon on the Home top bar is easy to miss and (per his
+              report) was triggering a stale-bundle navigation crash
+              on his phone. The /language route works fine when
+              loaded directly, so this row gives him a reliable way
+              to get there from anywhere in the app. The current
+              choice + flag are echoed in the right-side value so
+              the user can see at a glance which language is active
+              without entering the picker. */}
+          <Row
+            icon={<Globe className="h-4 w-4" />}
+            label={t("set.language")}
+            value={`${language.flag} ${language.native}`}
+            onClick={() => navigate({ to: "/language" })}
+          />
+          <Divider />
           <Row
             icon={<Headphones className="h-4 w-4" />}
             label={t("set.narratorVoice")}
