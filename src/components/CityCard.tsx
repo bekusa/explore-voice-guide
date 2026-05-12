@@ -67,7 +67,7 @@ export function CityCard({ city }: { city: string }) {
   const lang = useUiLang();
   const label = useTranslatedString(city);
   const cacheKey = `${lang}:${city}`;
-  const [img, setImg] = useState<string | null>(null);
+  const [img, setImg] = useState<string | null>(() => readCache(cacheKey));
 
   useEffect(() => {
     const cached = readCache(cacheKey);

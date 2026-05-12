@@ -173,74 +173,72 @@ export function HomeScreen() {
           <div className="absolute inset-0 bg-gradient-hero" />
           <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background/60 to-transparent" />
 
-          {/* Top bar — two stacked rows now (was one). Row 1 is the
-              right-aligned icon strip (Settings, language pill,
-              Notifications); Row 2 sits underneath with the
-              "Where next?" eyebrow + city pill on its own line.
-              Beka caught the language pill widening enough to
-              squeeze the city out — putting them on separate rows
-              gives both their full width on every locale. */}
+          {/* Top bar — original Row 1 layout restored (Where next +
+              city on the left, Settings + Notifications icons on the
+              right), with a new Row 2 BELOW that carries the wider
+              language pill. Beka's spec: keep Settings + Notifications
+              on top, drop the language pill to its own line so it can
+              breathe at full width without crowding the city pill. */}
           <div className="absolute left-5 right-5 top-7 z-[5] flex flex-col gap-3">
-            <div className="flex shrink-0 justify-end gap-2">
-              <Link
-                to="/settings"
-                aria-label={t("nav.settings")}
-                className="grid h-10 w-10 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
-              >
-                <SettingsIcon className="h-4 w-4" />
-              </Link>
-              {/* Language switcher — wider pill with flag + native
-                  name so the user can see at a glance which language
-                  is active. The bare Globe icon was easy to miss
-                  (Beka caught it doing nothing in the field). Pill
-                  keeps the same height as the neighbouring icon
-                  buttons but takes a flexible width so longer
-                  natives like "Português (BR)" still fit. */}
+            <div className="flex items-start justify-between">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-primary">
+                  {t("home.whereNext")}
+                  {!online && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/15 px-1.5 py-0.5 text-[9px] tracking-[0.16em] text-accent">
+                      <WifiOff className="h-2.5 w-2.5" /> {t("home.offline")}
+                    </span>
+                  )}
+                </div>
+                <Link
+                  to="/destinations"
+                  className="mt-1.5 inline-flex max-w-full items-center gap-1.5 truncate text-[15px] font-semibold text-foreground transition-smooth hover:text-primary"
+                >
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
+                  <span className="truncate">
+                    {selectedCity}, {selectedCountry}
+                  </span>
+                  <ChevronDown className="h-3 w-3 shrink-0 opacity-60" />
+                </Link>
+              </div>
+              <div className="flex shrink-0 gap-2">
+                <Link
+                  to="/settings"
+                  aria-label={t("nav.settings")}
+                  className="grid h-10 w-10 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
+                >
+                  <SettingsIcon className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/notifications"
+                  aria-label={t("nav.notifications")}
+                  className="relative grid h-10 w-10 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
+                >
+                  <Bell className="h-4 w-4" />
+                  {mounted && unread > 0 && (
+                    <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[9px] font-bold text-accent-foreground">
+                      {unread > 9 ? "9+" : unread}
+                    </span>
+                  )}
+                </Link>
+              </div>
+            </div>
+
+            {/* Row 2 — language pill on its own line, right-aligned
+                so it visually sits under the icon row above. Wider
+                pill with flag + native name so the user sees at a
+                glance which language is active, with breathing room
+                for long natives like "Português (BR)". */}
+            <div className="flex justify-end">
               <Link
                 to="/language"
                 aria-label={t("nav.language")}
-                className="inline-flex h-10 max-w-[140px] items-center gap-1.5 rounded-full border border-foreground/15 bg-background/40 px-3 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
+                className="inline-flex h-9 max-w-[180px] items-center gap-1.5 rounded-full border border-foreground/15 bg-background/40 px-3 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
               >
-                <span className="text-[15px] leading-none">{activeLang.flag}</span>
+                <span className="text-[14px] leading-none">{activeLang.flag}</span>
                 <span className="truncate text-[11px] font-semibold leading-none">
                   {activeLang.native}
                 </span>
-              </Link>
-              <Link
-                to="/notifications"
-                aria-label={t("nav.notifications")}
-                className="relative grid h-10 w-10 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
-              >
-                <Bell className="h-4 w-4" />
-                {mounted && unread > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[9px] font-bold text-accent-foreground">
-                    {unread > 9 ? "9+" : unread}
-                  </span>
-                )}
-              </Link>
-            </div>
-
-            {/* Row 2 — "Where next?" eyebrow + city pill on its own
-                line so the city has the full bar width. The offline
-                chip lives next to the eyebrow when applicable. */}
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-primary">
-                {t("home.whereNext")}
-                {!online && (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/15 px-1.5 py-0.5 text-[9px] tracking-[0.16em] text-accent">
-                    <WifiOff className="h-2.5 w-2.5" /> {t("home.offline")}
-                  </span>
-                )}
-              </div>
-              <Link
-                to="/destinations"
-                className="mt-1.5 inline-flex max-w-full items-center gap-1.5 truncate text-[15px] font-semibold text-foreground transition-smooth hover:text-primary"
-              >
-                <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
-                <span className="truncate">
-                  {selectedCity}, {selectedCountry}
-                </span>
-                <ChevronDown className="h-3 w-3 shrink-0 opacity-60" />
               </Link>
             </div>
           </div>
