@@ -143,11 +143,30 @@ export const UI_STRINGS = {
   "hero.tbilisi.tagline2": "Old Tbilisi",
   "hero.tbilisi.blurb":
     "From sulfur baths and crooked balconies to the chants of Sioni — a cinematic walk through the soul of the old town.",
+  "hero.paris.country": "France",
+  "hero.paris.city": "Paris",
+  "hero.paris.tagline2": "the Seine",
+  "hero.paris.blurb":
+    "Haussmann boulevards, the river at dusk, and the long flâneur shadow of every café terrace — Paris reads itself aloud if you slow down.",
   "hero.rome.country": "Italy",
   "hero.rome.city": "Rome",
   "hero.rome.tagline2": "Eternal Rome",
   "hero.rome.blurb":
     "Through the Forum's ghosts, baroque fountains and trastevere supper tables — the city that never quite stops being itself.",
+  "hero.bangkok.country": "Thailand",
+  "hero.bangkok.city": "Bangkok",
+  "hero.bangkok.tagline2": "the City of Angels",
+  "hero.bangkok.blurb":
+    "Khlong canals and gilded temple spires, street-side woks throwing sparks, and the Chao Phraya glowing past the long-tail boats at dusk.",
+  "hero.london.country": "United Kingdom",
+  "hero.london.city": "London",
+  "hero.london.tagline2": "the Thames",
+  "hero.london.blurb":
+    "Black cabs in the rain, Sunday bells at Westminster, and centuries of empire stacked along a river that still pulls everything together.",
+  // Kyoto / Lisbon / Marrakech kept in the dictionary as harmless
+  // leftovers — they're not in HERO_ROTATION today but a future
+  // rotation tweak (or seasonal carousel) can re-enable them
+  // without re-adding the strings.
   "hero.kyoto.country": "Japan",
   "hero.kyoto.city": "Kyoto",
   "hero.kyoto.tagline2": "Old Kyoto",

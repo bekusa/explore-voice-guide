@@ -45,11 +45,26 @@ export const PT_PT: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "Velha Tbilisi",
   "hero.tbilisi.blurb":
     "Dos banhos de enxofre e varandas tortas aos cânticos de Sioni — um passeio cinematográfico pela alma da cidade velha.",
+  "hero.paris.country": "França",
+  "hero.paris.city": "Paris",
+  "hero.paris.tagline2": "o Sena",
+  "hero.paris.blurb":
+    "Os bulevares de Haussmann, o rio ao crepúsculo e a longa sombra do flâneur em cada esplanada de café — Paris lê-se em voz alta para quem abranda o passo.",
   "hero.rome.country": "Itália",
   "hero.rome.city": "Roma",
   "hero.rome.tagline2": "Roma eterna",
   "hero.rome.blurb":
     "Entre os fantasmas do Fórum, fontes barrocas e as mesas de jantar de Trastevere — a cidade que nunca deixa por completo de ser ela mesma.",
+  "hero.bangkok.country": "Tailândia",
+  "hero.bangkok.city": "Banguecoque",
+  "hero.bangkok.tagline2": "a Cidade dos Anjos",
+  "hero.bangkok.blurb":
+    "Canais khlong e pináculos dourados dos templos, woks de rua a lançar faíscas e o Chao Phraya a brilhar por detrás dos barcos long-tail ao crepúsculo.",
+  "hero.london.country": "Reino Unido",
+  "hero.london.city": "Londres",
+  "hero.london.tagline2": "o Tamisa",
+  "hero.london.blurb":
+    "Táxis pretos à chuva, sinos de domingo em Westminster e séculos de império empilhados ao longo de um rio que continua a unir tudo.",
   "hero.kyoto.country": "Japão",
   "hero.kyoto.city": "Quioto",
   "hero.kyoto.tagline2": "Velha Quioto",

@@ -45,11 +45,26 @@ export const HI: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "पुराना त्बिलिसी",
   "hero.tbilisi.blurb":
     "सल्फर स्नानागारों और टेढ़ी बालकनियों से लेकर सिओनी के गायन तक — पुराने शहर की आत्मा से होकर एक सिनेमाई सैर।",
+  "hero.paris.country": "फ्रांस",
+  "hero.paris.city": "पेरिस",
+  "hero.paris.tagline2": "सीन नदी",
+  "hero.paris.blurb":
+    "ओसमान के बुलेवार्ड, गोधूलि में बहती नदी और हर कैफ़े टेरेस पर फ्लानर की लंबी छाया — धीमे चलो तो पेरिस ख़ुद को ज़ोर से पढ़ता है।",
   "hero.rome.country": "इटली",
   "hero.rome.city": "रोम",
   "hero.rome.tagline2": "अनंत रोम",
   "hero.rome.blurb":
     "फ़ोरम की परछाइयों, बारोक फ़व्वारों और त्रस्तेवेरे की रात्रिभोज मेज़ों से होकर — वह शहर जो कभी पूरी तरह स्वयं होना नहीं छोड़ता।",
+  "hero.bangkok.country": "थाईलैंड",
+  "hero.bangkok.city": "बैंकॉक",
+  "hero.bangkok.tagline2": "देवदूतों का शहर",
+  "hero.bangkok.blurb":
+    "खलोंग नहरें और सुनहरी मंदिर चोटियाँ, सड़क किनारे चिंगारी छोड़ते वोक, और गोधूलि में लॉन्ग-टेल नावों के पीछे चमकती चाओ फ्राया।",
+  "hero.london.country": "यूनाइटेड किंगडम",
+  "hero.london.city": "लंदन",
+  "hero.london.tagline2": "थेम्स नदी",
+  "hero.london.blurb":
+    "बारिश में काली कैब, वेस्टमिंस्टर की रविवारी घंटियाँ और एक नदी के किनारे ढेर सी सदियों का साम्राज्य, जो आज भी सब कुछ जोड़े रखता है।",
   "hero.kyoto.country": "जापान",
   "hero.kyoto.city": "क्योटो",
   "hero.kyoto.tagline2": "पुराना क्योटो",

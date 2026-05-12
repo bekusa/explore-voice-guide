@@ -45,11 +45,26 @@ export const DE: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "Alt-Tiflis",
   "hero.tbilisi.blurb":
     "Von Schwefelbädern und schiefen Balkonen bis zu den Gesängen der Sioni-Kathedrale — ein filmreifer Spaziergang durch die Seele der Altstadt.",
+  "hero.paris.country": "Frankreich",
+  "hero.paris.city": "Paris",
+  "hero.paris.tagline2": "die Seine",
+  "hero.paris.blurb":
+    "Haussmann-Boulevards, der Fluss in der Dämmerung und der lange Flâneur-Schatten jeder Caféterrasse — Paris liest sich selbst vor, wenn du langsamer wirst.",
   "hero.rome.country": "Italien",
   "hero.rome.city": "Rom",
   "hero.rome.tagline2": "Ewiges Rom",
   "hero.rome.blurb":
     "Durch die Geister des Forums, barocke Brunnen und die Abendtische Trasteveres — die Stadt, die nie ganz aufhört, sie selbst zu sein.",
+  "hero.bangkok.country": "Thailand",
+  "hero.bangkok.city": "Bangkok",
+  "hero.bangkok.tagline2": "die Stadt der Engel",
+  "hero.bangkok.blurb":
+    "Khlong-Kanäle und vergoldete Tempelspitzen, Straßenwoks, die Funken sprühen, und der Chao Phraya, der in der Dämmerung hinter den Long-Tail-Booten leuchtet.",
+  "hero.london.country": "Vereinigtes Königreich",
+  "hero.london.city": "London",
+  "hero.london.tagline2": "die Themse",
+  "hero.london.blurb":
+    "Schwarze Taxis im Regen, Sonntagsglocken in Westminster und Jahrhunderte des Empire, aufgeschichtet entlang eines Flusses, der noch immer alles zusammenhält.",
   "hero.kyoto.country": "Japan",
   "hero.kyoto.city": "Kyoto",
   "hero.kyoto.tagline2": "Alt-Kyoto",

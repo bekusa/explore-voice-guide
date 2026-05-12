@@ -45,11 +45,26 @@ export const UR: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "پرانا تبلیسی",
   "hero.tbilisi.blurb":
     "گندھک کے حماموں اور ٹیڑھے بالکونیوں سے لے کر سیونی کے نغموں تک — پرانے شہر کی روح میں ایک سینمائی چہل قدمی۔",
+  "hero.paris.country": "فرانس",
+  "hero.paris.city": "پیرس",
+  "hero.paris.tagline2": "دریائے سین",
+  "hero.paris.blurb":
+    "اوسمان کے بلوار، شام کے سائے میں دریا اور ہر کیفے کی چھت پر فلانیئر کا لمبا سایہ — پیرس آہستہ چلو تو خود کو بلند آواز میں پڑھ سناتا ہے۔",
   "hero.rome.country": "اٹلی",
   "hero.rome.city": "روم",
   "hero.rome.tagline2": "ابدی روم",
   "hero.rome.blurb":
     "فورم کی پرچھائیوں، باروک فواروں اور تراستوارے کے رات کے دستر خوانوں سے گزرتے — وہ شہر جو کبھی پوری طرح خود ہونا نہیں چھوڑتا۔",
+  "hero.bangkok.country": "تھائی لینڈ",
+  "hero.bangkok.city": "بینکاک",
+  "hero.bangkok.tagline2": "فرشتوں کا شہر",
+  "hero.bangkok.blurb":
+    "کلونگ نہریں اور سنہری مندروں کے مینار، سڑک کنارے چنگاریاں اڑاتے ووک، اور شام کے دھندلکے میں لانگ ٹیل کشتیوں کے پار جگمگاتا چاؤ پرایا۔",
+  "hero.london.country": "برطانیہ",
+  "hero.london.city": "لندن",
+  "hero.london.tagline2": "دریائے ٹیمز",
+  "hero.london.blurb":
+    "بارش میں کالی ٹیکسیاں، ویسٹ منسٹر کے اتوار کے گھنٹے، اور صدیوں کی سلطنت اس دریا کے کنارے ڈھیر ہے جو آج بھی سب کچھ جوڑے رکھتا ہے۔",
   "hero.kyoto.country": "جاپان",
   "hero.kyoto.city": "کیوتو",
   "hero.kyoto.tagline2": "پرانا کیوتو",

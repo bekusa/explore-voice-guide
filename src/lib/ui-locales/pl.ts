@@ -45,11 +45,26 @@ export const PL: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "Stare Tbilisi",
   "hero.tbilisi.blurb":
     "Od łaźni siarkowych i krzywych balkonów po śpiewy soboru Sioni — kinowy spacer przez duszę starego miasta.",
+  "hero.paris.country": "Francja",
+  "hero.paris.city": "Paryż",
+  "hero.paris.tagline2": "Sekwana",
+  "hero.paris.blurb":
+    "Bulwary Haussmanna, rzeka o zmierzchu i długi cień flâneura na każdym tarasie kawiarni — Paryż czyta się sam na głos, jeśli zwolnisz.",
   "hero.rome.country": "Włochy",
   "hero.rome.city": "Rzym",
   "hero.rome.tagline2": "Wieczny Rzym",
   "hero.rome.blurb":
     "Pośród duchów Forum, barokowych fontann i kolacyjnych stołów Trastevere — miasto, które nigdy całkiem nie przestaje być sobą.",
+  "hero.bangkok.country": "Tajlandia",
+  "hero.bangkok.city": "Bangkok",
+  "hero.bangkok.tagline2": "Miasto Aniołów",
+  "hero.bangkok.blurb":
+    "Kanały khlong i pozłacane wieże świątyń, uliczne woki sypiące iskrami i Chao Phraya lśniąca za łodziami long-tail o zmierzchu.",
+  "hero.london.country": "Wielka Brytania",
+  "hero.london.city": "Londyn",
+  "hero.london.tagline2": "Tamiza",
+  "hero.london.blurb":
+    "Czarne taksówki w deszczu, niedzielne dzwony przy Westminster i stulecia imperium ułożone wzdłuż rzeki, która wciąż wszystko spaja.",
   "hero.kyoto.country": "Japonia",
   "hero.kyoto.city": "Kioto",
   "hero.kyoto.tagline2": "Stare Kioto",

@@ -45,11 +45,26 @@ export const KO: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "옛 트빌리시",
   "hero.tbilisi.blurb":
     "유황 목욕탕과 비뚤어진 발코니에서 시오니 성당의 성가까지 — 구시가지의 영혼을 따라 걷는 시네마틱한 산책.",
+  "hero.paris.country": "프랑스",
+  "hero.paris.city": "파리",
+  "hero.paris.tagline2": "센강",
+  "hero.paris.blurb":
+    "오스만의 대로, 황혼의 강, 그리고 모든 카페 테라스에 길게 드리운 플라뇌르의 그림자 — 천천히 걸으면 파리는 스스로를 소리내어 읽어준다.",
   "hero.rome.country": "이탈리아",
   "hero.rome.city": "로마",
   "hero.rome.tagline2": "영원한 로마",
   "hero.rome.blurb":
     "포룸의 망령, 바로크 분수, 트라스테베레의 저녁 식탁을 지나 — 결코 자신이기를 멈추지 않는 도시.",
+  "hero.bangkok.country": "태국",
+  "hero.bangkok.city": "방콕",
+  "hero.bangkok.tagline2": "천사의 도시",
+  "hero.bangkok.blurb":
+    "끄렁 운하와 금빛 사원 첨탑, 불꽃을 튀기는 길거리 웍, 그리고 황혼 무렵 롱테일 보트 너머로 빛나는 짜오프라야강.",
+  "hero.london.country": "영국",
+  "hero.london.city": "런던",
+  "hero.london.tagline2": "템스강",
+  "hero.london.blurb":
+    "비 내리는 거리의 검은 캡, 웨스트민스터의 일요일 종소리, 그리고 여전히 모든 것을 잇는 강을 따라 쌓인 수 세기 제국의 흔적.",
   "hero.kyoto.country": "일본",
   "hero.kyoto.city": "교토",
   "hero.kyoto.tagline2": "옛 교토",

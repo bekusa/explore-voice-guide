@@ -45,11 +45,26 @@ export const ZH_TW: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "老提比里斯",
   "hero.tbilisi.blurb":
     "從硫磺浴池與歪斜的陽臺,到錫奧尼大教堂的聖詠 — 一場穿越老城靈魂的電影般漫步。",
+  "hero.paris.country": "法國",
+  "hero.paris.city": "巴黎",
+  "hero.paris.tagline2": "塞納河",
+  "hero.paris.blurb":
+    "奧斯曼大道、暮色中的河流、每座咖啡館露台上漫遊者的長長身影——只要放慢腳步,巴黎便會把自己朗讀出聲。",
   "hero.rome.country": "義大利",
   "hero.rome.city": "羅馬",
   "hero.rome.tagline2": "永恆之城",
   "hero.rome.blurb":
     "穿過古羅馬廣場的幽影、巴洛克噴泉與特拉斯特維雷的晚餐桌 — 這是一座從不真正停止做自己的城市。",
+  "hero.bangkok.country": "泰國",
+  "hero.bangkok.city": "曼谷",
+  "hero.bangkok.tagline2": "天使之城",
+  "hero.bangkok.blurb":
+    "孔崙運河與鍍金的廟宇尖頂、街邊鐵鍋濺出的火星,以及暮色中長尾船後閃爍的昭披耶河。",
+  "hero.london.country": "英國",
+  "hero.london.city": "倫敦",
+  "hero.london.tagline2": "泰晤士河",
+  "hero.london.blurb":
+    "雨中的黑色計程車、西敏寺週日的鐘聲,以及沿著一條至今仍把一切串在一起的河流堆疊的數個世紀帝國。",
   "hero.kyoto.country": "日本",
   "hero.kyoto.city": "京都",
   "hero.kyoto.tagline2": "古都京都",

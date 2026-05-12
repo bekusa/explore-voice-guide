@@ -390,17 +390,12 @@ function SettingsPage() {
             value={activeVoice?.name ?? t("set.browserDefault")}
             onClick={() => setSection("voice")}
           />
-          <Divider />
-          <button
-            onClick={previewVoice}
-            className="flex w-full items-center gap-3 px-4 py-4 text-left transition-smooth hover:bg-secondary/40"
-          >
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-secondary text-foreground">
-              <Volume2 className="h-4 w-4" />
-            </span>
-            <span className="flex-1 text-[13px] font-semibold">{t("set.previewVoice")}</span>
-            <Play className="h-3.5 w-3.5 fill-current text-primary" />
-          </button>
+          {/* Preview Voice row removed per Beka — the Narrator-voice
+              subsection has its own preview button on every voice
+              card, so this row was duplicating an action one tap
+              away. The previewVoice handler is still wired into the
+              voice subsection (SubScreen) and into the per-voice
+              cards there, so the feature itself isn't lost. */}
         </Group>
 
         {/* Appearance */}

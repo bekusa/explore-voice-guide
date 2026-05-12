@@ -45,11 +45,26 @@ export const MS: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "Tbilisi Lama",
   "hero.tbilisi.blurb":
     "Daripada permandian sulfur dan beranda-beranda condong ke nyanyian Sioni — perjalanan sinematik melalui jiwa kota lama.",
+  "hero.paris.country": "Perancis",
+  "hero.paris.city": "Paris",
+  "hero.paris.tagline2": "Sungai Seine",
+  "hero.paris.blurb":
+    "Boulevard Haussmann, sungai saat senja, dan bayang panjang flâneur di setiap teres kafe — Paris membaca dirinya sendiri dengan kuat jika kau melambatkan langkah.",
   "hero.rome.country": "Itali",
   "hero.rome.city": "Rom",
   "hero.rome.tagline2": "Rom abadi",
   "hero.rome.blurb":
     "Menerusi bayangan Forum, air pancut barok dan meja makan malam Trastevere — bandar yang tidak pernah berhenti menjadi dirinya sendiri.",
+  "hero.bangkok.country": "Thailand",
+  "hero.bangkok.city": "Bangkok",
+  "hero.bangkok.tagline2": "Kota Para Malaikat",
+  "hero.bangkok.blurb":
+    "Terusan khlong dan menara kuil bersalut emas, kuali jalanan yang memercikkan api, dan Chao Phraya bersinar di sebalik bot ekor panjang saat senja.",
+  "hero.london.country": "United Kingdom",
+  "hero.london.city": "London",
+  "hero.london.tagline2": "Sungai Thames",
+  "hero.london.blurb":
+    "Teksi hitam dalam hujan, loceng Ahad di Westminster, dan berabad empayar bertimbun di tebing sungai yang masih menyatukan segalanya.",
   "hero.kyoto.country": "Jepun",
   "hero.kyoto.city": "Kyoto",
   "hero.kyoto.tagline2": "Kyoto Lama",

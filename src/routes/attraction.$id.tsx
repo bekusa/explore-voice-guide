@@ -898,10 +898,18 @@ function StopsSection({ script, loading }: { script: string; loading: boolean })
   );
 }
 
+// Chip tone classes. The `text-*-200` colours read fine against the
+// dark background, but on light theme they disappear into the
+// matching tint background (Beka caught the Key Facts and What-to-
+// look-for chips going invisible). `[.light_&]:text-*-800` swaps in
+// a high-contrast deep variant whenever the `.light` class is on
+// <html>; on dark theme the bracket selector simply doesn't apply.
 const TONE_CLASSES: Record<string, string> = {
-  emerald: "border-emerald-400/30 bg-emerald-500/10 text-emerald-200",
-  sky: "border-sky-400/30 bg-sky-500/10 text-sky-200",
-  amber: "border-amber-400/30 bg-amber-500/10 text-amber-200",
+  emerald:
+    "border-emerald-400/30 bg-emerald-500/10 text-emerald-200 [.light_&]:text-emerald-800 [.light_&]:border-emerald-500/40",
+  sky: "border-sky-400/30 bg-sky-500/10 text-sky-200 [.light_&]:text-sky-800 [.light_&]:border-sky-500/40",
+  amber:
+    "border-amber-400/30 bg-amber-500/10 text-amber-200 [.light_&]:text-amber-800 [.light_&]:border-amber-500/40",
 };
 
 function ChipsSection({

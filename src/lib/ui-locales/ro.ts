@@ -45,11 +45,26 @@ export const RO: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "Vechiul Tbilisi",
   "hero.tbilisi.blurb":
     "De la băile cu sulf și balcoanele strâmbe la cântările de la Sioni — o plimbare cinematografică prin sufletul orașului vechi.",
+  "hero.paris.country": "Franța",
+  "hero.paris.city": "Paris",
+  "hero.paris.tagline2": "Sena",
+  "hero.paris.blurb":
+    "Bulevardele lui Haussmann, fluviul în amurg și umbra lungă a flâneurului pe fiecare terasă de cafenea — Parisul se citește cu voce tare dacă încetinești.",
   "hero.rome.country": "Italia",
   "hero.rome.city": "Roma",
   "hero.rome.tagline2": "Roma eternă",
   "hero.rome.blurb":
     "Printre fantomele Forumului, fântânile baroce și mesele de cină din Trastevere — orașul care nu încetează niciodată cu totul să fie el însuși.",
+  "hero.bangkok.country": "Thailanda",
+  "hero.bangkok.city": "Bangkok",
+  "hero.bangkok.tagline2": "Orașul Îngerilor",
+  "hero.bangkok.blurb":
+    "Canale khlong și turle aurite de temple, wokuri pe stradă scuipând scântei și Chao Phraya strălucind în spatele bărcilor long-tail în amurg.",
+  "hero.london.country": "Regatul Unit",
+  "hero.london.city": "Londra",
+  "hero.london.tagline2": "Tamisa",
+  "hero.london.blurb":
+    "Taxiuri negre în ploaie, clopote de duminică la Westminster și secole de imperiu îngrămădite de-a lungul unui râu care încă leagă totul.",
   "hero.kyoto.country": "Japonia",
   "hero.kyoto.city": "Kyoto",
   "hero.kyoto.tagline2": "Vechiul Kyoto",

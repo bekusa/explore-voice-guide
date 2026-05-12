@@ -45,11 +45,26 @@ export const AR: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "تبليسي القديمة",
   "hero.tbilisi.blurb":
     "من حمّامات الكبريت والشرفات المائلة إلى تراتيل كنيسة سيوني — نزهة سينمائية في روح المدينة القديمة.",
+  "hero.paris.country": "فرنسا",
+  "hero.paris.city": "باريس",
+  "hero.paris.tagline2": "نهر السين",
+  "hero.paris.blurb":
+    "جادات هوسمان، والنهر عند الغسق، وظلّ المتسكّع الطويل عند كل تراس مقهى — تقرأ باريس نفسها بصوت عالٍ إن أبطأت خطاك.",
   "hero.rome.country": "إيطاليا",
   "hero.rome.city": "روما",
   "hero.rome.tagline2": "روما الخالدة",
   "hero.rome.blurb":
     "عبر أشباح المنتدى الروماني، ونوافير الباروك، وموائد عشاء تراستيفيري — المدينة التي لا تكفّ يوماً عن أن تكون نفسها.",
+  "hero.bangkok.country": "تايلاند",
+  "hero.bangkok.city": "بانكوك",
+  "hero.bangkok.tagline2": "مدينة الملائكة",
+  "hero.bangkok.blurb":
+    "قنوات الكلونغ وأبراج المعابد المذهّبة، ومقالي الشوارع تنثر شرر النار، ونهر تشاو فرايا يتلألأ خلف قوارب الذيل الطويل عند الغسق.",
+  "hero.london.country": "المملكة المتحدة",
+  "hero.london.city": "لندن",
+  "hero.london.tagline2": "نهر التايمز",
+  "hero.london.blurb":
+    "سيارات الأجرة السوداء تحت المطر، وأجراس يوم الأحد عند وستمنستر، وقرون من الإمبراطورية مكدّسة على ضفاف نهر لا يزال يجمع كل شيء معًا.",
   "hero.kyoto.country": "اليابان",
   "hero.kyoto.city": "كيوتو",
   "hero.kyoto.tagline2": "كيوتو القديمة",

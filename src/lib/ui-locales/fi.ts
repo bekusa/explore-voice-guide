@@ -45,11 +45,26 @@ export const FI: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "Vanha Tbilisi",
   "hero.tbilisi.blurb":
     "Rikkikylvyistä ja vinoista parvekkeista Sionin kirkon kuoroihin — elokuvallinen kävely vanhan kaupungin sieluun.",
+  "hero.paris.country": "Ranska",
+  "hero.paris.city": "Pariisi",
+  "hero.paris.tagline2": "Seine",
+  "hero.paris.blurb":
+    "Haussmannin bulevardit, joki hämärässä ja pitkä flâneurin varjo jokaisella kahvilan terassilla — Pariisi lukee itseään ääneen, jos hidastat tahtia.",
   "hero.rome.country": "Italia",
   "hero.rome.city": "Rooma",
   "hero.rome.tagline2": "Ikuinen Rooma",
   "hero.rome.blurb":
     "Forumin haamujen, barokkisuihkulähteiden ja Trasteveren illallispöytien lävitse — kaupunki, joka ei koskaan oikein lakkaa olemasta oma itsensä.",
+  "hero.bangkok.country": "Thaimaa",
+  "hero.bangkok.city": "Bangkok",
+  "hero.bangkok.tagline2": "Enkelten kaupunki",
+  "hero.bangkok.blurb":
+    "Khlong-kanavia ja kullattuja temppelien huippuja, katuwokeja sinkoamassa kipinöitä ja Chao Phraya hohtamassa long-tail-veneiden takana hämärässä.",
+  "hero.london.country": "Yhdistynyt kuningaskunta",
+  "hero.london.city": "Lontoo",
+  "hero.london.tagline2": "Thames",
+  "hero.london.blurb":
+    "Mustat taksit sateessa, sunnuntain kellot Westminsterissä ja vuosisatojen imperiumi pinottuna joen varrelle, joka yhä pitää kaiken koossa.",
   "hero.kyoto.country": "Japani",
   "hero.kyoto.city": "Kioto",
   "hero.kyoto.tagline2": "Vanha Kioto",

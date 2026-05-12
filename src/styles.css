@@ -311,6 +311,39 @@
 .leaflet-container {
   background: hsl(var(--background) / 1);
   font-family: inherit;
+  /* Lock the stacking context so Leaflet's internal panes
+     (z-index 200-700) and controls (z-index 800) can't escape past
+     the TabBar (z-50) when the user scrolls the map close to the
+     bottom of the viewport. The wrapper around the map already uses
+     `isolate` in the JSX, but some browser/build combinations leak
+     anyway — Beka caught the map painting over the menu twice after
+     earlier fixes. Belt-and-braces: position+z-index here, isolation
+     keyword on the wrapper. */
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+}
+/* Clamp every Leaflet pane / control to a low ceiling so even if the
+   stacking context above is somehow broken at runtime, the highest
+   leaked z-index is still 10 — well below the TabBar's z-50. */
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom,
+.leaflet-control {
+  z-index: 1 !important;
+}
+.leaflet-tile-pane {
+  z-index: 1 !important;
+}
+.leaflet-overlay-pane,
+.leaflet-shadow-pane,
+.leaflet-marker-pane,
+.leaflet-tooltip-pane,
+.leaflet-popup-pane {
+  z-index: 2 !important;
+}
+.leaflet-control {
+  z-index: 3 !important;
 }
 .leaflet-container .tg-pin {
   background: transparent;

@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { MobileFrame } from "@/components/MobileFrame";
 import { HomeScreen } from "@/components/HomeScreen";
 
 export const Route = createFileRoute("/")({
@@ -9,7 +8,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Locally narrated, cinematic walking tours for cities across the globe — from Tbilisi to Kyoto, Rome to Marrakech. Listen anywhere, even offline.",
+          "Locally narrated, cinematic walking tours for cities across the globe — from Tbilisi to Paris, Rome to London. Listen anywhere, even offline.",
       },
       { property: "og:title", content: "Lokali — Audio Guides for Travellers" },
       {
@@ -21,10 +20,9 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+// MobileFrame moved INSIDE HomeScreen so the home page can pass its
+// own floatingPanel (the hero Listen audio player). The outer route
+// is now a thin shell — head metadata + the component.
 function Index() {
-  return (
-    <MobileFrame>
-      <HomeScreen />
-    </MobileFrame>
-  );
+  return <HomeScreen />;
 }

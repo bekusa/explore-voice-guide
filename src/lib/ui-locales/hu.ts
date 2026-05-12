@@ -45,11 +45,26 @@ export const HU: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "Régi Tbiliszi",
   "hero.tbilisi.blurb":
     "Kénes fürdőktől és görbe erkélyektől a Szioni-templom énekéig — filmszerű séta az óváros lelkén át.",
+  "hero.paris.country": "Franciaország",
+  "hero.paris.city": "Párizs",
+  "hero.paris.tagline2": "a Szajna",
+  "hero.paris.blurb":
+    "Haussmann sugárútjai, a folyó alkonyatkor és minden kávéházi terasz hosszú flâneur-árnyéka — Párizs hangosan olvassa fel önmagát, ha lelassítasz.",
   "hero.rome.country": "Olaszország",
   "hero.rome.city": "Róma",
   "hero.rome.tagline2": "Az örök Róma",
   "hero.rome.blurb":
     "A Forum szellemei, barokk szökőkutak és Trastevere vacsoraasztalai közt — a város, amely soha nem szűnik meg önmaga lenni.",
+  "hero.bangkok.country": "Thaiföld",
+  "hero.bangkok.city": "Bangkok",
+  "hero.bangkok.tagline2": "az Angyalok Városa",
+  "hero.bangkok.blurb":
+    "Khlong-csatornák és aranyozott templomtornyok, szikrázó utcai wokok, és a Chao Phraya, amely a long-tail csónakok mögött ragyog az alkonyatban.",
+  "hero.london.country": "Egyesült Királyság",
+  "hero.london.city": "London",
+  "hero.london.tagline2": "a Temze",
+  "hero.london.blurb":
+    "Fekete taxik az esőben, vasárnapi harangok a Westminsternél, és évszázados birodalom egy folyó mentén, amely még mindig mindent összefog.",
   "hero.kyoto.country": "Japán",
   "hero.kyoto.city": "Kiotó",
   "hero.kyoto.tagline2": "Régi Kiotó",

@@ -45,11 +45,26 @@ export const DA: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "Det gamle Tbilisi",
   "hero.tbilisi.blurb":
     "Fra svovlbade og skæve altaner til Sionis salmer — en filmisk vandring gennem den gamle bys sjæl.",
+  "hero.paris.country": "Frankrig",
+  "hero.paris.city": "Paris",
+  "hero.paris.tagline2": "Seinen",
+  "hero.paris.blurb":
+    "Haussmanns boulevarder, floden i skumringen og den lange flâneurs skygge ved hver caféterrasse — Paris læser sig selv højt, hvis du sætter farten ned.",
   "hero.rome.country": "Italien",
   "hero.rome.city": "Rom",
   "hero.rome.tagline2": "Det evige Rom",
   "hero.rome.blurb":
     "Gennem Forums skygger, barokke springvand og Trastevere-aftensborde — byen, der aldrig helt holder op med at være sig selv.",
+  "hero.bangkok.country": "Thailand",
+  "hero.bangkok.city": "Bangkok",
+  "hero.bangkok.tagline2": "Englenes by",
+  "hero.bangkok.blurb":
+    "Khlong-kanaler og forgyldte tempelspir, gadewokker der sprøjter gnister, og Chao Phraya der lyser bag long-tail-bådene i skumringen.",
+  "hero.london.country": "Storbritannien",
+  "hero.london.city": "London",
+  "hero.london.tagline2": "Themsen",
+  "hero.london.blurb":
+    "Sorte taxier i regnen, søndagsklokker ved Westminster og århundreder af imperium stablet langs en flod, der stadig holder alt sammen.",
   "hero.kyoto.country": "Japan",
   "hero.kyoto.city": "Kyoto",
   "hero.kyoto.tagline2": "Det gamle Kyoto",

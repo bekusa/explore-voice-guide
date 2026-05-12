@@ -6,6 +6,7 @@ import {
   ChevronDown,
   Globe,
   MapPin,
+  Play,
   Search,
   Settings as SettingsIcon,
   Sparkles,
@@ -16,6 +17,9 @@ import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useUnreadCount } from "@/hooks/useNotifications";
 import { useSelectedDestination } from "@/hooks/useSelectedDestination";
 import { useT, useTranslated } from "@/hooks/useT";
+import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
+import { InlineAudioPanel } from "@/components/InlineAudioPanel";
+import { MobileFrame } from "@/components/MobileFrame";
 import type { UiKey } from "@/lib/i18n";
 import { DESTINATIONS, type Destination } from "@/lib/destinations";
 import { HOME_CITIES } from "@/lib/cityList";
@@ -44,7 +48,11 @@ const TIME_MACHINE_TOP_10 = [...TIME_MACHINE_ATTRACTIONS]
   .sort((a, b) => b.score - a.score)
   .slice(0, 10);
 
-const HERO_ROTATION = ["tbilisi", "rome", "kyoto", "lisbon", "marrakech"]
+// Beka's new rotation order (was tbilisi/rome/kyoto/lisbon/marrakech).
+// Pre-translated hero copy lives under `hero.<slug>.*` in i18n.ts —
+// every slug here must have a matching set of keys (country, city,
+// tagline2, blurb) in i18n.ts + every locale file.
+const HERO_ROTATION = ["tbilisi", "paris", "rome", "bangkok", "london"]
   .map((slug) => DESTINATIONS.find((d) => d.slug === slug))
   .filter((d): d is Destination => !!d);
 
@@ -54,18 +62,26 @@ export function HomeScreen() {
   const unread = useUnreadCount();
   const selected = useSelectedDestination();
   const t = useT();
+  const lang = usePreferredLanguage();
   const [query, setQuery] = useState("");
   const [heroIdx, setHeroIdx] = useState(0);
   const [mounted, setMounted] = useState(false);
+  // True while the Listen panel is open — pauses the 7-second hero
+  // rotation so the city behind the playing audio doesn't swap mid-
+  // narration (Beka's spec — "თუ დაჭერილია Listen ენაზე Hero უნდა
+  // ჩერდებოდეს რომ არ გაწყდეს ვოისი").
+  const [listening, setListening] = useState(false);
 
   // Defer client-only state (notifications) until after hydration.
   useEffect(() => setMounted(true), []);
 
-  // Slow rotation through featured cinematic shots.
+  // Slow rotation through featured cinematic shots. Skipped while
+  // the user is listening — see `listening` state above.
   useEffect(() => {
+    if (listening) return;
     const t = setInterval(() => setHeroIdx((i) => (i + 1) % HERO_ROTATION.length), 7000);
     return () => clearInterval(t);
-  }, []);
+  }, [listening]);
 
   const heroDest = HERO_ROTATION[heroIdx];
 
@@ -81,7 +97,7 @@ export function HomeScreen() {
   // would have otherwise burned five gateway calls per language for
   // the same hand-authored copy. The literal "Lokali" tagline prefix
   // stays English everywhere (brand name).
-  const heroKey = heroDest.slug as "tbilisi" | "rome" | "kyoto" | "lisbon" | "marrakech";
+  const heroKey = heroDest.slug as "tbilisi" | "paris" | "rome" | "bangkok" | "london";
   const heroCountry = t(`hero.${heroKey}.country` as UiKey);
   const heroPart1 = "Lokali";
   const heroPart2 = t(`hero.${heroKey}.tagline2` as UiKey);
@@ -97,9 +113,21 @@ export function HomeScreen() {
     navigate({ to: "/results", search: { q } });
   }
 
+  // Build the InlineAudioPanel slot when the user has tapped Listen
+  // on the hero. The script is the pre-translated heroBlurb for the
+  // currently visible city; closing the panel resumes the rotation.
+  const heroFloatingPanel = listening ? (
+    <InlineAudioPanel
+      name={heroCity}
+      script={heroBlurb}
+      language={lang}
+      onClose={() => setListening(false)}
+    />
+  ) : null;
+
   return (
-    <div className="relative h-[100dvh] w-full overflow-hidden bg-background text-foreground md:h-[860px]">
-      <div className="h-full overflow-y-auto pb-36 scrollbar-hide">
+    <MobileFrame floatingPanel={heroFloatingPanel}>
+      <div className="relative min-h-full w-full bg-background text-foreground">
         {/* ─── HERO ─── */}
         <section className="relative h-[600px] w-full overflow-hidden">
           {HERO_ROTATION.map((d, i) => (
@@ -112,6 +140,14 @@ export function HomeScreen() {
               }`}
             />
           ))}
+          {/* Constant darkening layer over the photo — invisible on
+              the dark theme (the body bg is already dark, so the
+              hero photo reads with enough contrast) but kicks in on
+              the light theme where Beka caught the photos looking
+              washed-out behind the dark hero copy. The .light variant
+              uses a 25%-black wash; the dark theme keeps the photo
+              at full punch via opacity 0. */}
+          <div className="pointer-events-none absolute inset-0 bg-black/0 [.light_&]:bg-black/25" />
           <div className="absolute inset-0 bg-gradient-hero" />
           <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background/60 to-transparent" />
 
@@ -188,15 +224,34 @@ export function HomeScreen() {
                 fine, but longer compound verbs overflow. Drop the
                 verb, keep just the city name with the arrow doing
                 the action signaling. */}
-            <Link
-              to="/destination/$slug"
-              params={{ slug: heroDest.slug }}
-              aria-label={t("home.openCity", { city: heroCity })}
-              className="mt-6 inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
-            >
-              <span className="truncate">{heroCity}</span>
-              <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-            </Link>
+            {/* Hero CTA row — the original gold "Open {city}" pill
+                is the primary navigation, paired with a secondary
+                Listen button that fires the InlineAudioPanel with
+                the heroBlurb in the user's language. While Listen is
+                active the 7-second hero rotation pauses (see the
+                useEffect that gates on `listening`) so the city
+                doesn't change mid-sentence. */}
+            <div className="mt-6 flex flex-wrap items-center gap-2.5">
+              <Link
+                to="/destination/$slug"
+                params={{ slug: heroDest.slug }}
+                aria-label={t("home.openCity", { city: heroCity })}
+                className="inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
+              >
+                <span className="truncate">{heroCity}</span>
+                <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+              </Link>
+              <button
+                type="button"
+                onClick={() => setListening(true)}
+                disabled={listening}
+                aria-label={t("attr.listen")}
+                className="inline-flex h-12 items-center gap-2 rounded-full border border-foreground/25 bg-background/40 px-5 text-[12px] font-bold uppercase tracking-[0.18em] text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60 disabled:opacity-60"
+              >
+                <Play className="h-3.5 w-3.5 fill-current" />
+                <span>{t("attr.listen")}</span>
+              </button>
+            </div>
           </div>
         </section>
 
@@ -339,7 +394,7 @@ export function HomeScreen() {
           </div>
         </section>
       </div>
-    </div>
+    </MobileFrame>
   );
 }
 

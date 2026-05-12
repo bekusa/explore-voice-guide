@@ -45,11 +45,26 @@ export const IT: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "Vecchia Tbilisi",
   "hero.tbilisi.blurb":
     "Dai bagni di zolfo e balconi storti ai canti di Sioni — una passeggiata cinematografica nell'anima della città vecchia.",
+  "hero.paris.country": "Francia",
+  "hero.paris.city": "Parigi",
+  "hero.paris.tagline2": "la Senna",
+  "hero.paris.blurb":
+    "I boulevard di Haussmann, il fiume al crepuscolo e la lunga ombra del flâneur su ogni terrazza di caffè — Parigi si legge ad alta voce se rallenti.",
   "hero.rome.country": "Italia",
   "hero.rome.city": "Roma",
   "hero.rome.tagline2": "Roma eterna",
   "hero.rome.blurb":
     "Tra i fantasmi del Foro, le fontane barocche e le tavolate di Trastevere — la città che non smette mai del tutto di essere sé stessa.",
+  "hero.bangkok.country": "Thailandia",
+  "hero.bangkok.city": "Bangkok",
+  "hero.bangkok.tagline2": "la Città degli Angeli",
+  "hero.bangkok.blurb":
+    "Canali khlong e guglie dorate dei templi, wok da strada che sprigionano scintille, e il Chao Phraya che brilla dietro le long-tail al tramonto.",
+  "hero.london.country": "Regno Unito",
+  "hero.london.city": "Londra",
+  "hero.london.tagline2": "il Tamigi",
+  "hero.london.blurb":
+    "Black cab sotto la pioggia, campane domenicali a Westminster e secoli di impero impilati lungo un fiume che continua a tenere tutto insieme.",
   "hero.kyoto.country": "Giappone",
   "hero.kyoto.city": "Kyoto",
   "hero.kyoto.tagline2": "Vecchia Kyoto",

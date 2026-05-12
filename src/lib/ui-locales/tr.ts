@@ -45,11 +45,26 @@ export const TR: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "Eski Tiflis",
   "hero.tbilisi.blurb":
     "Kükürtlü hamamlardan ve eğri balkonlardan Sioni'nin ilahilerine — eski şehrin ruhunda sinematik bir yürüyüş.",
+  "hero.paris.country": "Fransa",
+  "hero.paris.city": "Paris",
+  "hero.paris.tagline2": "Sen",
+  "hero.paris.blurb":
+    "Haussmann bulvarları, alacakaranlıkta nehir ve her kafe terasında flâneur'ün uzun gölgesi — yavaşlarsan Paris kendini yüksek sesle okur.",
   "hero.rome.country": "İtalya",
   "hero.rome.city": "Roma",
   "hero.rome.tagline2": "Ebedi Roma",
   "hero.rome.blurb":
     "Forum'un hayaletleri, barok çeşmeler ve Trastevere'nin akşam yemeği masaları arasında — kendisi olmaktan asla tamamen vazgeçmeyen şehir.",
+  "hero.bangkok.country": "Tayland",
+  "hero.bangkok.city": "Bangkok",
+  "hero.bangkok.tagline2": "Melekler Şehri",
+  "hero.bangkok.blurb":
+    "Khlong kanalları ve yaldızlı tapınak kuleleri, kıvılcım saçan sokak wokları ve alacakaranlıkta uzun kuyruklu teknelerin ardında parıldayan Chao Phraya.",
+  "hero.london.country": "Birleşik Krallık",
+  "hero.london.city": "Londra",
+  "hero.london.tagline2": "Thames",
+  "hero.london.blurb":
+    "Yağmurda siyah taksiler, Westminster'da pazar çanları ve hâlâ her şeyi bir arada tutan bir nehir boyunca yığılmış yüzyıllarca imparatorluk.",
   "hero.kyoto.country": "Japonya",
   "hero.kyoto.city": "Kyoto",
   "hero.kyoto.tagline2": "Eski Kyoto",

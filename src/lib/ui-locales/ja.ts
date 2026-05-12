@@ -45,11 +45,26 @@ export const JA: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "古都トビリシ",
   "hero.tbilisi.blurb":
     "硫黄風呂と傾いたバルコニーから、シオニ大聖堂の聖歌まで — 旧市街の魂を歩く、映画のような散策。",
+  "hero.paris.country": "フランス",
+  "hero.paris.city": "パリ",
+  "hero.paris.tagline2": "セーヌ",
+  "hero.paris.blurb":
+    "オスマンの大通り、夕暮れの川、そしてカフェのテラスごとに伸びるフラヌールの長い影 — ゆっくり歩けば、パリは自らを声に出して読み聞かせてくれる。",
   "hero.rome.country": "イタリア",
   "hero.rome.city": "ローマ",
   "hero.rome.tagline2": "永遠の都ローマ",
   "hero.rome.blurb":
     "フォロ・ロマーノの亡霊たち、バロックの噴水、トラステヴェレの夕食の卓を抜けて — けっして自分であることをやめない街。",
+  "hero.bangkok.country": "タイ",
+  "hero.bangkok.city": "バンコク",
+  "hero.bangkok.tagline2": "天使の都",
+  "hero.bangkok.blurb":
+    "クローン運河と金色に輝く寺院の尖塔、火花を散らす屋台の中華鍋、そして夕暮れにロングテールボートの向こうで光るチャオプラヤー川。",
+  "hero.london.country": "イギリス",
+  "hero.london.city": "ロンドン",
+  "hero.london.tagline2": "テムズ",
+  "hero.london.blurb":
+    "雨の中の黒いタクシー、ウェストミンスターの日曜日の鐘、そして今もすべてをつなぐ川沿いに積み重なる帝国の幾世紀。",
   "hero.kyoto.country": "日本",
   "hero.kyoto.city": "京都",
   "hero.kyoto.tagline2": "古都・京都",

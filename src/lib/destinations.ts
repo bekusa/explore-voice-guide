@@ -445,6 +445,53 @@ export const DESTINATIONS: Destination[] = [
       },
     ],
   },
+  // Three additions for the new Home hero rotation Beka asked for
+  // (Tbilisi → Paris → Rome → Bangkok → London). Until Beka drops in
+  // local /assets/destinations/{slug}.jpg files we point at curated
+  // Unsplash URLs sized for the hero (1280px wide is plenty for the
+  // 100dvh × 420dvw frame at the highest DPI we serve).
+  {
+    slug: "paris",
+    city: "Paris",
+    country: "France",
+    tagline: "Lokali|the Seine",
+    blurb:
+      "Haussmann boulevards, the river at dusk, and the long flâneur shadow of every café terrace — Paris reads itself aloud if you slow down.",
+    hero: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1280&q=80",
+    lat: 48.8566,
+    lng: 2.3522,
+    vibe: ["Boulevards", "Cafés", "Patisseries"],
+    collections: ["imperial"],
+    featured: [],
+  },
+  {
+    slug: "bangkok",
+    city: "Bangkok",
+    country: "Thailand",
+    tagline: "Lokali|the City of Angels",
+    blurb:
+      "Khlong canals and gilded temple spires, street-side woks throwing sparks, and the Chao Phraya glowing past the long-tail boats at dusk.",
+    hero: "https://images.unsplash.com/photo-1508009603885-50cf7c579365?auto=format&fit=crop&w=1280&q=80",
+    lat: 13.7563,
+    lng: 100.5018,
+    vibe: ["Street food", "Temples", "River"],
+    collections: ["mystic"],
+    featured: [],
+  },
+  {
+    slug: "london",
+    city: "London",
+    country: "United Kingdom",
+    tagline: "Lokali|the Thames",
+    blurb:
+      "Black cabs in the rain, Sunday bells at Westminster, and centuries of empire stacked along a river that still pulls everything together.",
+    hero: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=1280&q=80",
+    lat: 51.5074,
+    lng: -0.1278,
+    vibe: ["Royal parks", "Pubs", "West End"],
+    collections: ["imperial"],
+    featured: [],
+  },
 ];
 
 /* ─── Lookups ────────────────────────────────────────────────────── */

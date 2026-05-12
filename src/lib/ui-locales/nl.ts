@@ -45,11 +45,26 @@ export const NL: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "Oud Tbilisi",
   "hero.tbilisi.blurb":
     "Van zwavelbaden en scheve balkons tot de gezangen van Sioni — een filmische wandeling door de ziel van de oude stad.",
+  "hero.paris.country": "Frankrijk",
+  "hero.paris.city": "Parijs",
+  "hero.paris.tagline2": "de Seine",
+  "hero.paris.blurb":
+    "Haussmann-boulevards, de rivier in de schemering en de lange flâneur-schaduw bij elk caféterras — Parijs leest zichzelf hardop voor als je vertraagt.",
   "hero.rome.country": "Italië",
   "hero.rome.city": "Rome",
   "hero.rome.tagline2": "Eeuwige Rome",
   "hero.rome.blurb":
     "Tussen de geesten van het Forum, barokke fonteinen en de avondtafels van Trastevere — de stad die nooit helemaal ophoudt zichzelf te zijn.",
+  "hero.bangkok.country": "Thailand",
+  "hero.bangkok.city": "Bangkok",
+  "hero.bangkok.tagline2": "de Stad der Engelen",
+  "hero.bangkok.blurb":
+    "Khlong-kanalen en vergulde tempelspitsen, straatwoks die vonken spuwen en de Chao Phraya die in de schemering achter de long-tail-boten gloeit.",
+  "hero.london.country": "Verenigd Koninkrijk",
+  "hero.london.city": "Londen",
+  "hero.london.tagline2": "de Theems",
+  "hero.london.blurb":
+    "Zwarte taxi's in de regen, zondagse klokken bij Westminster en eeuwen imperium opgestapeld langs een rivier die nog steeds alles samenbrengt.",
   "hero.kyoto.country": "Japan",
   "hero.kyoto.city": "Kyoto",
   "hero.kyoto.tagline2": "Oud Kyoto",

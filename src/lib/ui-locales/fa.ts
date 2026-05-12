@@ -45,11 +45,26 @@ export const FA: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "تفلیس قدیم",
   "hero.tbilisi.blurb":
     "از حمام‌های گوگردی و بالکن‌های کج تا نواهای کلیسای سیونی — گردشی سینمایی در روح شهر کهنه.",
+  "hero.paris.country": "فرانسه",
+  "hero.paris.city": "پاریس",
+  "hero.paris.tagline2": "رود سن",
+  "hero.paris.blurb":
+    "بلوارهای اوسمان، رودخانه در غروب و سایه‌ی بلند فلانور در هر تراس کافه — پاریس اگر آهسته بروی، خود را با صدای بلند می‌خواند.",
   "hero.rome.country": "ایتالیا",
   "hero.rome.city": "رم",
   "hero.rome.tagline2": "رم جاودان",
   "hero.rome.blurb":
     "از میان ارواح فروم رومی، فواره‌های باروک و میزهای شام تراستوره — شهری که هرگز از خود بودن دست برنمی‌دارد.",
+  "hero.bangkok.country": "تایلند",
+  "hero.bangkok.city": "بانکوک",
+  "hero.bangkok.tagline2": "شهر فرشتگان",
+  "hero.bangkok.blurb":
+    "آبراه‌های خلونگ و مناره‌های زرّین معابد، ووک‌های خیابانی پراکنده‌ی جرقه و چائو پرایا که در غروب پشت قایق‌های دم‌دراز می‌درخشد.",
+  "hero.london.country": "بریتانیا",
+  "hero.london.city": "لندن",
+  "hero.london.tagline2": "رود تیمز",
+  "hero.london.blurb":
+    "تاکسی‌های سیاه در باران، ناقوس‌های یکشنبه در وست‌مینستر و قرن‌ها امپراتوری روی هم انباشته در کنار رودخانه‌ای که هنوز همه چیز را به هم وصل می‌کند.",
   "hero.kyoto.country": "ژاپن",
   "hero.kyoto.city": "کیوتو",
   "hero.kyoto.tagline2": "کیوتوی کهن",

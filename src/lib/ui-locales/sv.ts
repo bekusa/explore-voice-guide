@@ -45,11 +45,26 @@ export const SV: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "Gamla Tbilisi",
   "hero.tbilisi.blurb":
     "Från svavelbad och sneda balkonger till Sionis kyrkosång — en filmisk vandring genom gamla stans själ.",
+  "hero.paris.country": "Frankrike",
+  "hero.paris.city": "Paris",
+  "hero.paris.tagline2": "Seine",
+  "hero.paris.blurb":
+    "Haussmanns boulevarder, floden i skymningen och den långa flâneurskuggan vid varje kaféterrass — Paris läser sig själv högt om du saktar ner.",
   "hero.rome.country": "Italien",
   "hero.rome.city": "Rom",
   "hero.rome.tagline2": "Det eviga Rom",
   "hero.rome.blurb":
     "Genom Forums skuggor, barocka fontäner och kvällsborden i Trastevere — staden som aldrig riktigt slutar vara sig själv.",
+  "hero.bangkok.country": "Thailand",
+  "hero.bangkok.city": "Bangkok",
+  "hero.bangkok.tagline2": "Änglarnas stad",
+  "hero.bangkok.blurb":
+    "Khlong-kanaler och förgyllda tempelspiror, gatuwokar som sprutar gnistor och Chao Phraya som lyser bakom long-tail-båtarna i skymningen.",
+  "hero.london.country": "Storbritannien",
+  "hero.london.city": "London",
+  "hero.london.tagline2": "Themsen",
+  "hero.london.blurb":
+    "Svarta taxibilar i regnet, söndagsklockor vid Westminster och århundraden av imperium staplade längs en flod som fortfarande håller ihop allt.",
   "hero.kyoto.country": "Japan",
   "hero.kyoto.city": "Kyoto",
   "hero.kyoto.tagline2": "Gamla Kyoto",

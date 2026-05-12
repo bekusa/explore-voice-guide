@@ -45,11 +45,26 @@ export const CS: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "Staré Tbilisi",
   "hero.tbilisi.blurb":
     "Od sirných lázní a křivých balkonů až po zpěvy chrámu Sioni — filmová procházka duší starého města.",
+  "hero.paris.country": "Francie",
+  "hero.paris.city": "Paříž",
+  "hero.paris.tagline2": "Seina",
+  "hero.paris.blurb":
+    "Haussmannovy bulváry, řeka za soumraku a dlouhý stín flâneura na každé kavárenské terase — Paříž si čte sama sebe nahlas, když zpomalíš.",
   "hero.rome.country": "Itálie",
   "hero.rome.city": "Řím",
   "hero.rome.tagline2": "Věčný Řím",
   "hero.rome.blurb":
     "Mezi duchy Fora, barokními fontánami a večeřemi v Trastevere — město, které nikdy úplně nepřestane být sebou samým.",
+  "hero.bangkok.country": "Thajsko",
+  "hero.bangkok.city": "Bangkok",
+  "hero.bangkok.tagline2": "Město andělů",
+  "hero.bangkok.blurb":
+    "Kanály khlong a pozlacené chrámové věže, uliční woky chrlící jiskry a Chao Phraya zářící za dlouhými čluny v podvečerním šeru.",
+  "hero.london.country": "Spojené království",
+  "hero.london.city": "Londýn",
+  "hero.london.tagline2": "Temže",
+  "hero.london.blurb":
+    "Černé taxíky v dešti, nedělní zvony u Westminsteru a staletí impéria nahromaděná podél řeky, která stále drží všechno pohromadě.",
   "hero.kyoto.country": "Japonsko",
   "hero.kyoto.city": "Kjóto",
   "hero.kyoto.tagline2": "Staré Kjóto",

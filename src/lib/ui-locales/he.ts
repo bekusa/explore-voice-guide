@@ -45,11 +45,26 @@ export const HE: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "טביליסי הישנה",
   "hero.tbilisi.blurb":
     "ממרחצאות הגופרית והמרפסות העקומות ועד מזמורי סיוני — טיול קולנועי בנשמת העיר העתיקה.",
+  "hero.paris.country": "צרפת",
+  "hero.paris.city": "פריז",
+  "hero.paris.tagline2": "הסן",
+  "hero.paris.blurb":
+    "שדרות אוסמן, הנהר בין הערביים והצל הארוך של הפלאנר בכל מרפסת בית קפה — פריז קוראת את עצמה בקול אם רק תאט.",
   "hero.rome.country": "איטליה",
   "hero.rome.city": "רומא",
   "hero.rome.tagline2": "רומא הנצחית",
   "hero.rome.blurb":
     "בין רוחות הפורום, מזרקות הבארוק ושולחנות הערב של טרסטוורה — העיר שלעולם אינה חדלה לגמרי להיות עצמה.",
+  "hero.bangkok.country": "תאילנד",
+  "hero.bangkok.city": "בנגקוק",
+  "hero.bangkok.tagline2": "עיר המלאכים",
+  "hero.bangkok.blurb":
+    "תעלות חלונג וצריחי מקדשים מוזהבים, ווקים ברחוב מתיזים ניצוצות, וצ'או פרייה זוהר מאחורי סירות זנב־ארוך בין הערביים.",
+  "hero.london.country": "הממלכה המאוחדת",
+  "hero.london.city": "לונדון",
+  "hero.london.tagline2": "התמזה",
+  "hero.london.blurb":
+    "מוניות שחורות בגשם, פעמוני יום ראשון בווסטמינסטר, ומאות שנות אימפריה ערוכות לאורך נהר שעדיין מחבר את הכול.",
   "hero.kyoto.country": "יפן",
   "hero.kyoto.city": "קיוטו",
   "hero.kyoto.tagline2": "קיוטו הישנה",

@@ -45,11 +45,26 @@ export const VI: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "Tbilisi cổ",
   "hero.tbilisi.blurb":
     "Từ những phòng tắm lưu huỳnh và ban công xiêu vẹo đến tiếng kinh của Sioni — một cuộc dạo bước điện ảnh xuyên qua linh hồn phố cổ.",
+  "hero.paris.country": "Pháp",
+  "hero.paris.city": "Paris",
+  "hero.paris.tagline2": "sông Seine",
+  "hero.paris.blurb":
+    "Đại lộ Haussmann, dòng sông lúc hoàng hôn và bóng dài của kẻ flâneur trên từng hiên quán cà phê — Paris tự đọc lên thành tiếng nếu bạn chậm lại.",
   "hero.rome.country": "Ý",
   "hero.rome.city": "Rome",
   "hero.rome.tagline2": "Rome vĩnh hằng",
   "hero.rome.blurb":
     "Giữa những bóng ma của Forum, đài phun nước baroque và những bàn ăn tối ở Trastevere — thành phố không bao giờ thực sự ngừng là chính mình.",
+  "hero.bangkok.country": "Thái Lan",
+  "hero.bangkok.city": "Bangkok",
+  "hero.bangkok.tagline2": "Thành phố của các Thiên thần",
+  "hero.bangkok.blurb":
+    "Những kênh khlong và đỉnh chùa dát vàng, chảo wok bên đường tóe lửa, và Chao Phraya rực sáng sau những chiếc thuyền đuôi dài lúc hoàng hôn.",
+  "hero.london.country": "Vương quốc Anh",
+  "hero.london.city": "London",
+  "hero.london.tagline2": "sông Thames",
+  "hero.london.blurb":
+    "Những chiếc taxi đen trong mưa, tiếng chuông Chủ nhật ở Westminster và hàng thế kỷ đế chế xếp lớp dọc một dòng sông vẫn còn níu giữ mọi thứ lại với nhau.",
   "hero.kyoto.country": "Nhật Bản",
   "hero.kyoto.city": "Kyoto",
   "hero.kyoto.tagline2": "Kyoto cổ",

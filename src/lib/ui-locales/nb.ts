@@ -45,11 +45,26 @@ export const NB: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.tagline2": "Gamle Tbilisi",
   "hero.tbilisi.blurb":
     "Fra svovelbad og skjeve balkonger til Sionis kirkesang — en filmatisk vandring gjennom gamlebyens sjel.",
+  "hero.paris.country": "Frankrike",
+  "hero.paris.city": "Paris",
+  "hero.paris.tagline2": "Seinen",
+  "hero.paris.blurb":
+    "Haussmanns boulevarder, elven i skumringen og den lange flâneur-skyggen ved hver kaféterrasse — Paris leser seg selv høyt hvis du senker farten.",
   "hero.rome.country": "Italia",
   "hero.rome.city": "Roma",
   "hero.rome.tagline2": "Det evige Roma",
   "hero.rome.blurb":
     "Gjennom Forums skygger, barokke fontener og kveldsborder i Trastevere — byen som aldri helt slutter å være seg selv.",
+  "hero.bangkok.country": "Thailand",
+  "hero.bangkok.city": "Bangkok",
+  "hero.bangkok.tagline2": "Englenes by",
+  "hero.bangkok.blurb":
+    "Khlong-kanaler og forgylte tempelspir, gatewoker som sprer gnister, og Chao Phraya som lyser bak long-tail-båtene i skumringen.",
+  "hero.london.country": "Storbritannia",
+  "hero.london.city": "London",
+  "hero.london.tagline2": "Themsen",
+  "hero.london.blurb":
+    "Svarte drosjer i regnet, søndagsklokker ved Westminster og århundrer med imperium stablet langs en elv som fremdeles holder alt sammen.",
   "hero.kyoto.country": "Japan",
   "hero.kyoto.city": "Kyoto",
   "hero.kyoto.tagline2": "Gamle Kyoto",
