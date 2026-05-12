@@ -36,31 +36,35 @@ export interface Attraction {
 // every TM card on a black background. Explicit imports give us a
 // compile-time guarantee that the URL resolves; if a file is moved
 // or renamed, the build breaks loudly instead of degrading silently.
-import imgRhodes from "@/assets/destinations/TimeMachine/Colossus of Rhodes - Greece.jpg";
-import imgAlexandria from "@/assets/destinations/TimeMachine/Library of Alexandria - Egypt.jpg";
-import imgPompeii from "@/assets/destinations/TimeMachine/Pompeii - Italy.jpg";
-import imgColosseum from "@/assets/destinations/TimeMachine/The Colosseum - Italy.jpg";
-import imgHagiaSophia from "@/assets/destinations/TimeMachine/Hagia Sophia - Turkey.jpg";
-import imgBastille from "@/assets/destinations/TimeMachine/The Bastille - France.jpg";
-import imgTitanic from "@/assets/destinations/TimeMachine/Titanic - Atlantic Ocean.jpg";
-import imgThermopylae from "@/assets/destinations/TimeMachine/Thermopylae - Greece.jpg";
-import imgTbilisi from "@/assets/destinations/TimeMachine/Tbilisi - Georgia.jpg";
-import imgGiza from "@/assets/destinations/TimeMachine/Giza - Egypt.jpg";
-import imgHiroshima from "@/assets/destinations/TimeMachine/Hiroshima - Japan.jpg";
-import imgDidgori from "@/assets/destinations/TimeMachine/Battle of Didgori - Georgia.jpg";
-import imgTrojan from "@/assets/destinations/TimeMachine/The Trojan Horse - Troy.jpg";
-import imgFirstContact from "@/assets/destinations/TimeMachine/First Contact - Bahamas.jpg";
-import imgConstantinople from "@/assets/destinations/TimeMachine/The Fall of Constantinople - Turkey.jpg";
-import imgMachu from "@/assets/destinations/TimeMachine/Machu Picchu - Peru.jpg";
-import imgStonehenge from "@/assets/destinations/TimeMachine/Stonehenge - Britain.jpg";
-import imgSistine from "@/assets/destinations/TimeMachine/The Sistine Chapel - Italy.jpg";
-import imgOlympia from "@/assets/destinations/TimeMachine/Olympia - Greece.jpg";
-import imgBlackPlague from "@/assets/destinations/TimeMachine/The Black Death - Britain.jpg";
-import imgSocrates from "@/assets/destinations/TimeMachine/The Trial of Socrates - Greece.jpg";
-import imgMozart from "@/assets/destinations/TimeMachine/Mozart's Requiem - Austria.jpg";
-import imgSamarkand from "@/assets/destinations/TimeMachine/Samarkand - Uzbekistan.jpg";
-import imgBaghdadMongols from "@/assets/destinations/TimeMachine/Baghdad - The Mongol Sack - Iraq.jpg";
-import imgKyiv from "@/assets/destinations/TimeMachine/Kyiv - Ukraine.jpg";
+// Filenames renamed to slug-form (no spaces, no apostrophes) —
+// Lovable's build silently failed to resolve space-named imports
+// even though local `vite build` happily emitted them. Slugged
+// filenames make the imports portable across bundler quirks.
+import imgRhodes from "@/assets/destinations/TimeMachine/rhodes-colossus.jpg";
+import imgAlexandria from "@/assets/destinations/TimeMachine/alexandria-library.jpg";
+import imgPompeii from "@/assets/destinations/TimeMachine/pompeii.jpg";
+import imgColosseum from "@/assets/destinations/TimeMachine/colosseum.jpg";
+import imgHagiaSophia from "@/assets/destinations/TimeMachine/hagia-sophia.jpg";
+import imgBastille from "@/assets/destinations/TimeMachine/bastille.jpg";
+import imgTitanic from "@/assets/destinations/TimeMachine/titanic.jpg";
+import imgThermopylae from "@/assets/destinations/TimeMachine/thermopylae.jpg";
+import imgTbilisi from "@/assets/destinations/TimeMachine/tbilisi-1795.jpg";
+import imgGiza from "@/assets/destinations/TimeMachine/giza.jpg";
+import imgHiroshima from "@/assets/destinations/TimeMachine/hiroshima.jpg";
+import imgDidgori from "@/assets/destinations/TimeMachine/didgori.jpg";
+import imgTrojan from "@/assets/destinations/TimeMachine/trojan-horse.jpg";
+import imgFirstContact from "@/assets/destinations/TimeMachine/first-contact.jpg";
+import imgConstantinople from "@/assets/destinations/TimeMachine/constantinople-fall.jpg";
+import imgMachu from "@/assets/destinations/TimeMachine/machu-picchu.jpg";
+import imgStonehenge from "@/assets/destinations/TimeMachine/stonehenge.jpg";
+import imgSistine from "@/assets/destinations/TimeMachine/sistine-chapel.jpg";
+import imgOlympia from "@/assets/destinations/TimeMachine/olympia.jpg";
+import imgBlackPlague from "@/assets/destinations/TimeMachine/black-death.jpg";
+import imgSocrates from "@/assets/destinations/TimeMachine/socrates-trial.jpg";
+import imgMozart from "@/assets/destinations/TimeMachine/mozart-requiem.jpg";
+import imgSamarkand from "@/assets/destinations/TimeMachine/samarkand.jpg";
+import imgBaghdadMongols from "@/assets/destinations/TimeMachine/baghdad-mongols.jpg";
+import imgKyiv from "@/assets/destinations/TimeMachine/kyiv.jpg";
 
 // Per-attraction-id → imported image URL. Eight ids (jerusalem,
 // hannibal, tutankhamun, baghdad_golden, carthage, kyoto, angkor,

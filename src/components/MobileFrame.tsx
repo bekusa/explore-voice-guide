@@ -23,10 +23,17 @@ import { useT } from "@/hooks/useT";
 export function MobileFrame({
   children,
   hideTabBar = false,
+  hideAiFooter = false,
   floatingPanel,
 }: {
   children: ReactNode;
   hideTabBar?: boolean;
+  /** Skip the "AI Generated Content" fineprint footer. Use for
+   *  pages where the children fill the viewport (the map page's
+   *  absolute-positioned canvas, fullscreen modals) — the footer
+   *  in those cases either sits below the fold or breaks the
+   *  page's intended layout. */
+  hideAiFooter?: boolean;
   floatingPanel?: ReactNode;
 }) {
   // Reserve room at the bottom of the scroll area so the last item
@@ -65,8 +72,10 @@ export function MobileFrame({
               the scrollable area on every page (Beka asked for it
               everywhere, but ABOVE the menu / floating panel — the
               bottomPad above already reserves room for both, so
-              this strip lives just above that reserved space). */}
-          <AiGeneratedFooter />
+              this strip lives just above that reserved space).
+              Pages with absolute-positioned content (the map canvas)
+              opt out via hideAiFooter so the layout stays simple. */}
+          {!hideAiFooter && <AiGeneratedFooter />}
         </div>
         {floatingPanel && (
           <div className={`absolute inset-x-0 z-30 ${hideTabBar ? "bottom-0" : "bottom-[74px]"}`}>

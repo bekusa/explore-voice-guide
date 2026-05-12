@@ -219,14 +219,14 @@ function MapPage() {
   }, [ready, me]);
 
   return (
-    <MobileFrame>
-      {/* Explicit viewport-height stack instead of h-full. The latter
-          was collapsing to 0 inside MobileFrame's scroll container
-          after the AiGeneratedFooter was added — the scroll area no
-          longer has a single sized child, so h-full had no anchor.
-          h-[100dvh] gives the map a concrete frame to fill, and the
-          inner `absolute inset-0` then resolves correctly. */}
-      <div className="relative h-[100dvh] w-full overflow-hidden bg-background text-foreground">
+    // hideAiFooter: the map page fills the viewport via an absolute
+    // canvas, so the fineprint footer was getting stranded below the
+    // fold and (per Beka's testing) interacting badly with the scroll
+    // container — leaving the tile area black. Opt out so the
+    // scroll-area has a single sized child again and the absolute
+    // canvas resolves cleanly against it.
+    <MobileFrame hideAiFooter>
+      <div className="relative h-full w-full overflow-hidden bg-background text-foreground">
         {/* Map canvas */}
         <div ref={containerRef} className="absolute inset-0 z-0 bg-secondary" />
 
