@@ -158,8 +158,19 @@ async function callGateway(texts: string[], target: string): Promise<string[]> {
   const apiKey = process.env.LOVABLE_API_KEY;
   if (!apiKey) return texts;
 
+  // Bigger chunks (was 6) so the cold-cache Georgian path triggers
+  // fewer SERIAL callClaude round-trips. Beka caught a 90-s
+  // timeout after the Anthropic credit refill — at Tier-1 (10K
+  // output tokens/min) a single 429 with retry-after=45 s on any
+  // of the original 5-10 serial chunks pushed the whole flow past
+  // the postJSON ceiling. Pairing each callClaude with more
+  // strings cuts the call count roughly in half (3-5 chunks
+  // instead of 6-10), so the same rate-limit bump now fires once
+  // and recovers inside the timeout instead of compounding.
+  // 4000-char cap below still keeps individual chunks safely
+  // under Claude's per-request limit.
   const LONG = 1500;
-  const MAX_PER_CHUNK = 6;
+  const MAX_PER_CHUNK = 12;
   const chunks: number[][] = []; // each chunk holds the original indices
   let current: number[] = [];
   let currentChars = 0;

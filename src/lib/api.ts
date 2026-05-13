@@ -299,7 +299,7 @@ function tolerantParse<T>(text: string): T {
  * so one ceiling covers all of them. Caller can still race its own
  * AbortController on top if it needs an earlier bail.
  */
-const REQUEST_TIMEOUT_MS = 90_000;
+const REQUEST_TIMEOUT_MS = 120_000;
 
 async function postJSON<T>(url: string, body: unknown): Promise<T> {
   // Wire up an AbortController so the fetch actually stops on timeout
