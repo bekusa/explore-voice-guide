@@ -30,3 +30,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Capacitor native projects — generated via `npx cap add android` / ios
+# locally. Each developer regenerates them; the source of truth is the
+# web app + capacitor.config.json. android/ and ios/ folders carry
+# machine-specific paths, signing material, and large gradle caches
+# we don't want in git.
+android/
+ios/
+.capacitor/
