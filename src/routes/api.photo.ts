@@ -234,7 +234,15 @@ async function wikipediaPhoto(q: string, lang: string): Promise<string | null> {
       if (intitleRes.ok) {
         const intitleData = (await intitleRes.json()) as WikiSearchResponse;
         const intitleTitle = intitleData.query?.search?.[0]?.title;
-        if (intitleTitle) {
+        // Relevance check — Beka caught Wikipedia's intitle: search
+        // landing on a *related* page that happened to share a phrase
+        // (e.g. "Burj Khalifa Dubai" matched "Burj Khalifa/Dubai
+        // Mall Metro Station" because both phrases appear in the
+        // station's full title — the metro photo came back). The
+        // article title must share at least one significant word
+        // (4+ chars, not a city qualifier) with the query, otherwise
+        // we treat the hit as off-topic and fall through.
+        if (intitleTitle && titleMatchesQuery(intitleTitle, q)) {
           const fromIntitle = await tryWikiSummary(l, intitleTitle);
           if (fromIntitle) return fromIntitle;
         }
@@ -254,6 +262,12 @@ async function wikipediaPhoto(q: string, lang: string): Promise<string | null> {
       const searchData = (await searchRes.json()) as WikiSearchResponse;
       const title = searchData.query?.search?.[0]?.title;
       if (!title) continue;
+      // Same relevance gate — full-text search routinely returns
+      // country / continent articles when the query mentions a
+      // region (e.g. "Al Fahidi Historical District Dubai" returned
+      // "United Arab Emirates" and we shipped the UAE flag as the
+      // hero image). Require at least one significant-word overlap.
+      if (!titleMatchesQuery(title, q)) continue;
       const src = await tryWikiSummary(l, title);
       if (src) return src;
     } catch {
@@ -261,6 +275,60 @@ async function wikipediaPhoto(q: string, lang: string): Promise<string | null> {
     }
   }
   return null;
+}
+
+/**
+ * Relevance gate for Wikipedia search hits. Returns true when the
+ * matched article title shares at least one meaningful word (4+
+ * chars, lowercase) with the user's query — meaningful here means
+ * "not a stop-word, not a city/country qualifier we appended".
+ *
+ * The intent isn't strict semantic matching; it's a cheap filter
+ * that catches the catastrophic misfires Beka kept reporting:
+ *   - "Burj Khalifa Dubai"      → "Burj Khalifa/Dubai Mall Metro Station"
+ *      (passes: shares "burj", "khalifa" — but those are weak
+ *       discriminators because the station also has them in title;
+ *       the relevance check alone won't catch this, but stage-1
+ *       direct-title lookup will resolve "Burj_Khalifa" first
+ *       and short-circuit before stage 2 runs.)
+ *   - "Al Fahidi Historical District Dubai" → "United Arab Emirates"
+ *      (rejects: no significant overlap; "Dubai" is excluded as a
+ *       city qualifier; "Al", "of" too short; result discarded.)
+ *
+ * We strip city / country qualifiers from the query because those
+ * were appended by us for disambiguation — they shouldn't count as
+ * "relevance overlap" with a matched title that ALSO mentions the
+ * country in a generic way.
+ */
+function titleMatchesQuery(title: string, query: string): boolean {
+  const stopWords = new Set([
+    "the",
+    "and",
+    "for",
+    "with",
+    "of",
+    "in",
+    "at",
+    "on",
+    "to",
+    "from",
+    "by",
+    "an",
+    "a",
+    "is",
+    "as",
+    "or",
+  ]);
+  const significant = (s: string) =>
+    s
+      .toLowerCase()
+      .replace(/[^\p{L}\s]+/gu, " ")
+      .split(/\s+/)
+      .filter((w) => w.length >= 4 && !stopWords.has(w));
+  const titleWords = new Set(significant(title));
+  const queryWords = significant(query);
+  if (queryWords.length === 0) return true; // unable to tell — don't reject
+  return queryWords.some((w) => titleWords.has(w));
 }
 
 /**
@@ -348,20 +416,31 @@ export const Route = createFileRoute("/api/photo")({
         // Cloud Console, which ipbias doesn't override on every
         // request. Wikipedia is region-neutral and has high-quality
         // lead images for any place / artwork with an article — the
-        // vast majority of attractions and museum highlights. We
-        // append the city / museum context to the Wikipedia query
-        // for disambiguation ("Grand Palace Bangkok" finds the
-        // article reliably).
+        // vast majority of attractions and museum highlights.
+        //
+        // ORDER MATTERS: try the BARE query first now (was: with-city
+        // first). Famous attractions ("Burj Khalifa", "Eiffel Tower",
+        // "Colosseum") have a Wikipedia article at exactly that bare
+        // title — the direct REST summary returns the canonical hero
+        // photo immediately, before any noisy intitle/fulltext search
+        // can drag in a wrong-but-related article. Previously we
+        // tried `q + city` first and intitle: matched
+        // "Burj Khalifa/Dubai Mall Metro Station" → the wrong photo.
+        // The city-qualified lookup is still useful for ambiguous
+        // bare names like "Grand Palace" (a disambiguation page),
+        // so we keep it as a fallback when bare misses.
         if (!photoUrl) {
           try {
-            const wikiQ =
-              city && !q.toLowerCase().includes(city.toLowerCase()) ? `${q} ${city}` : q;
-            photoUrl = await wikipediaPhoto(wikiQ, lang);
-            // If the city-qualified query missed, retry bare — some
-            // smaller attractions only have an article under the
-            // plain name.
-            if (!photoUrl && wikiQ !== q) {
-              photoUrl = await wikipediaPhoto(q, lang);
+            // 1) bare q — catches famous attractions with a canonical
+            //    Wikipedia article at the exact title.
+            photoUrl = await wikipediaPhoto(q, lang);
+            // 2) q + city — only if bare missed AND we have a city
+            //    that isn't already part of the name. Helps when the
+            //    bare title resolves to a disambiguation page (e.g.
+            //    "Grand Palace") where the city qualifier picks the
+            //    right one.
+            if (!photoUrl && city && !q.toLowerCase().includes(city.toLowerCase())) {
+              photoUrl = await wikipediaPhoto(`${q} ${city}`, lang);
             }
           } catch {
             /* fall through to Google Places (non-artwork) */
