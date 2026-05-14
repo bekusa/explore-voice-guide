@@ -180,7 +180,16 @@ export function HomeScreen() {
               language pill. Beka's spec: keep Settings + Notifications
               on top, drop the language pill to its own line so it can
               breathe at full width without crowding the city pill. */}
-          <div className="absolute left-5 right-5 top-7 z-[5] flex flex-col gap-3">
+          {/* top-7 (28px) + env(safe-area-inset-top) — pushes the
+              header below the punch-hole camera + status bar on
+              Android (Pixel 10 Pro and similar) and the iPhone
+              notch / Dynamic Island. env() resolves to 0 in
+              browsers without notch chrome, so desktop preview
+              keeps the original 28px top spacing. */}
+          <div
+            style={{ top: "calc(1.75rem + env(safe-area-inset-top))" }}
+            className="absolute left-5 right-5 z-[5] flex flex-col gap-3"
+          >
             <div className="flex items-start justify-between">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-primary">

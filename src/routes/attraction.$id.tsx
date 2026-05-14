@@ -336,7 +336,7 @@ function AttractionPage() {
           )}
           <div className="absolute inset-0 bg-gradient-hero" />
 
-          <header className="relative z-10 flex items-start justify-between px-6 pt-12">
+          <header className="relative z-10 flex items-start justify-between px-6 pt-safe">
             <Link
               to="/results"
               search={{ q: fallbackName }}

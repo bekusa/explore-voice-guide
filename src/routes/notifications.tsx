@@ -57,7 +57,7 @@ function NotificationsPage() {
       <div className="relative min-h-full bg-background pb-24 text-foreground">
         {/* Header */}
         <header className="sticky top-0 z-20 border-b border-border/40 bg-background/85 backdrop-blur-xl">
-          <div className="flex items-center justify-between px-5 pt-12 pb-4">
+          <div className="flex items-center justify-between px-5 pt-safe pb-4">
             <div className="flex items-center gap-3">
               <Link
                 to="/"

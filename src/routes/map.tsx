@@ -283,8 +283,14 @@ function MapPage() {
             header / locate button / empty-state overlay above. */}
         <div ref={containerRef} className="absolute inset-0 z-0 bg-secondary" />
 
-        {/* Top bar */}
-        <header className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between px-5 pt-12">
+        {/* Top bar — pt-12 lifts the controls below the iOS notch /
+            Android status bar; env(safe-area-inset-top) adds the
+            real device measurement on top so Pixel 10 Pro punch-
+            hole + iPhone Dynamic Island stay clear. */}
+        <header
+          style={{ paddingTop: "calc(3rem + env(safe-area-inset-top))" }}
+          className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between px-5"
+        >
           <Link
             to="/"
             aria-label={t("nav.back")}

@@ -73,7 +73,7 @@ function SavedPage() {
     <MobileFrame>
       <div className="relative min-h-full bg-background pb-32 text-foreground">
         {/* Header */}
-        <header className="relative z-10 flex items-center justify-between px-6 pt-12">
+        <header className="relative z-10 flex items-center justify-between px-6 pt-safe">
           <Link
             to="/"
             aria-label={t("nav.back")}

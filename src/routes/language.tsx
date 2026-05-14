@@ -162,7 +162,7 @@ function LanguagePage() {
           Beka asked for the entire page to scroll instead. */}
       <div className="relative min-h-full bg-background text-foreground pb-10">
         {/* Header */}
-        <header className="flex items-center justify-between px-6 pt-12">
+        <header className="flex items-center justify-between px-6 pt-safe">
           <button
             onClick={() => navigate({ to: "/" })}
             aria-label={t("nav.back")}

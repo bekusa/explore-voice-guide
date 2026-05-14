@@ -312,7 +312,7 @@ function SettingsPage() {
   return (
     <MobileFrame>
       <div className="relative min-h-full bg-background pb-32 text-foreground">
-        <header className="relative z-10 flex items-center justify-between px-6 pt-12">
+        <header className="relative z-10 flex items-center justify-between px-6 pt-safe">
           <Link
             to="/"
             aria-label={t("nav.back")}
@@ -607,7 +607,7 @@ function SubScreen({
   return (
     <MobileFrame>
       <div className="relative min-h-full bg-background pb-32 text-foreground">
-        <header className="flex items-center gap-3 px-6 pt-12">
+        <header className="flex items-center gap-3 px-6 pt-safe">
           <button
             onClick={onBack}
             aria-label={t("nav.back")}

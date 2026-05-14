@@ -213,6 +213,30 @@
 }
 
 @layer utilities {
+  /*
+   * Safe-area utilities — drop the device's notch / status bar /
+   * punch-hole inset on top, and the gesture / home-indicator
+   * inset on the bottom. Tailwind 4's `env()` support inside
+   * arbitrary values is finicky, so we centralise here.
+   *
+   * `pt-safe` = pt-12 baseline (3 rem clears the standard mobile
+   * header position) + safe-area inset on top of that. Apply to
+   * the top container of any screen with a normal-flow header.
+   *
+   * `pb-safe` = bottom safe-area only, for the rare case (TabBar
+   * does its own arithmetic via inline style).
+   *
+   * `top-safe-7` = absolute children: 1.75 rem + safe-area-top.
+   * Used by the HomeScreen hero header that sits absolute above
+   * the cinematic photo.
+   */
+  .pt-safe {
+    padding-top: calc(3rem + env(safe-area-inset-top));
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
   .font-display {
     font-family: var(--font-display);
   }
