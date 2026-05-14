@@ -37,16 +37,19 @@ export function MobileFrame({
   floatingPanel?: ReactNode;
 }) {
   // Reserve room at the bottom of the scroll area so the last item
-  // doesn't sit underneath the TabBar (74px) and, when present, the
-  // floating panel above it. The panel's actual height varies, so we
-  // budget a generous 200px when it's mounted.
+  // doesn't sit underneath the TabBar (74px + safe-area-inset-bottom
+  // for Android nav gestures / iPhone home indicator) and, when
+  // present, the floating panel above it. The panel's actual height
+  // varies, so we budget a generous 200px when it's mounted.
+  // env(safe-area-inset-bottom) resolves to 0 on browsers without
+  // notch / gesture chrome, so desktop preview keeps its tight pad.
   const bottomPad =
     !hideTabBar && floatingPanel
-      ? "pb-[280px]"
+      ? "pb-[calc(280px+env(safe-area-inset-bottom))]"
       : !hideTabBar
-        ? "pb-[74px]"
+        ? "pb-[calc(74px+env(safe-area-inset-bottom))]"
         : floatingPanel
-          ? "pb-[200px]"
+          ? "pb-[calc(200px+env(safe-area-inset-bottom))]"
           : "";
   return (
     // Use min-h-[100dvh] (dynamic viewport) instead of min-h-screen
@@ -78,7 +81,13 @@ export function MobileFrame({
           {!hideAiFooter && <AiGeneratedFooter />}
         </div>
         {floatingPanel && (
-          <div className={`absolute inset-x-0 z-30 ${hideTabBar ? "bottom-0" : "bottom-[74px]"}`}>
+          <div
+            className={`absolute inset-x-0 z-30 ${
+              hideTabBar
+                ? "bottom-[env(safe-area-inset-bottom)]"
+                : "bottom-[calc(74px+env(safe-area-inset-bottom))]"
+            }`}
+          >
             {floatingPanel}
           </div>
         )}

@@ -38,7 +38,17 @@ export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      // viewport-fit=cover unlocks env(safe-area-inset-*) CSS values so
+      // we can pad around iPhone notches and Android system bars
+      // (status bar at top, navigation gestures at bottom). Without
+      // it the inset values resolve to 0 and content slides under
+      // the OS chrome — Beka caught this on the first Android build:
+      // status bar covered "WHERE NEXT?" + Settings/Notifications
+      // pills; bottom gestures bar overlapped the TabBar.
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1, viewport-fit=cover",
+      },
       { title: "Lokali" },
       {
         name: "description",

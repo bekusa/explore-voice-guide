@@ -7,7 +7,19 @@ export function TabBar() {
   const { user, signOut } = useAuth();
   const t = useT();
   return (
-    <nav className="absolute bottom-0 left-0 right-0 z-50 flex h-[74px] items-start justify-around border-t border-border bg-background/95 px-2 pb-4 pt-2 backdrop-blur-xl">
+    <nav
+      // 74px is the original touch-target height (icon + label + padding).
+      // We grow the nav vertically by env(safe-area-inset-bottom) so it
+      // stays visible above Android's navigation gestures bar (the
+      // | O < strip) and iPhone's home indicator. env() resolves to 0
+      // in browsers without notch/gestures, so desktop preview and
+      // older Android keep the original look.
+      style={{
+        height: "calc(74px + env(safe-area-inset-bottom))",
+        paddingBottom: "calc(1rem + env(safe-area-inset-bottom))",
+      }}
+      className="absolute bottom-0 left-0 right-0 z-50 flex items-start justify-around border-t border-border bg-background/95 px-2 pt-2 backdrop-blur-xl"
+    >
       <Link
         to="/"
         className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
