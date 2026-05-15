@@ -337,9 +337,27 @@ function AttractionPage() {
           <div className="absolute inset-0 bg-gradient-hero" />
 
           <header className="relative z-10 flex items-start justify-between px-6 pt-safe">
+            {/* Back button: prefer the city context (Bangkok / Tbilisi /
+                ...) over the attraction name. Beka caught a chain of
+                bugs that traced back to here:
+                  1. Back used q={fallbackName} (e.g. "Khlong Lat
+                     Mayom"), which sent the user to /results?q=Khlong...
+                  2. /results then called /api/attractions with q="Khlong..."
+                     as a "city" — Sonnet improvised attractions
+                     "around Khlong Lat Mayom" instead of returning to
+                     the user's actual Bangkok search.
+                  3. ResultCard's Link copies cityContext=q forward as
+                     `city` on the next attraction page. So clicking
+                     a card on that misled results page produced
+                     /attraction/<x>?name=...&city=Khlong+Lat+Mayom
+                     — the previous attraction's name leaking into the
+                     city slot of the next page. Photo lookups + cache
+                     keys then broke everywhere downstream.
+                Falling back to fallbackName is acceptable for a
+                deep-linked attraction with no preserved city context. */}
             <Link
               to="/results"
-              search={{ q: fallbackName }}
+              search={{ q: searchCity || fallbackName }}
               aria-label={t("nav.back")}
               className="grid h-10 w-10 place-items-center rounded-full border border-foreground/20 bg-background/30 backdrop-blur-md transition-smooth hover:bg-background/50"
             >
