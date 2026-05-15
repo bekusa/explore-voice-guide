@@ -158,19 +158,26 @@ async function callGateway(texts: string[], target: string): Promise<string[]> {
   const apiKey = process.env.LOVABLE_API_KEY;
   if (!apiKey) return texts;
 
-  // Bigger chunks (was 6) so the cold-cache Georgian path triggers
-  // fewer SERIAL callClaude round-trips. Beka caught a 90-s
-  // timeout after the Anthropic credit refill — at Tier-1 (10K
-  // output tokens/min) a single 429 with retry-after=45 s on any
-  // of the original 5-10 serial chunks pushed the whole flow past
-  // the postJSON ceiling. Pairing each callClaude with more
-  // strings cuts the call count roughly in half (3-5 chunks
-  // instead of 6-10), so the same rate-limit bump now fires once
-  // and recovers inside the timeout instead of compounding.
-  // 4000-char cap below still keeps individual chunks safely
-  // under Claude's per-request limit.
+  // Aggressive chunking to fit Anthropic Tier-1 rate limits
+  // (10K output tokens/min). The cold-cache Georgian path runs
+  // attractions Sonnet (~3K out) + translation chunks back-to-
+  // back inside a single minute window — at the previous chunk
+  // sizes the cumulative output crossed the cap and triggered
+  // 429 retries with retry-after up to 45 s, blowing past the
+  // 120-s postJSON timeout.
+  //
+  // History: 6 → 12 → 25 strings/chunk, char cap 4000 → 6000.
+  // Each step roughly halves the round-trip count without
+  // breaking Claude's per-request limit (input cap stays well
+  // under 100K tokens; output rarely exceeds 4K per chunk
+  // because translation output mirrors source length).
+  //
+  // Once Beka spends $40+ on Anthropic the account auto-
+  // promotes to Tier 2 (50K out/min) and the rate ceiling
+  // disappears as a constraint. Until then, fewer + larger
+  // chunks keep the cold-cache wall under the timeout.
   const LONG = 1500;
-  const MAX_PER_CHUNK = 12;
+  const MAX_PER_CHUNK = 25;
   const chunks: number[][] = []; // each chunk holds the original indices
   let current: number[] = [];
   let currentChars = 0;
@@ -186,7 +193,7 @@ async function callGateway(texts: string[], target: string): Promise<string[]> {
       chunks.push([i]);
       return;
     }
-    if (current.length >= MAX_PER_CHUNK || currentChars + s.length > 4000) {
+    if (current.length >= MAX_PER_CHUNK || currentChars + s.length > 6000) {
       chunks.push(current);
       current = [];
       currentChars = 0;
