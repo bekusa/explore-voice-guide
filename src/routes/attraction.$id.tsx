@@ -189,8 +189,22 @@ function AttractionPage() {
     fetchAttractions(fallbackName, language)
       .then((list) => {
         if (cancelled) return;
+        // Match the requested attraction against BOTH the localised
+        // `name` AND the preserved `name_en`. Beka caught Hyde Park
+        // displaying as "Serpentine Lake" — the URL had
+        // ?name=Hyde+Park but the translated list came back with
+        // every entry's `name` in Georgian. The English-vs-Georgian
+        // exact-match failed, so the fallback `list[0]` (whichever
+        // attraction Sonnet ranked first) won. name_en is preserved
+        // by translateAttractionsPayload exactly for this kind of
+        // cross-locale handle matching.
+        const target = fallbackName.toLowerCase();
         const exact =
-          list.find((a) => a.name.toLowerCase() === fallbackName.toLowerCase()) ?? list[0];
+          list.find(
+            (a) =>
+              a.name.toLowerCase() === target ||
+              (typeof a.name_en === "string" && a.name_en.toLowerCase() === target),
+          ) ?? list[0];
         if (exact) setAttraction(exact);
       })
       .catch((err: unknown) => {
