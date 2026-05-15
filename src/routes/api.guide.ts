@@ -4,6 +4,7 @@ import { getCachedGuide, putCachedGuide } from "@/lib/sharedCache.server";
 import { translateGuidePayload } from "@/lib/translatePayload.server";
 import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
 import { buildGuideSystem, buildGuideUser } from "@/lib/prompts";
+import { normalizeToCanonicalEnglish } from "@/lib/normalizeAttractionName.server";
 
 /**
  * /api/guide — Cloudflare Worker route that calls Anthropic Claude
@@ -28,9 +29,25 @@ export const Route = createFileRoute("/api/guide")({
       OPTIONS: async () => corsPreflight(),
       POST: async ({ request }) => {
         const rawBody = await request.text();
-        const key = extractGuideKey(rawBody);
-        const userLang = key?.language ?? "en";
-        const wantsTranslation = key !== null && !isEnglish(userLang);
+        const rawKey = extractGuideKey(rawBody);
+        const userLang = rawKey?.language ?? "en";
+        const wantsTranslation = rawKey !== null && !isEnglish(userLang);
+
+        // Canonical-English-name normalisation. The cache key for
+        // "პაკ ხლონგ ტალატი" + ka MUST collide with the cache key for
+        // "Khlong Lat Mayom Floating Market" + en; otherwise every
+        // language pays the Sonnet generation cost independently and
+        // we end up with parallel cache rows for the same attraction
+        // (Beka spotted this in cached_guides). normalizeToCanonical-
+        // English short-circuits for English inputs and uses an
+        // in-memory cache, so the typical added cost is one cheap
+        // Haiku call per cold-cache non-English request.
+        const key = rawKey
+          ? {
+              ...rawKey,
+              name: await normalizeToCanonicalEnglish(rawKey.name, userLang),
+            }
+          : null;
 
         // 1. Direct cache hit. Skip dud rows — empty {script: ""}
         // shouldn't short-circuit future requests.

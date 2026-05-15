@@ -4,6 +4,7 @@ import { getCachedAttractions, putCachedAttractions } from "@/lib/sharedCache.se
 import { translateAttractionsPayload } from "@/lib/translatePayload.server";
 import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
 import { buildAttractionsSystem, buildAttractionsUser } from "@/lib/prompts";
+import { normalizeToCanonicalEnglish } from "@/lib/normalizeAttractionName.server";
 
 /**
  * /api/attractions — Cloudflare Worker route that calls Anthropic
@@ -46,9 +47,22 @@ export const Route = createFileRoute("/api/attractions")({
       OPTIONS: async () => corsPreflight(),
       POST: async ({ request }) => {
         const rawBody = await request.text();
-        const key = extractAttractionsKey(rawBody);
-        const userLang = key?.language ?? "en";
-        const wantsTranslation = key !== null && !isEnglish(userLang);
+        const rawKey = extractAttractionsKey(rawBody);
+        const userLang = rawKey?.language ?? "en";
+        const wantsTranslation = rawKey !== null && !isEnglish(userLang);
+
+        // Canonical-English-name normalisation — see api.guide.ts for
+        // the full rationale. tl;dr: "ბანკოკი" + ka should hit the
+        // same cache row as "Bangkok" + en, so we translate the query
+        // to canonical English BEFORE the cache lookup. Stops parallel
+        // duplicate rows like "ბანკოკი|ka", "ბანკოკი|en", "Bangkok|ka",
+        // "Bangkok|en" all referring to one city.
+        const key = rawKey
+          ? {
+              ...rawKey,
+              query: await normalizeToCanonicalEnglish(rawKey.query, userLang),
+            }
+          : null;
 
         // Extension request — frontend background-prefetching pages 2-3.
         // Always hits n8n (bypasses cache by design); merges results
