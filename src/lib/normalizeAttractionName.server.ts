@@ -66,6 +66,20 @@ export async function normalizeToCanonicalEnglish(
     return trimmed;
   }
 
+  // Pure-ASCII fast path. Even if the user has the UI in Georgian
+  // ("ka"), they often type English place names directly — "Paris",
+  // "Bangkok", "Eiffel Tower". The query has no non-Latin chars to
+  // translate, so the normalization Haiku call is wasted latency
+  // (~1-2 s + a chance of catching a 429 retry on Tier-1). Beka
+  // hit 120-s timeouts after the previous fix added this call to
+  // the cold-cache path; ASCII detection short-circuits before any
+  // network hit. Allows Latin letters, digits, common punctuation,
+  // and whitespace — anything else (Georgian Mkhedruli, Arabic,
+  // CJK, etc.) needs the actual translation step.
+  if (/^[\x20-\x7E]+$/.test(trimmed)) {
+    return trimmed;
+  }
+
   const cacheKey = `${sourceLang.toLowerCase()}:${trimmed.toLowerCase()}`;
   const cached = nameCache.get(cacheKey);
   if (cached) return cached;
