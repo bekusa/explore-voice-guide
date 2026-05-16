@@ -158,74 +158,70 @@ function ResultsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, language]);
 
-  // Background prefetch DISABLED while on Anthropic Tier-1.
-  //
-  // The original behaviour fired fetchMoreAttractions(20 more) right
-  // after page 1 landed, so the next visitor would read all 30 in
-  // one cache hit. On Tier-1 (10K out tokens / rolling 60 s) the
-  // back-to-back attractions calls + their translation chunks
-  // routinely exceeded the per-minute cap, triggering 429 retries
-  // with retry-after up to 45 s — page 1 itself often timed out
-  // because the cumulative burst pushed it past the 120 s
-  // postJSON ceiling.
-  //
-  // With prefetch off:
-  //   - Page 1 loads in ~30 s on cold cache (well under the 120 s
-  //     timeout, plenty of headroom for the rare 429).
-  //   - Pages 2-3 stay hidden until prefetch is re-enabled (the
-  //     pagination strip's render gates on results.length > PAGE_SIZE).
-  //   - Cache row still contains the first-page baseline, so the
-  //     next visitor in the same language hits cache instantly.
-  //
-  // Re-enable once the account hits Anthropic Tier 2 (50K out / min)
-  // — uncomment the useEffect below. The pagination + dedup logic
-  // around it is untouched and will pick back up automatically.
-  //
-  // useEffect(() => {
-  //   if (!results || results.length === 0) return;
-  //   if (results.length >= MAX_RESULTS) return;
-  //   if (results.length < PAGE_SIZE) return;
-  //   let cancelled = false;
-  //   setPrefetching(true);
-  //   const excludeNames = results.map((a) => a.name).filter(Boolean);
-  //   const need = MAX_RESULTS - results.length;
-  //   fetchMoreAttractions(q, language, excludeNames, need)
-  //     .then((more) => {
-  //       if (cancelled || more.length === 0) return;
-  //       setResults((prev) => {
-  //         if (!prev) return more.slice(0, MAX_RESULTS);
-  //         const seen = new Set(prev.map((a) => a.name.trim().toLowerCase()));
-  //         const fresh = more.filter((a) => {
-  //           const n = a.name.trim().toLowerCase();
-  //           if (!n || seen.has(n)) return false;
-  //           seen.add(n);
-  //           return true;
-  //         });
-  //         return [...prev, ...fresh].slice(0, MAX_RESULTS);
-  //       });
-  //     })
-  //     .catch(() => {})
-  //     .finally(() => {
-  //       if (!cancelled) setPrefetching(false);
-  //     });
-  //   return () => {
-  //     cancelled = true;
-  //   };
-  // }, [q, language, results?.length]);
-
-  // Slice the cached payload for the current page. The n8n response is
-  // capped at MAX_RESULTS so longer payloads are silently truncated —
-  // we never want page 4 to exist even if the LLM gets generous.
-  const totalAvailable = Math.min(results?.length ?? 0, MAX_RESULTS);
-  const pageCount = Math.max(1, Math.ceil(totalAvailable / PAGE_SIZE));
-  // Clamp to the available range (e.g. user lands on /results?page=3 but
-  // only 12 results came back → bounce to page 2 in the URL).
-  const safePage = Math.min(Math.max(1, page), pageCount);
+  // pageCount stays at MAX_PAGES (3) regardless of how many rows
+  // are loaded — pagination buttons always show 1/2/3 so the user
+  // can click ahead and trigger on-demand fetch for that page.
+  const pageCount = MAX_PAGES;
+  const safePage = Math.min(MAX_PAGES, Math.max(1, page));
   const pagedResults = useMemo(() => {
     if (!results) return null;
     const start = (safePage - 1) * PAGE_SIZE;
     return results.slice(0, MAX_RESULTS).slice(start, start + PAGE_SIZE);
   }, [results, safePage]);
+
+  // On-demand pagination. Page 1 always fires on mount via the
+  // fetchAttractions() effect above; pages 2-3 only fetch when the
+  // user actually clicks Next / 2 / 3. This replaces the previous
+  // background-prefetch behaviour (which fired all 30 in one burst
+  // right after page 1 landed) — the cumulative tokens-per-minute
+  // routinely exceeded Anthropic Tier-1's 10K/min ceiling, so page 1
+  // itself was being throttled by retries from the prefetch chunk.
+  //
+  // Trade-off: a user clicking Next pays the generation latency at
+  // click time (~25-40 s on cold cache), but page 1 lands fast and
+  // the bulk of users never request page 2/3.
+  useEffect(() => {
+    if (!results) return; // page 1 still loading
+    if (results.length === 0) return;
+    if (results.length >= MAX_RESULTS) return;
+    // Already have enough rows for the requested page?
+    const needed = safePage * PAGE_SIZE;
+    if (results.length >= needed) return;
+    // Don't double-fire while a fetch is already in flight.
+    if (prefetching) return;
+
+    let cancelled = false;
+    setPrefetching(true);
+    const excludeNames = results.map((a) => a.name).filter(Boolean);
+    // Fetch ONE page worth (10) instead of all-remaining. Smaller
+    // generation payload = smaller translation chunk = lower chance
+    // of hitting the rate limit on Tier-1.
+    fetchMoreAttractions(q, language, excludeNames, PAGE_SIZE)
+      .then((more) => {
+        if (cancelled || more.length === 0) return;
+        setResults((prev) => {
+          if (!prev) return more.slice(0, MAX_RESULTS);
+          const seen = new Set(prev.map((a) => a.name.trim().toLowerCase()));
+          const fresh = more.filter((a) => {
+            const n = a.name.trim().toLowerCase();
+            if (!n || seen.has(n)) return false;
+            seen.add(n);
+            return true;
+          });
+          return [...prev, ...fresh].slice(0, MAX_RESULTS);
+        });
+      })
+      .catch(() => {
+        /* Silent — user stays on current page; pagination clamps */
+      })
+      .finally(() => {
+        if (!cancelled) setPrefetching(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, language, safePage, results?.length]);
 
   // If the URL says page=3 but the data only has 1 page, rewrite the
   // URL so back/forward stays consistent. Replace (not push) so we
@@ -321,35 +317,44 @@ function ResultsPage() {
 
           {!loading && results && results.length === 0 && <EmptyState query={q} />}
 
-          {!loading && pagedResults && pagedResults.length > 0 && (
+          {!loading && results && results.length > 0 && (
             <>
-              <div className="flex flex-col gap-3">
-                {pagedResults.map((a, i) => (
-                  <ResultCard
-                    // Stable key across pages: `${name}-${absoluteIndex}`,
-                    // so React doesn't re-mount cards on a page swap.
-                    key={`${a.name}-${(safePage - 1) * PAGE_SIZE + i}`}
-                    attraction={a}
-                    index={i}
-                    language={language}
-                    cityContext={q}
-                  />
-                ))}
-              </div>
-
-              {(pageCount > 1 || prefetching) && (
-                <Pagination
-                  page={safePage}
-                  pageCount={pageCount}
-                  onChange={goToPage}
-                  prefetching={prefetching}
-                  label={t("results.pageLabel", { n: safePage, total: pageCount })}
-                  prevLabel={t("results.prev")}
-                  nextLabel={t("results.next")}
-                  navLabel={t("results.pagination")}
-                  pageButtonLabel={(n) => t("results.goToPage", { n })}
-                />
+              {/* If we're fetching the next page on demand and don't
+                  have its rows yet, swap in the skeleton + loading
+                  messages so the user sees progress instead of an
+                  empty list while the new chunk arrives. */}
+              {prefetching && pagedResults && pagedResults.length === 0 ? (
+                <>
+                  <LoadingMessages className="mb-4 mt-2" />
+                  <SkeletonList />
+                </>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {pagedResults?.map((a, i) => (
+                    <ResultCard
+                      // Stable key across pages: `${name}-${absoluteIndex}`,
+                      // so React doesn't re-mount cards on a page swap.
+                      key={`${a.name}-${(safePage - 1) * PAGE_SIZE + i}`}
+                      attraction={a}
+                      index={i}
+                      language={language}
+                      cityContext={q}
+                    />
+                  ))}
+                </div>
               )}
+
+              <Pagination
+                page={safePage}
+                pageCount={pageCount}
+                onChange={goToPage}
+                prefetching={prefetching}
+                label={t("results.pageLabel", { n: safePage, total: pageCount })}
+                prevLabel={t("results.prev")}
+                nextLabel={t("results.next")}
+                navLabel={t("results.pagination")}
+                pageButtonLabel={(n) => t("results.goToPage", { n })}
+              />
             </>
           )}
         </section>
