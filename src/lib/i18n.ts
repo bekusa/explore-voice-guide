@@ -532,6 +532,37 @@ export const UI_STRINGS = {
   "auth.signUpFailed": "Sign up failed",
   "auth.signInFailed": "Sign in failed",
   "auth.alreadyRegistered": "This email is already registered. Try signing in.",
+  // OAuth providers
+  "auth.continueWithGoogle": "Continue with Google",
+  "auth.continueWithApple": "Continue with Apple",
+  "auth.appleComingSoon": "Apple Sign In coming soon",
+  "auth.orWithEmail": "or with email",
+  // Anonymous mode
+  "auth.continueAsGuest": "Continue as guest",
+  "auth.guestNote": "Saved places and downloads stay on this device. Sign up anytime to sync across devices.",
+  // Password reset
+  "auth.forgotPassword": "Forgot password?",
+  "auth.resetPasswordTitle": "Reset your password",
+  "auth.resetPasswordSub": "We'll send a one-click reset link to your email.",
+  "auth.sendResetLink": "Send reset link",
+  "auth.resetEmailSent": "Reset email sent",
+  "auth.resetEmailSentDesc": "Check your inbox and click the link to set a new password.",
+  "auth.setNewPasswordTitle": "Set a new password",
+  "auth.newPassword": "New password",
+  "auth.confirmPassword": "Confirm password",
+  "auth.passwordsDontMatch": "Passwords don't match",
+  "auth.passwordTooShort": "Password must be at least 6 characters",
+  "auth.passwordUpdated": "Password updated",
+  "auth.passwordUpdatedDesc": "You're signed in. Have a great trip.",
+  // Email verification gate
+  "auth.verifyEmailTitle": "Verify your email",
+  "auth.verifyEmailSub": "We sent a confirmation link to {email}. Click it to unlock saving + offline downloads.",
+  "auth.resendEmail": "Resend email",
+  "auth.resendSent": "Email re-sent",
+  "auth.checkInbox": "Check your inbox",
+  // Anonymous upgrade
+  "auth.upgradeAccount": "Save your tours forever",
+  "auth.upgradeSub": "Right now your data lives only on this device. Create an account to sync it across all your phones + tablets.",
 
   // Onboarding
   "onb.step1": "Step 1 of 2",

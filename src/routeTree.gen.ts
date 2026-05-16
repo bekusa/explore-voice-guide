@@ -22,6 +22,7 @@ import { Route as LanguageRouteImport } from './routes/language'
 import { Route as DestinationsRouteImport } from './routes/destinations'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
 import { Route as AttractionIdRouteImport } from './routes/attraction.$id'
 import { Route as ApiTtsRouteImport } from './routes/api.tts'
 import { Route as ApiTranslateRouteImport } from './routes/api.translate'
@@ -97,6 +98,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => AuthRoute,
+} as any)
 const AttractionIdRoute = AttractionIdRouteImport.update({
   id: '/attraction/$id',
   path: '/attraction/$id',
@@ -145,7 +151,7 @@ const TmSimIdRoleRoute = TmSimIdRoleRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/destinations': typeof DestinationsRoute
   '/language': typeof LanguageRoute
   '/map': typeof MapRoute
@@ -165,11 +171,12 @@ export interface FileRoutesByFullPath {
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/tm-sim/$id/$role': typeof TmSimIdRoleRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/destinations': typeof DestinationsRoute
   '/language': typeof LanguageRoute
   '/map': typeof MapRoute
@@ -189,12 +196,13 @@ export interface FileRoutesByTo {
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/tm-sim/$id/$role': typeof TmSimIdRoleRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/destinations': typeof DestinationsRoute
   '/language': typeof LanguageRoute
   '/map': typeof MapRoute
@@ -214,6 +222,7 @@ export interface FileRoutesById {
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/tm-sim/$id/$role': typeof TmSimIdRoleRoute
 }
 export interface FileRouteTypes {
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/api/translate'
     | '/api/tts'
     | '/attraction/$id'
+    | '/auth/reset-password'
     | '/tm-sim/$id/$role'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/api/translate'
     | '/api/tts'
     | '/attraction/$id'
+    | '/auth/reset-password'
     | '/tm-sim/$id/$role'
   id:
     | '__root__'
@@ -288,12 +299,13 @@ export interface FileRouteTypes {
     | '/api/translate'
     | '/api/tts'
     | '/attraction/$id'
+    | '/auth/reset-password'
     | '/tm-sim/$id/$role'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuthRoute: typeof AuthRoute
+  AuthRoute: typeof AuthRouteWithChildren
   DestinationsRoute: typeof DestinationsRoute
   LanguageRoute: typeof LanguageRoute
   MapRoute: typeof MapRoute
@@ -409,6 +421,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/reset-password': {
+      id: '/auth/reset-password'
+      path: '/reset-password'
+      fullPath: '/auth/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/attraction/$id': {
       id: '/attraction/$id'
       path: '/attraction/$id'
@@ -475,9 +494,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthRouteChildren {
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthResetPasswordRoute: AuthResetPasswordRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AuthRoute: AuthRoute,
+  AuthRoute: AuthRouteWithChildren,
   DestinationsRoute: DestinationsRoute,
   LanguageRoute: LanguageRoute,
   MapRoute: MapRoute,
