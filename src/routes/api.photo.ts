@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
+import { getCachedPhoto, putCachedPhoto } from "@/lib/sharedCache.server";
 
 /**
  * Server-side photo lookup proxy.
@@ -402,6 +403,38 @@ export const Route = createFileRoute("/api/photo")({
           return corsJson({ url: cache.get(cacheKey) ?? null });
         }
 
+        // Persistent Supabase cache — the per-worker in-memory cache
+        // above only survives until the worker cold-starts. Without
+        // this layer, every cold-worker request paid Google Places
+        // $0.024 again even for attractions we'd looked up a thousand
+        // times before. Now: first user pays once, every visitor
+        // afterward (on any device, any worker) reads the URL from
+        // Postgres in ~50 ms. Note we DON'T cache nulls — a server-
+        // side fix or new image source shouldn't be pinned behind a
+        // stale miss row.
+        const persistentKey = {
+          name: q,
+          scope: scope ?? "",
+          city: city ?? "",
+          museum: museum ?? "",
+        };
+        const persisted = await getCachedPhoto(persistentKey);
+        if (persisted) {
+          cache.set(cacheKey, persisted);
+          return corsJson(
+            { url: persisted },
+            {
+              headers: {
+                // 30 days — photo URLs at Wikimedia / lh3 (Google
+                // Places CDN) are content-addressed, they don't
+                // rotate. Bumped from 24 h after Beka caught the
+                // re-fetch storms on every cold worker.
+                "Cache-Control": "public, max-age=2592000, immutable",
+              },
+            },
+          );
+        }
+
         let photoUrl: string | null = null;
         const isArtwork = scope === "artwork";
 
@@ -474,16 +507,27 @@ export const Route = createFileRoute("/api/photo")({
         // Agent fix shipped: the highlights still showed no photos
         // because every browser was serving the pre-fix `{url:null}`
         // straight from disk cache for 24 h. Successful URLs cache
-        // the original day; misses get short no-store responses so
-        // a retry from any client picks up the corrected lookup
+        // for 30 days; misses get short no-store responses so a
+        // retry from any client picks up the corrected lookup
         // immediately.
-        if (photoUrl) cache.set(cacheKey, photoUrl);
+        if (photoUrl) {
+          // Per-worker in-memory cache (fast, resets on cold start).
+          cache.set(cacheKey, photoUrl);
+          // Persistent Supabase cache (survives worker / browser
+          // restarts). Fire-and-forget — caller already paid the
+          // external API round-trip; don't block on Postgres.
+          void putCachedPhoto(persistentKey, photoUrl);
+        }
         return corsJson(
           { url: photoUrl },
           {
             headers: {
               "Cache-Control": photoUrl
-                ? "public, max-age=86400"
+                ? // 30 days, immutable — Wikimedia / Google Places
+                  // CDN URLs are content-addressed and don't rotate.
+                  // Was 24 h previously, which produced re-fetch
+                  // storms every cold worker on the same content.
+                  "public, max-age=2592000, immutable"
                 : "no-store, no-cache, must-revalidate",
             },
           },

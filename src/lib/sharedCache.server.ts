@@ -71,7 +71,8 @@ type DbWithCache = {
       | "cached_guides"
       | "cached_attractions"
       | "cached_museum_highlights"
-      | "cached_time_machine",
+      | "cached_time_machine"
+      | "cached_photos",
   ) => AnyTable;
 };
 
@@ -435,5 +436,88 @@ async function bumpTimeMachineHit(key: TimeMachineKey): Promise<void> {
       .eq("language", key.language);
   } catch {
     /* analytics-only */
+  }
+}
+
+/* ─── Photos ─── */
+
+/**
+ * Single composite key for cached_photos. Every (name, scope, city,
+ * museum) tuple maps to one URL row — the same combinations the
+ * /api/photo handler builds when it constructs its in-memory cache
+ * key, just normalized so trivial whitespace / case drift doesn't
+ * fragment the store.
+ */
+export type PhotoKey = {
+  name: string;
+  /** "artwork" for museum highlights; anything else for places. */
+  scope: string;
+  /** City qualifier we appended for disambiguation, or empty. */
+  city: string;
+  /** Museum name when scope=artwork, or empty. */
+  museum: string;
+};
+
+function photoCacheKey(key: PhotoKey): string {
+  return [
+    normalizeName(key.scope || ""),
+    normalizeName(key.city || ""),
+    normalizeName(key.museum || ""),
+    normalizeName(key.name || ""),
+  ].join("|");
+}
+
+/**
+ * Look up a cached photo URL. Returns the URL string on hit,
+ * `null` on miss / error. Same cache_key shape as /api/photo's
+ * per-worker memory cache so the two layers stay in lock-step.
+ */
+export async function getCachedPhoto(key: PhotoKey): Promise<string | null> {
+  const db = getDb();
+  if (!db) return null;
+  try {
+    const { data, error } = await db
+      .from("cached_photos")
+      .select("url")
+      .eq("cache_key", photoCacheKey(key))
+      .maybeSingle();
+    if (error) {
+      console.warn("[sharedCache] getCachedPhoto error", error.message);
+      return null;
+    }
+    if (!data) return null;
+    const url = data.url;
+    return typeof url === "string" && url.length > 0 ? url : null;
+  } catch (err) {
+    console.warn("[sharedCache] getCachedPhoto threw", err);
+    return null;
+  }
+}
+
+/**
+ * Persist a photo URL. Fire-and-forget — the caller already paid
+ * the Google/Wikipedia round trip, no point waiting on Supabase.
+ *
+ * Only stores SUCCESSFUL lookups. Null URLs (lookup-failed cases)
+ * are intentionally NOT cached — a server-side fix or a new source
+ * shouldn't be blocked by a stale "miss" row pinning users to no
+ * image for days.
+ */
+export async function putCachedPhoto(key: PhotoKey, url: string): Promise<void> {
+  if (!url) return;
+  const db = getDb();
+  if (!db) return;
+  try {
+    const { error } = await db.from("cached_photos").upsert(
+      {
+        cache_key: photoCacheKey(key),
+        url,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "cache_key" },
+    );
+    if (error) console.warn("[sharedCache] putCachedPhoto error", error.message);
+  } catch (err) {
+    console.warn("[sharedCache] putCachedPhoto threw", err);
   }
 }
