@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { FastForward, Loader2, Pause, Play, Rewind, RotateCcw, Square, X } from "lucide-react";
 import { toast } from "sonner";
 import { useT } from "@/hooks/useT";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { resolveAzureVoice } from "@/lib/azureVoices";
 
 /**
  * Sticky-bottom inline audio panel — full transport row + scrubber.
@@ -43,22 +46,56 @@ export function InlineAudioPanel({
   onClose: () => void;
 }) {
   const t = useT();
+  const { user } = useAuth();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [paused, setPaused] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
+  // The user's chosen Azure voice (e.g. "ka-GE-EkaNeural"). Loaded
+  // from profiles.preferred_voice on mount so we can send it along
+  // with the script to /api/tts → n8n → Azure. Without this, every
+  // listener heard Azure's default voice for the language regardless
+  // of what they picked in Settings — Beka's bug report.
+  const [preferredVoice, setPreferredVoice] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    supabase
+      .from("profiles")
+      .select("preferred_voice")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled || !data?.preferred_voice) return;
+        // Only honour Azure-shaped values; ignore legacy browser URIs.
+        if (/-[A-Z][A-Za-z]+Neural$/.test(data.preferred_voice)) {
+          setPreferredVoice(data.preferred_voice);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   const ensureAudio = async (): Promise<string | null> => {
     if (audioUrl) return audioUrl;
     if (!script) return null;
     setGenerating(true);
     try {
+      // Resolve the voice to send. If the user's preference is for a
+      // different language than the current attraction (e.g. they
+      // picked "Eka" while in Georgian, now tapped a guide in
+      // English), resolveAzureVoice falls back to the language
+      // default rather than asking Azure to render English with a
+      // Georgian voice — which would fail.
+      const voice = resolveAzureVoice(language, preferredVoice);
       const res = await fetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ script, language }),
+        body: JSON.stringify({ script, language, voice }),
       });
       if (!res.ok) {
         const errText = await res.text().catch(() => "");

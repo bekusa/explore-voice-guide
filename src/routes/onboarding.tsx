@@ -3,7 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import { Search, Check, Play, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LANGUAGES, getPreviewPhrase, type Language } from "@/lib/languages";
-import { useSpeechVoices, voicesForLanguage, speakWithVoice } from "@/hooks/useSpeechVoices";
+import {
+  azureVoicesForLanguage,
+  defaultVoiceFor,
+  type AzureVoice,
+} from "@/lib/azureVoices";
+import { clearVoicePreviewCache, playVoicePreview } from "@/lib/voicePreview";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useT } from "@/hooks/useT";
@@ -25,13 +30,17 @@ type Step = "language" | "voice";
 
 function OnboardingPage() {
   const navigate = useNavigate();
-  const voices = useSpeechVoices();
   const t = useT();
 
   const [step, setStep] = useState<Step>("language");
   const [query, setQuery] = useState("");
   const [selectedLang, setSelectedLang] = useState<Language | null>(null);
-  const [selectedVoiceURI, setSelectedVoiceURI] = useState<string | null>(null);
+  // Azure voice NAME (e.g. "ka-GE-EkaNeural") — the value we save to
+  // profiles.preferred_voice and send to /api/tts. Previously we
+  // stored a browser SpeechSynthesisVoice URI that had no relationship
+  // to the cloud-rendered audio the user actually heard.
+  const [selectedVoice, setSelectedVoice] = useState<string | null>(null);
+  const [previewingVoice, setPreviewingVoice] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
@@ -77,17 +86,23 @@ function OnboardingPage() {
     );
   }, [query]);
 
-  const matchingVoices = useMemo(
-    () => (selectedLang ? voicesForLanguage(voices, selectedLang.code) : []),
-    [voices, selectedLang],
+  const matchingVoices = useMemo<AzureVoice[]>(
+    () => (selectedLang ? azureVoicesForLanguage(selectedLang.code) : []),
+    [selectedLang],
   );
 
-  // Auto-select first voice when arriving at voice step.
+  // Auto-select first voice (female by our catalog ordering) when
+  // arriving at the voice step, so we always have a saveable value
+  // even if the user skips the preview entirely.
   useEffect(() => {
-    if (step === "voice" && matchingVoices.length > 0 && !selectedVoiceURI) {
-      setSelectedVoiceURI(matchingVoices[0].voiceURI);
+    if (step === "voice" && matchingVoices.length > 0 && !selectedVoice) {
+      const def = defaultVoiceFor(selectedLang?.code ?? "");
+      if (def) setSelectedVoice(def.name);
     }
-  }, [step, matchingVoices, selectedVoiceURI]);
+  }, [step, matchingVoices, selectedVoice, selectedLang]);
+
+  // Free preview blob URLs when leaving the onboarding flow.
+  useEffect(() => () => clearVoicePreviewCache(), []);
 
   const handleContinue = () => {
     if (!selectedLang) return;
@@ -98,11 +113,13 @@ function OnboardingPage() {
     if (!userId || !selectedLang) return;
     setSaving(true);
     try {
+      const voiceToSave =
+        selectedVoice ?? defaultVoiceFor(selectedLang.code)?.name ?? "browser-default";
       const { error } = await supabase
         .from("profiles")
         .update({
           preferred_language: selectedLang.code,
-          preferred_voice: selectedVoiceURI ?? "browser-default",
+          preferred_voice: voiceToSave,
         })
         .eq("user_id", userId);
 
@@ -117,16 +134,28 @@ function OnboardingPage() {
     }
   };
 
-  const previewVoice = () => {
+  // Voice preview now goes through Azure (via /api/tts) so the user
+  // actually hears the cloud voice they're about to commit to —
+  // previously the preview used browser SpeechSynthesis (a different
+  // catalog entirely), so the sample sounded nothing like the real
+  // narration.
+  const previewVoice = async (voiceName: string) => {
     if (!selectedLang) return;
-    const voice = matchingVoices.find((v) => v.voiceURI === selectedVoiceURI);
-    if (!voice) {
-      toast.info(t("toast.noVoiceAvailable"), {
-        description: t("set.noNativeVoice"),
+    setPreviewingVoice(voiceName);
+    try {
+      await playVoicePreview({
+        voice: voiceName,
+        language: selectedLang.code,
+        phrase: getPreviewPhrase(selectedLang.code),
       });
-      return;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "";
+      toast.error(t("toast.couldNotLoadGuide"), {
+        description: msg || t("toast.tryAgainPlease"),
+      });
+    } finally {
+      setPreviewingVoice(null);
     }
-    speakWithVoice(getPreviewPhrase(selectedLang.code), voice);
   };
 
   if (checking) {
@@ -168,9 +197,10 @@ function OnboardingPage() {
           <VoiceStep
             language={selectedLang!}
             voices={matchingVoices}
-            selectedVoiceURI={selectedVoiceURI}
-            setSelectedVoiceURI={setSelectedVoiceURI}
+            selectedVoice={selectedVoice}
+            setSelectedVoice={setSelectedVoice}
             onPreview={previewVoice}
+            previewingVoice={previewingVoice}
             onBack={() => setStep("language")}
             onFinish={handleFinish}
             saving={saving}
@@ -261,14 +291,27 @@ function LanguageStep({
         </ul>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 border-t border-border bg-background/95 px-6 py-4 pb-6 backdrop-blur-xl md:absolute md:rounded-b-[3rem]">
-        <button
-          disabled={!selected}
-          onClick={onContinue}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-gold text-[14px] font-semibold text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01] disabled:opacity-40 disabled:hover:scale-100"
-        >
-          {t("onb.continue")} <ArrowRight className="h-4 w-4" />
-        </button>
+      {/* Sticky CTA — wrapping in an outer fixed shell + inner
+          max-w-md container centers the bar on the desktop preview
+          to match the language list above it. The original markup
+          used `fixed left-0 right-0` which spans the entire desktop
+          viewport (Beka caught the gold gradient stretching across
+          the whole screen on the onboarding shot). The list itself
+          is `mx-auto max-w-md`, so anchoring the CTA to the same
+          column keeps the desktop preview honest while still giving
+          a full-width bottom bar on real mobile (max-w-md = 448px
+          is wider than every phone viewport, so the bar takes 100%
+          on mobile naturally). */}
+      <div className="fixed inset-x-0 bottom-0 z-30">
+        <div className="mx-auto w-full max-w-md border-t border-border bg-background/95 px-6 py-4 pb-6 backdrop-blur-xl">
+          <button
+            disabled={!selected}
+            onClick={onContinue}
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-gold text-[14px] font-semibold text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01] disabled:opacity-40 disabled:hover:scale-100"
+          >
+            {t("onb.continue")} <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
       </div>
     </>
   );
@@ -279,19 +322,26 @@ function LanguageStep({
 function VoiceStep({
   language,
   voices,
-  selectedVoiceURI,
-  setSelectedVoiceURI,
+  selectedVoice,
+  setSelectedVoice,
   onPreview,
+  previewingVoice,
   onBack,
   onFinish,
   saving,
   t,
 }: {
   language: Language;
-  voices: SpeechSynthesisVoice[];
-  selectedVoiceURI: string | null;
-  setSelectedVoiceURI: (uri: string) => void;
-  onPreview: () => void;
+  voices: AzureVoice[];
+  selectedVoice: string | null;
+  setSelectedVoice: (name: string) => void;
+  /** Trigger Azure preview for a specific voice. The handler returns
+   *  a promise so the card can show a loader while audio fetches. */
+  onPreview: (voiceName: string) => void | Promise<void>;
+  /** Voice name currently fetching/playing (drives the loader in its
+   *  card). Single voice at a time — `playVoicePreview` halts any
+   *  prior preview when a new one starts. */
+  previewingVoice: string | null;
   onBack: () => void;
   onFinish: () => void;
   saving: boolean;
@@ -332,52 +382,75 @@ function VoiceStep({
         ) : (
           <ul className="flex flex-col gap-2">
             {voices.map((v) => {
-              const active = selectedVoiceURI === v.voiceURI;
+              const active = selectedVoice === v.name;
+              const previewing = previewingVoice === v.name;
               return (
-                <li key={v.voiceURI}>
-                  <button
-                    onClick={() => setSelectedVoiceURI(v.voiceURI)}
-                    className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-smooth ${
+                <li key={v.name}>
+                  <div
+                    className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 transition-smooth ${
                       active
                         ? "border-primary/60 bg-primary/10"
                         : "border-border bg-card hover:border-primary/30"
                     }`}
                   >
-                    <span className="flex flex-1 flex-col leading-tight">
-                      <span className="text-[14px] font-semibold text-foreground">{v.name}</span>
-                      <span className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                        {v.lang} · {v.localService ? t("voice.onDevice") : t("voice.cloud")}
+                    <button
+                      onClick={() => setSelectedVoice(v.name)}
+                      className="flex flex-1 items-center gap-3 text-left"
+                    >
+                      <span className="flex flex-1 flex-col leading-tight">
+                        <span className="text-[14px] font-semibold text-foreground">
+                          {v.display}
+                        </span>
+                        <span className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                          {v.gender === "female" ? t("voice.female") : t("voice.male")} ·{" "}
+                          {t("voice.cloud")}
+                        </span>
                       </span>
-                    </span>
-                    {active && (
-                      <span className="grid h-6 w-6 place-items-center rounded-full bg-primary text-primary-foreground">
-                        <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
-                      </span>
-                    )}
-                  </button>
+                      {active && (
+                        <span className="grid h-6 w-6 place-items-center rounded-full bg-primary text-primary-foreground">
+                          <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
+                        </span>
+                      )}
+                    </button>
+                    {/* Per-voice preview button — replaces the single
+                        bottom Preview button, since the user usually
+                        wants to A/B between two voices and the old
+                        layout needed an extra round-trip (pick → tap
+                        global preview → pick again). */}
+                    <button
+                      onClick={() => onPreview(v.name)}
+                      disabled={previewing}
+                      aria-label={t("onb.previewVoice")}
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-background text-foreground transition-smooth hover:border-primary/40 disabled:opacity-60"
+                    >
+                      {previewing ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Play className="h-3.5 w-3.5 fill-current" />
+                      )}
+                    </button>
+                  </div>
                 </li>
               );
             })}
           </ul>
         )}
-
-        <button
-          onClick={onPreview}
-          disabled={voices.length === 0}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card px-5 py-3 text-[13px] font-semibold text-foreground transition-smooth hover:border-primary/40 disabled:opacity-50"
-        >
-          <Play className="h-3.5 w-3.5 fill-current" /> {t("onb.previewVoice")}
-        </button>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 border-t border-border bg-background/95 px-6 py-4 pb-6 backdrop-blur-xl md:absolute md:rounded-b-[3rem]">
-        <button
-          onClick={onFinish}
-          disabled={saving}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-gold text-[14px] font-semibold text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01] disabled:opacity-60 disabled:hover:scale-100"
-        >
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : t("onb.beginCta")}
-        </button>
+      {/* Sticky CTA — see LanguageStep above for the rationale on
+          the wrap. Same pattern: outer fixed shell + inner max-w-md
+          column so the bar matches the page's 448px desktop layout
+          and goes full-bleed on every real mobile viewport. */}
+      <div className="fixed inset-x-0 bottom-0 z-30">
+        <div className="mx-auto w-full max-w-md border-t border-border bg-background/95 px-6 py-4 pb-6 backdrop-blur-xl">
+          <button
+            onClick={onFinish}
+            disabled={saving}
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-gold text-[14px] font-semibold text-primary-foreground shadow-glow transition-smooth hover:scale-[1.01] disabled:opacity-60 disabled:hover:scale-100"
+          >
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : t("onb.beginCta")}
+          </button>
+        </div>
       </div>
     </>
   );

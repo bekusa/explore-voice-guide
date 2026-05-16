@@ -392,6 +392,8 @@ export const UI_STRINGS = {
     "We'll fall back to the browser default. Install additional voices in your operating system's accessibility settings.",
   "voice.onDevice": "On-device",
   "voice.cloud": "Cloud",
+  "voice.female": "Female",
+  "voice.male": "Male",
 
   // Notifications
   "notif.title": "Notifications",

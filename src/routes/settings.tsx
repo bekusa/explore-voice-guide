@@ -27,7 +27,12 @@ import { MobileFrame } from "@/components/MobileFrame";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { speakWithVoice, useSpeechVoices, voicesForLanguage } from "@/hooks/useSpeechVoices";
+import {
+  azureVoicesForLanguage,
+  defaultVoiceFor,
+  type AzureVoice,
+} from "@/lib/azureVoices";
+import { clearVoicePreviewCache, playVoicePreview } from "@/lib/voicePreview";
 import { LANGUAGES, getPreviewPhrase, type Language } from "@/lib/languages";
 import { clearAll, getSaved, updateItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
@@ -65,7 +70,6 @@ type Section = "main" | "voice";
 function SettingsPage() {
   const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
-  const voices = useSpeechVoices();
   const saved = useSavedItems();
   const t = useT();
 
@@ -79,7 +83,12 @@ function SettingsPage() {
   // user's actual choice for unauthed sessions.
   const preferredLang = usePreferredLanguage();
   const [langCode, setLangCode] = useState<string>(preferredLang || "en");
-  const [voiceURI, setVoiceURI] = useState<string | null>(null);
+  // Azure voice NAME (e.g. "ka-GE-EkaNeural"). profiles.preferred_voice
+  // historically stored a browser SpeechSynthesisVoice URI which had
+  // nothing to do with the cloud audio playback. Legacy values are
+  // silently ignored on load (see `activeVoice` below).
+  const [voiceName, setVoiceName] = useState<string | null>(null);
+  const [previewingVoice, setPreviewingVoice] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>("");
   const [savingProfile, setSavingProfile] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
@@ -114,14 +123,23 @@ function SettingsPage() {
       .then(({ data }) => {
         if (cancelled || !data) return;
         if (data.preferred_language) setLangCode(data.preferred_language);
-        if (data.preferred_voice && data.preferred_voice !== "browser-default")
-          setVoiceURI(data.preferred_voice);
+        // Only accept Azure-shaped voice names (locale prefix +
+        // "Neural" suffix). Legacy browser URIs ("Google US English",
+        // "Microsoft David Mobile - …", "browser-default") get
+        // dropped — the language fallback below will pick the
+        // language's default Azure voice instead.
+        if (data.preferred_voice && /-[A-Z][A-Za-z]+Neural$/.test(data.preferred_voice)) {
+          setVoiceName(data.preferred_voice);
+        }
         if (data.display_name) setDisplayName(data.display_name);
       });
     return () => {
       cancelled = true;
     };
   }, [user]);
+
+  // Free preview blob URLs when leaving Settings.
+  useEffect(() => () => clearVoicePreviewCache(), []);
 
   const language = useMemo<Language>(
     () =>
@@ -131,20 +149,23 @@ function SettingsPage() {
     [langCode],
   );
 
-  const matchingVoices = useMemo(
-    () => voicesForLanguage(voices, language.code),
-    [voices, language],
+  const matchingVoices = useMemo<AzureVoice[]>(
+    () => azureVoicesForLanguage(language.code),
+    [language],
   );
 
-  const activeVoice = useMemo(
-    () => matchingVoices.find((v) => v.voiceURI === voiceURI) ?? matchingVoices[0],
-    [matchingVoices, voiceURI],
+  const activeVoice = useMemo<AzureVoice | undefined>(
+    () =>
+      matchingVoices.find((v) => v.name === voiceName) ??
+      defaultVoiceFor(language.code) ??
+      undefined,
+    [matchingVoices, voiceName, language],
   );
 
   /* ─── Mutations ─── */
 
-  const updateVoice = async (uri: string) => {
-    setVoiceURI(uri);
+  const updateVoice = async (azureName: string) => {
+    setVoiceName(azureName);
     if (!user) return;
     // Surface RLS / network failures instead of falsely toasting
     // success — Beka caught the original silent path: an expired
@@ -152,7 +173,7 @@ function SettingsPage() {
     // actually writing the row, while the user saw "Voice updated".
     const { error } = await supabase
       .from("profiles")
-      .update({ preferred_voice: uri })
+      .update({ preferred_voice: azureName })
       .eq("user_id", user.id);
     if (error) {
       toast.error(t("toast.couldNotSave"), {
@@ -190,13 +211,25 @@ function SettingsPage() {
     localStorage.setItem("tg.theme", next);
   };
 
-  const previewVoice = () => {
-    if (activeVoice) {
-      speakWithVoice(getPreviewPhrase(language.code), activeVoice);
-    } else {
-      toast.info(t("toast.noVoiceAvailable"), {
-        description: t("set.noNativeVoice"),
+  // Preview a specific Azure voice via /api/tts — same path the
+  // narrated guides use, so what you hear in preview matches what
+  // you'll hear during playback. Caches per voice (see voicePreview.ts)
+  // so a/b clicks don't burn Azure characters.
+  const previewVoice = async (azureName: string) => {
+    setPreviewingVoice(azureName);
+    try {
+      await playVoicePreview({
+        voice: azureName,
+        language: language.code,
+        phrase: getPreviewPhrase(language.code),
       });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "";
+      toast.error(t("toast.couldNotLoadGuide"), {
+        description: msg || t("toast.tryAgainPlease"),
+      });
+    } finally {
+      setPreviewingVoice(null);
     }
   };
 
@@ -299,9 +332,10 @@ function SettingsPage() {
       >
         <VoiceList
           voices={matchingVoices}
-          selectedURI={voiceURI ?? activeVoice?.voiceURI ?? null}
+          selectedName={voiceName ?? activeVoice?.name ?? null}
           onPick={updateVoice}
           onPreview={previewVoice}
+          previewingVoice={previewingVoice}
           languageCode={language.code}
         />
       </SubScreen>
@@ -436,7 +470,7 @@ function SettingsPage() {
           <Row
             icon={<Headphones className="h-4 w-4" />}
             label={t("set.narratorVoice")}
-            value={activeVoice?.name ?? t("set.browserDefault")}
+            value={activeVoice?.display ?? t("set.browserDefault")}
             onClick={() => setSection("voice")}
           />
           {/* Preview Voice row removed per Beka — the Narrator-voice
@@ -667,15 +701,17 @@ function SubScreen({
 
 function VoiceList({
   voices,
-  selectedURI,
+  selectedName,
   onPick,
   onPreview,
+  previewingVoice,
   languageCode,
 }: {
-  voices: SpeechSynthesisVoice[];
-  selectedURI: string | null;
-  onPick: (uri: string) => void;
-  onPreview: () => void;
+  voices: AzureVoice[];
+  selectedName: string | null;
+  onPick: (name: string) => void;
+  onPreview: (name: string) => void | Promise<void>;
+  previewingVoice: string | null;
   languageCode: string;
 }) {
   const t = useT();
@@ -689,24 +725,28 @@ function VoiceList({
   }
 
   return (
-    <>
-      <ul className="flex flex-col gap-2">
-        {voices.map((v) => {
-          const isActive = selectedURI === v.voiceURI;
-          return (
-            <li key={v.voiceURI}>
+    <ul className="flex flex-col gap-2">
+      {voices.map((v) => {
+        const isActive = selectedName === v.name;
+        const isPreviewing = previewingVoice === v.name;
+        return (
+          <li key={v.name}>
+            <div
+              className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 transition-smooth ${
+                isActive
+                  ? "border-primary/60 bg-primary/10"
+                  : "border-border bg-card hover:border-primary/30"
+              }`}
+            >
               <button
-                onClick={() => onPick(v.voiceURI)}
-                className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-smooth ${
-                  isActive
-                    ? "border-primary/60 bg-primary/10"
-                    : "border-border bg-card hover:border-primary/30"
-                }`}
+                onClick={() => onPick(v.name)}
+                className="flex flex-1 items-center gap-3 text-left"
               >
                 <span className="flex flex-1 flex-col leading-tight">
-                  <span className="text-[14px] font-semibold">{v.name}</span>
+                  <span className="text-[14px] font-semibold">{v.display}</span>
                   <span className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                    {v.lang} · {v.localService ? t("voice.onDevice") : t("voice.cloud")}
+                    {v.gender === "female" ? t("voice.female") : t("voice.male")} ·{" "}
+                    {t("voice.cloud")}
                   </span>
                 </span>
                 {isActive && (
@@ -715,16 +755,26 @@ function VoiceList({
                   </span>
                 )}
               </button>
-            </li>
-          );
-        })}
-      </ul>
-      <button
-        onClick={onPreview}
-        className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card px-5 py-3 text-[13px] font-semibold transition-smooth hover:border-primary/40"
-      >
-        <Play className="h-3.5 w-3.5 fill-current" /> {t("set.previewVoice")}
-      </button>
-    </>
+              {/* Per-voice preview button — Beka's request: hear the
+                  actual Azure voice in-line, not a global preview that
+                  needs an extra tap. Plays through /api/tts so the
+                  sample matches narrated-guide playback exactly. */}
+              <button
+                onClick={() => onPreview(v.name)}
+                disabled={isPreviewing}
+                aria-label={t("set.previewVoice")}
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-background text-foreground transition-smooth hover:border-primary/40 disabled:opacity-60"
+              >
+                {isPreviewing ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Play className="h-3.5 w-3.5 fill-current" />
+                )}
+              </button>
+            </div>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
