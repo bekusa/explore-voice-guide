@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Sparkles } from "lucide-react";
 import { TabBar } from "@/components/TabBar";
+import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { useT } from "@/hooks/useT";
 
 /**
@@ -69,6 +70,13 @@ export function MobileFrame({
         <div
           className={`h-full w-full overflow-y-auto overflow-x-hidden scrollbar-hide ${bottomPad}`}
         >
+          {/* Email-verification banner — top of every page when the
+              signed-in user hasn't clicked the confirmation email
+              yet. Self-hides for guests, OAuth users, and the
+              already-verified. Soft gate: keeps browsing intact and
+              the save/download paths surface their own toast hint
+              via checkEmailVerified(). */}
+          <EmailVerificationBanner />
           {children}
           {/* AI Generated Content fineprint — sits at the very end of
               the scrollable area on every page (Beka asked for it

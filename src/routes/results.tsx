@@ -31,7 +31,9 @@ import {
 } from "@/lib/api";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
+import { useAuth } from "@/hooks/useAuth";
 import { AttractionCardShell } from "@/components/AttractionCardShell";
+import { checkEmailVerified } from "@/components/EmailVerificationBanner";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
@@ -519,6 +521,7 @@ function ResultCard({
   }, [attraction.name, language]);
 
   const [downloading, setDownloading] = useState(false);
+  const { user } = useAuth();
 
   const toggleSave = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -528,6 +531,10 @@ function ResultCard({
       toast(t("toast.removedFromSaved"));
       return;
     }
+    // Block save for signed-in-but-not-verified users — keeps the
+    // saved store from collecting orphan items the user can't sync
+    // until they confirm their email. Anonymous + OAuth users pass.
+    if (!checkEmailVerified(user, t)) return;
     saveItem({
       id: slug,
       name: attraction.name,
@@ -551,6 +558,10 @@ function ResultCard({
       toast.error(t("toast.youreOffline"), { description: t("toast.youreOfflineDesc") });
       return;
     }
+    // Same verification gate — offline downloads tie back to an
+    // account once we wire cloud sync, so we want the email
+    // confirmed before users start filling up the cache.
+    if (!checkEmailVerified(user, t)) return;
     setDownloading(true);
     try {
       const script = await fetchGuideFresh(attraction.name, language);
