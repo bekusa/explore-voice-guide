@@ -23,7 +23,7 @@
  * unchanged (English). Better to surface English than to fail the
  * request and spike a Claude retry.
  */
-import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
+import { googleTranslateBatch } from "@/lib/googleTranslate.server";
 
 const LANG_NAMES: Record<string, string> = {
   en: "English",
@@ -76,69 +76,13 @@ function isEnglish(target: string): boolean {
   return !target || target.toLowerCase().startsWith("en");
 }
 
-/**
- * Issue one gateway call for a small batch of strings. Used by
- * `callGateway` which slices the full input into safe-sized chunks
- * — long guide scripts trip Gemini's tool-output token cap when sent
- * in one go and the response truncates silently to the input array.
- */
-async function callGatewayChunk(
-  texts: string[],
-  target: string,
-  _apiKey: string,
-): Promise<string[]> {
-  // Migrated from the Lovable AI Gateway (Gemini 2.5 Flash via BYOK)
-  // to Anthropic Claude Haiku 4.5. Beka observed Gemini repeatedly
-  // leaking garbage into the translations array — Python tracebacks,
-  // its own system prompt, "टोक्यो)) flores", English under a Hindi
-  // key, etc — and the anti-garbage filters kept catching everything
-  // and falling back to English source. Net effect: nothing
-  // translated. Claude Haiku is more expensive (~$1/MT input vs
-  // Gemini's free BYOK) but produces clean output that respects the
-  // target language. Cached forever per (place, lang) so the cost
-  // is paid once per locale, not per visit.
-  const targetName = langName(target);
-  const system = [
-    `You are a professional travel-content translator.`,
-    `Translate every input string into ${targetName}.`,
-    `Preserve placeholders like {name}, {n}, {city} EXACTLY.`,
-    `Preserve URLs, numbers, em-dashes, and the literal "|" character.`,
-    // Beka observed Georgian guide descriptions arriving as one
-    // unbroken wall of text where the English source had clean
-    // paragraph breaks. The translator must keep the source's
-    // line / paragraph structure character-for-character — every
-    // \\n stays a \\n, every blank-line gap stays a blank-line gap.
-    `CRITICAL: Preserve ALL line breaks and paragraph breaks from the source EXACTLY. If the source has "\\n\\n" between paragraphs, the translation must too. Do not concatenate paragraphs.`,
-    `Do not translate proper nouns of places ("Marina Bay Sands", "Colosseum") — keep them in their original form.`,
-    `Keep tone natural and travel-magazine quality.`,
-    `RESPOND WITH ONLY VALID JSON. No markdown fences, no preamble, no commentary.`,
-    `Output shape: {"translations": ["<translated string 1>", "<translated string 2>", ...]}.`,
-    `Return EXACTLY ${texts.length} translated strings, in the same order as the input.`,
-  ].join(" ");
-
-  const userMessage = JSON.stringify({ strings: texts });
-
-  try {
-    const text = await callClaude({
-      model: "claude-haiku-4-5",
-      system,
-      user: userMessage,
-      // Roughly 4× the input character count + headroom — translation
-      // output usually stays close to source length; 4096 covers up to
-      // the longest single guide-script chunk we send.
-      maxTokens: 4096,
-      // Lower temperature for translation — we want consistency, not
-      // creative re-wording.
-      temperature: 0.3,
-    });
-    const parsed = parseClaudeJson(text) as { translations?: unknown } | undefined;
-    if (!parsed || !Array.isArray(parsed.translations)) return texts;
-    const out = parsed.translations.filter((s): s is string => typeof s === "string");
-    return out.length === texts.length ? out : texts.map((t, i) => out[i] ?? t);
-  } catch {
-    return texts;
-  }
-}
+// callGatewayChunk(texts, target, apiKey) was the per-chunk LLM
+// translation helper (Anthropic Haiku, was Lovable Gateway/Gemini
+// before that). Removed in the Google Cloud Translation cutover —
+// callGateway now talks directly to googleTranslateBatch which does
+// its own internal sub-batching. langName + the prose translator
+// system prompt aren't needed any more either; Google takes a
+// language code and returns plain text.
 
 /**
  * Call the Lovable AI Gateway with chunking + size guards so that
@@ -151,83 +95,33 @@ async function callGatewayChunk(
  * Failure mode is preserved: any chunk that errors keeps its source
  * strings, so the caller still sees something sensible.
  */
+/**
+ * Translate `texts` into `target` using Google Cloud Translation v2.
+ *
+ * History: was 4-6 sequential Anthropic Haiku calls (~50 s on cold
+ * cache), bottlenecked by Anthropic Tier-1's 10K out/min cap so
+ * page 1 of /results in Georgian routinely timed out at 120 s.
+ *
+ * Google Cloud Translation:
+ *   - Real translation service, no LLM hallucination / JSON parse
+ *   - 1-2 s for a 50-string batch (5-10x faster than Haiku)
+ *   - Separate quota — doesn't compete with Anthropic budget
+ *   - $20 / 1M chars (≈ $0.02 per cold-cache attractions search)
+ *
+ * Falls back to source strings if GOOGLE_TRANSLATE_KEY isn't set
+ * or the request fails — same defensive behaviour the old LLM
+ * path had. The downstream `translationLooksReal()` gate decides
+ * whether to cache the result as the target-language row.
+ *
+ * The chunking helper that lived here (LONG / MAX_PER_CHUNK math,
+ * serial fan-out to dodge rate limits) is gone — Google v2 happily
+ * accepts 100+ strings in one call and the wrapper does any extra
+ * sub-batching internally.
+ */
 async function callGateway(texts: string[], target: string): Promise<string[]> {
   if (texts.length === 0) return [];
   if (isEnglish(target)) return texts;
-
-  const apiKey = process.env.LOVABLE_API_KEY;
-  if (!apiKey) return texts;
-
-  // Aggressive chunking to fit Anthropic Tier-1 rate limits
-  // (10K output tokens/min). The cold-cache Georgian path runs
-  // attractions Sonnet (~3K out) + translation chunks back-to-
-  // back inside a single minute window — at the previous chunk
-  // sizes the cumulative output crossed the cap and triggered
-  // 429 retries with retry-after up to 45 s, blowing past the
-  // 120-s postJSON timeout.
-  //
-  // History: 6 → 12 → 25 strings/chunk, char cap 4000 → 6000.
-  // Each step roughly halves the round-trip count without
-  // breaking Claude's per-request limit (input cap stays well
-  // under 100K tokens; output rarely exceeds 4K per chunk
-  // because translation output mirrors source length).
-  //
-  // Once Beka spends $40+ on Anthropic the account auto-
-  // promotes to Tier 2 (50K out/min) and the rate ceiling
-  // disappears as a constraint. Until then, fewer + larger
-  // chunks keep the cold-cache wall under the timeout.
-  const LONG = 1500;
-  const MAX_PER_CHUNK = 25;
-  const chunks: number[][] = []; // each chunk holds the original indices
-  let current: number[] = [];
-  let currentChars = 0;
-
-  texts.forEach((s, i) => {
-    if (s.length > LONG) {
-      // Flush any accumulating chunk, then send this big string alone.
-      if (current.length > 0) {
-        chunks.push(current);
-        current = [];
-        currentChars = 0;
-      }
-      chunks.push([i]);
-      return;
-    }
-    if (current.length >= MAX_PER_CHUNK || currentChars + s.length > 6000) {
-      chunks.push(current);
-      current = [];
-      currentChars = 0;
-    }
-    current.push(i);
-    currentChars += s.length;
-  });
-  if (current.length > 0) chunks.push(current);
-
-  // Serial fan-out — was Promise.all, but Beka hit
-  // "Rate limit of 10000 tokens per minute" on Anthropic when a
-  // cold-cache Time Machine generation overlapped with a chunked
-  // translation pass. Each chunk is its own callClaude (Haiku) and
-  // sending 4-6 of them simultaneously can easily trip the
-  // per-minute token budget — once we exceed it the whole batch
-  // fails together, and the visible "we couldn't load this guide"
-  // toast confuses the user. Running them sequentially keeps the
-  // bursts narrow, lets callClaude's retry-after kick in cleanly
-  // when needed, and adds at most a few seconds of latency on a
-  // cold cache miss (cached-language hits don't touch this path).
-  const results: Array<{ idxs: number[]; out: string[] }> = [];
-  for (const idxs of chunks) {
-    const slice = idxs.map((i) => texts[i]);
-    const out = await callGatewayChunk(slice, target, apiKey);
-    results.push({ idxs, out });
-  }
-
-  const merged = texts.slice();
-  for (const { idxs, out } of results) {
-    idxs.forEach((origIdx, j) => {
-      merged[origIdx] = out[j] ?? texts[origIdx];
-    });
-  }
-  return merged;
+  return googleTranslateBatch(texts, target);
 }
 
 /**
