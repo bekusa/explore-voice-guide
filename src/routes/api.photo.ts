@@ -514,9 +514,19 @@ export const Route = createFileRoute("/api/photo")({
           // Per-worker in-memory cache (fast, resets on cold start).
           cache.set(cacheKey, photoUrl);
           // Persistent Supabase cache (survives worker / browser
-          // restarts). Fire-and-forget — caller already paid the
-          // external API round-trip; don't block on Postgres.
-          void putCachedPhoto(persistentKey, photoUrl);
+          // restarts). MUST be awaited on Cloudflare Workers — the
+          // platform cancels pending promises the moment Response is
+          // returned, so an unawaited `void putCachedPhoto(...)` got
+          // killed before it could write. The other tables
+          // (cached_guides / cached_attractions) all await their
+          // writes for the same reason; Beka caught the photo write
+          // silently dropping rows when this one didn't.
+          //
+          // Cost: ~50-100 ms added before sending the URL back to
+          // the user. Worth it — once written, every subsequent
+          // visitor reads from Postgres in ~50 ms and skips the
+          // ~12 s Wikipedia / Google round-trip.
+          await putCachedPhoto(persistentKey, photoUrl);
         }
         return corsJson(
           { url: photoUrl },
