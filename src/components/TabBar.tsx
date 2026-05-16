@@ -15,8 +15,15 @@ export function TabBar() {
       // in browsers without notch/gestures, so desktop preview and
       // older Android keep the original look.
       style={{
-        height: "calc(74px + env(safe-area-inset-bottom))",
-        paddingBottom: "calc(1rem + env(safe-area-inset-bottom))",
+        // max() with a hardcoded floor — on Android edge-to-edge
+        // (Pixel 10 Pro, API 35+) env(safe-area-inset-bottom) often
+        // resolves to 0 even though the gesture bar IS overlapping.
+        // Floor of 24 px keeps labels clear of the bar regardless;
+        // devices with real inset get more breathing room. Total
+        // nav height = 74 px tap-target + floor, so the icons
+        // never disappear behind system chrome.
+        height: "calc(74px + max(24px, env(safe-area-inset-bottom)))",
+        paddingBottom: "max(24px, calc(1rem + env(safe-area-inset-bottom)))",
       }}
       className="absolute bottom-0 left-0 right-0 z-50 flex items-start justify-around border-t border-border bg-background/95 px-2 pt-2 backdrop-blur-xl"
     >

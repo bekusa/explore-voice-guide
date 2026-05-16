@@ -216,25 +216,34 @@
   /*
    * Safe-area utilities — drop the device's notch / status bar /
    * punch-hole inset on top, and the gesture / home-indicator
-   * inset on the bottom. Tailwind 4's `env()` support inside
-   * arbitrary values is finicky, so we centralise here.
+   * inset on the bottom.
    *
-   * `pt-safe` = pt-12 baseline (3 rem clears the standard mobile
-   * header position) + safe-area inset on top of that. Apply to
-   * the top container of any screen with a normal-flow header.
+   * The `max()` wrapper guarantees a SOLID minimum buffer even
+   * when env(safe-area-inset-*) resolves to 0. Android API 35+
+   * (Pixel 10 Pro on Beka's test device) forces every app into
+   * edge-to-edge regardless of Capacitor's StatusBar
+   * overlaysWebView=false config, and on some builds env() still
+   * reports 0 there. Using max() with a hardcoded fallback keeps
+   * the header visibly clear of the status bar / punch-hole even
+   * when the inset value lies.
    *
-   * `pb-safe` = bottom safe-area only, for the rare case (TabBar
-   * does its own arithmetic via inline style).
+   * `pt-safe`  = at least 4 rem (64 px), or safe-area-inset-top
+   *              plus 1 rem padding above the controls — whichever
+   *              is larger. Beka requested more breathing room
+   *              after the first round still overlapped on his
+   *              Samsung / Pixel test devices.
    *
-   * `top-safe-7` = absolute children: 1.75 rem + safe-area-top.
-   * Used by the HomeScreen hero header that sits absolute above
-   * the cinematic photo.
+   * `pb-safe`  = at least 1.5 rem (24 px), or the gesture inset —
+   *              whichever is larger.
+   *
+   * env() resolves to 0 on browsers without notch / gesture
+   * chrome so desktop preview keeps a tight phone frame.
    */
   .pt-safe {
-    padding-top: calc(3rem + env(safe-area-inset-top));
+    padding-top: max(4rem, calc(env(safe-area-inset-top) + 1rem));
   }
   .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
   }
 
   .font-display {

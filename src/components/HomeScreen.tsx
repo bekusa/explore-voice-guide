@@ -187,7 +187,7 @@ export function HomeScreen() {
               browsers without notch chrome, so desktop preview
               keeps the original 28px top spacing. */}
           <div
-            style={{ top: "calc(1.75rem + env(safe-area-inset-top))" }}
+            style={{ top: "max(2.75rem, calc(env(safe-area-inset-top) + 1rem))" }}
             className="absolute left-5 right-5 z-[5] flex flex-col gap-3"
           >
             <div className="flex items-start justify-between">
