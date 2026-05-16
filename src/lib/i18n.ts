@@ -22,7 +22,13 @@ const STORAGE_KEY = "tg.lang";
 // pairs with a beefed-up looksLikeGatewayGarbage filter that
 // rejects bracket junk and wrong-script results before they reach
 // localStorage.
-const CACHE_KEY = "tg.translations.v6";
+// v7 — bumped when api.translate switched from Anthropic Haiku to
+// Google Cloud Translation. The Haiku JSON-output path occasionally
+// produced garbage characters (Beka caught a Bengali "উ" prepended
+// to "ნიუ იორკი" on the home-page city card). Bumping the key
+// invalidates every locally-cached translation so users immediately
+// pull the clean Google output instead of the stale Haiku one.
+const CACHE_KEY = "tg.translations.v7";
 const CHANGE_EVENT = "tg:lang-changed";
 const MAX_CACHE_ENTRIES = 5000;
 

@@ -350,7 +350,16 @@ async function tryWikiSummary(lang: string, title: string): Promise<string | nul
     // or absent; better to fall through to the next strategy and let
     // intitle: pick the most relevant disambiguated page.
     if (summaryData.type === "disambiguation") return null;
-    return summaryData.thumbnail?.source ?? summaryData.originalimage?.source ?? null;
+    const url = summaryData.thumbnail?.source ?? summaryData.originalimage?.source ?? null;
+    // Skip national flag images. Wikipedia's lead image for any
+    // country / sovereign-territory article is the flag (filename
+    // pattern "Flag_of_…"), and that's what got returned for English
+    // city queries that happen to also be a country name —
+    // "Singapore", "Monaco", "Vatican City". The card needs a city
+    // photo, not a flag, so pretend this hit didn't exist and let
+    // the next strategy (city-qualified search, full-text) try.
+    if (url && /flag[_ ]of[_ ]/i.test(url)) return null;
+    return url;
   } catch {
     return null;
   }

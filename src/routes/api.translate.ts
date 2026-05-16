@@ -10,7 +10,7 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
-import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
+import { googleTranslateBatch } from "@/lib/googleTranslate.server";
 
 const LANG_NAMES: Record<string, string> = {
   en: "English",
@@ -83,56 +83,26 @@ export const Route = createFileRoute("/api/translate")({
           return corsJson({ translations: texts });
         }
 
-        // Migrated from Lovable AI Gateway (Gemini 2.5 Flash) to
-        // Anthropic Claude Haiku — the gateway was leaking garbage
-        // (truncations, wrong-language responses, system-prompt
-        // echoes) badly enough that every cached UI string was
-        // corrupted. Claude is more expensive but reliable; UI
-        // strings are batch-cached in browser localStorage so the
-        // cost is paid once per (user, lang).
-        const targetName = langName(target);
-
-        const system = [
-          `You are a professional translator.`,
-          `Translate every input string to ${targetName}.`,
-          `Preserve placeholders like {name}, {n}, {city} EXACTLY (do not translate or remove them).`,
-          `Preserve punctuation, ellipses, ampersands, line breaks, and the literal "|" character.`,
-          `Do not add commentary, quotes, or markdown.`,
-          `RESPOND WITH ONLY VALID JSON. No markdown fences, no preamble.`,
-          `Output shape: {"translations": ["<translated string 1>", ...]}.`,
-          `Return EXACTLY ${texts.length} translated strings, in the same order as the input.`,
-        ].join(" ");
-
-        const userMessage = JSON.stringify({ strings: texts }, null, 0);
-
+        // Migrated to Google Cloud Translation v2. Previously this
+        // called Anthropic Haiku with a JSON-output prompt (which
+        // had replaced an even worse Lovable Gateway / Gemini path
+        // that was leaking system prompts + foreign characters
+        // into the cache — Beka caught a Bengali "উ" prepended to
+        // "ნიუ იორკი" on the home page city card because the old
+        // Haiku-via-JSON path landed garbage in localStorage).
+        //
+        // Google Translate is a real translation service: no JSON
+        // parsing, no garbage characters, much faster. Same path
+        // the content translator now uses (translatePayload.server.ts).
         try {
-          const text = await callClaude({
-            model: "claude-haiku-4-5",
-            system,
-            user: userMessage,
-            maxTokens: 4096,
-            temperature: 0.3,
-          });
-          const parsedJson = parseClaudeJson(text) as { translations?: unknown } | undefined;
-          if (!parsedJson || !Array.isArray(parsedJson.translations)) {
-            return corsJson({ translations: texts });
-          }
-          const out = parsedJson.translations.filter((s): s is string => typeof s === "string");
-
-          // Guard array length
-          const aligned = out.length === texts.length ? out : texts.map((t, i) => out[i] ?? t);
-
-          // Anti-garbage: the gateway has been seen to leak Python
-          // tracebacks, system-prompt echoes, truncated nonsense
-          // ("टोक्यो)) flores"), and wrong-language results into the
-          // translations array. Detect those patterns and substitute
-          // the source string back so we never cache them. Beka saw
-          // corrupted destination names on the home screen because
-          // this filter wasn't running before.
-          const sanitized = aligned.map((t, i) =>
+          const translations = await googleTranslateBatch(texts, target);
+          // Anti-garbage filter still runs as a belt-and-braces gate —
+          // Google output is normally clean, but a network blip
+          // returns the source array unchanged via the helper's
+          // fallback, and the filter is fine with that.
+          const sanitized = translations.map((t, i) =>
             looksLikeGatewayGarbage(t, texts[i], target) ? texts[i] : t,
           );
-
           return corsJson({ translations: sanitized });
         } catch {
           return corsJson({ translations: texts });
