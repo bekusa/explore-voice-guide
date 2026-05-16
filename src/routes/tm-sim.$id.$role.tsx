@@ -17,8 +17,10 @@ import {
 import { LoadingMessages } from "@/components/LoadingMessages";
 import { InlineAudioPanel } from "@/components/InlineAudioPanel";
 import { MobileFrame } from "@/components/MobileFrame";
+import { toast } from "sonner";
 import { ATTRACTIONS_BY_ID, ROLES_META, TIME_MACHINE_ROLES } from "@/lib/timeMachineData";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
+import { useAuth } from "@/hooks/useAuth";
 import { useT, useTranslated } from "@/hooks/useT";
 import type { UiKey } from "@/lib/i18n";
 
@@ -91,6 +93,31 @@ function TimeMachineSimulationPage() {
   // TabBar) instead of inline in the action row. Same pattern as
   // /attraction/$id.
   const [audioOpen, setAudioOpen] = useState(false);
+
+  // Auth gate — listening to a simulation costs Azure TTS the same
+  // way listening to an attraction does, so we apply the same
+  // signed-in-or-anonymous requirement. See attraction.$id.tsx for
+  // the full rationale.
+  const { user, loading: authLoading } = useAuth();
+  const tryOpenAudio = () => {
+    if (authLoading) {
+      toast.info(t("auth.listenSignInTitle"), {
+        description: t("auth.listenSignInDesc"),
+      });
+      return;
+    }
+    if (!user) {
+      toast.error(t("auth.listenSignInTitle"), {
+        description: t("auth.listenSignInDesc"),
+        action: {
+          label: t("auth.listenSignInCta"),
+          onClick: () => navigate({ to: "/auth" }),
+        },
+      });
+      return;
+    }
+    setAudioOpen(true);
+  };
 
   // Role picker dropdown state.
   const [rolePickerOpen, setRolePickerOpen] = useState(false);
@@ -273,7 +300,7 @@ function TimeMachineSimulationPage() {
           loading={loading}
           saved={saved}
           audioOpen={audioOpen}
-          onPlay={() => setAudioOpen(true)}
+          onPlay={tryOpenAudio}
           onSave={toggleSave}
           onRegenerate={() => setReloadTick((n) => n + 1)}
         />

@@ -12,6 +12,7 @@ import {
   Moon,
   Play,
   Search,
+  Sparkles,
   Sun,
   Trash2,
   User as UserIcon,
@@ -340,8 +341,43 @@ function SettingsPage() {
           </p>
         </section>
 
-        {/* Account */}
-        {user && (
+        {/* Account — split into two visual paths.
+            ▸ Anonymous (guest) users see a prominent "Save your
+              account" CTA card that launches the /auth/upgrade flow.
+              Their user row has no email, no display name in
+              user_metadata, and no profile row, so the standard
+              Account block would render mostly empty. Beka asked for
+              a frictionless on-ramp from guest → permanent account
+              that doesn't force a sign-out.
+            ▸ Real (email/OAuth) users see the existing Account block
+              with their email + editable display name. */}
+        {user && user.is_anonymous && (
+          <Group title={t("set.account")}>
+            <Link
+              to="/auth/upgrade"
+              className="flex items-start gap-3 px-4 py-4 transition-smooth hover:bg-secondary/40"
+            >
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow">
+                <Sparkles className="h-4 w-4" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
+                    {t("auth.guestModeBadge")}
+                  </span>
+                </div>
+                <div className="mt-1 text-[14px] font-semibold leading-tight">
+                  {t("auth.upgradeAccount")}
+                </div>
+                <p className="mt-1 text-[11.5px] leading-snug text-muted-foreground">
+                  {t("auth.guestModeBlurb")}
+                </p>
+              </div>
+              <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />
+            </Link>
+          </Group>
+        )}
+        {user && !user.is_anonymous && (
           <Group title={t("set.account")}>
             <div className="flex items-center gap-3 px-4 py-4">
               <span className="grid h-11 w-11 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow">

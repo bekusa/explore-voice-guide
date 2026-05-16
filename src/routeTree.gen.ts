@@ -22,6 +22,7 @@ import { Route as LanguageRouteImport } from './routes/language'
 import { Route as DestinationsRouteImport } from './routes/destinations'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthUpgradeRouteImport } from './routes/auth.upgrade'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
 import { Route as AttractionIdRouteImport } from './routes/attraction.$id'
 import { Route as ApiTtsRouteImport } from './routes/api.tts'
@@ -98,6 +99,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthUpgradeRoute = AuthUpgradeRouteImport.update({
+  id: '/upgrade',
+  path: '/upgrade',
+  getParentRoute: () => AuthRoute,
+} as any)
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -172,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/auth/upgrade': typeof AuthUpgradeRoute
   '/tm-sim/$id/$role': typeof TmSimIdRoleRoute
 }
 export interface FileRoutesByTo {
@@ -197,6 +204,7 @@ export interface FileRoutesByTo {
   '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/auth/upgrade': typeof AuthUpgradeRoute
   '/tm-sim/$id/$role': typeof TmSimIdRoleRoute
 }
 export interface FileRoutesById {
@@ -223,6 +231,7 @@ export interface FileRoutesById {
   '/api/tts': typeof ApiTtsRoute
   '/attraction/$id': typeof AttractionIdRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/auth/upgrade': typeof AuthUpgradeRoute
   '/tm-sim/$id/$role': typeof TmSimIdRoleRoute
 }
 export interface FileRouteTypes {
@@ -250,6 +259,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/attraction/$id'
     | '/auth/reset-password'
+    | '/auth/upgrade'
     | '/tm-sim/$id/$role'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -275,6 +285,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/attraction/$id'
     | '/auth/reset-password'
+    | '/auth/upgrade'
     | '/tm-sim/$id/$role'
   id:
     | '__root__'
@@ -300,6 +311,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/attraction/$id'
     | '/auth/reset-password'
+    | '/auth/upgrade'
     | '/tm-sim/$id/$role'
   fileRoutesById: FileRoutesById
 }
@@ -421,6 +433,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/upgrade': {
+      id: '/auth/upgrade'
+      path: '/upgrade'
+      fullPath: '/auth/upgrade'
+      preLoaderRoute: typeof AuthUpgradeRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/auth/reset-password': {
       id: '/auth/reset-password'
       path: '/reset-password'
@@ -496,10 +515,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthRouteChildren {
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
+  AuthUpgradeRoute: typeof AuthUpgradeRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
   AuthResetPasswordRoute: AuthResetPasswordRoute,
+  AuthUpgradeRoute: AuthUpgradeRoute,
 }
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)

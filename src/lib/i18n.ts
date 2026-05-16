@@ -563,6 +563,29 @@ export const UI_STRINGS = {
   // Anonymous upgrade
   "auth.upgradeAccount": "Save your tours forever",
   "auth.upgradeSub": "Right now your data lives only on this device. Create an account to sync it across all your phones + tablets.",
+  "auth.upgradeTitle": "Keep your tours forever",
+  "auth.upgradeCta": "Save my account",
+  "auth.upgradeBenefit1":
+    "Your saved places + offline downloads stay exactly as they are. Nothing is reset.",
+  "auth.upgradeBenefit2": "Sign back in on any phone or tablet — your library follows you.",
+  "auth.upgradeFootnote":
+    "We'll send a confirmation link to your email. Until you click it, we'll keep nudging you with the verify-email banner.",
+  "auth.upgradeSuccess": "Account saved",
+  "auth.upgradeSuccessDesc":
+    "Check your inbox for a confirmation link. Your tours are now tied to this email.",
+  "auth.upgradeFailed": "Couldn't save account",
+  "auth.guestModeBadge": "Guest mode",
+  "auth.guestModeBlurb":
+    "Your saves live on this device. Add an email + password so they sync everywhere.",
+  // Listen gate — shown when a signed-out user taps "Begin journey".
+  // We require a user session (anonymous OR real) to spend Azure TTS
+  // characters on narration; rate-limit + cost reasons. Anonymous mode
+  // passes this gate, so the friction is one tap ("Continue as guest"
+  // on /auth) rather than a full signup.
+  "auth.listenSignInTitle": "Sign in to listen",
+  "auth.listenSignInDesc":
+    "Audio narration is available to signed-in listeners. Tap to continue — Guest mode works too.",
+  "auth.listenSignInCta": "Sign in",
 
   // Onboarding
   "onb.step1": "Step 1 of 2",

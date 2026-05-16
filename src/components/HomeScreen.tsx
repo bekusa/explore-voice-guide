@@ -180,14 +180,18 @@ export function HomeScreen() {
               language pill. Beka's spec: keep Settings + Notifications
               on top, drop the language pill to its own line so it can
               breathe at full width without crowding the city pill. */}
-          {/* top-7 (28px) + env(safe-area-inset-top) — pushes the
-              header below the punch-hole camera + status bar on
-              Android (Pixel 10 Pro and similar) and the iPhone
-              notch / Dynamic Island. env() resolves to 0 in
-              browsers without notch chrome, so desktop preview
-              keeps the original 28px top spacing. */}
+          {/* Canonical top spacing — `max(4rem, env+1rem)` mirrors
+              `.pt-safe` in styles.css, which every other page header
+              uses (settings, map, attraction, saved, …). Beka caught
+              the home top bar sitting 20 px higher than the map/etc.
+              bars on the same device; the old floor was 2.75rem
+              (44 px) — tightened relative to the canonical 4rem
+              (64 px). Aligning the floor with `.pt-safe` makes the
+              header position pixel-identical across every page on
+              devices without notch/punch-hole, and identical relative
+              to the safe-area inset on devices with one. */}
           <div
-            style={{ top: "max(2.75rem, calc(env(safe-area-inset-top) + 1rem))" }}
+            style={{ top: "max(4rem, calc(env(safe-area-inset-top) + 1rem))" }}
             className="absolute left-5 right-5 z-[5] flex flex-col gap-3"
           >
             <div className="flex items-start justify-between">

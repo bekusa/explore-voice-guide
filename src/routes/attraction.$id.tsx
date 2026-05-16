@@ -53,6 +53,7 @@ import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { useAuth } from "@/hooks/useAuth";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
 import { getCachedGuide, getCachedGuideData, onGuideCacheChange } from "@/lib/guideCache";
 import { DEFAULT_INTEREST, INTERESTS } from "@/lib/interests";
@@ -98,6 +99,12 @@ function AttractionPage() {
   // red error toast because fetchAttractions threw on the network
   // failure. With the cache hit, that toast is noise.
   const online = useOnlineStatus();
+  // Auth gate for the audio player. Listening spends Azure TTS quota
+  // + Cloudflare worker time, so it's behind any-session (anonymous
+  // or real). Browsing the page is still open — only Begin journey /
+  // Listen actually trip this. Beka asked for a clear message instead
+  // of a silent no-op when a signed-out visitor taps the gold button.
+  const { user, loading: authLoading } = useAuth();
 
   const fallbackName = searchName ?? unslugAttraction(id);
   // Detect language from the place name itself so the n8n guide comes
@@ -304,6 +311,27 @@ function AttractionPage() {
     if (starting) return;
     if (!script) {
       toast.error(t("attr.tapBegin"));
+      return;
+    }
+    // Auth gate — listening requires a session (anonymous OR real).
+    // While useAuth is still resolving its initial getSession() we
+    // pessimistically wait one frame instead of opening the player —
+    // otherwise a hard refresh on a /attraction page could let an
+    // already-signed-in user fall through the !user branch.
+    if (authLoading) {
+      toast.info(t("auth.listenSignInTitle"), {
+        description: t("auth.listenSignInDesc"),
+      });
+      return;
+    }
+    if (!user) {
+      toast.error(t("auth.listenSignInTitle"), {
+        description: t("auth.listenSignInDesc"),
+        action: {
+          label: t("auth.listenSignInCta"),
+          onClick: () => navigate({ to: "/auth" }),
+        },
+      });
       return;
     }
     setStarting(true);
