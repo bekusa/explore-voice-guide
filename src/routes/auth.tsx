@@ -64,14 +64,23 @@ function AuthPage() {
   const signInWithProvider = async (provider: "google" | "apple") => {
     setOauthLoading(provider);
     try {
+      // Different redirect target depending on platform:
+      // - Web → "${origin}/auth"; the browser stays in this tab and
+      //   the OAuth flow lands back on this page, where the auth
+      //   state-change subscription routes to /onboarding or /.
+      // - Native (Android/iOS via Capacitor) → "com.lokali.app://auth/callback";
+      //   Supabase redirects the system browser back to that custom
+      //   scheme, AndroidManifest's intent filter wakes the wrapped
+      //   app, and useCapacitorBridge calls exchangeCodeForSession to
+      //   finalise the session inside the WebView.
+      const { Capacitor } = await import("@capacitor/core");
+      const redirectTo = Capacitor.isNativePlatform()
+        ? "com.lokali.app://auth/callback"
+        : `${window.location.origin}/auth`;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: {
-          // After OAuth callback, Supabase redirects here. Auth state
-          // change subscription above picks up the session and routes
-          // to /onboarding or /.
-          redirectTo: `${window.location.origin}/auth`,
-        },
+        options: { redirectTo },
       });
       if (error) throw error;
       // signInWithOAuth opens an external redirect; we won't return

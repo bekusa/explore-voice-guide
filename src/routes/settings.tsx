@@ -599,7 +599,24 @@ function SettingsPage() {
           </div>
         )}
 
-        <p className="px-6 pt-6 text-center text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+        {/* Legal links — required for Play Store / App Store
+            submission and useful for users who want to skim our
+            terms. Privacy is also the canonical URL pasted into
+            the Google OAuth consent screen. */}
+        <div className="flex justify-center gap-4 px-6 pt-6 text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+          <Link
+            to="/privacy"
+            className="hover:text-foreground transition-smooth"
+          >
+            {t("set.privacy")}
+          </Link>
+          <span className="opacity-40">·</span>
+          <Link to="/terms" className="hover:text-foreground transition-smooth">
+            {t("set.terms")}
+          </Link>
+        </div>
+
+        <p className="px-6 pt-4 text-center text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
           {t("set.appVersion")}
         </p>
       </div>

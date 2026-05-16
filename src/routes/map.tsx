@@ -1,9 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, MapPin, Navigation, Bookmark, Layers, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { attractionSlug } from "@/lib/api";
+import {
+  getCurrentLocation,
+  getLocationPermissionState,
+} from "@/lib/geolocation";
 import { useT } from "@/hooks/useT";
 import "leaflet/dist/leaflet.css";
 
@@ -219,21 +224,58 @@ function MapPage() {
     })();
   }, [ready, pins, navigate]);
 
-  const locate = () => {
-    if (!navigator.geolocation || locating) return;
+  // Tracks whether we've already shown the pre-permission card this
+  // session. Beka asked for a friendly "Lokali needs your location"
+  // explainer before the OS dialog — first locate-tap shows the card,
+  // subsequent taps go straight to the request. Card state lives in
+  // the component (resets on remount) so a fresh map open re-explains
+  // for first-time users who switched apps and forgot.
+  const [showLocationRationale, setShowLocationRationale] = useState(false);
+
+  const locate = async () => {
+    if (locating) return;
+    // First-tap pre-permission UX. If the OS has never been asked
+    // (state is "prompt" or "prompt-with-rationale" or "unknown"),
+    // show our explainer card and let the user dismiss → triggers
+    // the real OS dialog. Granted/denied users skip straight to the
+    // request (granted = silently fetches; denied = the helper
+    // throws LOCATION_DENIED, we toast). Play Store-friendly: we
+    // never surprise the user with a cold OS dialog.
+    const state = await getLocationPermissionState();
+    if (
+      (state === "prompt" || state === "prompt-with-rationale" || state === "unknown") &&
+      !showLocationRationale
+    ) {
+      setShowLocationRationale(true);
+      return;
+    }
+    setShowLocationRationale(false);
     setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const coords: [number, number] = [pos.coords.latitude, pos.coords.longitude];
-        setMe(coords);
-        const L = (await import("leaflet")).default;
-        const map = mapRef.current as L.Map;
-        if (map) map.setView(coords, 15, { animate: true });
-        setLocating(false);
-      },
-      () => setLocating(false),
-      { enableHighAccuracy: true, timeout: 8000 },
-    );
+    try {
+      const coords = await getCurrentLocation({ timeoutMs: 8000 });
+      const tuple: [number, number] = [coords.lat, coords.lng];
+      setMe(tuple);
+      const L = (await import("leaflet")).default;
+      const map = mapRef.current as L.Map;
+      if (map) map.setView(tuple, 15, { animate: true });
+    } catch (err) {
+      const code = err instanceof Error ? err.message : "";
+      if (code === "LOCATION_DENIED") {
+        toast.error(t("map.locDeniedTitle"), {
+          description: t("map.locDeniedDesc"),
+        });
+      } else if (code === "LOCATION_TIMEOUT") {
+        toast.error(t("map.locTimeoutTitle"), {
+          description: t("map.locTimeoutDesc"),
+        });
+      } else {
+        toast.error(t("map.locFailedTitle"), {
+          description: t("map.locFailedDesc"),
+        });
+      }
+    } finally {
+      setLocating(false);
+    }
   };
 
   // Add/update "you are here" marker
@@ -331,8 +373,48 @@ function MapPage() {
           )}
         </button>
 
+        {/* Pre-permission rationale card. Shown the first time the
+            user taps the locate button on a fresh app install (when
+            the OS permission is still in "prompt" state). Tells the
+            user WHY we need GPS — Play Store reviewers explicitly
+            flag cold permission dialogs and the App Store guideline
+            5.1.1 effectively requires this. Tap "Allow" → proceed to
+            the OS dialog; "Not now" → bail. */}
+        {showLocationRationale && (
+          <div className="absolute inset-x-5 bottom-28 z-30 rounded-2xl border border-primary/30 bg-card/95 p-5 shadow-elegant backdrop-blur-xl">
+            <div className="grid h-12 w-12 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow">
+              <Navigation className="h-4 w-4" />
+            </div>
+            <h2 className="mt-3 font-display text-[18px] leading-tight">
+              {t("map.locAskTitle")}
+            </h2>
+            <p className="mt-1.5 text-[12px] leading-[1.5] text-muted-foreground">
+              {t("map.locAskBody")}
+            </p>
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={() => setShowLocationRationale(false)}
+                className="flex-1 rounded-full border border-border bg-background px-4 py-2 text-[11px] font-semibold text-muted-foreground transition-smooth hover:text-foreground"
+              >
+                {t("map.locAskDismiss")}
+              </button>
+              <button
+                onClick={() => {
+                  // Same handler; the state flips false above the
+                  // permission state-check, so a second tap goes
+                  // through to the OS prompt.
+                  void locate();
+                }}
+                className="flex-1 rounded-full bg-gradient-gold px-4 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02]"
+              >
+                {t("map.locAskAllow")}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Empty state overlay */}
-        {ready && pins.length === 0 && (
+        {ready && pins.length === 0 && !showLocationRationale && (
           <div className="pointer-events-none absolute inset-x-5 bottom-28 z-20 rounded-2xl border border-border bg-card/95 p-5 text-center shadow-elegant backdrop-blur-xl">
             <div className="pointer-events-auto mx-auto grid h-12 w-12 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow">
               <Bookmark className="h-4 w-4" />

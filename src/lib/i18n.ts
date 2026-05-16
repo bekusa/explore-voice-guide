@@ -340,6 +340,21 @@ export const UI_STRINGS = {
     "Save a place from the home or destination page and it will appear here on the map.",
   "map.findCta": "Find places",
   "map.loading": "Loading map…",
+  // GPS pre-permission rationale (shown before the OS dialog so
+  // Play Store reviewers see a contextual prompt, not a cold one).
+  "map.locAskTitle": "Show you on the map?",
+  "map.locAskBody":
+    "Lokali uses your location only to centre the map on you and label nearby places. It's never shared and never leaves your device.",
+  "map.locAskAllow": "Allow",
+  "map.locAskDismiss": "Not now",
+  // Location error toasts (after the OS dialog or a runtime failure).
+  "map.locDeniedTitle": "Location is off",
+  "map.locDeniedDesc":
+    "Turn it on in your phone's settings to centre the map on you.",
+  "map.locTimeoutTitle": "Couldn't find you",
+  "map.locTimeoutDesc": "GPS took too long — try again outdoors or near a window.",
+  "map.locFailedTitle": "Location unavailable",
+  "map.locFailedDesc": "We couldn't read your position. Try again in a moment.",
 
   // Settings
   "set.title": "Settings",
@@ -384,6 +399,8 @@ export const UI_STRINGS = {
   "set.clearLib": "Clear offline library",
   "set.signOut": "Sign out",
   "set.appVersion": "Lokali · v1.0",
+  "set.privacy": "Privacy",
+  "set.terms": "Terms",
   "set.searchLanguages": "Search languages…",
   "set.noLanguagesMatch": "No languages match",
   "set.noNativeVoice": "No native voice found for this language. Speech will use a generic voice.",

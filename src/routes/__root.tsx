@@ -1,7 +1,15 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import {
+  Outlet,
+  Link,
+  createRootRoute,
+  HeadContent,
+  Scripts,
+  useRouter,
+} from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { useT } from "@/hooks/useT";
+import { useCapacitorBridge } from "@/hooks/useCapacitorBridge";
 
 import appCss from "../styles.css?url";
 
@@ -110,6 +118,12 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  const router = useRouter();
+  // Native bridge — wires hardware back button and OAuth deep-link
+  // handler when the app is running inside the Capacitor wrapper.
+  // No-op in the browser (Capacitor.isNativePlatform() guards the
+  // import), so this is free for web visitors.
+  useCapacitorBridge(router);
   useEffect(() => {
     const stored = localStorage.getItem("tg.theme");
     document.documentElement.classList.toggle("light", stored === "light");
