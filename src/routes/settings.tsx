@@ -30,6 +30,7 @@ import { useAuth } from "@/hooks/useAuth";
 import {
   azureVoicesForLanguage,
   defaultVoiceFor,
+  resolveAzureVoice,
   type AzureVoice,
 } from "@/lib/azureVoices";
 import { clearVoicePreviewCache, playVoicePreview } from "@/lib/voicePreview";
@@ -38,7 +39,8 @@ import { clearAll, getSaved, updateItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
-import { fetchGuideFresh } from "@/lib/api";
+import { fetchGuideFresh, attractionSlug } from "@/lib/api";
+import { clearOfflineStore, fetchAndCacheTour } from "@/lib/offlineStore";
 import {
   clearGuideCache,
   guideCacheCount,
@@ -237,6 +239,12 @@ function SettingsPage() {
     if (!confirm(t("saved.clearConfirm"))) return;
     clearAll();
     clearGuideCache();
+    // Also nuke persisted mp3 + script blobs (the heavy stuff in
+    // Filesystem / IndexedDB). Fire-and-forget — the toast fires
+    // immediately for snappy feedback; if the disk wipe fails the
+    // user can re-clear and we won't double-download anyway because
+    // saveAudioBlob is idempotent.
+    void clearOfflineStore().catch(() => {});
     toast.success(t("toast.libCleared"));
   };
 
@@ -269,6 +277,12 @@ function SettingsPage() {
     setDownloadProgress({ done: 0, total: saved.length });
     let ok = 0;
     let failed = 0;
+    // Resolve the user's Azure voice once outside the loop so we
+    // don't redo the same profile read for every tour. voiceName is
+    // already in component state (loaded by the earlier profile
+    // effect); resolveAzureVoice picks the language default when
+    // the user's pick is for a different language.
+    const voice = resolveAzureVoice(language.code, voiceName) ?? "";
     for (const item of saved) {
       try {
         const script = await fetchGuideFresh(item.name, language.code);
@@ -276,6 +290,19 @@ function SettingsPage() {
           // Mirror the script onto the saved item itself so the Saved page can
           // show "Guide cached" + use it directly when offline.
           updateItem(item.id, { script, language: language.code });
+          // Audio: best-effort. If this fails (Azure rate-limited,
+          // voice unsupported for this locale) we still count the
+          // tour as "downloaded" — the script is enough to read it,
+          // and the audio will lazy-fetch the next time the user
+          // taps Begin journey for it online.
+          if (voice) {
+            void fetchAndCacheTour({
+              slug: attractionSlug(item.name),
+              script,
+              language: language.code,
+              voice,
+            });
+          }
           ok++;
         } else {
           failed++;

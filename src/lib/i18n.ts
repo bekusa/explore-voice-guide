@@ -265,6 +265,7 @@ export const UI_STRINGS = {
   "toast.youreOffline": "You're offline",
   "toast.youreOfflineDesc": "Connect once to download the guide.",
   "toast.downloaded": "Downloaded for offline",
+  "toast.audioReadyHint": "voice ready offline",
   "toast.noGuide": "No guide returned",
   "toast.downloadFailed": "Download failed",
   "toast.tryAgain": "Try again later.",

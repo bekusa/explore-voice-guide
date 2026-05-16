@@ -55,6 +55,10 @@ import { useSavedItems } from "@/hooks/useSavedItems";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useAuth } from "@/hooks/useAuth";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
+import { haptic } from "@/lib/haptics";
+import { fetchAndCacheTour } from "@/lib/offlineStore";
+import { resolveAzureVoice } from "@/lib/azureVoices";
+import { supabase } from "@/integrations/supabase/client";
 import { getCachedGuide, getCachedGuideData, onGuideCacheChange } from "@/lib/guideCache";
 import { DEFAULT_INTEREST, INTERESTS } from "@/lib/interests";
 import { useT } from "@/hooks/useT";
@@ -334,6 +338,11 @@ function AttractionPage() {
       });
       return;
     }
+    // Heavy haptic on a primary CTA — the "Begin journey" tap is
+    // the moment the user is most invested. On Android this is a
+    // firm thud through the vibrator; on iOS it's a Taptic
+    // sharp-impact. No-op on the web.
+    void haptic("heavy");
     setStarting(true);
     setPlayerOpen(true);
     // Tiny timeout so the gold button gets a brief loader flicker on
@@ -605,6 +614,11 @@ function ActionRow({
   const [downloading, setDownloading] = useState(false);
 
   const toggleSave = () => {
+    // Medium haptic on save state change — it's a meaningful action
+    // (now in your library / now gone) but not as primary as
+    // "Begin journey". Same intensity for save and unsave so the
+    // tactile signal is consistent.
+    void haptic("medium");
     if (saved) {
       removeItem(id);
       toast(t("toast.removedFromSaved"));
@@ -637,13 +651,45 @@ function ActionRow({
     }
     setDownloading(true);
     try {
+      // 1) Script (text). fetchGuideFresh writes it into guideCache
+      //    AND returns the text so we can pipe it into the audio
+      //    fetch below — no second API hit.
       const script = await fetchGuideFresh(name, language, interest);
-      if (script) {
-        toast.success(t("toast.downloaded"), { description: name });
-        setCached(true);
-      } else {
+      if (!script) {
         toast.error(t("toast.noGuide"));
+        return;
       }
+
+      // 2) Audio (mp3) — fetch Azure once, persist locally for
+      //    offline playback. Needs the user's preferred voice; we
+      //    pull profiles.preferred_voice for signed-in users and
+      //    fall back to the language default for guests.
+      let voicePref: string | null = null;
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("preferred_voice")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (
+          data?.preferred_voice &&
+          /-[A-Z][A-Za-z]+Neural$/.test(data.preferred_voice)
+        ) {
+          voicePref = data.preferred_voice;
+        }
+      }
+      const voice = resolveAzureVoice(language, voicePref) ?? "";
+      const audioOk = await fetchAndCacheTour({
+        slug: id,
+        script,
+        language,
+        voice,
+      });
+
+      toast.success(t("toast.downloaded"), {
+        description: audioOk ? `${name} · ${t("toast.audioReadyHint")}` : name,
+      });
+      setCached(true);
     } catch (err) {
       toast.error(t("toast.downloadFailed"), {
         description: err instanceof Error ? err.message : t("toast.tryAgain"),

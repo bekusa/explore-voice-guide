@@ -5,6 +5,8 @@ import { useT } from "@/hooks/useT";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveAzureVoice } from "@/lib/azureVoices";
+import { attractionSlug } from "@/lib/api";
+import { audioId, getAudioBlobUrl, saveAudioBlob, saveScript, scriptId } from "@/lib/offlineStore";
 
 /**
  * Sticky-bottom inline audio panel — full transport row + scrubber.
@@ -118,7 +120,22 @@ export function InlineAudioPanel({
       // English), resolveAzureVoice falls back to the language
       // default rather than asking Azure to render English with a
       // Georgian voice — which would fail.
-      const voice = resolveAzureVoice(language, preferredVoice);
+      const voice = resolveAzureVoice(language, preferredVoice) ?? "";
+
+      // Offline-first: if we've stored audio for this (place, lang,
+      // voice) before, use it directly. No /api/tts call, no Azure
+      // quota burn, no network dependency — Lokali works fully on
+      // an aeroplane / underground. Falls through to network fetch
+      // when nothing's cached locally.
+      if (voice) {
+        const slug = attractionSlug(name);
+        const cachedUrl = await getAudioBlobUrl(audioId(slug, language, voice));
+        if (cachedUrl) {
+          setAudioUrl(cachedUrl);
+          return cachedUrl;
+        }
+      }
+
       const res = await fetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -147,6 +164,23 @@ export function InlineAudioPanel({
       }
       const url = URL.createObjectURL(blob);
       setAudioUrl(url);
+
+      // Persist for next-time offline playback. Fire-and-forget so
+      // playback isn't blocked on disk write; if it fails (quota,
+      // permissions) we just refetch next session — no harm done.
+      // Only persist when we have a real voice id (anonymous web
+      // visitors without a profile fall through with empty voice).
+      if (voice) {
+        const slug = attractionSlug(name);
+        void saveAudioBlob(audioId(slug, language, voice), blob).catch(() => {
+          /* storage full or permissions denied — silent */
+        });
+        // Mirror the script too so the saved view can show
+        // transcripts offline. Independent of voice so we don't
+        // duplicate the text per voice.
+        void saveScript(scriptId(slug, language), script).catch(() => {});
+      }
+
       return url;
     } catch (err) {
       const message = err instanceof Error ? err.message : "";

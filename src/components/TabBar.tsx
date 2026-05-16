@@ -2,10 +2,16 @@ import { Link } from "@tanstack/react-router";
 import { Bookmark, Home as HomeIcon, LogOut, MapPin, User as UserIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useT } from "@/hooks/useT";
+import { haptic } from "@/lib/haptics";
 
 export function TabBar() {
   const { user, signOut } = useAuth();
   const t = useT();
+  // Single shared light haptic for every tab tap. The Link's onClick
+  // fires before the route transition starts, so the tap-feedback
+  // happens at the moment of touch — exactly what users expect from
+  // native iOS / Android nav bars. No-op on web (or no Vibration API).
+  const tapHaptic = () => void haptic("light");
   return (
     <nav
       // 74px is the original touch-target height (icon + label + padding).
@@ -29,6 +35,7 @@ export function TabBar() {
     >
       <Link
         to="/"
+        onClick={tapHaptic}
         className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
         activeOptions={{ exact: true }}
         activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
@@ -44,6 +51,7 @@ export function TabBar() {
           tidy. */}
       <Link
         to="/map"
+        onClick={tapHaptic}
         className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
         activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
       >
@@ -52,6 +60,7 @@ export function TabBar() {
       </Link>
       <Link
         to="/saved"
+        onClick={tapHaptic}
         className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
         activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
       >
@@ -60,7 +69,10 @@ export function TabBar() {
       </Link>
       {user ? (
         <button
-          onClick={() => signOut()}
+          onClick={() => {
+            tapHaptic();
+            void signOut();
+          }}
           className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
         >
           <LogOut className="h-[19px] w-[19px]" />
@@ -69,6 +81,7 @@ export function TabBar() {
       ) : (
         <Link
           to="/auth"
+          onClick={tapHaptic}
           className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
         >
           <UserIcon className="h-[19px] w-[19px]" />
