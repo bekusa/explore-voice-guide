@@ -158,55 +158,60 @@ function ResultsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, language]);
 
-  // Background prefetch for pages 2-3. Fires once after the first
-  // page lands, asking n8n for ~20 more attractions excluding the
-  // ones already on screen. The server merges the result into the
-  // Supabase cache row, so the very next visitor to this query
-  // reads all 30 in one cache hit — zero LLM cost. If the prefetch
-  // fails, the user just keeps page 1; pagination dots stay hidden.
-  useEffect(() => {
-    if (!results || results.length === 0) return;
-    // Already have enough? Either the cache served us the full 30
-    // (no work needed) or the LLM returned <PAGE_SIZE so pagination
-    // is impossible anyway.
-    if (results.length >= MAX_RESULTS) return;
-    if (results.length < PAGE_SIZE) return;
-    let cancelled = false;
-    setPrefetching(true);
-    const excludeNames = results.map((a) => a.name).filter(Boolean);
-    const need = MAX_RESULTS - results.length;
-    fetchMoreAttractions(q, language, excludeNames, need)
-      .then((more) => {
-        if (cancelled || more.length === 0) return;
-        // Append, dedup by name (case-insensitive), cap at MAX_RESULTS
-        // so a generous LLM can't blow past the 30-item ceiling.
-        setResults((prev) => {
-          if (!prev) return more.slice(0, MAX_RESULTS);
-          const seen = new Set(prev.map((a) => a.name.trim().toLowerCase()));
-          const fresh = more.filter((a) => {
-            const n = a.name.trim().toLowerCase();
-            if (!n || seen.has(n)) return false;
-            seen.add(n);
-            return true;
-          });
-          return [...prev, ...fresh].slice(0, MAX_RESULTS);
-        });
-      })
-      .catch(() => {
-        /* Silent — page 1 still works, pagination just won't appear */
-      })
-      .finally(() => {
-        if (!cancelled) setPrefetching(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-    // Re-runs whenever the result set length changes — but the gates
-    // above (`< PAGE_SIZE` and `>= MAX_RESULTS`) keep it firing only
-    // once per query, on the transition from the first-page payload
-    // to "needs prefetching".
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, language, results?.length]);
+  // Background prefetch DISABLED while on Anthropic Tier-1.
+  //
+  // The original behaviour fired fetchMoreAttractions(20 more) right
+  // after page 1 landed, so the next visitor would read all 30 in
+  // one cache hit. On Tier-1 (10K out tokens / rolling 60 s) the
+  // back-to-back attractions calls + their translation chunks
+  // routinely exceeded the per-minute cap, triggering 429 retries
+  // with retry-after up to 45 s — page 1 itself often timed out
+  // because the cumulative burst pushed it past the 120 s
+  // postJSON ceiling.
+  //
+  // With prefetch off:
+  //   - Page 1 loads in ~30 s on cold cache (well under the 120 s
+  //     timeout, plenty of headroom for the rare 429).
+  //   - Pages 2-3 stay hidden until prefetch is re-enabled (the
+  //     pagination strip's render gates on results.length > PAGE_SIZE).
+  //   - Cache row still contains the first-page baseline, so the
+  //     next visitor in the same language hits cache instantly.
+  //
+  // Re-enable once the account hits Anthropic Tier 2 (50K out / min)
+  // — uncomment the useEffect below. The pagination + dedup logic
+  // around it is untouched and will pick back up automatically.
+  //
+  // useEffect(() => {
+  //   if (!results || results.length === 0) return;
+  //   if (results.length >= MAX_RESULTS) return;
+  //   if (results.length < PAGE_SIZE) return;
+  //   let cancelled = false;
+  //   setPrefetching(true);
+  //   const excludeNames = results.map((a) => a.name).filter(Boolean);
+  //   const need = MAX_RESULTS - results.length;
+  //   fetchMoreAttractions(q, language, excludeNames, need)
+  //     .then((more) => {
+  //       if (cancelled || more.length === 0) return;
+  //       setResults((prev) => {
+  //         if (!prev) return more.slice(0, MAX_RESULTS);
+  //         const seen = new Set(prev.map((a) => a.name.trim().toLowerCase()));
+  //         const fresh = more.filter((a) => {
+  //           const n = a.name.trim().toLowerCase();
+  //           if (!n || seen.has(n)) return false;
+  //           seen.add(n);
+  //           return true;
+  //         });
+  //         return [...prev, ...fresh].slice(0, MAX_RESULTS);
+  //       });
+  //     })
+  //     .catch(() => {})
+  //     .finally(() => {
+  //       if (!cancelled) setPrefetching(false);
+  //     });
+  //   return () => {
+  //     cancelled = true;
+  //   };
+  // }, [q, language, results?.length]);
 
   // Slice the cached payload for the current page. The n8n response is
   // capped at MAX_RESULTS so longer payloads are silently truncated —
