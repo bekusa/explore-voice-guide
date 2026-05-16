@@ -46,7 +46,7 @@ export function InlineAudioPanel({
   onClose: () => void;
 }) {
   const t = useT();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -59,9 +59,28 @@ export function InlineAudioPanel({
   // listener heard Azure's default voice for the language regardless
   // of what they picked in Settings — Beka's bug report.
   const [preferredVoice, setPreferredVoice] = useState<string | null>(null);
+  // Race-condition guard. The audio-fetch effect below MUST wait for
+  // the profile load to finish before firing — otherwise the request
+  // hits /api/tts with `voice = language default` and Azure renders
+  // the wrong voice, even though Settings stored the right one. Beka
+  // caught this exact issue on round 2: picker worked, playback
+  // ignored it. We flip this true once we know which voice (if any)
+  // belongs to the current user.
+  const [voicePrefLoaded, setVoicePrefLoaded] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
+    // While auth is resolving (initial getSession is still in flight),
+    // keep voicePrefLoaded false. Otherwise a hard refresh on an
+    // attraction page would let the audio fetch fire with user=null
+    // before the real session arrives a beat later, and we'd lose the
+    // user's voice pick on every cold load.
+    if (authLoading) return;
+    // No user → no profile row to read. Mark "loaded" immediately so
+    // the audio fetch can proceed with the language default voice.
+    if (!user) {
+      setVoicePrefLoaded(true);
+      return;
+    }
     let cancelled = false;
     supabase
       .from("profiles")
@@ -69,16 +88,24 @@ export function InlineAudioPanel({
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
-        if (cancelled || !data?.preferred_voice) return;
+        if (cancelled) return;
         // Only honour Azure-shaped values; ignore legacy browser URIs.
-        if (/-[A-Z][A-Za-z]+Neural$/.test(data.preferred_voice)) {
+        if (
+          data?.preferred_voice &&
+          /-[A-Z][A-Za-z]+Neural$/.test(data.preferred_voice)
+        ) {
           setPreferredVoice(data.preferred_voice);
         }
+        // Flip the gate AFTER the state setter so the audio-fetch
+        // effect below sees the resolved preferredVoice on its first
+        // valid run — not null then the right value on a second run
+        // (which would waste an Azure call rendering the default).
+        setVoicePrefLoaded(true);
       });
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, authLoading]);
 
   const ensureAudio = async (): Promise<string | null> => {
     if (audioUrl) return audioUrl;
@@ -138,8 +165,14 @@ export function InlineAudioPanel({
     }
   };
 
-  // Auto-fetch + auto-play once the panel mounts.
+  // Auto-fetch + auto-play once the panel mounts AND the user's
+  // voice preference has finished loading from Supabase. The wait is
+  // critical: firing /api/tts before preferredVoice resolves means we
+  // send `voice = language-default` and Azure renders the wrong voice
+  // for the rest of the session (the audio blob is cached in state,
+  // so even after preferredVoice arrives we never re-fetch).
   useEffect(() => {
+    if (!voicePrefLoaded) return;
     let cancelled = false;
     void ensureAudio().then(() => {
       if (cancelled) return;
@@ -150,7 +183,7 @@ export function InlineAudioPanel({
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [voicePrefLoaded]);
 
   // Cleanup blob URL + stop playback on unmount.
   useEffect(() => {
