@@ -46,6 +46,11 @@ export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
+      // theme-color paints the browser chrome (Chrome/Edge address
+      // bar on Android, Safari status-bar tint on iOS PWA installs)
+      // to match Lokali's charcoal. Without this the system bar
+      // looks like a default light strip on top of the dark app.
+      { name: "theme-color", content: "#0F0F0F" },
       // viewport-fit=cover unlocks env(safe-area-inset-*) CSS values so
       // we can pad around iPhone notches and Android system bars
       // (status bar at top, navigation gestures at bottom). Without
@@ -95,6 +100,23 @@ export const Route = createRootRoute({
         rel: "stylesheet",
         href: appCss,
       },
+      // Favicon set — every PNG lives under /public so Vite serves
+      // them from the site root. The ICO fallback covers legacy
+      // browsers (IE/old Edge); modern browsers prefer the explicit
+      // PNG sizes via `sizes=` hints.
+      { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
+      { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16x16.png" },
+      { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32x32.png" },
+      { rel: "icon", type: "image/png", sizes: "48x48", href: "/favicon-48x48.png" },
+      // Apple touch icon — iOS Safari uses this when the user
+      // "Add to Home Screen". Without it iOS would render a low-fi
+      // screenshot of the page instead of the Lokali mark.
+      { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
+      // PWA manifest — wires up `Add to Home Screen` on Chromium
+      // and Firefox. The manifest itself lives at /public so it's
+      // served verbatim; theme_color and background_color in there
+      // match StatusBar + Splash defaults (#0F0F0F charcoal).
+      { rel: "manifest", href: "/manifest.webmanifest" },
     ],
   }),
   shellComponent: RootShell,

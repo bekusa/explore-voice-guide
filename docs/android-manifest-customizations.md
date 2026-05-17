@@ -1,9 +1,15 @@
-# Android Manifest customizations
+# Android Manifest + resource customizations
 
 The Capacitor-generated `android/` folder is gitignored (see `.gitignore`),
-so changes to `android/app/src/main/AndroidManifest.xml` don't travel with
-the repo. This file documents the customizations we hand-apply so the
-manifest can be re-created on a fresh clone or after `npx cap add android`.
+so changes to `android/app/src/main/AndroidManifest.xml` AND the icon /
+splash PNGs don't travel with the repo. This file documents the
+customizations we hand-apply so the manifest + assets can be
+re-created on a fresh clone or after `npx cap add android`.
+
+For the icons + splash specifically: run `scripts/generate-icons.sh`
+once after a fresh `cap add android`. It reads `resources/icon.png`
+and writes all 16 mipmap + 11 splash PNGs into the right directories
+via ImageMagick. The script is fast (~5 seconds) and idempotent.
 
 When to apply: after `npx cap add android` on a fresh checkout, OR after
 manually deleting `android/`. Capacitor's `npx cap sync` only patches
