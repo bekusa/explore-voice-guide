@@ -130,6 +130,13 @@ function AttractionPage() {
   );
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
+  // Geocoded coords fallback when /api/attractions doesn't include
+  // lat/lng (Anthropic occasionally drops those fields for less-
+  // famous places like the Batumi Ali-and-Nino statue). Resolved
+  // client-side via Nominatim once attraction loads; null until
+  // we hear back. Effectively merged into attraction.lat/lng for
+  // the MapSection render.
+  const [geocoded, setGeocoded] = useState<{ lat: number; lng: number } | null>(null);
   // Full guide payload (script + key_facts/tips/look_for/nearby).
   // Initialized from cache for instant first paint when revisiting a place.
   const [guide, setGuide] = useState<GuideData | null>(() => {
@@ -306,6 +313,54 @@ function AttractionPage() {
       cancelled = true;
     };
   }, [matchedMuseum, language]);
+
+  // Nominatim fallback when /api/attractions returned without lat/lng
+  // (less-famous places sometimes miss the field). We send Nominatim
+  // the English name + city if we have one; the public endpoint is
+  // free up to ~1 req/sec which is well within an attraction page's
+  // single-fetch budget. The 8-second AbortController bound prevents
+  // a hung Nominatim from blocking the map indefinitely; users with
+  // no result just see no map (same as before this fallback existed).
+  useEffect(() => {
+    // Skip when we already have coords, no name yet, or already
+    // geocoded this attraction.
+    if (typeof attraction?.lat === "number" && typeof attraction?.lng === "number") {
+      setGeocoded(null);
+      return;
+    }
+    const query = attraction?.name_en || attraction?.name || fallbackName;
+    if (!query) return;
+    const city = (typeof attraction?.city === "string" ? attraction.city : null) || searchCity;
+    let cancelled = false;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const q = city ? `${query}, ${city}` : query;
+    fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`,
+      {
+        signal: controller.signal,
+        headers: { "Accept-Language": "en" },
+      },
+    )
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: Array<{ lat: string; lon: string }> | null) => {
+        if (cancelled || !data || !data[0]) return;
+        const lat = parseFloat(data[0].lat);
+        const lng = parseFloat(data[0].lon);
+        if (Number.isFinite(lat) && Number.isFinite(lng)) {
+          setGeocoded({ lat, lng });
+        }
+      })
+      .catch(() => {
+        /* timeout / network / parse — silent; no map renders */
+      })
+      .finally(() => clearTimeout(timeout));
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [attraction?.lat, attraction?.lng, attraction?.name_en, attraction?.name, attraction?.city, fallbackName, searchCity]);
 
   // Inline audio player state. Replaces the old /player page — Play
   // now opens a sticky panel at the bottom of this screen so the user
@@ -559,7 +614,12 @@ function AttractionPage() {
             player / TabBar, per Beka's spec ("ჩამოსქროლვისას მხოლოდ
             რუკა გადმოდის footer-ის წინ"). Removing Nearby above made
             this naturally land at the bottom. */}
-        <MapSection lat={a?.lat} lng={a?.lng} name={a?.name ?? fallbackName} currentSlug={id} />
+        <MapSection
+          lat={typeof a?.lat === "number" ? a.lat : geocoded?.lat}
+          lng={typeof a?.lng === "number" ? a.lng : geocoded?.lng}
+          name={a?.name ?? fallbackName}
+          currentSlug={id}
+        />
 
         {/* The audio player itself lives in MobileFrame's floatingPanel
             slot — see the prop on the wrapping <MobileFrame> above.
@@ -743,13 +803,23 @@ function ActionRow({
         >
           <span className="flex flex-col items-center gap-1">
             {saved ? (
-              <BookmarkCheck className="h-4 w-4 fill-current" />
+              <BookmarkCheck className="h-5 w-5 fill-current" />
             ) : (
               <Bookmark className="h-4 w-4" />
             )}
-            <span className="text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] whitespace-normal break-words">
-              {saved ? t("card.saved") : t("card.save")}
-            </span>
+            {/* When saved, drop the label entirely — the filled
+                BookmarkCheck icon is unambiguous and many languages
+                (Georgian "შენახულია", German "gespeichert", Greek
+                "αποθηκευμένο") overflow the 64px tile. Beka caught
+                this on Georgian. When NOT saved the call-to-action
+                "Save" is still useful, so we keep the text only in
+                that state. Both icon sizes bump slightly so the
+                tile has a balanced height with or without text. */}
+            {!saved && (
+              <span className="text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] whitespace-normal break-words">
+                {t("card.save")}
+              </span>
+            )}
           </span>
         </button>
 

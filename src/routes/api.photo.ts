@@ -42,6 +42,12 @@ type WikiSearchResponse = {
 type WikiSummaryResponse = {
   thumbnail?: { source: string };
   originalimage?: { source: string };
+  /** Short tagline from Wikidata, e.g. "1937 novel by Kurban Said" or
+   *  "Statue in Batumi, Georgia". We use this to reject summaries whose
+   *  topic is clearly a non-place (a book, film, song, …) when the
+   *  caller is looking for a physical attraction. */
+  description?: string;
+  type?: string;
 };
 
 /**
@@ -344,13 +350,23 @@ async function tryWikiSummary(lang: string, title: string): Promise<string | nul
       `https://${lang}.wikipedia.org/api/rest_v1/page/summary/` + encodeURIComponent(title);
     const summaryRes = await fetch(summaryUrl, { headers: WIKI_HEADERS });
     if (!summaryRes.ok) return null;
-    const summaryData = (await summaryRes.json()) as WikiSummaryResponse & {
-      type?: string;
-    };
+    const summaryData = (await summaryRes.json()) as WikiSummaryResponse;
     // Skip disambiguation pages — their thumbnails are usually wrong
     // or absent; better to fall through to the next strategy and let
     // intitle: pick the most relevant disambiguated page.
     if (summaryData.type === "disambiguation") return null;
+    // Skip non-place topics that happen to share the name of a
+    // landmark. Beka caught "ალისა და ნინო ძეგლი" (the Batumi
+    // statue) showing the cover of Kurban Said's 1937 novel —
+    // Wikipedia's bare "Ali and Nino" article is the novel, and
+    // bare-first lookup happily picked the cover image. The summary
+    // `description` field reliably tags subject type ("1937 novel
+    // by …", "1944 film directed by …", "Studio album by …"),
+    // so we reject those families and let the caller fall through
+    // to a city-qualified lookup that lands on the real statue.
+    if (summaryData.description && isNonPlaceTopic(summaryData.description)) {
+      return null;
+    }
     const url = summaryData.thumbnail?.source ?? summaryData.originalimage?.source ?? null;
     // Skip national flag images. Wikipedia's lead image for any
     // country / sovereign-territory article is the flag (filename
@@ -364,6 +380,21 @@ async function tryWikiSummary(lang: string, title: string): Promise<string | nul
   } catch {
     return null;
   }
+}
+
+/**
+ * Returns true when a Wikipedia summary description points at a
+ * non-physical topic (book, film, song, etc.). Used to dodge cover
+ * art when our query was actually a landmark with the same name.
+ *
+ * The list mirrors Wikidata's common "instance of" tags surfaced in
+ * REST summaries — additions welcome as Beka spots new false hits.
+ */
+function isNonPlaceTopic(description: string): boolean {
+  const d = description.toLowerCase();
+  return /\b(novel|book|short story|poem|epic|memoir|film|movie|tv series|television series|series by|series of|episode|song|single|album|ep by|studio album|video game|board game|opera|play|musical|painting|sculpture by|comic|manga|cartoon|podcast|band|song by|song from)\b/.test(
+    d,
+  );
 }
 
 export const Route = createFileRoute("/api/photo")({

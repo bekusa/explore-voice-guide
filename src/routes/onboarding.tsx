@@ -91,6 +91,18 @@ function OnboardingPage() {
     [selectedLang],
   );
 
+  // When the user changes language (e.g. goes back to step 1 and
+  // picks a different one), drop any voice picked under the previous
+  // language. Otherwise the stale name (`ka-GE-EkaNeural`) sticks
+  // around in state while the voice list is showing the new
+  // language's voices — the auto-select effect below sees
+  // `!selectedVoice === false` and bails, leaving nothing actually
+  // selected. Beka caught this: "ქართული ვოისები მომცა ასარჩევად"
+  // after switching from Georgian to English.
+  useEffect(() => {
+    setSelectedVoice(null);
+  }, [selectedLang]);
+
   // Auto-select first voice (female by our catalog ordering) when
   // arriving at the voice step, so we always have a saveable value
   // even if the user skips the preview entirely.
