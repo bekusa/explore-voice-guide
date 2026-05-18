@@ -10,9 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TimeMachineRouteImport } from './routes/time-machine'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as ResultsRouteImport } from './routes/results'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PlayerRouteImport } from './routes/player'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
@@ -22,6 +24,7 @@ import { Route as LanguageRouteImport } from './routes/language'
 import { Route as DestinationsRouteImport } from './routes/destinations'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DestinationsSlugRouteImport } from './routes/destinations.$slug'
 import { Route as AuthUpgradeRouteImport } from './routes/auth.upgrade'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
 import { Route as AttractionIdRouteImport } from './routes/attraction.$id'
@@ -39,6 +42,11 @@ const TimeMachineRoute = TimeMachineRouteImport.update({
   path: '/time-machine',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -52,6 +60,11 @@ const SavedRoute = SavedRouteImport.update({
 const ResultsRoute = ResultsRouteImport.update({
   id: '/results',
   path: '/results',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlayerRoute = PlayerRouteImport.update({
@@ -98,6 +111,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DestinationsSlugRoute = DestinationsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => DestinationsRoute,
 } as any)
 const AuthUpgradeRoute = AuthUpgradeRouteImport.update({
   id: '/upgrade',
@@ -158,16 +176,18 @@ const TmSimIdRoleRoute = TmSimIdRoleRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
-  '/destinations': typeof DestinationsRoute
+  '/destinations': typeof DestinationsRouteWithChildren
   '/language': typeof LanguageRoute
   '/map': typeof MapRoute
   '/museums': typeof MuseumsRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
+  '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
   '/time-machine': typeof TimeMachineRoute
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/guide': typeof ApiGuideRoute
@@ -179,21 +199,24 @@ export interface FileRoutesByFullPath {
   '/attraction/$id': typeof AttractionIdRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/upgrade': typeof AuthUpgradeRoute
+  '/destinations/$slug': typeof DestinationsSlugRoute
   '/tm-sim/$id/$role': typeof TmSimIdRoleRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
-  '/destinations': typeof DestinationsRoute
+  '/destinations': typeof DestinationsRouteWithChildren
   '/language': typeof LanguageRoute
   '/map': typeof MapRoute
   '/museums': typeof MuseumsRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
+  '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
   '/time-machine': typeof TimeMachineRoute
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/guide': typeof ApiGuideRoute
@@ -205,22 +228,25 @@ export interface FileRoutesByTo {
   '/attraction/$id': typeof AttractionIdRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/upgrade': typeof AuthUpgradeRoute
+  '/destinations/$slug': typeof DestinationsSlugRoute
   '/tm-sim/$id/$role': typeof TmSimIdRoleRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
-  '/destinations': typeof DestinationsRoute
+  '/destinations': typeof DestinationsRouteWithChildren
   '/language': typeof LanguageRoute
   '/map': typeof MapRoute
   '/museums': typeof MuseumsRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
+  '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
   '/time-machine': typeof TimeMachineRoute
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/guide': typeof ApiGuideRoute
@@ -232,6 +258,7 @@ export interface FileRoutesById {
   '/attraction/$id': typeof AttractionIdRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/upgrade': typeof AuthUpgradeRoute
+  '/destinations/$slug': typeof DestinationsSlugRoute
   '/tm-sim/$id/$role': typeof TmSimIdRoleRoute
 }
 export interface FileRouteTypes {
@@ -246,9 +273,11 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/player'
+    | '/privacy'
     | '/results'
     | '/saved'
     | '/settings'
+    | '/terms'
     | '/time-machine'
     | '/api/attractions'
     | '/api/guide'
@@ -260,6 +289,7 @@ export interface FileRouteTypes {
     | '/attraction/$id'
     | '/auth/reset-password'
     | '/auth/upgrade'
+    | '/destinations/$slug'
     | '/tm-sim/$id/$role'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -272,9 +302,11 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/player'
+    | '/privacy'
     | '/results'
     | '/saved'
     | '/settings'
+    | '/terms'
     | '/time-machine'
     | '/api/attractions'
     | '/api/guide'
@@ -286,6 +318,7 @@ export interface FileRouteTypes {
     | '/attraction/$id'
     | '/auth/reset-password'
     | '/auth/upgrade'
+    | '/destinations/$slug'
     | '/tm-sim/$id/$role'
   id:
     | '__root__'
@@ -298,9 +331,11 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/player'
+    | '/privacy'
     | '/results'
     | '/saved'
     | '/settings'
+    | '/terms'
     | '/time-machine'
     | '/api/attractions'
     | '/api/guide'
@@ -312,22 +347,25 @@ export interface FileRouteTypes {
     | '/attraction/$id'
     | '/auth/reset-password'
     | '/auth/upgrade'
+    | '/destinations/$slug'
     | '/tm-sim/$id/$role'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRouteWithChildren
-  DestinationsRoute: typeof DestinationsRoute
+  DestinationsRoute: typeof DestinationsRouteWithChildren
   LanguageRoute: typeof LanguageRoute
   MapRoute: typeof MapRoute
   MuseumsRoute: typeof MuseumsRoute
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
   PlayerRoute: typeof PlayerRoute
+  PrivacyRoute: typeof PrivacyRoute
   ResultsRoute: typeof ResultsRoute
   SavedRoute: typeof SavedRoute
   SettingsRoute: typeof SettingsRoute
+  TermsRoute: typeof TermsRoute
   TimeMachineRoute: typeof TimeMachineRoute
   ApiAttractionsRoute: typeof ApiAttractionsRoute
   ApiGuideRoute: typeof ApiGuideRoute
@@ -349,6 +387,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TimeMachineRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -368,6 +413,13 @@ declare module '@tanstack/react-router' {
       path: '/results'
       fullPath: '/results'
       preLoaderRoute: typeof ResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/player': {
@@ -432,6 +484,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/destinations/$slug': {
+      id: '/destinations/$slug'
+      path: '/$slug'
+      fullPath: '/destinations/$slug'
+      preLoaderRoute: typeof DestinationsSlugRouteImport
+      parentRoute: typeof DestinationsRoute
     }
     '/auth/upgrade': {
       id: '/auth/upgrade'
@@ -525,19 +584,33 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
+interface DestinationsRouteChildren {
+  DestinationsSlugRoute: typeof DestinationsSlugRoute
+}
+
+const DestinationsRouteChildren: DestinationsRouteChildren = {
+  DestinationsSlugRoute: DestinationsSlugRoute,
+}
+
+const DestinationsRouteWithChildren = DestinationsRoute._addFileChildren(
+  DestinationsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
-  DestinationsRoute: DestinationsRoute,
+  DestinationsRoute: DestinationsRouteWithChildren,
   LanguageRoute: LanguageRoute,
   MapRoute: MapRoute,
   MuseumsRoute: MuseumsRoute,
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
   PlayerRoute: PlayerRoute,
+  PrivacyRoute: PrivacyRoute,
   ResultsRoute: ResultsRoute,
   SavedRoute: SavedRoute,
   SettingsRoute: SettingsRoute,
+  TermsRoute: TermsRoute,
   TimeMachineRoute: TimeMachineRoute,
   ApiAttractionsRoute: ApiAttractionsRoute,
   ApiGuideRoute: ApiGuideRoute,
