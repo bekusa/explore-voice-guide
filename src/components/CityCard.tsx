@@ -125,6 +125,16 @@ export function CityCard({ city }: { city: string }) {
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
 
+      {/* Curated-page badge — top-right pill on cards that route to
+          the editorial /destinations/$slug page. Helps users spot
+          which cities have full landing pages (intro / gallery /
+          museums / neighborhoods / local-loves) vs the search-only
+          dispatch for everything else. Gold pill matches brand. */}
+      {hasProfile && (
+        <div className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full border border-primary/50 bg-background/55 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-primary backdrop-blur-md">
+          ★ Lokali Guide
+        </div>
+      )}
       <div className="absolute inset-x-4 bottom-4">
         <h3 className="font-display text-[26px] font-medium leading-[1.05] text-foreground">
           {label}
