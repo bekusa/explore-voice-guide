@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
@@ -25,6 +25,7 @@ import { DESTINATIONS } from "@/lib/destinations";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { useT, useTranslated } from "@/hooks/useT";
+import { ResultCard } from "@/routes/results";
 
 /**
  * /destinations/$slug — editorial landing page for a launch city.
@@ -73,7 +74,6 @@ function CityDetailPage() {
 
 function Profile({ profile }: { profile: CityProfile }) {
   const t = useT();
-  const navigate = useNavigate();
   const lang = usePreferredLanguage();
 
   // Auto-translate the editorial intro paragraphs + etiquette tips
@@ -167,22 +167,20 @@ function Profile({ profile }: { profile: CityProfile }) {
             carousel above per Beka's 2026-05-19 spec — landmarks
             now cycle in the hero with arrow buttons. */}
 
-        {/* ─── Attractions strip (auto) ──────────────────────────── */}
+        {/* ─── Attractions list — same ResultCard shell /results uses ── */}
         <CityAttractionsSection
           query={profile.attractionQuery ?? profile.city}
           lang={lang}
-          onOpen={(name) =>
-            navigate({
-              to: "/attraction/$id",
-              params: { id: attractionSlug(name) },
-              search: { name, city: profile.city },
-            })
-          }
         />
 
         {/* ─── Featured museums ──────────────────────────────────── */}
         {profile.museumIds.length > 0 && (
           <FeaturedMuseumsSection museumIds={profile.museumIds} />
+        )}
+
+        {/* ─── UNESCO World Heritage ────────────────────────────── */}
+        {profile.unesco.length > 0 && (
+          <UnescoSection inscriptions={profile.unesco} />
         )}
 
         {/* Where-to-stay / Neighbourhoods section removed per Beka
@@ -484,11 +482,9 @@ const CITY_MAX_PAGES = 3;
 function CityAttractionsSection({
   query,
   lang,
-  onOpen,
 }: {
   query: string;
   lang: string;
-  onOpen: (name: string) => void;
 }) {
   const t = useT();
   const [items, setItems] = useState<Attraction[]>([]);
@@ -573,17 +569,17 @@ function CityAttractionsSection({
       )}
 
       {items.length > 0 && (
-        <ul className="mt-4 flex flex-col gap-3">
+        <div className="mt-4 flex flex-col gap-3">
           {items.map((a, i) => (
-            <AttractionRow
+            <ResultCard
               key={`${a.name}-${i}`}
               attraction={a}
               index={i}
-              cityHint={query}
-              onOpen={onOpen}
+              language={lang}
+              cityContext={query}
             />
           ))}
-        </ul>
+        </div>
       )}
 
       {canLoadMore && (
@@ -608,77 +604,70 @@ function CityAttractionsSection({
 }
 
 /**
- * Single attraction row in the city page's vertical list. Same
- * visual scale as the cards on /results so the experience feels
- * consistent across both surfaces. Tapping opens /attraction/$id.
+ * UNESCO World Heritage panel for the city. Renders each inscription
+ * as a card with the inscription's name, year, blurb, and a list of
+ * its headline landmarks. Each landmark deep-links to /results?q=...
+ * so tapping it lands in the canonical search list (and from there
+ * to /attraction/$id). Beka's spec: the badge already shows on
+ * matching attraction cards via `isUnescoSite`; this section adds
+ * the curated catalogue view alongside.
  */
-function AttractionRow({
-  attraction,
-  index,
-  cityHint,
-  onOpen,
-}: {
-  attraction: Attraction;
-  index: number;
-  cityHint: string;
-  onOpen: (name: string) => void;
-}) {
-  // Photo lookup — `name_en` first (English baseline canonical),
-  // then `name`. Skip when the API already gave us an image_url.
-  const lookupName =
-    attraction.name_en ?? (typeof attraction.name === "string" ? attraction.name : "");
-  const photo = useLazyPlacePhoto(lookupName, {
-    cityHint:
-      typeof attraction.city === "string" ? attraction.city : cityHint || null,
-    skip: !!attraction.image_url,
-  });
-  const heroPhoto = attraction.image_url ?? photo;
-  const [tName, tDesc] = useTranslated([
-    attraction.name,
-    (typeof attraction.outside_desc === "string" && attraction.outside_desc) ||
-      (typeof attraction.description === "string" && attraction.description) ||
-      "",
-  ]);
-
+function UnescoSection({ inscriptions }: { inscriptions: UnescoInscription[] }) {
+  const t = useT();
   return (
-    <li>
-      <button
-        type="button"
-        onClick={() => onOpen(attraction.name)}
-        className="group flex w-full items-stretch gap-3 overflow-hidden rounded-2xl border border-border bg-card text-left transition-smooth hover:border-primary/40"
-      >
-        <div className="relative h-24 w-24 shrink-0 bg-secondary">
-          {heroPhoto ? (
-            <img
-              src={heroPhoto}
-              alt={tName}
-              loading={index < 3 ? "eager" : "lazy"}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="grid h-full w-full place-items-center text-muted-foreground">
-              <Sparkles className="h-4 w-4 opacity-60" />
-            </div>
-          )}
-        </div>
-        <div className="flex min-w-0 flex-1 flex-col justify-center py-2 pr-3">
-          <div className="text-[13.5px] font-semibold leading-tight">{tName}</div>
-          {tDesc && (
-            <div className="mt-1 line-clamp-2 text-[11.5px] leading-snug text-muted-foreground">
-              {tDesc}
-            </div>
-          )}
-          <div className="mt-1.5 flex items-center gap-2 text-[10.5px] text-muted-foreground">
-            {typeof attraction.rating === "number" && (
-              <span className="font-semibold text-primary">★ {attraction.rating}</span>
-            )}
-            {typeof attraction.duration === "string" && attraction.duration && (
-              <span>· {attraction.duration}</span>
-            )}
+    <section className="px-6 pt-8">
+      <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
+        {t("unesco.short")}
+      </span>
+      <h2 className="mt-2 font-display text-[1.5rem] font-medium leading-tight">
+        {t("unesco.title")}
+      </h2>
+      <div className="mt-4 flex flex-col gap-3">
+        {inscriptions.map((insc, i) => (
+          <UnescoCard key={i} inscription={insc} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function UnescoCard({ inscription }: { inscription: UnescoInscription }) {
+  // Translate the editorial blurb + the optional locality note —
+  // headline name and landmark names stay as-authored (proper
+  // nouns; translating "Sistine Chapel" produces awkward results).
+  const [tBlurb, tNote] = useTranslated([inscription.blurb, inscription.note ?? ""]);
+  return (
+    <div className="rounded-2xl border border-primary/25 bg-card px-4 py-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-primary">
+            UNESCO · {inscription.year}
           </div>
+          <h3 className="mt-1 font-display text-[1.05rem] font-semibold leading-tight">
+            {inscription.name}
+          </h3>
+          {tNote && (
+            <div className="mt-0.5 text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground">
+              {tNote}
+            </div>
+          )}
         </div>
-      </button>
-    </li>
+      </div>
+      <p className="mt-3 text-[12.5px] leading-[1.55] text-foreground/85">{tBlurb}</p>
+      <ul className="mt-3 flex flex-wrap gap-1.5">
+        {inscription.highlights.map((h) => (
+          <li key={h}>
+            <Link
+              to="/results"
+              search={{ q: h }}
+              className="inline-flex items-center gap-1 rounded-full border border-border bg-background/60 px-2.5 py-1 text-[10.5px] font-semibold text-foreground/85 transition-smooth hover:border-primary/40 hover:text-foreground"
+            >
+              {h}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 

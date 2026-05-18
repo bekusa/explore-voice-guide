@@ -475,7 +475,15 @@ function Pagination({
  * Beka asked for a calmer card now that the per-attraction "appeal
  * score" isn't shown anywhere else in the product.
  */
-function ResultCard({
+/**
+ * Exported so the city detail page (/destinations/$slug) can reuse
+ * the same Save / Download / Details card. Beka asked for the city
+ * page's attraction list to look identical to /results — same card
+ * shell, same buttons, same UNESCO badge, same offline pill — so
+ * the user doesn't experience two different interaction shapes for
+ * the same thing.
+ */
+export function ResultCard({
   attraction,
   index,
   language,

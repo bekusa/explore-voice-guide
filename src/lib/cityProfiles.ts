@@ -32,6 +32,22 @@ export type CityPractical = {
   plug: string;
 };
 
+export type UnescoInscription = {
+  /** Year of UNESCO inscription. */
+  year: number;
+  /** Official name as published by UNESCO. */
+  name: string;
+  /** One-line context — why it's inscribed. */
+  blurb: string;
+  /** The headline landmarks inside the inscription. Each tries to
+   *  match the existing UNESCO_SITES list so the matcher works on
+   *  Lokali's attraction cards too. */
+  highlights: string[];
+  /** Optional note shown beside the section header — e.g. "15 min
+   *  outside Tbilisi" when the inscription isn't in the city itself. */
+  note?: string;
+};
+
 export type CityProfile = {
   slug: "tbilisi" | "rome" | "istanbul";
   /** City + country for the page header. */
@@ -40,6 +56,11 @@ export type CityProfile = {
   /** 2–3 short paragraphs of editorial copy. */
   intro: string[];
   practical: CityPractical;
+  /** UNESCO World Heritage inscriptions for / near this city.
+   *  Empty array hides the section gracefully (no city has zero
+   *  inscriptions in the current launch set, but the type allows it
+   *  for future profiles). */
+  unesco: UnescoInscription[];
   /**
    * Landmark NAMES (not URLs) for the photo gallery. The route
    * resolves each to an image via the existing /api/photo pipeline
@@ -97,6 +118,16 @@ export const CITY_PROFILES: Record<string, CityProfile> = {
     // Featured Museums section gracefully. Add an entry to
     // topMuseums + reference its id here if we ever curate one.
     museumIds: [],
+    unesco: [
+      {
+        year: 1994,
+        name: "Historical Monuments of Mtskheta",
+        blurb:
+          "Georgia's ancient capital from the 3rd century BC; cradle of Georgian Orthodoxy and one of the most important spiritual sites in the Caucasus.",
+        highlights: ["Jvari Monastery", "Svetitskhoveli Cathedral", "Samtavro Monastery"],
+        note: "15 min outside Tbilisi",
+      },
+    ],
     localLoves: [
       "Khinkali at Veliaminov, eaten with your hands — the dumpling's twisted top is the handle, not a bite.",
       "Sunset from Narikala fortress. The cable car up costs ₾2.50 and beats every restaurant view in town.",
@@ -140,6 +171,30 @@ export const CITY_PROFILES: Record<string, CityProfile> = {
     // every Rome visitor counts them as a Rome stop, so we surface
     // it here too.
     museumIds: ["vatican-museums"],
+    unesco: [
+      {
+        year: 1980,
+        name: "Historic Centre of Rome",
+        blurb:
+          "Imperial monuments, baroque squares and ancient basilicas — 28 centuries of architecture inside the Aurelian Walls.",
+        highlights: [
+          "Colosseum",
+          "Roman Forum",
+          "Palatine Hill",
+          "Pantheon",
+          "Castel Sant'Angelo",
+          "Trevi Fountain",
+          "Spanish Steps",
+        ],
+      },
+      {
+        year: 1984,
+        name: "Vatican City",
+        blurb:
+          "The world's smallest sovereign state — St Peter's Basilica, the Sistine Chapel, and one of the deepest art collections on earth.",
+        highlights: ["Vatican City", "St Peter's Basilica", "Sistine Chapel", "Vatican Museums"],
+      },
+    ],
     localLoves: [
       "Espresso standing at Sant'Eustachio's marble counter — never sit, never linger; that's how Romans drink it.",
       "Trapizzino in Testaccio at midnight — flatbread cone stuffed with chicken cacciatore, the after-dinner late-night cure.",
@@ -179,6 +234,21 @@ export const CITY_PROFILES: Record<string, CityProfile> = {
       "Cards work in Sultanahmet + Beyoğlu; carry small cash (₺10, ₺20) for taxis and tea-houses outside the centre.",
     ],
     museumIds: ["topkapi-palace-museum"],
+    unesco: [
+      {
+        year: 1985,
+        name: "Historic Areas of Istanbul",
+        blurb:
+          "Four districts on the historic peninsula — Byzantine and Ottoman monuments side by side on the Bosphorus.",
+        highlights: [
+          "Hagia Sophia",
+          "Blue Mosque",
+          "Topkapı Palace",
+          "Basilica Cistern",
+          "Suleymaniye Mosque",
+        ],
+      },
+    ],
     localLoves: [
       "Sunday breakfast at Çukur Çeşme — eggs, cheese, olives, simit, three teas. Don't book under two hours.",
       "Ride the Beşiktaş–Üsküdar ferry at sunset with a tulip-glass of çay. ₺15 and beats every Bosphorus cruise.",
