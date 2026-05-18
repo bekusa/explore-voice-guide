@@ -690,6 +690,17 @@ function ActionRow({
   const online = useOnlineStatus();
   const items = useSavedItems();
   const t = useT();
+  // useAuth + useRequireSignIn declared HERE inside ActionRow rather
+  // than at the parent AttractionPage. Beka caught the Save / Download
+  // buttons silently no-op-ing in Georgian (and any non-ASCII name)
+  // because my earlier patch referenced `user` / `requireSignIn` from
+  // AttractionPage's closure — they aren't visible inside ActionRow
+  // (it's a sibling top-level function, not nested), so the
+  // references resolved to `undefined`. The gate then thought "no
+  // session" and refused to flip state. Calling the hooks at this
+  // level keeps them tied to the React tree correctly.
+  const { user } = useAuth();
+  const requireSignIn = useRequireSignIn();
   const id = useMemo(() => attractionSlug(name), [name]);
   const saved = items.some((s) => s.id === id) || isSaved(id);
 
