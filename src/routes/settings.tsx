@@ -169,18 +169,21 @@ function SettingsPage() {
   const updateVoice = async (azureName: string) => {
     setVoiceName(azureName);
     if (!user) return;
-    // Surface RLS / network failures instead of falsely toasting
-    // success — Beka caught the original silent path: an expired
-    // Supabase session let the profiles.update() resolve without
-    // actually writing the row, while the user saw "Voice updated".
-    const { error } = await supabase
-      .from("profiles")
-      .update({ preferred_voice: azureName })
-      .eq("user_id", user.id);
+    // UPSERT so a missing profile row (trigger race on a fresh
+    // project) doesn't silently fail — UPDATE with no matching row
+    // resolves cleanly but writes nothing, leaving Settings to lie
+    // about success. UPSERT + RLS (auth.uid() = user_id on both
+    // insert and update policies) closes that hole.
+    const { error } = await supabase.from("profiles").upsert(
+      { user_id: user.id, preferred_voice: azureName },
+      { onConflict: "user_id" },
+    );
     if (error) {
-      toast.error(t("toast.couldNotSave"), {
-        description: error.message,
-      });
+      type SupaErr = { message?: string; code?: string };
+      const e = error as SupaErr;
+      const detail = e.code ? `${e.message ?? ""} [${e.code}]` : (e.message ?? "");
+      console.error("[settings] voice upsert failed", error);
+      toast.error(t("toast.couldNotSave"), { description: detail });
       return;
     }
     toast.success(t("toast.voiceUpdated"));
@@ -191,16 +194,23 @@ function SettingsPage() {
     if (!user) return;
     setSavingProfile(true);
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ display_name: displayName.trim() || null })
-        .eq("user_id", user.id);
+      // UPSERT — see updateVoice above for rationale (missing row
+      // race on the new Supabase project).
+      const { error } = await supabase.from("profiles").upsert(
+        {
+          user_id: user.id,
+          display_name: displayName.trim() || null,
+        },
+        { onConflict: "user_id" },
+      );
       if (error) throw error;
       toast.success(t("toast.profileSaved"));
     } catch (err) {
-      toast.error(t("toast.couldNotSave"), {
-        description: err instanceof Error ? err.message : t("toast.tryAgain"),
-      });
+      type SupaErr = { message?: string; code?: string };
+      const e = err as SupaErr;
+      const detail = e?.code ? `${e.message ?? ""} [${e.code}]` : (e?.message ?? t("toast.tryAgain"));
+      console.error("[settings] display name upsert failed", err);
+      toast.error(t("toast.couldNotSave"), { description: detail });
     } finally {
       setSavingProfile(false);
     }

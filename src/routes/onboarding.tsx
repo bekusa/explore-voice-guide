@@ -127,20 +127,38 @@ function OnboardingPage() {
     try {
       const voiceToSave =
         selectedVoice ?? defaultVoiceFor(selectedLang.code)?.name ?? "browser-default";
-      const { error } = await supabase
-        .from("profiles")
-        .update({
+      // UPSERT, not UPDATE. The `handle_new_user` trigger normally
+      // creates a profile row at signup time, but on the new project
+      // (`dwyajguhgyjbgkpzjaln`) we've seen the row be missing on
+      // first finish — either the trigger didn't ship in the new
+      // migrations or it raced. Upserting makes the call self-healing:
+      // INSERT when the row is absent, UPDATE when it exists. Both
+      // RLS policies allow it (insert/update both gate on
+      // auth.uid() = user_id) so the surface area stays the same.
+      const { error } = await supabase.from("profiles").upsert(
+        {
+          user_id: userId,
           preferred_language: selectedLang.code,
           preferred_voice: voiceToSave,
-        })
-        .eq("user_id", userId);
+        },
+        { onConflict: "user_id" },
+      );
 
       if (error) throw error;
       toast.success(t("toast.allSet"), { description: t("toast.allSetDesc") });
       navigate({ to: "/" });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : t("toast.couldNotSave");
-      toast.error(t("toast.setupFailed"), { description: msg });
+      // Surface the Supabase error code in the toast so the next
+      // failure round we can tell RLS (42501) from FK (23503) from
+      // unique-violation (23505) at a glance instead of guessing.
+      type SupaErr = { message?: string; code?: string; details?: string };
+      const e = err as SupaErr;
+      const msg = e?.message ?? t("toast.couldNotSave");
+      const detail = e?.code ? `${msg} [${e.code}]` : msg;
+      // Console-log the full error too — Beka can paste from devtools
+      // if the toast description isn't enough.
+      console.error("[onboarding] profile upsert failed", err);
+      toast.error(t("toast.setupFailed"), { description: detail });
     } finally {
       setSaving(false);
     }
