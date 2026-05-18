@@ -179,6 +179,24 @@ export const UI_STRINGS = {
   "hero.istanbul.tagline2": "two continents",
   "hero.istanbul.blurb":
     "Where Hagia Sophia's domes catch the call to prayer and the Bosphorus carries you from Europe to Asia between two sips of tea.",
+  // City detail page (/destinations/$slug)
+  "city.about": "About the city",
+  "city.practical": "Practical",
+  "city.season": "Best season",
+  "city.language": "Language",
+  "city.currency": "Currency",
+  "city.timezone": "Time zone",
+  "city.plug": "Plug type",
+  "city.gallery": "Gallery",
+  "city.toExperience": "To experience",
+  "city.topPlaces": "Top places",
+  "city.loadingAttractions": "Loading attractions…",
+  "city.noAttractions": "No attractions found for this city yet.",
+  "city.etiquette": "Travel notes",
+  "city.etiquetteHead": "Good to know",
+  "city.notCovered": "Not yet covered",
+  "city.notCoveredDesc":
+    "We're hand-curating launch city guides one at a time. Tap back to see the cities we've covered.",
   // Kyoto / Lisbon / Marrakech kept in the dictionary as harmless
   // leftovers — they're not in HERO_ROTATION today but a future
   // rotation tweak (or seasonal carousel) can re-enable them
