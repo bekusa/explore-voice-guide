@@ -255,7 +255,17 @@ function SavedRow({ item }: { item: SavedItem }) {
           <Link
             to="/attraction/$id"
             params={{ id: slug }}
-            search={{ name: item.name }}
+            // Pass the city we captured at save time. Without it,
+            // the attraction page's photo lookup runs city-blind and
+            // can land on a same-named place in a different country
+            // (Beka caught Bangkok's Grand Palace flipping to
+            // Dadiani Palace in Georgia when opened from Saved tab).
+            search={{
+              name: item.name,
+              ...(typeof item.attraction.city === "string" && item.attraction.city
+                ? { city: item.attraction.city }
+                : {}),
+            }}
             className="flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-gold px-2 py-2.5 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02] whitespace-normal break-words"
           >
             <Headphones className="h-4 w-4" />

@@ -50,7 +50,7 @@ import {
 } from "@/lib/api";
 import { findMuseumByName, type Museum } from "@/lib/topMuseums";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
-import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
+import { getSaved, isSaved, removeItem, saveItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useAuth } from "@/hooks/useAuth";
@@ -137,9 +137,20 @@ function AttractionPage() {
   // bias-tilted guide for THIS attraction only and don't leak into
   // the next place the user opens.
   const [interest, setInterest] = useState<string>(DEFAULT_INTEREST);
-  const [attraction, setAttraction] = useState<Attraction | null>(
-    searchName ? { name: searchName } : null,
-  );
+  // Seed attraction from the local saved store if the user has this
+  // slug bookmarked. This pins the hero photo + city to whatever was
+  // captured at save time, so opening "Grand Palace" from Saved tab
+  // shows the Bangkok skyline (the saved image), not whatever Wikipedia
+  // happens to land on when /api/photo re-runs without city context.
+  // Beka caught the same name resolving to Dadiani Palace (Georgia)
+  // on one open and Bangkok Grand Palace on another — the cache row
+  // key (name + city) differs when city is missing.
+  const [attraction, setAttraction] = useState<Attraction | null>(() => {
+    const slug = attractionSlug(searchName ?? unslugAttraction(id));
+    const seed = getSaved().find((s) => s.id === slug);
+    if (seed) return seed.attraction;
+    return searchName ? { name: searchName } : null;
+  });
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   // Geocoded coords fallback when /api/attractions doesn't include
