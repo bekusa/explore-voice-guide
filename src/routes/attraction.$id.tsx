@@ -57,10 +57,20 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
 import { useRequireSignIn } from "@/hooks/useRequireSignIn";
 import { haptic } from "@/lib/haptics";
-import { fetchAndCacheTour } from "@/lib/offlineStore";
+import {
+  audioId as makeAudioId,
+  deleteOfflineItem,
+  fetchAndCacheTour,
+  scriptId as makeScriptId,
+} from "@/lib/offlineStore";
 import { resolveAzureVoice } from "@/lib/azureVoices";
 import { supabase } from "@/integrations/supabase/client";
-import { getCachedGuide, getCachedGuideData, onGuideCacheChange } from "@/lib/guideCache";
+import {
+  getCachedGuide,
+  getCachedGuideData,
+  onGuideCacheChange,
+  removeCachedGuide,
+} from "@/lib/guideCache";
 import { DEFAULT_INTEREST, INTERESTS } from "@/lib/interests";
 import { useT } from "@/hooks/useT";
 
@@ -190,7 +200,27 @@ function AttractionPage() {
   // default (Tbilisi).
   const heroCity =
     (typeof attraction?.city === "string" ? attraction.city : null) || searchCity;
-  const heroLookupName = attraction?.name_en ?? attraction?.name ?? fallbackName;
+  // Choose a Wikipedia/Google-friendly query. Non-Latin display names
+  // ("ლუვრი", "東京タワー", "Колизей") match the wrong article on
+  // en.wikipedia.org's text search — Wikipedia falls back to a
+  // Cyrillic / CJK / Georgian disambiguation page and we cache the
+  // wrong thumbnail. Worse, the photo cache row is keyed by the raw
+  // query, so a Georgian-keyed wrong photo loads first; then when
+  // `name_en` arrives a second fetch lands the right one and the
+  // user sees a flash.
+  //
+  // Fix: prefer `name_en` (canonical English baseline); fall back to
+  // `name` / `searchName` / fallbackName only when they're ASCII —
+  // when non-ASCII, return null so useLazyPlacePhoto SKIPS the
+  // fetch until the translation arrives. The hero shows the
+  // category-icon placeholder during the brief wait, which is
+  // cleaner than the wrong-photo flash Beka caught on the Louvre.
+  const heroLookupName = useMemo(() => {
+    if (attraction?.name_en) return attraction.name_en;
+    const candidate = attraction?.name ?? searchName ?? fallbackName;
+    if (candidate && /^[\x20-\x7E]+$/.test(candidate)) return candidate;
+    return null;
+  }, [attraction?.name_en, attraction?.name, searchName, fallbackName]);
   const heroFetched = useLazyPlacePhoto(heroLookupName, {
     cityHint: heroCity,
     skip: !!attraction?.image_url,
@@ -676,20 +706,24 @@ function ActionRow({
   const [downloading, setDownloading] = useState(false);
 
   const toggleSave = () => {
-    // Auth gate first — saving without a session leaves the data
-    // orphan-able when cloud sync eventually ships. Anonymous
-    // sessions pass; only the fully-signed-out path is rejected.
-    if (!requireSignIn(user, "save")) return;
     // Medium haptic on save state change — it's a meaningful action
     // (now in your library / now gone) but not as primary as
     // "Begin journey". Same intensity for save and unsave so the
     // tactile signal is consistent.
     void haptic("medium");
+    // UN-save is always allowed, no auth gate — Beka caught the
+    // stuck-on Bookmark icon when the gate was placed BEFORE this
+    // check (the user couldn't un-save their own tour). The gate
+    // only protects the NEW-save path below.
     if (saved) {
       removeItem(id);
       toast(t("toast.removedFromSaved"));
       return;
     }
+    // Auth gate for new saves — saving without a session leaves the
+    // data orphan-able when cloud sync eventually ships. Anonymous
+    // sessions pass; only the fully-signed-out path is rejected.
+    if (!requireSignIn(user, "save")) return;
     saveItem({
       id,
       name,
@@ -703,16 +737,30 @@ function ActionRow({
   };
 
   const downloadOffline = async () => {
-    // Auth gate — same rationale as toggleSave above. The download
-    // path hits Azure TTS + persists audio locally; we want a UID
-    // attached so the user's cache lifecycle is account-scoped.
-    if (!requireSignIn(user, "download")) return;
+    // UN-download is always allowed — Beka caught the "Get" tile
+    // being stuck in the cached state with no way back. Tapping a
+    // cached tile now removes the script from guideCache AND the
+    // audio + script blobs from offlineStore, freeing space and
+    // letting the user redownload fresh later.
     if (cached) {
-      toast.info(t("attr.alreadyDownloaded"), {
-        description: t("toast.alreadyCachedDesc"),
-      });
+      removeCachedGuide(name, language, interest);
+      // Audio + script blobs in offlineStore — best-effort wipe.
+      // The audio is keyed per voice (we don't know which voices
+      // were stored for this slug), so we delete the default voice
+      // file plus the script file. If other voices were also
+      // downloaded they linger as orphans; the global "Clear
+      // offline library" in Settings handles those.
+      void deleteOfflineItem(
+        makeAudioId(id, language, ""),
+        makeScriptId(id, language),
+      );
+      setCached(false);
+      toast(t("toast.removedFromOffline"));
       return;
     }
+    // Auth gate for new downloads — same rationale as toggleSave.
+    // Anonymous sessions pass; only signed-out is blocked.
+    if (!requireSignIn(user, "download")) return;
     if (!online) {
       toast.error(t("toast.youreOffline"), {
         description: t("toast.youreOfflineDesc"),

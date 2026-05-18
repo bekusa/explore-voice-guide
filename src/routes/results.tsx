@@ -38,7 +38,7 @@ import { checkEmailVerified } from "@/components/EmailVerificationBanner";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { isSaved, removeItem, saveItem } from "@/lib/savedStore";
-import { getCachedGuide, onGuideCacheChange } from "@/lib/guideCache";
+import { getCachedGuide, onGuideCacheChange, removeCachedGuide } from "@/lib/guideCache";
 import { useT } from "@/hooks/useT";
 
 /**
@@ -555,12 +555,19 @@ function ResultCard({
   const downloadOffline = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Sign-in gate first — same as toggleSave above.
-    if (!requireSignIn(user, "download")) return;
+    // UN-download path — clicking a cached tile clears the offline
+    // script so the user can free space + force a re-fetch later.
+    // No auth gate on the remove path (you should always be able to
+    // delete YOUR cache). Beka caught the tile stuck on with no way
+    // back.
     if (cached) {
-      toast.info(t("results.alreadyOffline"), { description: t("toast.alreadyCachedDesc") });
+      removeCachedGuide(attraction.name, language);
+      setCached(false);
+      toast(t("toast.removedFromOffline"));
       return;
     }
+    // Sign-in gate for fresh downloads.
+    if (!requireSignIn(user, "download")) return;
     if (!online) {
       toast.error(t("toast.youreOffline"), { description: t("toast.youreOfflineDesc") });
       return;
