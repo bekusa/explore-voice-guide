@@ -86,12 +86,25 @@ export const DESTINATIONS: Destination[] = [
     lng: -0.1278,
   },
 
+  // Istanbul promoted into the Home hero rotation per Beka's spec
+  // (Tbilisi → Rome → Istanbul). Hero image from Unsplash (Hagia
+  // Sophia + the Bosphorus skyline at golden hour); swap for a local
+  // /assets/destinations/istanbul.webp later if the hosted URL ever
+  // disappears.
+  {
+    slug: "istanbul",
+    city: "Istanbul",
+    country: "Türkiye",
+    hero: "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?auto=format&fit=crop&w=1280&q=80",
+    lat: 41.0082,
+    lng: 28.9784,
+  },
+
   // ─── Non-hero cities (nearest-city lookup only, no hero image) ──
   // These exist so a user in, say, Lisbon doesn't get auto-detected
   // to Tbilisi just because that's the only city we know about.
   // If you add an image for one of these, just attach a `hero` field
   // and add the slug to HomeScreen's HERO_ROTATION array.
-  { slug: "istanbul", city: "Istanbul", country: "Türkiye", lat: 41.0082, lng: 28.9784 },
   { slug: "kyoto", city: "Kyoto", country: "Japan", lat: 35.0116, lng: 135.7681 },
   { slug: "lisbon", city: "Lisbon", country: "Portugal", lat: 38.7223, lng: -9.1393 },
   { slug: "marrakech", city: "Marrakech", country: "Morocco", lat: 31.6295, lng: -7.9811 },

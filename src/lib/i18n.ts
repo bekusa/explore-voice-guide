@@ -174,6 +174,11 @@ export const UI_STRINGS = {
   "hero.london.tagline2": "the Thames",
   "hero.london.blurb":
     "Black cabs in the rain, Sunday bells at Westminster, and centuries of empire stacked along a river that still pulls everything together.",
+  "hero.istanbul.country": "Türkiye",
+  "hero.istanbul.city": "Istanbul",
+  "hero.istanbul.tagline2": "two continents",
+  "hero.istanbul.blurb":
+    "Where Hagia Sophia's domes catch the call to prayer and the Bosphorus carries you from Europe to Asia between two sips of tea.",
   // Kyoto / Lisbon / Marrakech kept in the dictionary as harmless
   // leftovers — they're not in HERO_ROTATION today but a future
   // rotation tweak (or seasonal carousel) can re-enable them

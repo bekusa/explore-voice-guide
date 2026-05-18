@@ -21,6 +21,8 @@ import { toast } from "sonner";
 import { ATTRACTIONS_BY_ID, ROLES_META, TIME_MACHINE_ROLES } from "@/lib/timeMachineData";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { useAuth } from "@/hooks/useAuth";
+import { useRequireSignIn } from "@/hooks/useRequireSignIn";
+import { isTmSaved, onTmSavedChange, toggleTmSaved } from "@/lib/tmSavedStore";
 import { useT, useTranslated } from "@/hooks/useT";
 import type { UiKey } from "@/lib/i18n";
 
@@ -122,33 +124,28 @@ function TimeMachineSimulationPage() {
   // Role picker dropdown state.
   const [rolePickerOpen, setRolePickerOpen] = useState(false);
 
-  // Save state — keyed locally per (id, role) so the user can star
-  // their favourite simulations without coupling to the existing
-  // savedStore (which is shaped around real attractions).
-  const SAVED_KEY = "tm_saved";
+  // Save state via the shared tmSavedStore — keyed per (id, role)
+  // and mirrored to Supabase saved_tours when the user is signed in
+  // (with a `tm-` slug prefix so it doesn't collide with real
+  // attraction slugs). Beka caught that the dashboard's saved_tours
+  // table was missing every Time Machine pick; now it appears there.
   const [saved, setSaved] = useState(false);
+  const requireSignIn = useRequireSignIn();
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const raw = window.localStorage.getItem(SAVED_KEY);
-      const list = raw ? (JSON.parse(raw) as string[]) : [];
-      setSaved(list.includes(`${id}::${role}`));
-    } catch {
-      /* noop */
-    }
+    setSaved(isTmSaved(id, role));
+    // Subscribe to cross-tab changes so the bookmark icon stays in
+    // sync if the user saves on one tab and views on another.
+    return onTmSavedChange(() => setSaved(isTmSaved(id, role)));
   }, [id, role]);
   const toggleSave = () => {
-    if (typeof window === "undefined") return;
-    try {
-      const raw = window.localStorage.getItem(SAVED_KEY);
-      const list = raw ? (JSON.parse(raw) as string[]) : [];
-      const key = `${id}::${role}`;
-      const next = list.includes(key) ? list.filter((k) => k !== key) : [...list, key];
-      window.localStorage.setItem(SAVED_KEY, JSON.stringify(next));
-      setSaved(next.includes(key));
-    } catch {
-      /* noop */
-    }
+    // Sign-in gate — same posture as Save in /attraction and
+    // /results. Anonymous mode passes (the gate only rejects fully
+    // signed-out users); cloud mirror happens only for real users.
+    if (!requireSignIn(user, "save")) return;
+    const displayTitle =
+      moment?.name ?? `${id} — ${role}`;
+    const willSave = toggleTmSaved(id, role, displayTitle);
+    setSaved(willSave);
   };
 
   // Fetch the simulation. POSTs to /api/time-machine which will hit

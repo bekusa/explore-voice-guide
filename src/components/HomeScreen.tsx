@@ -50,11 +50,12 @@ const TIME_MACHINE_TOP_10 = [...TIME_MACHINE_ATTRACTIONS]
   .sort((a, b) => b.score - a.score)
   .slice(0, 10);
 
-// Beka's new rotation order (was tbilisi/rome/kyoto/lisbon/marrakech).
-// Pre-translated hero copy lives under `hero.<slug>.*` in i18n.ts —
-// every slug here must have a matching set of keys (country, city,
-// tagline2, blurb) in i18n.ts + every locale file.
-const HERO_ROTATION = ["tbilisi", "paris", "rome", "bangkok", "london"]
+// Trimmed to the 3 cities Beka wants surfaced as the brand carousel:
+// Tbilisi (Lokali's home base), Rome (the canonical European audio-
+// guide city), Istanbul (East–West crossroads). Paris / Bangkok /
+// London hero copy stays in i18n.ts as harmless leftovers; re-add
+// them to this array later if we want a fuller rotation.
+const HERO_ROTATION = ["tbilisi", "rome", "istanbul"]
   .map((slug) => DESTINATIONS.find((d) => d.slug === slug))
   .filter((d): d is Destination => !!d);
 
@@ -120,7 +121,13 @@ export function HomeScreen() {
   // would have otherwise burned five gateway calls per language for
   // the same hand-authored copy. The literal "Lokali" tagline prefix
   // stays English everywhere (brand name).
-  const heroKey = heroDest.slug as "tbilisi" | "paris" | "rome" | "bangkok" | "london";
+  const heroKey = heroDest.slug as
+    | "tbilisi"
+    | "paris"
+    | "rome"
+    | "bangkok"
+    | "london"
+    | "istanbul";
   const heroCountry = t(`hero.${heroKey}.country` as UiKey);
   const heroPart1 = "Lokali";
   const heroPart2 = t(`hero.${heroKey}.tagline2` as UiKey);

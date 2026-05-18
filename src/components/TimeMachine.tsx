@@ -17,6 +17,7 @@ import { MobileFrame } from "@/components/MobileFrame";
 import { useT, useTranslated } from "@/hooks/useT";
 import { useAuth } from "@/hooks/useAuth";
 import { useRequireSignIn } from "@/hooks/useRequireSignIn";
+import { getTmSavedList, onTmSavedChange, toggleTmSaved } from "@/lib/tmSavedStore";
 import type { UiKey } from "@/lib/i18n";
 // Catalog + role whitelist live in lib/timeMachineData.ts so the
 // /api/time-machine server route can import them without dragging
@@ -129,19 +130,33 @@ export default function TimeMachine({ initialId }: TimeMachineProps) {
   const { user } = useAuth();
   const requireSignIn = useRequireSignIn();
 
+  // Hydrate from tmSavedStore on mount + subscribe to cross-tab
+  // changes. We persist with a sentinel role "any" — the browse
+  // page save is a "remember this attraction" gesture, the user
+  // picks a specific role later in /tm-sim/$id/$role and that path
+  // persists its own (id, role) row. Both flow through the same
+  // saved_tours table via the tm- slug prefix so Beka's dashboard
+  // shows everything.
+  useEffect(() => {
+    const sync = () => {
+      const list = getTmSavedList();
+      const browseKeys = list
+        .filter((k) => k.endsWith("::any"))
+        .map((k) => k.split("::")[0]);
+      setSaved(new Set(browseKeys));
+    };
+    sync();
+    return onTmSavedChange(sync);
+  }, []);
+
   const toggleSave = (id: string) => {
     // Sign-in gate — matches the Save behaviour on /results and
     // /attraction/$id. Beka's spec: no save without a session.
     if (!requireSignIn(user, "save")) return;
-    setSaved((s) => {
-      const next = new Set(s);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
+    const moment = ATTRACTIONS.find((a) => a.id === id);
+    toggleTmSaved(id, "any", moment?.name);
+    // Local state update is driven by the onTmSavedChange
+    // subscription above; nothing to mirror manually here.
   };
 
   const downloadOffline = (id: string) => {
