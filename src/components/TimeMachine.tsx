@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { MobileFrame } from "@/components/MobileFrame";
 import { useT, useTranslated } from "@/hooks/useT";
+import { useAuth } from "@/hooks/useAuth";
+import { useRequireSignIn } from "@/hooks/useRequireSignIn";
 import type { UiKey } from "@/lib/i18n";
 // Catalog + role whitelist live in lib/timeMachineData.ts so the
 // /api/time-machine server route can import them without dragging
@@ -124,8 +126,13 @@ export default function TimeMachine({ initialId }: TimeMachineProps) {
   const [saved, setSaved] = useState<Set<string>>(new Set());
   const [cached, setCached] = useState<Set<string>>(new Set());
   const [downloading, setDownloading] = useState<string | null>(null);
+  const { user } = useAuth();
+  const requireSignIn = useRequireSignIn();
 
-  const toggleSave = (id: string) =>
+  const toggleSave = (id: string) => {
+    // Sign-in gate — matches the Save behaviour on /results and
+    // /attraction/$id. Beka's spec: no save without a session.
+    if (!requireSignIn(user, "save")) return;
     setSaved((s) => {
       const next = new Set(s);
       if (next.has(id)) {
@@ -135,8 +142,11 @@ export default function TimeMachine({ initialId }: TimeMachineProps) {
       }
       return next;
     });
+  };
 
   const downloadOffline = (id: string) => {
+    // Sign-in gate — same rationale as toggleSave.
+    if (!requireSignIn(user, "download")) return;
     if (cached.has(id) || downloading) return;
     setDownloading(id);
     setTimeout(() => {

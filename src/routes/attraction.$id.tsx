@@ -55,6 +55,7 @@ import { useSavedItems } from "@/hooks/useSavedItems";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useAuth } from "@/hooks/useAuth";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
+import { useRequireSignIn } from "@/hooks/useRequireSignIn";
 import { haptic } from "@/lib/haptics";
 import { fetchAndCacheTour } from "@/lib/offlineStore";
 import { resolveAzureVoice } from "@/lib/azureVoices";
@@ -109,6 +110,7 @@ function AttractionPage() {
   // Listen actually trip this. Beka asked for a clear message instead
   // of a silent no-op when a signed-out visitor taps the gold button.
   const { user, loading: authLoading } = useAuth();
+  const requireSignIn = useRequireSignIn();
 
   const fallbackName = searchName ?? unslugAttraction(id);
   // Detect language from the place name itself so the n8n guide comes
@@ -674,6 +676,10 @@ function ActionRow({
   const [downloading, setDownloading] = useState(false);
 
   const toggleSave = () => {
+    // Auth gate first — saving without a session leaves the data
+    // orphan-able when cloud sync eventually ships. Anonymous
+    // sessions pass; only the fully-signed-out path is rejected.
+    if (!requireSignIn(user, "save")) return;
     // Medium haptic on save state change — it's a meaningful action
     // (now in your library / now gone) but not as primary as
     // "Begin journey". Same intensity for save and unsave so the
@@ -697,6 +703,10 @@ function ActionRow({
   };
 
   const downloadOffline = async () => {
+    // Auth gate — same rationale as toggleSave above. The download
+    // path hits Azure TTS + persists audio locally; we want a UID
+    // attached so the user's cache lifecycle is account-scoped.
+    if (!requireSignIn(user, "download")) return;
     if (cached) {
       toast.info(t("attr.alreadyDownloaded"), {
         description: t("toast.alreadyCachedDesc"),

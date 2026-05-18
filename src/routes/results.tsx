@@ -32,6 +32,7 @@ import {
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
 import { useAuth } from "@/hooks/useAuth";
+import { useRequireSignIn } from "@/hooks/useRequireSignIn";
 import { AttractionCardShell } from "@/components/AttractionCardShell";
 import { checkEmailVerified } from "@/components/EmailVerificationBanner";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
@@ -522,6 +523,7 @@ function ResultCard({
 
   const [downloading, setDownloading] = useState(false);
   const { user } = useAuth();
+  const requireSignIn = useRequireSignIn();
 
   const toggleSave = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -531,9 +533,12 @@ function ResultCard({
       toast(t("toast.removedFromSaved"));
       return;
     }
-    // Block save for signed-in-but-not-verified users — keeps the
-    // saved store from collecting orphan items the user can't sync
-    // until they confirm their email. Anonymous + OAuth users pass.
+    // Sign-in gate first — Beka's spec: no save without a session.
+    // Anonymous mode counts; only the fully-signed-out path is blocked.
+    if (!requireSignIn(user, "save")) return;
+    // Email-verification gate next — keeps the saved store from
+    // collecting orphan items the user can't sync until they confirm
+    // their email. Anonymous + OAuth users pass this one too.
     if (!checkEmailVerified(user, t)) return;
     saveItem({
       id: slug,
@@ -550,6 +555,8 @@ function ResultCard({
   const downloadOffline = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    // Sign-in gate first — same as toggleSave above.
+    if (!requireSignIn(user, "download")) return;
     if (cached) {
       toast.info(t("results.alreadyOffline"), { description: t("toast.alreadyCachedDesc") });
       return;
@@ -558,7 +565,7 @@ function ResultCard({
       toast.error(t("toast.youreOffline"), { description: t("toast.youreOfflineDesc") });
       return;
     }
-    // Same verification gate — offline downloads tie back to an
+    // Email-verification gate — offline downloads tie back to an
     // account once we wire cloud sync, so we want the email
     // confirmed before users start filling up the cache.
     if (!checkEmailVerified(user, t)) return;

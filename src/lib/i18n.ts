@@ -606,6 +606,16 @@ export const UI_STRINGS = {
   "auth.listenSignInDesc":
     "Audio narration is available to signed-in listeners. Tap to continue — Guest mode works too.",
   "auth.listenSignInCta": "Sign in",
+  // Save / Download gate. Both actions persist user data (saved tours
+  // list and offline mp3 cache) and we want a session attached so the
+  // app can sync those records cross-device later. Anonymous mode
+  // passes — same posture as the listen gate.
+  "auth.saveSignInTitle": "Sign in to save",
+  "auth.saveSignInDesc":
+    "Sign in (or continue as guest) so your saved tours are tied to an account.",
+  "auth.downloadSignInTitle": "Sign in to download",
+  "auth.downloadSignInDesc":
+    "Sign in (or continue as guest) to keep this tour offline.",
 
   // Onboarding
   "onb.step1": "Step 1 of 2",
