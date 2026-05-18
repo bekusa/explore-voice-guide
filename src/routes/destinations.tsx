@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useMatchRoute } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { ArrowLeft, Search } from "lucide-react";
@@ -30,6 +30,20 @@ function DestinationsPage() {
   const { q } = Route.useSearch();
   const t = useT();
   const [query, setQuery] = useState(q);
+  // When the URL points at a child route (`/destinations/$slug`),
+  // render only the child via <Outlet />. TanStack Router's file-
+  // based router treats `destinations.$slug.tsx` as a CHILD of
+  // `destinations.tsx`, so without this check, hitting
+  // `/destinations/tbilisi` resolved the child route but still
+  // painted the parent's city-list UI on top — Beka caught the
+  // detail page being invisible behind the browser list. Matching
+  // with `fuzzy: true` so any deeper sub-path under /destinations/
+  // also hands off to the child outlet.
+  const matchRoute = useMatchRoute();
+  const inChild = matchRoute({ to: "/destinations/$slug", fuzzy: true });
+  if (inChild) {
+    return <Outlet />;
+  }
 
   // Translate every city name once so we can match the user's typed
   // query against either the English source or its translation.
