@@ -255,17 +255,27 @@ function AttractionPage() {
         // displaying as "Serpentine Lake" — the URL had
         // ?name=Hyde+Park but the translated list came back with
         // every entry's `name` in Georgian. The English-vs-Georgian
-        // exact-match failed, so the fallback `list[0]` (whichever
-        // attraction Sonnet ranked first) won. name_en is preserved
-        // by translateAttractionsPayload exactly for this kind of
-        // cross-locale handle matching.
+        // exact-match failed, so an earlier `list[0]` fallback
+        // (whichever attraction Sonnet ranked first) won. name_en is
+        // preserved by translateAttractionsPayload exactly for this
+        // kind of cross-locale handle matching.
+        //
+        // The list[0] fallback was REMOVED on 2026-05-19 after Beka
+        // caught Vatican Museums → Sistine Chapel: museum cards
+        // navigate here with the museum's name, but
+        // /api/attractions for "Vatican Museums" returns the
+        // landmarks INSIDE the museum (Sistine Chapel, Raphael
+        // Rooms…) — none is literally named "Vatican Museums" so
+        // the fallback grabbed Sistine Chapel and re-rendered the
+        // page as that attraction. Keeping the URL-supplied name
+        // as the source of truth means the hero photo + guide
+        // fetch run for "Vatican Museums", which is correct.
         const target = fallbackName.toLowerCase();
-        const exact =
-          list.find(
-            (a) =>
-              a.name.toLowerCase() === target ||
-              (typeof a.name_en === "string" && a.name_en.toLowerCase() === target),
-          ) ?? list[0];
+        const exact = list.find(
+          (a) =>
+            a.name.toLowerCase() === target ||
+            (typeof a.name_en === "string" && a.name_en.toLowerCase() === target),
+        );
         if (exact) setAttraction(exact);
       })
       .catch((err: unknown) => {
