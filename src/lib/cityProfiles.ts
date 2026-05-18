@@ -114,10 +114,17 @@ export const CITY_PROFILES: Record<string, CityProfile> = {
       "Bargaining at flea markets is fine, gentle. At regular shops, prices are fixed.",
       "Tap water is drinkable in central Tbilisi. Sparkling Borjomi water is the local pride.",
     ],
-    // Tbilisi isn't in topMuseums.ts yet — empty array hides the
-    // Featured Museums section gracefully. Add an entry to
-    // topMuseums + reference its id here if we ever curate one.
-    museumIds: [],
+    // Curated Tbilisi quartet — Janashia + Amiranashvili cover
+    // national-museum-grade collections (gold, icons, paleo),
+    // Shevardnadze surfaces 19-20c painting, and the Open Air
+    // ethnographic site adds the folk-architecture angle that's
+    // hard to get inside any single white-cube museum.
+    museumIds: [
+      "georgian-national-museum",
+      "museum-of-fine-arts-georgia",
+      "georgian-national-gallery",
+      "open-air-ethnographic-museum",
+    ],
     unesco: [
       {
         year: 1994,
@@ -166,11 +173,17 @@ export const CITY_PROFILES: Record<string, CityProfile> = {
       "Restaurants charge a coperto (~€2–4) per person — that's the bread + cover, not a tip.",
       "Aperitivo (18:00–20:00) is a Roman institution: order a Negroni or Aperol, free snacks come with it.",
     ],
-    // Vatican Museums lives at `vatican-museums` in topMuseums.ts —
-    // catalogue technically lists them under "Vatican City" but
-    // every Rome visitor counts them as a Rome stop, so we surface
-    // it here too.
-    museumIds: ["vatican-museums"],
+    // Rome's four. Vatican Museums lead because every Rome visitor
+    // counts them as a Rome stop (catalogue technically lists them
+    // under "Vatican City"). Then three flagship Roman collections:
+    // Bernini at Borghese, antiquity at Capitoline, and the
+    // Republican-era frescoes + sculpture at Palazzo Massimo.
+    museumIds: [
+      "vatican-museums",
+      "galleria-borghese",
+      "capitoline-museums",
+      "national-roman-museum",
+    ],
     unesco: [
       {
         year: 1980,
@@ -233,7 +246,16 @@ export const CITY_PROFILES: Record<string, CityProfile> = {
       "Haggling is expected in the Grand Bazaar and Mısır Çarşısı (spice market) — start at ~40% of asking price.",
       "Cards work in Sultanahmet + Beyoğlu; carry small cash (₺10, ₺20) for taxis and tea-houses outside the centre.",
     ],
-    museumIds: ["topkapi-palace-museum"],
+    // Istanbul's four. Topkapı for Ottoman imperial, Archaeology
+    // Museums for Anatolian + Mesopotamian antiquity, Istanbul
+    // Modern for 20-21c Turkish art, Pera for the Orientalist +
+    // ceramics niche.
+    museumIds: [
+      "topkapi-palace-museum",
+      "istanbul-archaeology-museums",
+      "istanbul-modern",
+      "pera-museum",
+    ],
     unesco: [
       {
         year: 1985,

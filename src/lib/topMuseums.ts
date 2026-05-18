@@ -228,6 +228,106 @@ export const MUSEUMS: Museum[] = [
     image: img("reina,sofia,madrid,picasso"),
     emoji: "🎨",
   },
+
+  // ─── Tbilisi (added 2026-05-19 alongside the city detail page) ───
+  // Tbilisi's curated four. The Janashia & Amiranashvili buildings
+  // anchor the Georgian National Museum complex on Rustaveli Avenue;
+  // we surface them as two separate entries because each has a
+  // distinct collection focus.
+  {
+    id: "georgian-national-museum",
+    name: "Georgian National Museum",
+    city: "Tbilisi",
+    country: "Georgia",
+    blurb: "Five millennia of Caucasus history — Colchian gold, Soviet posters, and the country's oldest hominid finds.",
+    image: img("georgian,national,museum,tbilisi"),
+    emoji: "🏛️",
+  },
+  {
+    id: "museum-of-fine-arts-georgia",
+    name: "Shalva Amiranashvili Museum of Fine Arts",
+    city: "Tbilisi",
+    country: "Georgia",
+    blurb: "Medieval Georgian icons, gilded Khakhuli triptych, and the country's largest holdings of Pirosmani.",
+    image: img("amiranashvili,museum,tbilisi,art"),
+    emoji: "🖼️",
+  },
+  {
+    id: "georgian-national-gallery",
+    name: "Dimitri Shevardnadze National Gallery",
+    city: "Tbilisi",
+    country: "Georgia",
+    blurb: "A compact survey of 19th-20th century Georgian painting — Pirosmani, Gudiashvili, Kakabadze.",
+    image: img("shevardnadze,gallery,tbilisi,painting"),
+    emoji: "🎨",
+  },
+  {
+    id: "open-air-ethnographic-museum",
+    name: "Open Air Museum of Ethnography",
+    city: "Tbilisi",
+    country: "Georgia",
+    blurb: "Folk houses from every Georgian region rebuilt on a hillside above Vake — a country tour in a day.",
+    image: img("ethnographic,museum,tbilisi,folk"),
+    emoji: "🏡",
+  },
+
+  // ─── Rome (Vatican Museums entry already exists above) ───────────
+  {
+    id: "galleria-borghese",
+    name: "Galleria Borghese",
+    city: "Rome",
+    country: "Italy",
+    blurb: "Bernini's marbles you'd swear were breathing — plus Caravaggios and Titians in a Cardinal's pleasure villa.",
+    image: img("borghese,gallery,rome,bernini"),
+    emoji: "🗿",
+  },
+  {
+    id: "capitoline-museums",
+    name: "Capitoline Museums",
+    city: "Rome",
+    country: "Italy",
+    blurb: "The Capitoline Wolf, the Dying Gaul, and a Marcus Aurelius bronze on Michelangelo's piazza.",
+    image: img("capitoline,museum,rome,wolf"),
+    emoji: "🏛️",
+  },
+  {
+    id: "national-roman-museum",
+    name: "National Roman Museum",
+    city: "Rome",
+    country: "Italy",
+    blurb: "Frescoes from Livia's garden, the Augustus of Prima Porta, and the Boxer at Rest — Roman art at full intensity.",
+    image: img("national,roman,museum,rome"),
+    emoji: "🏺",
+  },
+
+  // ─── Istanbul (Topkapı Palace Museum entry already exists above) ──
+  {
+    id: "istanbul-archaeology-museums",
+    name: "Istanbul Archaeology Museums",
+    city: "Istanbul",
+    country: "Türkiye",
+    blurb: "The Alexander Sarcophagus, the Treaty of Kadesh tablet, and a tour of Anatolian + Mesopotamian antiquity.",
+    image: img("istanbul,archaeology,museum"),
+    emoji: "🏺",
+  },
+  {
+    id: "istanbul-modern",
+    name: "Istanbul Modern",
+    city: "Istanbul",
+    country: "Türkiye",
+    blurb: "Türkiye's first modern-art museum — Republic-era painting, photography, and contemporary installations on the Bosphorus.",
+    image: img("istanbul,modern,museum,contemporary"),
+    emoji: "🎨",
+  },
+  {
+    id: "pera-museum",
+    name: "Pera Museum",
+    city: "Istanbul",
+    country: "Türkiye",
+    blurb: "Osman Hamdi's Tortoise Trainer, Orientalist paintings, Kütahya ceramics, and Anatolian weights & measures.",
+    image: img("pera,museum,istanbul,orientalist"),
+    emoji: "🖼️",
+  },
 ];
 
 export const MUSEUMS_BY_ID = new Map<string, Museum>(MUSEUMS.map((m) => [m.id, m]));
