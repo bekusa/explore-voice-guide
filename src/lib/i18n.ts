@@ -187,7 +187,10 @@ export const UI_STRINGS = {
   "city.currency": "Currency",
   "city.timezone": "Time zone",
   "city.plug": "Plug type",
-  "city.gallery": "Gallery",
+  // `city.gallery` removed — gallery is now folded into the hero
+  // carousel (slides cycle with arrow buttons). Keep the key
+  // removed so a stale translation cache doesn't surface a dangling
+  // label below an empty section.
   "city.toExperience": "To experience",
   "city.topPlaces": "Top places",
   "city.loadingAttractions": "Loading attractions…",

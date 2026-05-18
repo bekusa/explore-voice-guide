@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Globe,
   Loader2,
@@ -80,59 +82,34 @@ function Profile({ profile }: { profile: CityProfile }) {
   const tIntro = useTranslated(profile.intro);
   const tEtiquette = useTranslated(profile.etiquette);
 
-  // Hero photo — prefer the curated DESTINATIONS asset (local
-  // /assets/*.webp for Tbilisi / Rome, hosted Unsplash for Istanbul).
-  // Falls back to a Wikipedia lookup of the first gallery landmark
-  // if no curated hero is on file. Beka caught the previous version
-  // serving a Tbilisi construction-site photo when the gallery URL
-  // pointed at a stale Unsplash ID.
+  // Build the hero-carousel slide list. The curated DESTINATIONS
+  // brand asset (when present) leads, followed by the gallery
+  // landmarks. Beka's spec (2026-05-19): the gallery should LIVE
+  // in the hero, not as a separate strip below — arrows on either
+  // side cycle through the slides.
   const destinationEntry = DESTINATIONS.find((d) => d.slug === profile.slug);
-  const heroLookup = useLazyPlacePhoto(profile.gallery[0] ?? profile.city, {
-    cityHint: profile.city,
-    skip: !!destinationEntry?.hero,
-  });
-  const heroSrc = destinationEntry?.hero ?? heroLookup;
+  const heroSlides = [
+    ...(destinationEntry?.hero
+      ? [{ kind: "brand" as const, url: destinationEntry.hero, label: profile.city }]
+      : []),
+    ...profile.gallery.map((landmark) => ({
+      kind: "landmark" as const,
+      landmark,
+      label: landmark,
+    })),
+  ];
 
   return (
     <MobileFrame>
       <div className="relative min-h-full bg-background pb-32 text-foreground">
-        {/* ─── Hero ──────────────────────────────────────────────── */}
-        <section className="relative h-[440px] w-full overflow-hidden">
-          {heroSrc ? (
-            <img
-              src={heroSrc}
-              alt={profile.city}
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-secondary to-card" />
-          )}
-          {/* Constant gradient over the photo so the hero copy is
-              legible regardless of the lead image's exposure. */}
-          <div className="absolute inset-0 bg-gradient-hero" />
-          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background/70 to-transparent" />
-
-          {/* Back to home. pt-safe handles notch / status-bar inset
-              the same way every other top header does. */}
-          <header className="absolute inset-x-5 z-10 pt-safe">
-            <Link
-              to="/"
-              aria-label={t("nav.back")}
-              className="grid h-10 w-10 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </header>
-
-          <div className="absolute inset-x-6 bottom-8 z-10">
-            <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-primary">
-              {profile.country}
-            </span>
-            <h1 className="mt-2 font-display text-[2.75rem] font-medium leading-[1.02] text-foreground">
-              {profile.city}
-            </h1>
-          </div>
-        </section>
+        {/* ─── Hero carousel ─────────────────────────────────────── */}
+        <HeroCarousel
+          slides={heroSlides}
+          cityHint={profile.city}
+          country={profile.country}
+          city={profile.city}
+          backLabel={t("nav.back")}
+        />
 
         {/* ─── Editorial intro ───────────────────────────────────── */}
         <section className="px-6 pt-8">
@@ -186,30 +163,9 @@ function Profile({ profile }: { profile: CityProfile }) {
           </div>
         </section>
 
-        {/* ─── Photo gallery ─────────────────────────────────────── */}
-        <section className="pt-8">
-          <div className="px-6">
-            <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
-              {t("city.gallery")}
-            </span>
-          </div>
-          {/* Horizontal scroll. Touch-friendly on mobile, mouse-wheel
-              friendly on desktop. snap-x keeps cards aligned cleanly
-              at any scroll position. Each card is a LANDMARK name
-              (e.g. "Narikala Fortress"), resolved at render time
-              through useLazyPlacePhoto so the photos come from real
-              Wikipedia/Google sources — not stale Unsplash IDs. */}
-          <div className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 scrollbar-hide">
-            {profile.gallery.map((landmark, i) => (
-              <GalleryTile
-                key={`${landmark}-${i}`}
-                landmark={landmark}
-                cityHint={profile.city}
-                eager={i === 0}
-              />
-            ))}
-          </div>
-        </section>
+        {/* The standalone gallery strip moved INTO the hero
+            carousel above per Beka's 2026-05-19 spec — landmarks
+            now cycle in the hero with arrow buttons. */}
 
         {/* ─── Attractions strip (auto) ──────────────────────────── */}
         <CityAttractionsSection
@@ -278,41 +234,214 @@ function Profile({ profile }: { profile: CityProfile }) {
  * ───────────────────────────────────────────────────────────────── */
 
 /**
- * Single gallery card. Resolves a landmark name (e.g. "Narikala
- * Fortress") to an image URL via the shared /api/photo pipeline.
- * Same component the rest of the app uses for places, so a tile
- * shown once on a city page is cached for instant re-load on any
- * later /attraction/$id visit.
+ * Hero carousel — full-bleed image carousel that lives where the
+ * static hero used to. Cycles through the curated DESTINATIONS
+ * brand asset (when present) + gallery landmarks. Side arrows let
+ * the user step through manually; auto-rotates every 6s until the
+ * user interacts.
+ *
+ * Image resolution: brand asset slides ship a URL directly;
+ * landmark slides resolve via useLazyPlacePhoto inside HeroSlide.
+ * The carousel preloads neighbouring slides eagerly so taps feel
+ * instant once the page has been on screen for a moment.
  */
-function GalleryTile({
-  landmark,
+type HeroSlide =
+  | { kind: "brand"; url: string; label: string }
+  | { kind: "landmark"; landmark: string; label: string };
+
+function HeroCarousel({
+  slides,
   cityHint,
+  country,
+  city,
+  backLabel,
+}: {
+  slides: HeroSlide[];
+  cityHint: string;
+  country: string;
+  city: string;
+  backLabel: string;
+}) {
+  const [idx, setIdx] = useState(0);
+  // `paused` flips true when the user taps an arrow / dot. We don't
+  // resume auto-rotate after that — Beka's spec elsewhere ("rotation
+  // pauses while listening / on user interaction") favours steady
+  // state over surprise movement once the user has engaged.
+  const [paused, setPaused] = useState(false);
+
+  // Wrap-around helpers so the carousel never dead-ends. With only
+  // one slide the auto-rotation timer is a no-op (i % 1 === 0).
+  const total = slides.length;
+  const prevIdx = (idx - 1 + total) % total;
+  const nextIdx = (idx + 1) % total;
+  const go = (next: number) => {
+    setPaused(true);
+    setIdx(((next % total) + total) % total);
+  };
+
+  useEffect(() => {
+    if (paused || total <= 1) return;
+    const id = setInterval(() => {
+      setIdx((current) => (current + 1) % total);
+    }, 6000);
+    return () => clearInterval(id);
+  }, [paused, total]);
+
+  // Edge case: no slides at all (shouldn't happen for the 3 launch
+  // cities, but guards future cities authored without a hero). Show
+  // a charcoal placeholder so the layout below still has a header.
+  if (total === 0) {
+    return (
+      <section className="relative h-[440px] w-full overflow-hidden bg-gradient-to-br from-secondary to-card">
+        <CarouselChrome city={city} country={country} backLabel={backLabel} />
+      </section>
+    );
+  }
+
+  return (
+    <section className="relative h-[440px] w-full overflow-hidden">
+      {/* Stacked slides, cross-fading. opacity drives visibility so
+          we never unmount a slide once it loads — the lookup hook
+          stays warm and the image cache survives a cycle. */}
+      {slides.map((s, i) => (
+        <HeroSlide
+          key={i}
+          slide={s}
+          cityHint={cityHint}
+          active={i === idx}
+          // Eagerly load the current slide + its neighbours so a
+          // tap on the next arrow feels instant.
+          eager={i === idx || i === prevIdx || i === nextIdx}
+        />
+      ))}
+
+      {/* Constant gradient overlays for legibility of header + city
+          name regardless of slide exposure. */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-hero" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background/70 to-transparent" />
+
+      <CarouselChrome city={city} country={country} backLabel={backLabel} />
+
+      {/* Side arrows. Only render when there's more than one slide.
+          Generous tap target (44 × 44 px) on mobile; subtle glass-
+          morphic background so the chevron reads against any photo. */}
+      {total > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={() => go(prevIdx)}
+            aria-label="Previous photo"
+            className="absolute left-3 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => go(nextIdx)}
+            aria-label="Next photo"
+            className="absolute right-3 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+
+          {/* Dot indicator strip — sits above the city-name block
+              so it doesn't fight for the same bottom-left real
+              estate. Tappable for jump-to-slide. */}
+          <div className="absolute bottom-24 left-6 z-10 flex items-center gap-1.5">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => go(i)}
+                aria-label={`Go to photo ${i + 1}`}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === idx ? "w-6 bg-primary" : "w-1.5 bg-foreground/30 hover:bg-foreground/50"
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
+/** Single carousel slide. Resolves landmark photos via the shared
+ *  /api/photo cache; brand slides ship a URL directly. Stays
+ *  mounted across cycles (opacity-driven visibility) so the image
+ *  pipeline doesn't reload on every tap. */
+function HeroSlide({
+  slide,
+  cityHint,
+  active,
   eager,
 }: {
-  landmark: string;
+  slide: HeroSlide;
   cityHint: string;
+  active: boolean;
   eager: boolean;
 }) {
-  const photo = useLazyPlacePhoto(landmark, { cityHint });
-  const [tName] = useTranslated([landmark]);
+  // Always call the hook — keep the hook count stable across renders.
+  // For brand slides we skip the lookup by passing skip=true; the hook
+  // returns null and the `src` short-circuits to slide.url below.
+  const landmarkName = slide.kind === "landmark" ? slide.landmark : "";
+  const resolved = useLazyPlacePhoto(landmarkName, {
+    cityHint,
+    skip: slide.kind !== "landmark",
+  });
+  const src = slide.kind === "brand" ? slide.url : resolved;
   return (
-    <div className="relative h-56 w-72 shrink-0 snap-start overflow-hidden rounded-2xl bg-secondary">
-      {photo ? (
+    <div
+      className={`absolute inset-0 transition-opacity duration-700 ${
+        active ? "opacity-100" : "opacity-0"
+      }`}
+      aria-hidden={!active}
+    >
+      {src ? (
         <img
-          src={photo}
-          alt={tName}
+          src={src}
+          alt={slide.label}
           loading={eager ? "eager" : "lazy"}
           className="h-full w-full object-cover"
         />
       ) : (
-        <div className="grid h-full w-full place-items-center text-muted-foreground">
-          <Sparkles className="h-5 w-5 opacity-60" />
-        </div>
+        <div className="h-full w-full bg-gradient-to-br from-secondary to-card" />
       )}
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent px-3 py-2.5">
-        <div className="text-[12px] font-semibold leading-tight text-foreground">{tName}</div>
-      </div>
     </div>
+  );
+}
+
+/** Header overlay shared by the carousel + the empty-state slide.
+ *  Back arrow top-left, city name + country bottom-left. */
+function CarouselChrome({
+  city,
+  country,
+  backLabel,
+}: {
+  city: string;
+  country: string;
+  backLabel: string;
+}) {
+  return (
+    <>
+      <header className="absolute inset-x-5 z-10 pt-safe">
+        <Link
+          to="/"
+          aria-label={backLabel}
+          className="grid h-10 w-10 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Link>
+      </header>
+      <div className="absolute inset-x-6 bottom-8 z-10">
+        <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-primary">
+          {country}
+        </span>
+        <h1 className="mt-2 font-display text-[2.75rem] font-medium leading-[1.02] text-foreground">
+          {city}
+        </h1>
+      </div>
+    </>
   );
 }
 
@@ -368,6 +497,12 @@ function CityAttractionsSection({
   const [loadingMore, setLoadingMore] = useState(false);
 
   // Initial fetch — first 10 attractions for the city.
+  // `fetchAttractions` already unwraps the API response to a bare
+  // `Attraction[]` (see lib/api.ts line ~367), so we treat the
+  // resolved value as the array directly. Beka caught the previous
+  // version reading `res.attractions` on what was already the array
+  // — that always evaluated to `undefined`, falling through to the
+  // "No attractions found" empty state on every load.
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -376,11 +511,12 @@ function CityAttractionsSection({
     fetchAttractions(query, lang)
       .then((res) => {
         if (cancelled) return;
-        const list = (res.attractions ?? []).slice(0, CITY_PAGE_SIZE);
+        const list = Array.isArray(res) ? res.slice(0, CITY_PAGE_SIZE) : [];
         setItems(list);
       })
-      .catch(() => {
+      .catch((err) => {
         if (cancelled) return;
+        console.error("[city] fetchAttractions failed", err);
         setItems([]);
       })
       .finally(() => {
