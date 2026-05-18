@@ -32,6 +32,13 @@ export type CityPractical = {
   plug: string;
 };
 
+export type CityNeighborhood = {
+  /** Display name. */
+  name: string;
+  /** One-line vibe — who it's for. */
+  vibe: string;
+};
+
 export type CityProfile = {
   slug: "tbilisi" | "rome" | "istanbul";
   /** City + country for the page header. */
@@ -44,6 +51,13 @@ export type CityProfile = {
   gallery: string[];
   /** 4–6 one-line tips for the etiquette card. */
   etiquette: string[];
+  /** Museum ids from `src/lib/topMuseums.ts` to surface as the
+   *  "featured museums" strip. Empty array hides the section. */
+  museumIds: string[];
+  /** 3–4 neighborhoods for the "where to stay" section. */
+  neighborhoods: CityNeighborhood[];
+  /** 3–4 "what locals love" pull-quotes — short, sensory, specific. */
+  localLoves: string[];
   /** Optional opening default for the attractions query — falls back
    *  to `city` if absent. Lets us send "Tbilisi" instead of "Tbilisi
    *  city" for the Anthropic call. */
@@ -82,6 +96,29 @@ export const CITY_PROFILES: Record<string, CityProfile> = {
       "Bargaining at flea markets is fine, gentle. At regular shops, prices are fixed.",
       "Tap water is drinkable in central Tbilisi. Sparkling Borjomi water is the local pride.",
     ],
+    // Tbilisi isn't in topMuseums.ts yet — empty array hides the
+    // Featured Museums section gracefully. Add an entry to
+    // topMuseums + reference its id here if we ever curate one.
+    museumIds: [],
+    neighborhoods: [
+      {
+        name: "Old Tbilisi",
+        vibe: "Cobblestone alleys, sulphur baths, balconies — everything within ten minutes on foot.",
+      },
+      {
+        name: "Vake",
+        vibe: "Leafy, cafe-lined, near Vake Park. Quieter evenings; better coffee.",
+      },
+      {
+        name: "Sololaki",
+        vibe: "Faded grand mansions and art-nouveau doorways — the photographer's neighbourhood.",
+      },
+    ],
+    localLoves: [
+      "Khinkali at Veliaminov, eaten with your hands — the dumpling's twisted top is the handle, not a bite.",
+      "Sunset from Narikala fortress. The cable car up costs ₾2.50 and beats every restaurant view in town.",
+      "A bottle of saperavi from Dezerter Bazaar — cheaper than the wine list at any restaurant, twice as good.",
+    ],
   },
 
   rome: {
@@ -115,6 +152,30 @@ export const CITY_PROFILES: Record<string, CityProfile> = {
       "Restaurants charge a coperto (~€2–4) per person — that's the bread + cover, not a tip.",
       "Aperitivo (18:00–20:00) is a Roman institution: order a Negroni or Aperol, free snacks come with it.",
     ],
+    // Vatican Museums lives at `vatican-museums` in topMuseums.ts —
+    // catalogue technically lists them under "Vatican City" but
+    // every Rome visitor counts them as a Rome stop, so we surface
+    // it here too.
+    museumIds: ["vatican-museums"],
+    neighborhoods: [
+      {
+        name: "Trastevere",
+        vibe: "Cobblestone alleys, ivy-draped trattorias, lively after dark — most atmospheric base.",
+      },
+      {
+        name: "Monti",
+        vibe: "Hip + walkable — ten minutes from the Forum, half the tourist density.",
+      },
+      {
+        name: "Prati",
+        vibe: "Calm, residential, near the Vatican. Family-friendly with great morning coffee.",
+      },
+    ],
+    localLoves: [
+      "Espresso standing at Sant'Eustachio's marble counter — never sit, never linger; that's how Romans drink it.",
+      "Trapizzino in Testaccio at midnight — flatbread cone stuffed with chicken cacciatore, the after-dinner late-night cure.",
+      "Take the bus, not the metro. Rome was built above ground; underground you miss every basilica and piazza along the route.",
+    ],
   },
 
   istanbul: {
@@ -147,6 +208,26 @@ export const CITY_PROFILES: Record<string, CityProfile> = {
       "Tea (çay) is offered everywhere — refusing once is fine, but accepting builds rapport in shops + bazaars.",
       "Haggling is expected in the Grand Bazaar and Mısır Çarşısı (spice market) — start at ~40% of asking price.",
       "Cards work in Sultanahmet + Beyoğlu; carry small cash (₺10, ₺20) for taxis and tea-houses outside the centre.",
+    ],
+    museumIds: ["topkapi-palace-museum"],
+    neighborhoods: [
+      {
+        name: "Sultanahmet",
+        vibe: "Inside the historic peninsula — Hagia Sophia, Blue Mosque, Topkapı all walkable. Best for first-timers.",
+      },
+      {
+        name: "Karaköy / Galata",
+        vibe: "Cafés, design shops, the modern half of European Istanbul. Quieter mornings, lively evenings.",
+      },
+      {
+        name: "Kadıköy",
+        vibe: "Asian side — no tourists, where Istanbulites actually eat, drink, and shop.",
+      },
+    ],
+    localLoves: [
+      "Sunday breakfast at Çukur Çeşme — eggs, cheese, olives, simit, three teas. Don't book under two hours.",
+      "Ride the Beşiktaş–Üsküdar ferry at sunset with a tulip-glass of çay. ₺15 and beats every Bosphorus cruise.",
+      "Cross to Kadıköy for dinner. Food is half the price and twice as honest as Sultanahmet.",
     ],
   },
 };

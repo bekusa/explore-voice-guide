@@ -18,6 +18,7 @@ import {
   fetchAttractions,
   type Attraction,
 } from "@/lib/api";
+import { MUSEUMS, type Museum } from "@/lib/topMuseums";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { useT, useTranslated } from "@/hooks/useT";
@@ -207,6 +208,37 @@ function Profile({ profile }: { profile: CityProfile }) {
           }
         />
 
+        {/* ─── Featured museums ──────────────────────────────────── */}
+        {profile.museumIds.length > 0 && (
+          <FeaturedMuseumsSection museumIds={profile.museumIds} />
+        )}
+
+        {/* ─── Where to stay ─────────────────────────────────────── */}
+        <section className="px-6 pt-8">
+          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
+            {t("city.whereToStay")}
+          </span>
+          <h2 className="mt-2 font-display text-[1.5rem] font-medium leading-tight">
+            {t("city.neighborhoods")}
+          </h2>
+          <div className="mt-4 flex flex-col gap-2.5">
+            {profile.neighborhoods.map((n, i) => (
+              <NeighborhoodCard key={i} neighborhood={n} city={profile.city} />
+            ))}
+          </div>
+        </section>
+
+        {/* ─── What locals love (pull-quotes) ─────────────────────── */}
+        <section className="px-6 pt-8">
+          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
+            {t("city.localsLove")}
+          </span>
+          <h2 className="mt-2 font-display text-[1.5rem] font-medium leading-tight">
+            {t("city.localsLoveHead")}
+          </h2>
+          <LocalLovesList quotes={profile.localLoves} />
+        </section>
+
         {/* ─── Etiquette tips ────────────────────────────────────── */}
         <section className="px-6 pt-8">
           <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
@@ -391,6 +423,143 @@ function AttractionStripCard({
         )}
       </div>
     </button>
+  );
+}
+
+/**
+ * Featured museums — looks up museum metadata by id (from
+ * `src/lib/topMuseums.ts`) and renders a horizontal card strip.
+ * Tapping a card opens the museum's existing attraction route, where
+ * the museum highlights section already lives.
+ */
+function FeaturedMuseumsSection({ museumIds }: { museumIds: string[] }) {
+  const t = useT();
+  // Resolve ids → Museum objects. Missing ids are filtered out
+  // silently — a typo in cityProfiles shouldn't break the section.
+  const museums = museumIds
+    .map((id) => MUSEUMS.find((m) => m.id === id))
+    .filter((m): m is Museum => !!m);
+  if (museums.length === 0) return null;
+  return (
+    <section className="pt-8">
+      <div className="px-6">
+        <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
+          {t("city.featuredMuseums")}
+        </span>
+        <h2 className="mt-2 font-display text-[1.5rem] font-medium leading-tight">
+          {t("city.museumsHead")}
+        </h2>
+      </div>
+      <div className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 scrollbar-hide">
+        {museums.map((m) => (
+          <MuseumCard key={m.id} museum={m} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function MuseumCard({ museum }: { museum: Museum }) {
+  // Same photo pipeline as the rest of the app — once a museum is
+  // cached its hero loads instantly on revisit.
+  const photo = useLazyPlacePhoto(museum.name, {
+    cityHint: museum.city,
+    skip: !!museum.image,
+  });
+  const heroPhoto = museum.image ?? photo;
+  const [tName] = useTranslated([museum.name]);
+  return (
+    <Link
+      to="/attraction/$id"
+      params={{ id: attractionSlug(museum.name) }}
+      search={{ name: museum.name, city: museum.city }}
+      className="relative h-44 w-60 shrink-0 snap-start overflow-hidden rounded-2xl border border-border bg-card text-left transition-smooth hover:scale-[1.01]"
+    >
+      {heroPhoto ? (
+        <img
+          src={heroPhoto}
+          alt={tName}
+          loading="lazy"
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <div className="grid h-full w-full place-items-center bg-secondary text-muted-foreground">
+          <Sparkles className="h-5 w-5 opacity-60" />
+        </div>
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+      <div className="absolute inset-x-3 bottom-3">
+        <div className="text-[13px] font-semibold leading-tight text-foreground">{tName}</div>
+        <div className="mt-1 text-[10px] font-medium uppercase tracking-[0.16em] text-foreground/70">
+          {museum.city}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+/**
+ * "Where to stay" card — a single neighborhood with name + vibe line.
+ * Tapping routes to /results so the user can see attractions in the
+ * area (which roughly maps to neighborhood for the cities we cover).
+ * Could later route to a dedicated neighborhood page; /results is the
+ * MVP destination.
+ */
+function NeighborhoodCard({
+  neighborhood,
+  city,
+}: {
+  neighborhood: { name: string; vibe: string };
+  city: string;
+}) {
+  // Translate the editorial vibe line per UI locale. Neighborhood
+  // names stay as-authored (proper nouns); translating "Trastevere"
+  // produces awkward transliterations.
+  const [tVibe] = useTranslated([neighborhood.vibe]);
+  return (
+    <Link
+      to="/results"
+      search={{ q: `${neighborhood.name} ${city}` }}
+      className="flex items-start gap-3 rounded-2xl border border-border bg-card px-4 py-3 transition-smooth hover:border-primary/40"
+    >
+      <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
+        <Sparkles className="h-3.5 w-3.5" />
+      </span>
+      <span className="flex flex-col leading-tight">
+        <span className="text-[14px] font-semibold text-foreground">{neighborhood.name}</span>
+        <span className="mt-1 text-[12px] leading-snug text-foreground/75">{tVibe}</span>
+      </span>
+    </Link>
+  );
+}
+
+/**
+ * "What locals love" — 3-4 pull-quote-style cards, each one tip in
+ * sensory specifics ("the ferry costs ₺15", not "take a boat ride").
+ * Auto-translated to the user's UI language.
+ */
+function LocalLovesList({ quotes }: { quotes: string[] }) {
+  const tQuotes = useTranslated(quotes);
+  return (
+    <ul className="mt-4 flex flex-col gap-3">
+      {tQuotes.map((q, i) => (
+        <li
+          key={i}
+          className="relative rounded-2xl border border-primary/20 bg-primary/5 px-5 py-4"
+        >
+          {/* Decorative open-quote glyph in gold. Positioned so it
+              hangs into the card's top-left margin — magazine pull-
+              quote feel. */}
+          <span
+            aria-hidden
+            className="absolute -left-1 -top-2 font-display text-[34px] font-medium leading-none text-primary/60"
+          >
+            “
+          </span>
+          <p className="pl-3 text-[13px] leading-[1.6] text-foreground/90 italic">{q}</p>
+        </li>
+      ))}
+    </ul>
   );
 }
 
