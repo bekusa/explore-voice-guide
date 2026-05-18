@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { MapPin } from "lucide-react";
 import { useTranslatedString, useUiLang } from "@/hooks/useT";
+import { getCityProfile } from "@/lib/cityProfiles";
 
 /**
  * Persistent cross-session cache for city hero images. The server route
@@ -91,10 +92,21 @@ export function CityCard({ city }: { city: string }) {
     };
   }, [city, lang, cacheKey]);
 
+  // Route to the editorial city detail page when we've hand-authored
+  // a profile for this city (Tbilisi / Rome / Istanbul today). Falls
+  // back to /results for every other city so the broader Featured
+  // strip still works without needing per-city content. Beka's spec:
+  // the 3 launch cities get a curated landing, the rest dispatch
+  // straight to search.
+  const slug = city.toLowerCase();
+  const hasProfile = !!getCityProfile(slug);
+  const linkProps = hasProfile
+    ? ({ to: "/destinations/$slug", params: { slug } } as const)
+    : ({ to: "/results", search: { q: city } } as const);
+
   return (
     <Link
-      to="/results"
-      search={{ q: city }}
+      {...linkProps}
       className="group relative block h-[210px] overflow-hidden rounded-3xl border border-border transition-smooth hover:border-primary/50 hover:shadow-elegant active:scale-[0.99]"
     >
       {img ? (
