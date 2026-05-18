@@ -655,13 +655,15 @@ function FeaturedMuseumsSection({ museumIds }: { museumIds: string[] }) {
 }
 
 function MuseumCard({ museum }: { museum: Museum }) {
-  // Same photo pipeline as the rest of the app — once a museum is
-  // cached its hero loads instantly on revisit.
-  const photo = useLazyPlacePhoto(museum.name, {
-    cityHint: museum.city,
-    skip: !!museum.image,
-  });
-  const heroPhoto = museum.image ?? photo;
+  // Always fetch through useLazyPlacePhoto so we land Wikipedia's
+  // original-resolution lead image (sharp at 2-4 MP) instead of the
+  // LoremFlickr URL bundled with the catalogue. LoremFlickr serves
+  // random themed Flickr shots whose quality varies widely — Beka
+  // caught some city-page museum cards looking grainy. The catalogue
+  // image stays as a final fallback for the rare case where the
+  // Wikipedia lookup misses.
+  const photo = useLazyPlacePhoto(museum.name, { cityHint: museum.city });
+  const heroPhoto = photo ?? museum.image;
   const [tName] = useTranslated([museum.name]);
   return (
     <Link

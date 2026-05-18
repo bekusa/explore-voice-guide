@@ -367,7 +367,20 @@ async function tryWikiSummary(lang: string, title: string): Promise<string | nul
     if (summaryData.description && isNonPlaceTopic(summaryData.description)) {
       return null;
     }
-    const url = summaryData.thumbnail?.source ?? summaryData.originalimage?.source ?? null;
+    // Prefer the full-resolution `originalimage` over Wikipedia's
+    // ~320px `thumbnail`. The thumbnail is enough for tiny result-
+    // card icons but it visibly blurs when stretched into the
+    // full-bleed city hero (440px tall × ~420px wide on the phone
+    // frame, even higher on the desktop preview). Beka caught the
+    // pixelation on Tbilisi / Rome / Istanbul landmark slides in
+    // the new HeroCarousel. originalimage usually resolves to a
+    // 2-4 MP commons file — sharp at any phone resolution, still
+    // fine for the 240×96 result-card image because the browser
+    // downscales cleanly.
+    //
+    // Fall back to thumbnail only when the article has no original
+    // (rare — mostly disambiguation stubs we'd reject anyway).
+    const url = summaryData.originalimage?.source ?? summaryData.thumbnail?.source ?? null;
     // Skip national flag images. Wikipedia's lead image for any
     // country / sovereign-territory article is the flag (filename
     // pattern "Flag_of_…"), and that's what got returned for English
