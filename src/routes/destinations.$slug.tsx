@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
-  ArrowRight,
   Calendar,
   Clock,
   Globe,
@@ -16,9 +15,11 @@ import { getCityProfile, type CityProfile } from "@/lib/cityProfiles";
 import {
   attractionSlug,
   fetchAttractions,
+  fetchMoreAttractions,
   type Attraction,
 } from "@/lib/api";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
+import { DESTINATIONS } from "@/lib/destinations";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { useT, useTranslated } from "@/hooks/useT";
@@ -79,16 +80,33 @@ function Profile({ profile }: { profile: CityProfile }) {
   const tIntro = useTranslated(profile.intro);
   const tEtiquette = useTranslated(profile.etiquette);
 
+  // Hero photo — prefer the curated DESTINATIONS asset (local
+  // /assets/*.webp for Tbilisi / Rome, hosted Unsplash for Istanbul).
+  // Falls back to a Wikipedia lookup of the first gallery landmark
+  // if no curated hero is on file. Beka caught the previous version
+  // serving a Tbilisi construction-site photo when the gallery URL
+  // pointed at a stale Unsplash ID.
+  const destinationEntry = DESTINATIONS.find((d) => d.slug === profile.slug);
+  const heroLookup = useLazyPlacePhoto(profile.gallery[0] ?? profile.city, {
+    cityHint: profile.city,
+    skip: !!destinationEntry?.hero,
+  });
+  const heroSrc = destinationEntry?.hero ?? heroLookup;
+
   return (
     <MobileFrame>
       <div className="relative min-h-full bg-background pb-32 text-foreground">
         {/* ─── Hero ──────────────────────────────────────────────── */}
         <section className="relative h-[440px] w-full overflow-hidden">
-          <img
-            src={profile.gallery[0]}
-            alt={profile.city}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
+          {heroSrc ? (
+            <img
+              src={heroSrc}
+              alt={profile.city}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-secondary to-card" />
+          )}
           {/* Constant gradient over the photo so the hero copy is
               legible regardless of the lead image's exposure. */}
           <div className="absolute inset-0 bg-gradient-hero" />
@@ -177,20 +195,18 @@ function Profile({ profile }: { profile: CityProfile }) {
           </div>
           {/* Horizontal scroll. Touch-friendly on mobile, mouse-wheel
               friendly on desktop. snap-x keeps cards aligned cleanly
-              at any scroll position. */}
+              at any scroll position. Each card is a LANDMARK name
+              (e.g. "Narikala Fortress"), resolved at render time
+              through useLazyPlacePhoto so the photos come from real
+              Wikipedia/Google sources — not stale Unsplash IDs. */}
           <div className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 scrollbar-hide">
-            {profile.gallery.map((url, i) => (
-              <div
-                key={i}
-                className="relative h-56 w-72 shrink-0 snap-start overflow-hidden rounded-2xl bg-secondary"
-              >
-                <img
-                  src={url}
-                  alt={`${profile.city} ${i + 1}`}
-                  loading={i === 0 ? "eager" : "lazy"}
-                  className="h-full w-full object-cover"
-                />
-              </div>
+            {profile.gallery.map((landmark, i) => (
+              <GalleryTile
+                key={`${landmark}-${i}`}
+                landmark={landmark}
+                cityHint={profile.city}
+                eager={i === 0}
+              />
             ))}
           </div>
         </section>
@@ -213,20 +229,11 @@ function Profile({ profile }: { profile: CityProfile }) {
           <FeaturedMuseumsSection museumIds={profile.museumIds} />
         )}
 
-        {/* ─── Where to stay ─────────────────────────────────────── */}
-        <section className="px-6 pt-8">
-          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
-            {t("city.whereToStay")}
-          </span>
-          <h2 className="mt-2 font-display text-[1.5rem] font-medium leading-tight">
-            {t("city.neighborhoods")}
-          </h2>
-          <div className="mt-4 flex flex-col gap-2.5">
-            {profile.neighborhoods.map((n, i) => (
-              <NeighborhoodCard key={i} neighborhood={n} city={profile.city} />
-            ))}
-          </div>
-        </section>
+        {/* Where-to-stay / Neighbourhoods section removed per Beka
+            (2026-05-19). Per his spec, the city page should focus
+            on what to SEE — neighbourhoods belong in a future
+            standalone "where to stay" feature, not the editorial
+            landing. */}
 
         {/* ─── What locals love (pull-quotes) ─────────────────────── */}
         <section className="px-6 pt-8">
@@ -270,6 +277,45 @@ function Profile({ profile }: { profile: CityProfile }) {
  * Sub-components
  * ───────────────────────────────────────────────────────────────── */
 
+/**
+ * Single gallery card. Resolves a landmark name (e.g. "Narikala
+ * Fortress") to an image URL via the shared /api/photo pipeline.
+ * Same component the rest of the app uses for places, so a tile
+ * shown once on a city page is cached for instant re-load on any
+ * later /attraction/$id visit.
+ */
+function GalleryTile({
+  landmark,
+  cityHint,
+  eager,
+}: {
+  landmark: string;
+  cityHint: string;
+  eager: boolean;
+}) {
+  const photo = useLazyPlacePhoto(landmark, { cityHint });
+  const [tName] = useTranslated([landmark]);
+  return (
+    <div className="relative h-56 w-72 shrink-0 snap-start overflow-hidden rounded-2xl bg-secondary">
+      {photo ? (
+        <img
+          src={photo}
+          alt={tName}
+          loading={eager ? "eager" : "lazy"}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <div className="grid h-full w-full place-items-center text-muted-foreground">
+          <Sparkles className="h-5 w-5 opacity-60" />
+        </div>
+      )}
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent px-3 py-2.5">
+        <div className="text-[12px] font-semibold leading-tight text-foreground">{tName}</div>
+      </div>
+    </div>
+  );
+}
+
 function PracticalChip({
   icon,
   label,
@@ -293,11 +339,19 @@ function PracticalChip({
 }
 
 /**
- * Attractions strip — calls /api/attractions for the city's query
- * once on mount and renders the top ~8 results as horizontal scroll
- * cards. Same Anthropic + cache path the Search / Results page uses,
- * so a popular city gets the warm cache instantly.
+ * Top attractions list — mirrors the /results pagination model
+ * (10 per page, up to 30 total). Initial fetch lands the first 10
+ * rows; the "Show more" tile below the list fetches the next page
+ * on demand via `fetchMoreAttractions`. Same Anthropic + cache path
+ * /results uses, so a warm city pays nothing on revisit.
+ *
+ * Why not just link to /results: Beka asked for the list to live
+ * INSIDE the city page so the user doesn't lose the editorial
+ * context (intro, gallery, museums, etc.) when browsing places.
  */
+const CITY_PAGE_SIZE = 10;
+const CITY_MAX_PAGES = 3;
+
 function CityAttractionsSection({
   query,
   lang,
@@ -308,18 +362,22 @@ function CityAttractionsSection({
   onOpen: (name: string) => void;
 }) {
   const t = useT();
-  const [items, setItems] = useState<Attraction[] | null>(null);
+  const [items, setItems] = useState<Attraction[]>([]);
+  const [pageCount, setPageCount] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
+  // Initial fetch — first 10 attractions for the city.
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setItems([]);
+    setPageCount(1);
     fetchAttractions(query, lang)
       .then((res) => {
         if (cancelled) return;
-        // Trim to the top 8 for the strip — the user can dig deeper
-        // by tapping "See all" which routes to /results?q=City.
-        setItems((res.attractions ?? []).slice(0, 8));
+        const list = (res.attractions ?? []).slice(0, CITY_PAGE_SIZE);
+        setItems(list);
       })
       .catch(() => {
         if (cancelled) return;
@@ -333,96 +391,158 @@ function CityAttractionsSection({
     };
   }, [query, lang]);
 
+  const canLoadMore = pageCount < CITY_MAX_PAGES && items.length > 0;
+
+  const handleLoadMore = async () => {
+    if (loadingMore || !canLoadMore) return;
+    setLoadingMore(true);
+    try {
+      const existingNames = items.map((a) => a.name);
+      const next = await fetchMoreAttractions(query, lang, existingNames, CITY_PAGE_SIZE);
+      if (next && next.length > 0) {
+        setItems((prev) => [...prev, ...next.slice(0, CITY_PAGE_SIZE)]);
+        setPageCount((p) => p + 1);
+      } else {
+        // No more rows came back — cap pageCount so the button
+        // stops offering more pages.
+        setPageCount(CITY_MAX_PAGES);
+      }
+    } catch {
+      // Soft-fail: leave existing rows visible.
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   return (
-    <section className="pt-8">
-      <div className="flex items-end justify-between px-6">
-        <div>
-          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
-            {t("city.toExperience")}
-          </span>
-          <h2 className="mt-2 font-display text-[1.5rem] font-medium leading-tight">
-            {t("city.topPlaces")}
-          </h2>
-        </div>
-        <Link
-          to="/results"
-          search={{ q: query }}
-          className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-smooth"
-        >
-          {t("home.seeAll")} <ArrowRight className="inline h-3 w-3" />
-        </Link>
-      </div>
+    <section className="px-6 pt-8">
+      <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
+        {t("city.toExperience")}
+      </span>
+      <h2 className="mt-2 font-display text-[1.5rem] font-medium leading-tight">
+        {t("city.topPlaces")}
+      </h2>
 
       {loading && (
-        <div className="mt-4 flex items-center gap-2 px-6 text-[12px] text-muted-foreground">
+        <div className="mt-4 flex items-center gap-2 text-[12px] text-muted-foreground">
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
           {t("city.loadingAttractions")}
         </div>
       )}
 
-      {!loading && items && items.length === 0 && (
-        <div className="mt-4 px-6 text-[12px] text-muted-foreground">
+      {!loading && items.length === 0 && (
+        <div className="mt-4 text-[12px] text-muted-foreground">
           {t("city.noAttractions")}
         </div>
       )}
 
-      {items && items.length > 0 && (
-        <div className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 scrollbar-hide">
+      {items.length > 0 && (
+        <ul className="mt-4 flex flex-col gap-3">
           {items.map((a, i) => (
-            <AttractionStripCard key={`${a.name}-${i}`} attraction={a} onOpen={onOpen} />
+            <AttractionRow
+              key={`${a.name}-${i}`}
+              attraction={a}
+              index={i}
+              cityHint={query}
+              onOpen={onOpen}
+            />
           ))}
-        </div>
+        </ul>
+      )}
+
+      {canLoadMore && (
+        <button
+          type="button"
+          onClick={handleLoadMore}
+          disabled={loadingMore}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card py-3 text-[12px] font-semibold uppercase tracking-[0.16em] text-foreground transition-smooth hover:border-primary/40 disabled:opacity-60"
+        >
+          {loadingMore ? (
+            <>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              {t("city.loadingAttractions")}
+            </>
+          ) : (
+            t("city.showMore")
+          )}
+        </button>
       )}
     </section>
   );
 }
 
-function AttractionStripCard({
+/**
+ * Single attraction row in the city page's vertical list. Same
+ * visual scale as the cards on /results so the experience feels
+ * consistent across both surfaces. Tapping opens /attraction/$id.
+ */
+function AttractionRow({
   attraction,
+  index,
+  cityHint,
   onOpen,
 }: {
   attraction: Attraction;
+  index: number;
+  cityHint: string;
   onOpen: (name: string) => void;
 }) {
-  // Reuse the same lookup helper as the rest of the app so the hero
-  // photo on the city page matches what the user sees on the
-  // attraction detail page (one Postgres cache row, one image).
-  const photo = useLazyPlacePhoto(attraction.name_en ?? attraction.name, {
+  // Photo lookup — `name_en` first (English baseline canonical),
+  // then `name`. Skip when the API already gave us an image_url.
+  const lookupName =
+    attraction.name_en ?? (typeof attraction.name === "string" ? attraction.name : "");
+  const photo = useLazyPlacePhoto(lookupName, {
     cityHint:
-      typeof attraction.city === "string"
-        ? attraction.city
-        : null,
+      typeof attraction.city === "string" ? attraction.city : cityHint || null,
     skip: !!attraction.image_url,
   });
   const heroPhoto = attraction.image_url ?? photo;
-  const [tName] = useTranslated([attraction.name]);
+  const [tName, tDesc] = useTranslated([
+    attraction.name,
+    (typeof attraction.outside_desc === "string" && attraction.outside_desc) ||
+      (typeof attraction.description === "string" && attraction.description) ||
+      "",
+  ]);
 
   return (
-    <button
-      type="button"
-      onClick={() => onOpen(attraction.name)}
-      className="relative h-44 w-60 shrink-0 snap-start overflow-hidden rounded-2xl border border-border bg-card text-left transition-smooth hover:scale-[1.01]"
-    >
-      {heroPhoto ? (
-        <img
-          src={heroPhoto}
-          alt={tName}
-          loading="lazy"
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        <div className="grid h-full w-full place-items-center bg-secondary text-muted-foreground">
-          <Sparkles className="h-5 w-5 opacity-60" />
+    <li>
+      <button
+        type="button"
+        onClick={() => onOpen(attraction.name)}
+        className="group flex w-full items-stretch gap-3 overflow-hidden rounded-2xl border border-border bg-card text-left transition-smooth hover:border-primary/40"
+      >
+        <div className="relative h-24 w-24 shrink-0 bg-secondary">
+          {heroPhoto ? (
+            <img
+              src={heroPhoto}
+              alt={tName}
+              loading={index < 3 ? "eager" : "lazy"}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="grid h-full w-full place-items-center text-muted-foreground">
+              <Sparkles className="h-4 w-4 opacity-60" />
+            </div>
+          )}
         </div>
-      )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-      <div className="absolute inset-x-3 bottom-3">
-        <div className="text-[13px] font-semibold leading-tight text-foreground">{tName}</div>
-        {typeof attraction.rating === "number" && (
-          <div className="mt-1 text-[10px] font-semibold text-primary">★ {attraction.rating}</div>
-        )}
-      </div>
-    </button>
+        <div className="flex min-w-0 flex-1 flex-col justify-center py-2 pr-3">
+          <div className="text-[13.5px] font-semibold leading-tight">{tName}</div>
+          {tDesc && (
+            <div className="mt-1 line-clamp-2 text-[11.5px] leading-snug text-muted-foreground">
+              {tDesc}
+            </div>
+          )}
+          <div className="mt-1.5 flex items-center gap-2 text-[10.5px] text-muted-foreground">
+            {typeof attraction.rating === "number" && (
+              <span className="font-semibold text-primary">★ {attraction.rating}</span>
+            )}
+            {typeof attraction.duration === "string" && attraction.duration && (
+              <span>· {attraction.duration}</span>
+            )}
+          </div>
+        </div>
+      </button>
+    </li>
   );
 }
 
@@ -494,41 +614,6 @@ function MuseumCard({ museum }: { museum: Museum }) {
           {museum.city}
         </div>
       </div>
-    </Link>
-  );
-}
-
-/**
- * "Where to stay" card — a single neighborhood with name + vibe line.
- * Tapping routes to /results so the user can see attractions in the
- * area (which roughly maps to neighborhood for the cities we cover).
- * Could later route to a dedicated neighborhood page; /results is the
- * MVP destination.
- */
-function NeighborhoodCard({
-  neighborhood,
-  city,
-}: {
-  neighborhood: { name: string; vibe: string };
-  city: string;
-}) {
-  // Translate the editorial vibe line per UI locale. Neighborhood
-  // names stay as-authored (proper nouns); translating "Trastevere"
-  // produces awkward transliterations.
-  const [tVibe] = useTranslated([neighborhood.vibe]);
-  return (
-    <Link
-      to="/results"
-      search={{ q: `${neighborhood.name} ${city}` }}
-      className="flex items-start gap-3 rounded-2xl border border-border bg-card px-4 py-3 transition-smooth hover:border-primary/40"
-    >
-      <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
-        <Sparkles className="h-3.5 w-3.5" />
-      </span>
-      <span className="flex flex-col leading-tight">
-        <span className="text-[14px] font-semibold text-foreground">{neighborhood.name}</span>
-        <span className="mt-1 text-[12px] leading-snug text-foreground/75">{tVibe}</span>
-      </span>
     </Link>
   );
 }

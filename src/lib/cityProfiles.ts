@@ -32,13 +32,6 @@ export type CityPractical = {
   plug: string;
 };
 
-export type CityNeighborhood = {
-  /** Display name. */
-  name: string;
-  /** One-line vibe — who it's for. */
-  vibe: string;
-};
-
 export type CityProfile = {
   slug: "tbilisi" | "rome" | "istanbul";
   /** City + country for the page header. */
@@ -47,15 +40,19 @@ export type CityProfile = {
   /** 2–3 short paragraphs of editorial copy. */
   intro: string[];
   practical: CityPractical;
-  /** 6–8 cinematic photo URLs for the horizontal gallery. */
+  /**
+   * Landmark NAMES (not URLs) for the photo gallery. The route
+   * resolves each to an image via the existing /api/photo pipeline
+   * (Wikipedia → Google Places). Switching from hardcoded Unsplash
+   * URLs avoids the "wrong photo for the city" bug Beka caught on
+   * Tbilisi (a stale Unsplash ID returned a construction scene).
+   */
   gallery: string[];
   /** 4–6 one-line tips for the etiquette card. */
   etiquette: string[];
   /** Museum ids from `src/lib/topMuseums.ts` to surface as the
    *  "featured museums" strip. Empty array hides the section. */
   museumIds: string[];
-  /** 3–4 neighborhoods for the "where to stay" section. */
-  neighborhoods: CityNeighborhood[];
   /** 3–4 "what locals love" pull-quotes — short, sensory, specific. */
   localLoves: string[];
   /** Optional opening default for the attractions query — falls back
@@ -82,12 +79,12 @@ export const CITY_PROFILES: Record<string, CityProfile> = {
       plug: "Type C / F",
     },
     gallery: [
-      "https://images.unsplash.com/photo-1565008447742-97f6f38c985c?auto=format&fit=crop&w=1280&q=80",
-      "https://images.unsplash.com/photo-1564507004663-b6dfb3c824d5?auto=format&fit=crop&w=1280&q=80",
-      "https://images.unsplash.com/photo-1582967788606-a171c1080cb0?auto=format&fit=crop&w=1280&q=80",
-      "https://images.unsplash.com/photo-1601271469167-4f48d5a4b76b?auto=format&fit=crop&w=1280&q=80",
-      "https://images.unsplash.com/photo-1565008447742-97f6f38c985c?auto=format&fit=crop&w=1280&q=80",
-      "https://images.unsplash.com/photo-1601822122631-c4f24c1aef38?auto=format&fit=crop&w=1280&q=80",
+      "Narikala Fortress",
+      "Bridge of Peace Tbilisi",
+      "Holy Trinity Cathedral Tbilisi",
+      "Mtatsminda Park",
+      "Abanotubani Tbilisi",
+      "Rustaveli Avenue",
     ],
     etiquette: [
       "Cover shoulders + knees when entering churches; women cover their hair.",
@@ -100,20 +97,6 @@ export const CITY_PROFILES: Record<string, CityProfile> = {
     // Featured Museums section gracefully. Add an entry to
     // topMuseums + reference its id here if we ever curate one.
     museumIds: [],
-    neighborhoods: [
-      {
-        name: "Old Tbilisi",
-        vibe: "Cobblestone alleys, sulphur baths, balconies — everything within ten minutes on foot.",
-      },
-      {
-        name: "Vake",
-        vibe: "Leafy, cafe-lined, near Vake Park. Quieter evenings; better coffee.",
-      },
-      {
-        name: "Sololaki",
-        vibe: "Faded grand mansions and art-nouveau doorways — the photographer's neighbourhood.",
-      },
-    ],
     localLoves: [
       "Khinkali at Veliaminov, eaten with your hands — the dumpling's twisted top is the handle, not a bite.",
       "Sunset from Narikala fortress. The cable car up costs ₾2.50 and beats every restaurant view in town.",
@@ -138,12 +121,12 @@ export const CITY_PROFILES: Record<string, CityProfile> = {
       plug: "Type F / L",
     },
     gallery: [
-      "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1280&q=80",
-      "https://images.unsplash.com/photo-1531572753322-ad063cecc140?auto=format&fit=crop&w=1280&q=80",
-      "https://images.unsplash.com/photo-1525874684015-58379d421a52?auto=format&fit=crop&w=1280&q=80",
-      "https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?auto=format&fit=crop&w=1280&q=80",
-      "https://images.unsplash.com/photo-1529260830199-42c24126f198?auto=format&fit=crop&w=1280&q=80",
-      "https://images.unsplash.com/photo-1583321500900-82807e458f3c?auto=format&fit=crop&w=1280&q=80",
+      "Colosseum",
+      "Trevi Fountain",
+      "Pantheon Rome",
+      "St Peters Basilica",
+      "Spanish Steps",
+      "Roman Forum",
     ],
     etiquette: [
       "Dress code at the Vatican + most churches: shoulders + knees covered. They WILL turn you away.",
@@ -157,20 +140,6 @@ export const CITY_PROFILES: Record<string, CityProfile> = {
     // every Rome visitor counts them as a Rome stop, so we surface
     // it here too.
     museumIds: ["vatican-museums"],
-    neighborhoods: [
-      {
-        name: "Trastevere",
-        vibe: "Cobblestone alleys, ivy-draped trattorias, lively after dark — most atmospheric base.",
-      },
-      {
-        name: "Monti",
-        vibe: "Hip + walkable — ten minutes from the Forum, half the tourist density.",
-      },
-      {
-        name: "Prati",
-        vibe: "Calm, residential, near the Vatican. Family-friendly with great morning coffee.",
-      },
-    ],
     localLoves: [
       "Espresso standing at Sant'Eustachio's marble counter — never sit, never linger; that's how Romans drink it.",
       "Trapizzino in Testaccio at midnight — flatbread cone stuffed with chicken cacciatore, the after-dinner late-night cure.",
@@ -195,12 +164,12 @@ export const CITY_PROFILES: Record<string, CityProfile> = {
       plug: "Type C / F",
     },
     gallery: [
-      "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?auto=format&fit=crop&w=1280&q=80",
-      "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?auto=format&fit=crop&w=1280&q=80",
-      "https://images.unsplash.com/photo-1527838832700-5059252407fa?auto=format&fit=crop&w=1280&q=80",
-      "https://images.unsplash.com/photo-1572252009286-268acec5ca0a?auto=format&fit=crop&w=1280&q=80",
-      "https://images.unsplash.com/photo-1561912774-79769a0a6e5a?auto=format&fit=crop&w=1280&q=80",
-      "https://images.unsplash.com/photo-1539768942893-daf53e448371?auto=format&fit=crop&w=1280&q=80",
+      "Hagia Sophia",
+      "Blue Mosque Istanbul",
+      "Topkapı Palace",
+      "Grand Bazaar Istanbul",
+      "Galata Tower",
+      "Bosphorus",
     ],
     etiquette: [
       "Remove your shoes before entering any mosque; women cover their hair (scarves available at the door).",
@@ -210,20 +179,6 @@ export const CITY_PROFILES: Record<string, CityProfile> = {
       "Cards work in Sultanahmet + Beyoğlu; carry small cash (₺10, ₺20) for taxis and tea-houses outside the centre.",
     ],
     museumIds: ["topkapi-palace-museum"],
-    neighborhoods: [
-      {
-        name: "Sultanahmet",
-        vibe: "Inside the historic peninsula — Hagia Sophia, Blue Mosque, Topkapı all walkable. Best for first-timers.",
-      },
-      {
-        name: "Karaköy / Galata",
-        vibe: "Cafés, design shops, the modern half of European Istanbul. Quieter mornings, lively evenings.",
-      },
-      {
-        name: "Kadıköy",
-        vibe: "Asian side — no tourists, where Istanbulites actually eat, drink, and shop.",
-      },
-    ],
     localLoves: [
       "Sunday breakfast at Çukur Çeşme — eggs, cheese, olives, simit, three teas. Don't book under two hours.",
       "Ride the Beşiktaş–Üsküdar ferry at sunset with a tulip-glass of çay. ₺15 and beats every Bosphorus cruise.",
