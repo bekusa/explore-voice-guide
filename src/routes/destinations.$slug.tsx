@@ -655,15 +655,25 @@ function FeaturedMuseumsSection({ museumIds }: { museumIds: string[] }) {
 }
 
 function MuseumCard({ museum }: { museum: Museum }) {
-  // Always fetch through useLazyPlacePhoto so we land Wikipedia's
-  // original-resolution lead image (sharp at 2-4 MP) instead of the
-  // LoremFlickr URL bundled with the catalogue. LoremFlickr serves
-  // random themed Flickr shots whose quality varies widely — Beka
-  // caught some city-page museum cards looking grainy. The catalogue
-  // image stays as a final fallback for the rare case where the
-  // Wikipedia lookup misses.
-  const photo = useLazyPlacePhoto(museum.name, { cityHint: museum.city });
-  const heroPhoto = photo ?? museum.image;
+  // Use the bundled catalogue image first; only fall through to
+  // Wikipedia when the museum has no `image` set.
+  //
+  // Why not Wikipedia-first: a previous version of this card always
+  // ran useLazyPlacePhoto so museums would inherit Wikipedia's sharp
+  // lead images. That backfired on Tbilisi — "Shalva Amiranashvili
+  // Museum of Fine Arts" doesn't have its own English Wikipedia
+  // article, so the search collapsed it onto the parent "Georgian
+  // National Museum" article (the Shalva Amiranashvili museum is
+  // formally a constituent of GNM). Both cards then rendered the
+  // same lead image (a cat statue from the Wikipedia article).
+  // Any institution that nests sub-museums hits the same collision,
+  // so we stick to the curated per-museum image and treat Wikipedia
+  // as a backstop for museums we haven't seeded with a photo.
+  const photo = useLazyPlacePhoto(museum.name, {
+    cityHint: museum.city,
+    skip: !!museum.image,
+  });
+  const heroPhoto = museum.image ?? photo;
   const [tName] = useTranslated([museum.name]);
   return (
     <Link
