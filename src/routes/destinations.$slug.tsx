@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  Award,
   Calendar,
   ChevronLeft,
   ChevronRight,
@@ -160,6 +161,21 @@ function Profile({ profile }: { profile: CityProfile }) {
               label={t("city.plug")}
               value={profile.practical.plug}
             />
+            {/* UNESCO count chip — shows how many inscribed World
+                Heritage properties cover this city (or are
+                inscribed within day-trip distance, like Mtskheta
+                for Tbilisi). Hidden when there are zero. */}
+            {profile.unesco.length > 0 && (
+              <PracticalChip
+                icon={<Award className="h-3.5 w-3.5" />}
+                label={t("unesco.short")}
+                value={
+                  profile.unesco.length === 1
+                    ? t("city.unescoCountOne", { n: profile.unesco.length })
+                    : t("city.unescoCountMany", { n: profile.unesco.length })
+                }
+              />
+            )}
           </div>
         </section>
 
@@ -178,10 +194,10 @@ function Profile({ profile }: { profile: CityProfile }) {
           <FeaturedMuseumsSection museumIds={profile.museumIds} />
         )}
 
-        {/* ─── UNESCO World Heritage ────────────────────────────── */}
-        {profile.unesco.length > 0 && (
-          <UnescoSection inscriptions={profile.unesco} />
-        )}
+        {/* UNESCO section removed per Beka (2026-05-19) — the
+            inscription count now lives as a chip in the Practical
+            strip above; per-attraction UNESCO badges still show on
+            ResultCard in the list below. */}
 
         {/* Where-to-stay / Neighbourhoods section removed per Beka
             (2026-05-19). Per his spec, the city page should focus
@@ -342,10 +358,12 @@ function HeroCarousel({
             <ChevronRight className="h-5 w-5" />
           </button>
 
-          {/* Dot indicator strip — sits above the city-name block
-              so it doesn't fight for the same bottom-left real
-              estate. Tappable for jump-to-slide. */}
-          <div className="absolute bottom-24 left-6 z-10 flex items-center gap-1.5">
+          {/* Dot indicator — horizontally centered, raised above
+              the city-name block. Beka caught the previous bottom-
+              left position colliding with the "GEORGIA · Tbilisi"
+              title; this position keeps the dots clear of the
+              title regardless of which city is on screen. */}
+          <div className="absolute bottom-32 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5">
             {slides.map((_, i) => (
               <button
                 key={i}
@@ -600,74 +618,6 @@ function CityAttractionsSection({
         </button>
       )}
     </section>
-  );
-}
-
-/**
- * UNESCO World Heritage panel for the city. Renders each inscription
- * as a card with the inscription's name, year, blurb, and a list of
- * its headline landmarks. Each landmark deep-links to /results?q=...
- * so tapping it lands in the canonical search list (and from there
- * to /attraction/$id). Beka's spec: the badge already shows on
- * matching attraction cards via `isUnescoSite`; this section adds
- * the curated catalogue view alongside.
- */
-function UnescoSection({ inscriptions }: { inscriptions: UnescoInscription[] }) {
-  const t = useT();
-  return (
-    <section className="px-6 pt-8">
-      <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
-        {t("unesco.short")}
-      </span>
-      <h2 className="mt-2 font-display text-[1.5rem] font-medium leading-tight">
-        {t("unesco.title")}
-      </h2>
-      <div className="mt-4 flex flex-col gap-3">
-        {inscriptions.map((insc, i) => (
-          <UnescoCard key={i} inscription={insc} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function UnescoCard({ inscription }: { inscription: UnescoInscription }) {
-  // Translate the editorial blurb + the optional locality note —
-  // headline name and landmark names stay as-authored (proper
-  // nouns; translating "Sistine Chapel" produces awkward results).
-  const [tBlurb, tNote] = useTranslated([inscription.blurb, inscription.note ?? ""]);
-  return (
-    <div className="rounded-2xl border border-primary/25 bg-card px-4 py-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-primary">
-            UNESCO · {inscription.year}
-          </div>
-          <h3 className="mt-1 font-display text-[1.05rem] font-semibold leading-tight">
-            {inscription.name}
-          </h3>
-          {tNote && (
-            <div className="mt-0.5 text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground">
-              {tNote}
-            </div>
-          )}
-        </div>
-      </div>
-      <p className="mt-3 text-[12.5px] leading-[1.55] text-foreground/85">{tBlurb}</p>
-      <ul className="mt-3 flex flex-wrap gap-1.5">
-        {inscription.highlights.map((h) => (
-          <li key={h}>
-            <Link
-              to="/results"
-              search={{ q: h }}
-              className="inline-flex items-center gap-1 rounded-full border border-border bg-background/60 px-2.5 py-1 text-[10.5px] font-semibold text-foreground/85 transition-smooth hover:border-primary/40 hover:text-foreground"
-            >
-              {h}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }
 

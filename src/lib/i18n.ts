@@ -198,6 +198,10 @@ export const UI_STRINGS = {
   "city.featuredMuseums": "Featured museums",
   "city.museumsHead": "Inside the collections",
   "city.showMore": "Show more",
+  // UNESCO chip values surfaced in the Practical strip on city
+  // pages. Pluralisation matters — Tbilisi has 1, Rome has 2.
+  "city.unescoCountOne": "{n} site",
+  "city.unescoCountMany": "{n} sites",
   "city.localsLove": "Locals love",
   "city.localsLoveHead": "What we'd tell a friend",
   "city.etiquette": "Travel notes",
