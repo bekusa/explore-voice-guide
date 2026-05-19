@@ -493,8 +493,7 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
   const slug = attractionSlug(museum.name);
   // Wikipedia-sourced photo via the shared hook. scope="artwork"
   // forces the Wikipedia-only path so Tbilisi-biased Google Places
-  // results don't pollute the strip. Falls back to the LoremFlickr
-  // seed image (museum.image) until Wikipedia returns.
+  // results don't pollute the strip.
   const fetched = useLazyPlacePhoto(museum.name, {
     cityHint: museum.city,
     scope: "artwork",
@@ -502,7 +501,19 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
   // Wikipedia URL can 404 after the page mounts (image deleted, etc.).
   // Flip imgFailed → falls back to the LoremFlickr seed image.
   const [imgFailed, setImgFailed] = useState(false);
-  const photo = imgFailed ? museum.image : (fetched ?? museum.image);
+  // Photo-flash fix (Beka caught this on the Louvre card — it would
+  // render the LoremFlickr seed for a beat, then visibly swap to the
+  // Wikipedia photo). The cause: `fetched` is null on first paint
+  // while Wikipedia is in flight, so `(fetched ?? museum.image)`
+  // returned the seed. When Wikipedia resolved a moment later the
+  // src swapped and the swap was visible.
+  //
+  // Fix: don't show the seed image during the brief Wikipedia round-
+  // trip — render the gradient + glyph placeholder instead. The
+  // LoremFlickr seed only kicks in when Wikipedia genuinely fails
+  // (404, dead link). That happens rarely enough that no first-paint
+  // flash is the right default.
+  const photo = imgFailed ? museum.image : fetched;
   return (
     <Link
       to="/attraction/$id"
@@ -514,13 +525,22 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
       search={{ name: museum.name, city: museum.city }}
       className="group relative h-[170px] w-[240px] flex-shrink-0 overflow-hidden rounded-2xl border border-border bg-card transition-smooth hover:border-primary/50 active:scale-[0.98]"
     >
-      <img
-        src={photo ?? museum.image}
-        alt={name}
-        loading="lazy"
-        onError={() => setImgFailed(true)}
-        className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
-      />
+      {photo ? (
+        <img
+          src={photo}
+          alt={name}
+          loading="lazy"
+          onError={() => setImgFailed(true)}
+          className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
+        />
+      ) : (
+        // Neutral placeholder while Wikipedia is in flight — avoids
+        // the LoremFlickr → Wikipedia photo swap Beka caught on the
+        // Louvre card. The card's own border + gradient already
+        // carry enough visual weight that a brief empty image area
+        // reads as "loading" rather than "broken".
+        <div className="absolute inset-0 bg-gradient-to-br from-secondary to-card" />
+      )}
       {/* Light-theme darkening wash — same trick as the hero photo
           (Beka caught the cards reading too bright on daylight). The
           dark theme keeps the photo at full punch via opacity 0. */}

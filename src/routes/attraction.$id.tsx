@@ -254,30 +254,30 @@ function AttractionPage() {
     skip: !!attraction?.image_url,
   });
   // Compose the final slide list. Strategy:
-  //   1. Start with the canonical hero photo (REST summary's lead
-  //      image — the one the photo-card list uses everywhere else,
-  //      keeps the carousel "first frame" consistent with what the
-  //      user just clicked from).
-  //   2. Append the gallery photos, deduping URL-by-URL — the lead
-  //      image is usually the first item in media-list too, so
-  //      without the dedupe slide 1 and slide 2 would be identical.
-  //   3. Cap at 8 to match the server cap; if the array winds up
-  //      with just 1 entry the render code below skips the
-  //      carousel chrome entirely.
+  //   1. WHEN GALLERY RESOLVED — use it as the source of truth.
+  //      Wikipedia's media-list returns the article's lead image
+  //      as the first item, so slide 1 is still "the canonical
+  //      hero shot" of the place. Why prefer gallery over
+  //      heroPhoto: heroPhoto comes from /api/photo's single-shot
+  //      lookup which caches the URL in Supabase. If the cache
+  //      row was written BEFORE the originalimage fix shipped, it
+  //      still serves the 320 px thumbnail and slide 1 looks
+  //      muddy next to slide 2's sharp 1600 px srcset image
+  //      (Beka caught this on Arc de Triomphe: identical photo
+  //      across slides 1 and 2, but slide 1 was blurry). The
+  //      gallery endpoint is brand-new code with no pre-fix cache
+  //      pollution, so its URLs are reliably sharp.
+  //   2. GALLERY MISS (empty) — fall back to heroPhoto for
+  //      places Wikipedia barely covers. Single-slide hero, no
+  //      visible regression vs. the old static layout.
+  //   3. NEITHER — return [] so HeroPhotoCarousel renders the
+  //      placeholder gradient.
+  // Cap at 8 to match the server cap.
   const heroSlides = useMemo(() => {
-    const out: string[] = [];
-    const seen = new Set<string>();
-    if (heroPhoto) {
-      out.push(heroPhoto);
-      seen.add(heroPhoto);
+    if (heroGalleryRaw.length > 0) {
+      return heroGalleryRaw.slice(0, 8);
     }
-    for (const url of heroGalleryRaw) {
-      if (seen.has(url)) continue;
-      seen.add(url);
-      out.push(url);
-      if (out.length >= 8) break;
-    }
-    return out;
+    return heroPhoto ? [heroPhoto] : [];
   }, [heroPhoto, heroGalleryRaw]);
 
   useEffect(() => {
