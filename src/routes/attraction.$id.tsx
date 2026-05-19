@@ -77,6 +77,45 @@ import { useT } from "@/hooks/useT";
 type Search = { name?: string; city?: string; photo?: string };
 
 /**
+ * Dedupe museum highlights so the same artwork doesn't render
+ * multiple times (Beka caught Louvre returning 6 entries for
+ * Raft of the Medusa: "(study)", "(sketch by Géricault)", "(final
+ * monumental canvas)", "(preparatory study with color)",
+ * "(watercolor study)" — all the same painting).
+ *
+ * Normalisation: strip parenthetical suffixes, lowercase, drop
+ * non-alphanumerics. Two entries that normalise to the same key
+ * collapse into one — first occurrence wins, in the order Claude
+ * returned them (which is also the order the prompt asks for —
+ * icons first, then second-tier, then deep cuts).
+ *
+ * The prompt now forbids variant entries, but this guardrail
+ * catches stale cached_museum_highlights rows from before the
+ * UNIQUENESS section was added, and protects against any future
+ * regression.
+ */
+function dedupeHighlights(items: MuseumHighlight[]): MuseumHighlight[] {
+  const seen = new Set<string>();
+  const out: MuseumHighlight[] = [];
+  for (const h of items) {
+    const raw = (h.name_en ?? h.name ?? "").trim();
+    // Strip everything from the first `(` onward — "Raft of the
+    // Medusa (study)" and "Raft of the Medusa (final canvas)"
+    // both collapse to "raft of the medusa".
+    const stripped = raw.replace(/\s*\([^)]*\)\s*$/g, "").trim();
+    const key = stripped
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+    if (!key) continue;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(h);
+  }
+  return out;
+}
+
+/**
  * Extract the Wikimedia Commons base filename from a URL so that
  * the originalimage URL (`commons/X/Y/Louvre_Pyramid.jpg`) and the
  * srcset thumb URL (`commons/thumb/X/Y/Louvre_Pyramid.jpg/1280px-…`)
@@ -450,7 +489,14 @@ function AttractionPage() {
     setHighlights(null);
     fetchMuseumHighlights(matchedMuseum.id, language)
       .then((data) => {
-        if (!cancelled) setHighlights(data);
+        // Client-side dedupe as a guardrail. Beka caught Claude
+        // returning 6 variant entries for the same Raft of the
+        // Medusa — server-side prompt now forbids "(study)",
+        // "(sketch)", "(preparatory)" etc. but this client dedupe
+        // is a belt-and-braces fix so even older cached payloads
+        // (or any future prompt regression) can't surface the
+        // duplicates in the UI.
+        if (!cancelled) setHighlights(dedupeHighlights(data));
       })
       .catch(() => {
         if (!cancelled) setHighlights([]);
