@@ -201,7 +201,26 @@ async function museumOwnPhoto(museum: string, q: string): Promise<string | null>
   return null;
 }
 
-async function wikipediaPhoto(q: string, lang: string): Promise<string | null> {
+type WikiLookupOpts = {
+  /** Caller is looking up a museum artwork — flip accept/reject
+   *  rules so paintings, sculptures, and drawings PASS (instead of
+   *  being filtered out by the generic isNonPlaceTopic gate) and
+   *  villages, towns, biblical sites, panoramas, museum-self
+   *  articles are REJECTED. */
+  isArtwork?: boolean;
+  /** Name of the museum hosting the artwork. Used to reject
+   *  Wikipedia hits that landed on the museum's own article
+   *  (Beka caught the Louvre pyramid coming back as "The Flood"'s
+   *  photo because "The Flood Louvre" full-text-search ranked the
+   *  Louvre article ahead of Leonardo's drawing). */
+  museumToReject?: string;
+};
+
+async function wikipediaPhoto(
+  q: string,
+  lang: string,
+  opts: WikiLookupOpts = {},
+): Promise<string | null> {
   const langs = lang === "en" ? ["en"] : [lang, "en"];
 
   // Beka observed full-text search misfire: "The Lacemaker Louvre Paris"
@@ -228,7 +247,7 @@ async function wikipediaPhoto(q: string, lang: string): Promise<string | null> {
   for (const l of langs) {
     // Stage 1: bare exact-title lookup.
     const directTitle = q.trim().replace(/\s+/g, "_");
-    const direct = await tryWikiSummary(l, directTitle);
+    const direct = await tryWikiSummary(l, directTitle, opts);
     if (direct) return direct;
 
     // Stage 2: intitle: phrase search.
@@ -250,7 +269,7 @@ async function wikipediaPhoto(q: string, lang: string): Promise<string | null> {
         // (4+ chars, not a city qualifier) with the query, otherwise
         // we treat the hit as off-topic and fall through.
         if (intitleTitle && titleMatchesQuery(intitleTitle, q)) {
-          const fromIntitle = await tryWikiSummary(l, intitleTitle);
+          const fromIntitle = await tryWikiSummary(l, intitleTitle, opts);
           if (fromIntitle) return fromIntitle;
         }
       }
@@ -275,7 +294,7 @@ async function wikipediaPhoto(q: string, lang: string): Promise<string | null> {
       // "United Arab Emirates" and we shipped the UAE flag as the
       // hero image). Require at least one significant-word overlap.
       if (!titleMatchesQuery(title, q)) continue;
-      const src = await tryWikiSummary(l, title);
+      const src = await tryWikiSummary(l, title, opts);
       if (src) return src;
     } catch {
       // try next language
@@ -343,8 +362,18 @@ function titleMatchesQuery(title: string, query: string): boolean {
  * Returns null on 404, disambiguation pages (no thumbnail), or any
  * other failure. Quiet on errors so the caller can keep trying
  * fallback strategies.
+ *
+ * `opts` carries scope-specific accept / reject rules. When
+ * `opts.isArtwork` is true we INVERT several gates — paintings and
+ * sculptures by an artist PASS instead of being filtered out, but
+ * villages, towns, panoramic views, biblical sites, and the museum's
+ * own article get rejected.
  */
-async function tryWikiSummary(lang: string, title: string): Promise<string | null> {
+async function tryWikiSummary(
+  lang: string,
+  title: string,
+  opts: WikiLookupOpts = {},
+): Promise<string | null> {
   try {
     const summaryUrl =
       `https://${lang}.wikipedia.org/api/rest_v1/page/summary/` + encodeURIComponent(title);
@@ -355,16 +384,51 @@ async function tryWikiSummary(lang: string, title: string): Promise<string | nul
     // or absent; better to fall through to the next strategy and let
     // intitle: pick the most relevant disambiguated page.
     if (summaryData.type === "disambiguation") return null;
-    // Skip non-place topics that happen to share the name of a
-    // landmark. Beka caught "ალისა და ნინო ძეგლი" (the Batumi
-    // statue) showing the cover of Kurban Said's 1937 novel —
-    // Wikipedia's bare "Ali and Nino" article is the novel, and
-    // bare-first lookup happily picked the cover image. The summary
-    // `description` field reliably tags subject type ("1937 novel
-    // by …", "1944 film directed by …", "Studio album by …"),
-    // so we reject those families and let the caller fall through
-    // to a city-qualified lookup that lands on the real statue.
-    if (summaryData.description && isNonPlaceTopic(summaryData.description)) {
+
+    if (opts.isArtwork) {
+      // Artwork-scope rejections (Beka's bug catches, 2026-05-20):
+      //
+      // (a) Museum-self filter. "The Flood Louvre" full-text-search
+      //     ranks the Louvre's own article ahead of Leonardo's
+      //     drawing because the Louvre article mentions every famous
+      //     work. The summary then returns the Louvre pyramid as the
+      //     artwork's photo. Reject when the matched title points at
+      //     the host museum.
+      if (
+        opts.museumToReject &&
+        summaryData.title &&
+        normaliseTitleSlug(summaryData.title) ===
+          normaliseTitleSlug(opts.museumToReject)
+      ) {
+        return null;
+      }
+      // (b) Wrong-topic-for-artwork filter. "The Wedding Feast at
+      //     Cana" without disambiguation lands on the biblical
+      //     village of Cana (described "Town in Northern Israel") →
+      //     church photo. "The Calling of Saint Matthew" landed on
+      //     a city panorama (description "View of Saint Petersburg")
+      //     by the same fall-through. Reject summaries whose
+      //     description tags them as a settlement, biblical site,
+      //     country, region, or panoramic view when we're looking
+      //     for a painting / sculpture / drawing.
+      if (
+        summaryData.description &&
+        isWrongTopicForArtwork(summaryData.description)
+      ) {
+        return null;
+      }
+      // NOTE: we deliberately DO NOT run isNonPlaceTopic here — that
+      // function rejects "painting by X" / "sculpture by X" /
+      // "drawing of …" because the default caller wants a real
+      // place. For artwork lookups those descriptions are exactly
+      // what we want to ACCEPT. Beka caught "The Wedding Feast at
+      // Cana" failing because Wikipedia's correct article carries
+      // the description "1562-1563 painting by Veronese", which
+      // isNonPlaceTopic blocklisted on "painting" — so the lookup
+      // fell through to the biblical Cana village.
+    } else if (summaryData.description && isNonPlaceTopic(summaryData.description)) {
+      // Standard (non-artwork) path — skip novel/film/song/painting/
+      // sculpture topics that happen to share the name of a landmark.
       return null;
     }
     // Prefer the full-resolution `originalimage` over Wikipedia's
@@ -408,6 +472,62 @@ function isNonPlaceTopic(description: string): boolean {
   return /\b(novel|book|short story|poem|epic|memoir|film|movie|tv series|television series|series by|series of|episode|song|single|album|ep by|studio album|video game|board game|opera|play|musical|painting|sculpture by|comic|manga|cartoon|podcast|band|song by|song from)\b/.test(
     d,
   );
+}
+
+/**
+ * Mirror of `isNonPlaceTopic` but tuned for artwork lookups. Wikipedia
+ * routinely returns settlement / region / panorama articles when an
+ * artwork query falls through full-text search to a place that shares
+ * the artwork's title. Examples Beka caught:
+ *   - "The Wedding Feast at Cana" → "Town in Northern Israel" (Cana
+ *     village) → church photo.
+ *   - "The Calling of Saint Matthew" → "View of Saint Petersburg" →
+ *     city panorama.
+ * Reject any summary whose description tags it as one of these
+ * geographic / panoramic topics; the caller falls through to the next
+ * candidate query (`name painting`, `name sculpture`, …) which lands
+ * on the actual artwork article.
+ */
+function isWrongTopicForArtwork(description: string): boolean {
+  const d = description.toLowerCase();
+  // Settlements + regions — towns / villages / cities / countries /
+  // provinces. The artwork is never literally a settlement.
+  if (/\b(village|town|city|capital|hamlet|borough|municipality|commune|county|province|region|country|district|prefecture|island|peninsula|archipelago|state in|nation in|nation of)\b/.test(d)) {
+    return true;
+  }
+  // Aerial / panoramic views — Wikipedia tags cityscape photos as
+  // "View of <city>" or "Panorama of <city>".
+  if (/\b(view of|panorama of|panoramic view|aerial view|cityscape)\b/.test(d)) {
+    return true;
+  }
+  // Biblical / religious narrative articles (separate from the
+  // artwork they inspired). Cana, Bethlehem, Galilee, … all tag
+  // themselves as biblical sites or events.
+  if (/\b(biblical site|biblical event|biblical narrative|gospel passage|new testament event|old testament event)\b/.test(d)) {
+    return true;
+  }
+  // Festivals + rituals — sometimes a Wikipedia article exists for
+  // the religious feast a painting depicts, separate from the
+  // painting itself.
+  if (/\b(feast day|feast of|christian festival|religious festival|jewish festival|public holiday)\b/.test(d)) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Normalise a Wikipedia title (or museum name) for case-insensitive,
+ * whitespace-insensitive comparison. Strips diacritics, lowercases,
+ * collapses spaces. Used to detect when an artwork's Wikipedia hit
+ * actually pointed at the museum hosting it.
+ */
+function normaliseTitleSlug(s: string): string {
+  return s
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
 export const Route = createFileRoute("/api/photo")({
@@ -517,16 +637,27 @@ export const Route = createFileRoute("/api/photo")({
         // so we keep it as a fallback when bare misses.
         if (!photoUrl) {
           try {
+            // Pass scope/museum context down to Wikipedia so the
+            // summary handler can apply artwork-specific accept/
+            // reject rules (paintings PASS, settlements / panoramas
+            // / museum-self articles REJECT). Beka caught a
+            // string of Caravaggio + Veronese highlights landing
+            // on biblical villages / city panoramas / origami photos
+            // because the lookup ran without this context.
+            const wikiOpts: WikiLookupOpts = {
+              isArtwork,
+              museumToReject: museum ?? undefined,
+            };
             // 1) bare q — catches famous attractions with a canonical
             //    Wikipedia article at the exact title.
-            photoUrl = await wikipediaPhoto(q, lang);
+            photoUrl = await wikipediaPhoto(q, lang, wikiOpts);
             // 2) q + city — only if bare missed AND we have a city
             //    that isn't already part of the name. Helps when the
             //    bare title resolves to a disambiguation page (e.g.
             //    "Grand Palace") where the city qualifier picks the
             //    right one.
             if (!photoUrl && city && !q.toLowerCase().includes(city.toLowerCase())) {
-              photoUrl = await wikipediaPhoto(`${q} ${city}`, lang);
+              photoUrl = await wikipediaPhoto(`${q} ${city}`, lang, wikiOpts);
             }
           } catch {
             /* fall through to Google Places (non-artwork) */
