@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchPlacePhoto } from "@/lib/api";
+import { fetchPlacePhoto, fetchPlaceGallery } from "@/lib/api";
 
 /**
  * Lazily fetch a place photo via /api/photo (Wikipedia → Google
@@ -75,4 +75,61 @@ export function useLazyPlacePhoto(
   }, [name, lang, cityHint, scope, museumName, skip]);
 
   return photo;
+}
+
+/**
+ * Lazy variant of {@link useLazyPlacePhoto} that returns the *multi*-
+ * photo gallery for the attraction or museum — used by the hero
+ * carousel on /attraction/$id and (eventually) any other surface
+ * that wants a slideshow instead of a single hero shot.
+ *
+ * Server-side this goes through /api/photo-gallery which pulls
+ * images from Wikipedia's media-list endpoint, filters out flags /
+ * logos / plans / signatures, and returns up to 8 URLs at the
+ * highest available resolution.
+ *
+ * Returns:
+ *   `[]` while loading or on miss. Caller should treat an empty
+ *   array as "fall back to single-photo lookup" and degrade
+ *   gracefully — Wikipedia simply doesn't cover every place.
+ *
+ * Usage:
+ *   const photos = useLazyPlaceGallery(museum.name, {
+ *     cityHint: museum.city,
+ *   });
+ *   const slides = photos.length > 1 ? photos : [singleHeroPhoto];
+ */
+export function useLazyPlaceGallery(
+  name: string | null | undefined,
+  options?: {
+    lang?: string;
+    cityHint?: string | null;
+    /** Bail without fetching. Same semantics as useLazyPlacePhoto's
+     *  `skip` — when the caller already knows the answer. */
+    skip?: boolean;
+  },
+): string[] {
+  const lang = options?.lang ?? "en";
+  const cityHint = options?.cityHint ?? null;
+  const skip = options?.skip ?? false;
+
+  const [urls, setUrls] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (skip || !name) return;
+    let cancelled = false;
+    fetchPlaceGallery(name, lang, cityHint)
+      .then((result) => {
+        if (cancelled) return;
+        if (result.length > 0) setUrls(result);
+      })
+      .catch(() => {
+        /* fall through; caller handles empty array */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [name, lang, cityHint, skip]);
+
+  return urls;
 }

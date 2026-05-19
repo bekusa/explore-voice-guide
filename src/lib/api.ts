@@ -582,6 +582,71 @@ export async function fetchPlacePhoto(
 }
 
 /**
+ * Per-session in-memory cache for /api/photo-gallery results. Same
+ * shape as photoCache above but stores `string[]` instead of a
+ * single URL. Keyed on (name, language, city) so different cities
+ * don't collide for ambiguous names (Grand Palace Bangkok vs.
+ * Grand Palace anywhere else).
+ */
+const galleryCache = new Map<string, string[]>();
+
+/**
+ * Fetch the multi-photo gallery for an attraction or museum from
+ * /api/photo-gallery. Server pulls images from Wikipedia's media-
+ * list endpoint, filters out flags / logos / plans, returns up to 8
+ * URLs at the highest available srcset resolution.
+ *
+ * Returns `[]` when the lookup misses (no Wikipedia article matched,
+ * or the article had no usable photos). Caller is expected to fall
+ * back to /api/photo's single image in that case.
+ */
+export async function fetchPlaceGallery(
+  name: string,
+  language = "en",
+  city: string | null = null,
+): Promise<string[]> {
+  const cleaned = name.trim();
+  if (!cleaned) return [];
+  const cleanCity = city?.trim() || "";
+  const cacheKey = `${language}:${cleanCity}:${cleaned}`;
+  const cached = galleryCache.get(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const cityParam = cleanCity
+      ? `&city=${encodeURIComponent(cleanCity)}`
+      : "";
+    // Same 15-s ceiling as fetchPlacePhoto — Wikipedia media-list +
+    // optional title resolution can take a beat on cold workers,
+    // but a slow gallery should never block the hero (which falls
+    // back to the single-photo lookup or the placeholder glyph
+    // already on screen).
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), 15_000);
+    let res: Response;
+    try {
+      res = await fetch(
+        `/api/photo-gallery?q=${encodeURIComponent(cleaned)}&lang=${encodeURIComponent(language)}${cityParam}`,
+        { signal: ac.signal },
+      );
+    } finally {
+      clearTimeout(timer);
+    }
+    if (!res.ok) return [];
+    const data = (await res.json()) as { urls?: string[] };
+    const urls = Array.isArray(data.urls) ? data.urls : [];
+    // Only cache non-empty results in session memory — same logic
+    // as the single-photo path: a server-side fix shouldn't be
+    // hidden behind a sticky empty array for the rest of the
+    // session.
+    if (urls.length > 0) galleryCache.set(cacheKey, urls);
+    return urls;
+  } catch {
+    return [];
+  }
+}
+
+/**
  * Stable, URL-safe id derived from an attraction name.
  * Used to round-trip between /results and /attraction/$id without a backend.
  */

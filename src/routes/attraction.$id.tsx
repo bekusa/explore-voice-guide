@@ -54,7 +54,7 @@ import { getSaved, isSaved, removeItem, saveItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useAuth } from "@/hooks/useAuth";
-import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
+import { useLazyPlacePhoto, useLazyPlaceGallery } from "@/hooks/useLazyPlacePhoto";
 import { useRequireSignIn } from "@/hooks/useRequireSignIn";
 import { haptic } from "@/lib/haptics";
 import {
@@ -237,6 +237,48 @@ function AttractionPage() {
     skip: !!attraction?.image_url,
   });
   const heroPhoto = attraction?.image_url ?? heroFetched;
+  // Multi-photo gallery for the hero carousel — pulled from
+  // Wikipedia's media-list endpoint. Beka asked for a carousel on
+  // /attraction/$id mirroring what /destinations/$slug got, so the
+  // user can swipe through several photos of the same place. The
+  // gallery is best-effort: if Wikipedia has no usable article the
+  // hook returns [] and the hero falls back to the single-photo
+  // path (no carousel chrome shown).
+  //
+  // Skip when n8n shipped its own image_url (rare today; the prompt
+  // returns null for image_url so this skip rarely fires) — the
+  // single hero stays the source of truth there. Also skip when
+  // heroLookupName is null (non-ASCII pre-translation guard).
+  const heroGalleryRaw = useLazyPlaceGallery(heroLookupName, {
+    cityHint: heroCity,
+    skip: !!attraction?.image_url,
+  });
+  // Compose the final slide list. Strategy:
+  //   1. Start with the canonical hero photo (REST summary's lead
+  //      image — the one the photo-card list uses everywhere else,
+  //      keeps the carousel "first frame" consistent with what the
+  //      user just clicked from).
+  //   2. Append the gallery photos, deduping URL-by-URL — the lead
+  //      image is usually the first item in media-list too, so
+  //      without the dedupe slide 1 and slide 2 would be identical.
+  //   3. Cap at 8 to match the server cap; if the array winds up
+  //      with just 1 entry the render code below skips the
+  //      carousel chrome entirely.
+  const heroSlides = useMemo(() => {
+    const out: string[] = [];
+    const seen = new Set<string>();
+    if (heroPhoto) {
+      out.push(heroPhoto);
+      seen.add(heroPhoto);
+    }
+    for (const url of heroGalleryRaw) {
+      if (seen.has(url)) continue;
+      seen.add(url);
+      out.push(url);
+      if (out.length >= 8) break;
+    }
+    return out;
+  }, [heroPhoto, heroGalleryRaw]);
 
   useEffect(() => {
     let cancelled = false;
@@ -482,17 +524,19 @@ function AttractionPage() {
       }
     >
       <div className="relative min-h-full bg-background pb-10 text-foreground">
-        {/* Hero */}
+        {/* Hero — carousel when we have a multi-photo gallery from
+            Wikipedia's media-list, single image otherwise. The
+            carousel chrome (arrows + dots) only renders when there
+            are at least 2 slides; with just 1 photo the section
+            looks identical to the old static hero. The back button
+            and title block live as siblings of the image stack so
+            they always sit on top regardless of which slide is
+            currently active. */}
         <section className="relative h-[420px] w-full overflow-hidden">
-          {heroPhoto ? (
-            <img
-              src={heroPhoto}
-              alt={a?.name ?? fallbackName}
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-card" />
-          )}
+          <HeroPhotoCarousel
+            slides={heroSlides}
+            alt={a?.name ?? fallbackName}
+          />
           <div className="absolute inset-0 bg-gradient-hero" />
 
           <header className="relative z-10 flex items-start justify-between px-6 pt-safe">
@@ -2083,5 +2127,140 @@ function HighlightCard({
         )}
       </div>
     </li>
+  );
+}
+
+/**
+ * Hero photo carousel — renders the stacked, cross-fading image
+ * tower at the top of an attraction / museum page. Mirrors the
+ * carousel on /destinations/$slug but trimmed down: this surface
+ * only has photos (no "brand asset" curated slides) and no city /
+ * country label chrome inside the carousel — the back button + h1
+ * + meta row live as siblings on top in the parent <section>.
+ *
+ * Behavior matches Beka's city-page spec:
+ *   - Auto-rotates every 6 s.
+ *   - Any user interaction (arrow tap, dot tap) freezes auto-
+ *     rotate for the rest of the visit — surprise movement after
+ *     someone has engaged feels wrong.
+ *   - Side arrows + bottom dots only when slides.length > 1.
+ *     With a single slide the chrome disappears entirely so the
+ *     hero looks identical to the pre-carousel single-image
+ *     layout (no visual regression for places where Wikipedia
+ *     doesn't have a gallery).
+ *
+ * Empty-state: when the slides array is empty we render the same
+ * `bg-gradient-card` placeholder the previous static hero used
+ * when no photo had resolved yet — keeps the layout from
+ * collapsing while the lookups are in flight.
+ */
+function HeroPhotoCarousel({
+  slides,
+  alt,
+}: {
+  slides: string[];
+  alt: string;
+}) {
+  const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const total = slides.length;
+
+  // Reset index whenever the slide list grows mid-session — without
+  // this, an empty initial render with idx=0 could land out of
+  // bounds when the gallery resolves to a larger list. Clamping
+  // also covers the edge case where the gallery shrinks (network
+  // retry returning fewer items) — we snap back to slide 0.
+  useEffect(() => {
+    if (idx >= total && total > 0) setIdx(0);
+  }, [idx, total]);
+
+  useEffect(() => {
+    if (paused || total <= 1) return;
+    const id = setInterval(() => {
+      setIdx((current) => (current + 1) % total);
+    }, 6000);
+    return () => clearInterval(id);
+  }, [paused, total]);
+
+  const go = (next: number) => {
+    if (total <= 1) return;
+    setPaused(true);
+    setIdx(((next % total) + total) % total);
+  };
+
+  // No photos yet (cold load) — same gradient placeholder the
+  // previous static hero used when heroPhoto was null.
+  if (total === 0) {
+    return <div className="absolute inset-0 bg-gradient-card" />;
+  }
+
+  const prevIdx = (idx - 1 + total) % total;
+  const nextIdx = (idx + 1) % total;
+
+  return (
+    <>
+      {/* Stacked image tower. Opacity drives visibility so each
+          slide stays mounted across cycles — the <img> nodes hold
+          their decoded bitmap, so flipping back to slide 1 after
+          rotating is instant. */}
+      {slides.map((url, i) => (
+        <img
+          key={url}
+          src={url}
+          alt={alt}
+          // Eager-load current slide + immediate neighbours so the
+          // next-arrow tap feels instant.
+          loading={i === idx || i === prevIdx || i === nextIdx ? "eager" : "lazy"}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
+            i === idx ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      ))}
+
+      {total > 1 && (
+        <>
+          {/* Side arrows. Glass-morphic background so the chevron
+              reads on any slide regardless of exposure. Generous
+              44 × 44 tap target for mobile. */}
+          <button
+            type="button"
+            onClick={() => go(prevIdx)}
+            aria-label="Previous photo"
+            className="absolute left-3 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => go(nextIdx)}
+            aria-label="Next photo"
+            className="absolute right-3 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+
+          {/* Dot indicator — centered, sits above the bottom-pinned
+              title block (which lives at ~pb-7 below). Beka's city-
+              page spec moved dots to dead-center horizontally
+              because bottom-left collided with the city title;
+              same fix applies here for the attraction h1. */}
+          <div className="pointer-events-none absolute bottom-32 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => go(i)}
+                aria-label={`Go to photo ${i + 1}`}
+                className={`pointer-events-auto h-1.5 rounded-full transition-all ${
+                  i === idx
+                    ? "w-6 bg-primary"
+                    : "w-1.5 bg-foreground/30 hover:bg-foreground/50"
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </>
   );
 }

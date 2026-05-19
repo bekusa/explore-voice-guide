@@ -32,6 +32,7 @@ import { Route as ApiTtsRouteImport } from './routes/api.tts'
 import { Route as ApiTranslateRouteImport } from './routes/api.translate'
 import { Route as ApiTimeMachineRouteImport } from './routes/api.time-machine'
 import { Route as ApiPhotoRouteImport } from './routes/api.photo'
+import { Route as ApiPhotoGalleryRouteImport } from './routes/api.photo-gallery'
 import { Route as ApiMuseumHighlightsRouteImport } from './routes/api.museum-highlights'
 import { Route as ApiGuideRouteImport } from './routes/api.guide'
 import { Route as ApiAttractionsRouteImport } from './routes/api.attractions'
@@ -152,6 +153,11 @@ const ApiPhotoRoute = ApiPhotoRouteImport.update({
   path: '/api/photo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPhotoGalleryRoute = ApiPhotoGalleryRouteImport.update({
+  id: '/api/photo-gallery',
+  path: '/api/photo-gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiMuseumHighlightsRoute = ApiMuseumHighlightsRouteImport.update({
   id: '/api/museum-highlights',
   path: '/api/museum-highlights',
@@ -193,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/api/guide': typeof ApiGuideRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/photo': typeof ApiPhotoRoute
+  '/api/photo-gallery': typeof ApiPhotoGalleryRoute
   '/api/time-machine': typeof ApiTimeMachineRoute
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
@@ -222,6 +229,7 @@ export interface FileRoutesByTo {
   '/api/guide': typeof ApiGuideRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/photo': typeof ApiPhotoRoute
+  '/api/photo-gallery': typeof ApiPhotoGalleryRoute
   '/api/time-machine': typeof ApiTimeMachineRoute
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
@@ -252,6 +260,7 @@ export interface FileRoutesById {
   '/api/guide': typeof ApiGuideRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/photo': typeof ApiPhotoRoute
+  '/api/photo-gallery': typeof ApiPhotoGalleryRoute
   '/api/time-machine': typeof ApiTimeMachineRoute
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
@@ -283,6 +292,7 @@ export interface FileRouteTypes {
     | '/api/guide'
     | '/api/museum-highlights'
     | '/api/photo'
+    | '/api/photo-gallery'
     | '/api/time-machine'
     | '/api/translate'
     | '/api/tts'
@@ -312,6 +322,7 @@ export interface FileRouteTypes {
     | '/api/guide'
     | '/api/museum-highlights'
     | '/api/photo'
+    | '/api/photo-gallery'
     | '/api/time-machine'
     | '/api/translate'
     | '/api/tts'
@@ -341,6 +352,7 @@ export interface FileRouteTypes {
     | '/api/guide'
     | '/api/museum-highlights'
     | '/api/photo'
+    | '/api/photo-gallery'
     | '/api/time-machine'
     | '/api/translate'
     | '/api/tts'
@@ -371,6 +383,7 @@ export interface RootRouteChildren {
   ApiGuideRoute: typeof ApiGuideRoute
   ApiMuseumHighlightsRoute: typeof ApiMuseumHighlightsRoute
   ApiPhotoRoute: typeof ApiPhotoRoute
+  ApiPhotoGalleryRoute: typeof ApiPhotoGalleryRoute
   ApiTimeMachineRoute: typeof ApiTimeMachineRoute
   ApiTranslateRoute: typeof ApiTranslateRoute
   ApiTtsRoute: typeof ApiTtsRoute
@@ -541,6 +554,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPhotoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/photo-gallery': {
+      id: '/api/photo-gallery'
+      path: '/api/photo-gallery'
+      fullPath: '/api/photo-gallery'
+      preLoaderRoute: typeof ApiPhotoGalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/museum-highlights': {
       id: '/api/museum-highlights'
       path: '/api/museum-highlights'
@@ -616,6 +636,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGuideRoute: ApiGuideRoute,
   ApiMuseumHighlightsRoute: ApiMuseumHighlightsRoute,
   ApiPhotoRoute: ApiPhotoRoute,
+  ApiPhotoGalleryRoute: ApiPhotoGalleryRoute,
   ApiTimeMachineRoute: ApiTimeMachineRoute,
   ApiTranslateRoute: ApiTranslateRoute,
   ApiTtsRoute: ApiTtsRoute,
