@@ -2011,20 +2011,36 @@ function HighlightCard({
     // each highlight we'd use it; we don't, so include the most
     // common artwork media as separate candidates.
     (async () => {
-      // Museum-qualified queries FIRST — Beka kept catching
-      // ambiguous artwork names landing on the wrong subject
-      // (Lacemaker → Isabelle Huppert film, Wedding Feast at
-      // Cana → some other building). Wikipedia's full-text search
-      // ranks the Met / Louvre canonical article above the
-      // disambiguator when the museum name is in the query.
-      const candidates = [
+      // Candidate query ladder (Beka's iterative tuning):
+      //   1. Artist-qualified — strongest signal when present.
+      //      Wikipedia's canonical artwork article is usually titled
+      //      "{Work} ({Artist})", so "The Lute Player Caravaggio"
+      //      lands directly on the right page (skipping ambiguous
+      //      bare-name matches that resolved to films / villages /
+      //      panoramas).
+      //   2. Museum-qualified next — Wikipedia full-text search
+      //      tends to rank the museum's article ahead of bare
+      //      artwork names that share words with films. Now
+      //      protected by api.photo.ts's `museumToReject` filter
+      //      so a hit on the museum's own article gets rejected
+      //      and the loop falls through.
+      //   3. Medium-qualified — "painting", "sculpture", "artwork".
+      //      Disambiguates between same-named topics.
+      //   4. Bare name — last resort.
+      const artist = typeof h.artist === "string" ? h.artist.trim() : "";
+      const candidates: string[] = [];
+      if (artist) {
+        candidates.push(`${baseName} ${artist}`);
+        candidates.push(`${baseName} (${artist})`);
+      }
+      candidates.push(
         `${baseName} ${museum.name}`,
         `${baseName} ${museum.name} ${museum.city}`,
         `${baseName} painting`,
         `${baseName} sculpture`,
         `${baseName} artwork`,
         baseName,
-      ];
+      );
       for (const q of candidates) {
         if (cancelled) return;
         // scope="artwork" tells /api/photo to skip Google Places

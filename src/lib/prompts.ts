@@ -210,6 +210,7 @@ JSON SHAPE:
   "highlights": [
     {
       "name": "Canonical name of the object/work/space",
+      "artist": "Artist / maker / culture (e.g. \\"Leonardo da Vinci\\", \\"Caravaggio\\", \\"Unknown Egyptian\\", \\"Ancient Greek\\"). Empty string if irrelevant (architecture, room).",
       "era": "Short period or date label",
       "brief": "1 sentence, 15-25 words — what is it and why it matters.",
       "story": "2-3 sentences, 45-80 words — vivid hook, one surprising detail, the why-it-stops-people moment.",
@@ -218,13 +219,16 @@ JSON SHAPE:
   ]
 }
 
+UNIQUENESS (critical — Beka's catch, Louvre had 6 Raft of the Medusa entries):
+Every entry MUST refer to a DIFFERENT work. Do NOT include preparatory studies, sketches, watercolour drafts, copies, replicas, or alternative versions of a work already in the list. One canonical entry per artwork. If you find yourself writing "(study)", "(sketch)", "(preparatory)", "(replica)", "(version 2)", "(copy)" — pick the canonical final version and drop the others.
+
 ORDERING (matters — the app paginates 10 per page):
 - Items 1-10: the universal must-sees. The works visitors travel from another continent for. Mona Lisa-level icons of THIS museum.
 - Items 11-20: notable second-tier — works any educated visitor recognizes, signature collections, the stuff that fills postcards.
 - Items 21-30: prestige deep cuts — what curators and serious art lovers come for. Less-known, but worth the walk.
 
 VARIETY:
-Spread across mediums and periods. A great museum guide doesn't return 30 oil paintings or 30 Greek vases. Mix sculpture, painting, manuscripts, decorative arts, archaeological artefacts, even rooms and architectural features when they're collection-defining.
+Spread across mediums and periods. A great museum guide doesn't return 30 oil paintings or 30 Greek vases. Mix sculpture, painting, manuscripts, decorative arts, archaeological artefacts, even rooms and architectural features when they're collection-defining. No work appears twice in any form.
 
 VOICE & STYLE:
 - Warm, knowledgeable, never lecturing. The visitor's smart friend.

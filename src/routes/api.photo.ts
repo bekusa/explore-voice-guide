@@ -391,14 +391,18 @@ async function tryWikiSummary(
       // (a) Museum-self filter. "The Flood Louvre" full-text-search
       //     ranks the Louvre's own article ahead of Leonardo's
       //     drawing because the Louvre article mentions every famous
-      //     work. The summary then returns the Louvre pyramid as the
-      //     artwork's photo. Reject when the matched title points at
-      //     the host museum.
+      //     work. The summary then returns the Louvre pyramid as
+      //     the artwork's photo. Reject when the matched title
+      //     points at the host museum OR a sibling architecture
+      //     article (the Pyramid, the Palace, the Building) — Beka
+      //     caught the rejection missing those siblings on his
+      //     second pass ("The Lute Player Louvre" landed on the
+      //     "Louvre Pyramid" article, which my exact-equality
+      //     check failed to reject).
       if (
         opts.museumToReject &&
         summaryData.title &&
-        normaliseTitleSlug(summaryData.title) ===
-          normaliseTitleSlug(opts.museumToReject)
+        isMuseumSelfHit(summaryData.title, opts.museumToReject)
       ) {
         return null;
       }
@@ -528,6 +532,74 @@ function normaliseTitleSlug(s: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
+}
+
+/**
+ * Detect whether a Wikipedia article title actually refers to the
+ * museum itself (the building, the campus, the institution) rather
+ * than to an artwork in its collection. Beka caught two failure
+ * modes my first cut missed:
+ *
+ *   - Exact equality alone misses sibling architecture articles.
+ *     "The Lute Player Louvre" → full-text matched the "Louvre
+ *     Pyramid" article (a separate page from "Louvre"), and
+ *     `title === "Louvre"` returned false → we shipped the
+ *     pyramid as the painting's photo.
+ *   - Foreign-language variants. "Musée du Louvre" is the French-
+ *     wiki form; in some lookup paths we route there and get back
+ *     that title.
+ *
+ * We accept the museum's name OR the museum's name plus a short
+ * architecture / institution suffix as a reject. We also accept
+ * common prefixes ("The Louvre", "Musée du Louvre").
+ */
+function isMuseumSelfHit(title: string, museum: string): boolean {
+  const t = normaliseTitleSlug(title);
+  const m = normaliseTitleSlug(museum);
+  if (!t || !m) return false;
+  if (t === m) return true;
+  // Suffix variants — Wikipedia commonly splits famous museums
+  // across separate articles for the institution and the building
+  // ("Louvre" + "Louvre Pyramid" + "Louvre Palace"). Reject all of
+  // those.
+  const suffixes = [
+    "pyramid",
+    "palace",
+    "museum",
+    "building",
+    "main building",
+    "complex",
+    "campus",
+    "hall",
+    "gallery",
+    "courtyard",
+    "entrance",
+    "lobby",
+    "exterior",
+    "facade",
+    "rotunda",
+    "wing",
+  ];
+  for (const s of suffixes) {
+    if (t === `${m} ${s}`) return true;
+    if (t === `${s} ${m}`) return true;
+  }
+  // Prefix variants — "The Louvre", "Musée du Louvre", "The British
+  // Museum", "The Met". We accept any title that ends with the
+  // museum name AND has ≤ 3 extra words ahead of it (so a real
+  // artwork title that happens to contain the museum's name in a
+  // long phrase doesn't get rejected).
+  if (t.endsWith(` ${m}`)) {
+    const extra = t.slice(0, t.length - m.length).trim().split(/\s+/);
+    if (extra.length <= 3) return true;
+  }
+  // Starts-with variant — "Louvre Museum exterior at night" etc.
+  // Same ≤ 3 extra words guard.
+  if (t.startsWith(`${m} `)) {
+    const extra = t.slice(m.length).trim().split(/\s+/);
+    if (extra.length <= 3) return true;
+  }
+  return false;
 }
 
 export const Route = createFileRoute("/api/photo")({

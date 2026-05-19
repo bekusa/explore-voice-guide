@@ -701,6 +701,14 @@ export type MuseumHighlight = {
   name: string;
   /** English source name preserved for technical handles. */
   name_en?: string;
+  /** Artist / maker / culture (e.g. "Caravaggio", "Leonardo da Vinci",
+   *  "Unknown Egyptian"). Added 2026-05-20 so the photo lookup can
+   *  query Wikipedia with the artist's name appended — critical for
+   *  works whose canonical Wikipedia article carries the artist in
+   *  its title disambiguator ("The Lute Player (Caravaggio)",
+   *  "Penitent Magdalene (La Tour)"). Empty string when irrelevant
+   *  (architectural features, rooms). */
+  artist?: string;
   /** Short period or date label (e.g. "Renaissance", "Modern"). */
   era?: string;
   /** 1-sentence factual summary. */
