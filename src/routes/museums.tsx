@@ -110,7 +110,16 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
     <Link
       to="/attraction/$id"
       params={{ id: slug }}
-      search={{ name: museum.name }}
+      // Forward the resolved Wikipedia photo so the attraction
+      // page's hero carousel lands on the same image as slide 1.
+      // We forward `fetched` (Wikipedia) explicitly — NOT the
+      // bundled LoremFlickr seed (`museum.image`) — so a missing
+      // / failed lookup doesn't push a random Flickr shot into
+      // slide 1 of the carousel.
+      search={{
+        name: museum.name,
+        ...(fetched && !imgFailed ? { photo: fetched } : {}),
+      }}
       className="group relative h-[200px] overflow-hidden rounded-2xl border border-border bg-card transition-smooth hover:border-primary/50 active:scale-[0.98]"
     >
       <img

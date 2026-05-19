@@ -679,7 +679,14 @@ function MuseumCard({ museum }: { museum: Museum }) {
     <Link
       to="/attraction/$id"
       params={{ id: attractionSlug(museum.name) }}
-      search={{ name: museum.name, city: museum.city }}
+      // Forward the card's photo so the attraction page lands on
+      // the same image as slide 1 of its carousel — no jarring
+      // swap to a different angle of the museum.
+      search={{
+        name: museum.name,
+        city: museum.city,
+        ...(heroPhoto ? { photo: heroPhoto } : {}),
+      }}
       className="relative h-44 w-60 shrink-0 snap-start overflow-hidden rounded-2xl border border-border bg-card text-left transition-smooth hover:scale-[1.01]"
     >
       {heroPhoto ? (

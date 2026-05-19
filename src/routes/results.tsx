@@ -722,7 +722,16 @@ export function ResultCard({
             // this, generic names like "Grand Palace" resolved to
             // a Tbilisi-area restaurant because the Google Places
             // key has Tbilisi region bias.
-            search={{ name: attraction.name, city: cityContext }}
+            //
+            // Photo URL is forwarded too — the attraction page uses
+            // it as slide 1 of its hero carousel so the click-
+            // through visually continues whatever photo the card
+            // just rendered. Beka's spec, 2026-05-20.
+            search={{
+              name: attraction.name,
+              city: cityContext,
+              photo: photo ?? undefined,
+            }}
             onClick={(e) => e.stopPropagation()}
             className="flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-gold px-2 py-2.5 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02] whitespace-normal break-words"
           >

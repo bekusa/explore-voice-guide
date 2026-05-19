@@ -48,7 +48,10 @@ const WIKI_HEADERS: HeadersInit = {
   Accept: "application/json",
 };
 
-const MAX_PHOTOS = 8;
+// Hero carousel caps at 5 slides on the client (attraction page +
+// destinations page). Anything past 5 is wasted Supabase storage,
+// so we stop fetching there.
+const MAX_PHOTOS = 5;
 
 type WikiSummaryResponse = {
   title?: string;
@@ -64,6 +67,16 @@ type MediaListItem = {
   type?: string;
   title?: string;
   srcset?: Array<{ src?: string; scale?: string }>;
+  /** True when this is the article's lead/hero image. Wikipedia
+   *  flags one image per article — when present we want it as
+   *  slide 1 of the carousel so the order matches what users see
+   *  on /results cards. */
+  leadImage?: boolean;
+  /** Roughly "should appear in the page's gallery section" — set
+   *  for editorial images of the subject and unset for refs /
+   *  citations / external-link icons. Useful as a secondary rank
+   *  signal when no leadImage is flagged. */
+  showInGallery?: boolean;
 };
 
 type MediaListResponse = {
@@ -74,16 +87,25 @@ type MediaListResponse = {
  * Filenames we never want surfaced as hero shots. Wikipedia's media-
  * list returns EVERY image embedded on the page — country flags
  * (every "Located in" infobox), institution logos, coats of arms,
- * maps, floor plans, signatures, statistical diagrams. We filter by
- * filename substring because Wikipedia's filenames are remarkably
- * consistent (their upload conventions enforce it). Extending the
- * blocklist is the natural way to add new categorical rejects.
+ * maps, floor plans, signatures, statistical diagrams, AND
+ * historical engravings / paintings / drawings that the article uses
+ * to illustrate its history sections. Beka caught the Louvre
+ * carousel landing on 1700s engravings of the Palais du Louvre
+ * because my first filter only rejected admin assets (flags, maps,
+ * icons) — historical art slipped through. Modern filter now also
+ * rejects the obvious "historical illustration" filename markers.
+ *
+ * We filter by filename substring because Wikipedia's filenames are
+ * remarkably consistent (their upload conventions enforce it).
+ * Extending the blocklist is the natural way to add new categorical
+ * rejects when we discover them in practice.
  */
 function looksLikePhoto(filename: string): boolean {
   const f = filename.toLowerCase();
   // Raster image extensions only — drop svgs, ogg audio, webm video.
   if (!/\.(jpe?g|png|webp|gif)$/.test(f)) return false;
   const reject = [
+    // Admin / branding assets.
     "flag_of",
     "flag-of",
     "logo",
@@ -91,24 +113,69 @@ function looksLikePhoto(filename: string): boolean {
     "seal_of",
     "emblem",
     "signature",
+    // Cartography & diagrams.
     "_map",
     "map_",
     "plan_of",
     "floor_plan",
     "floorplan",
     "diagram",
-    "icon",
+    "blueprint",
+    "schematic",
     "graph",
     "chart",
     "spectrum",
+    // Icons & wiki chrome.
+    "icon",
     "wikidata",
     "wikimedia",
     "commons-",
     "blank_",
     "question_book",
     "ambox",
+    // Historical illustrations that pollute landmark / museum
+    // carousels. The Louvre, Vatican, and most European landmarks
+    // have 18th- and 19th-century engravings + paintings of the
+    // building in their Wikipedia articles — we want the modern
+    // photo of the place, not period art OF the place.
+    "engraving",
+    "etching",
+    "lithograph",
+    "lithography",
+    "woodcut",
+    "drawing_of",
+    "drawing-of",
+    "sketch_of",
+    "sketch-of",
+    "painting_of",
+    "painting-of",
+    "illustration_of",
+    "illustration-of",
+    "print_of",
+    "print-of",
+    "watercolor",
+    "watercolour",
+    "engraved",
+    "depicted",
+    "1800s",
+    "19th_century",
+    "18th_century",
+    "17th_century",
   ];
-  return !reject.some((r) => f.includes(r));
+  if (reject.some((r) => f.includes(r))) return false;
+
+  // Year-in-filename heuristic. Wikipedia files for historical
+  // photos / engravings / paintings of a landmark routinely carry
+  // the year ("Vue_du_Louvre_1798.jpg", "1850_view_of_…", "Photo
+  // of Eiffel Tower 1889"). Modern photos rarely have a 4-digit
+  // year in their name. We reject files with a 17xx / 18xx / pre-
+  // 1940 year as a word-boundary-isolated token — that's narrow
+  // enough that random 4-digit sequences in URLs (path hashes,
+  // image dimensions like "1280px") won't trip it.
+  if (/(?:^|[^0-9])(?:17\d{2}|18\d{2}|19[0-3]\d)(?:[^0-9]|$)/.test(f)) {
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -190,9 +257,31 @@ async function fetchMediaList(title: string, lang: string): Promise<string[]> {
     if (!r.ok) return [];
     const data = (await r.json()) as MediaListResponse;
     const items = Array.isArray(data.items) ? data.items : [];
+
+    // Rank items so the article's REAL lead photo is first. Without
+    // this the carousel can land on whichever image happens to
+    // appear first in the article body (often a section illustration
+    // that's NOT the canonical hero shot). Three-tier sort:
+    //   1. leadImage first — exactly what Wikipedia tags as the
+    //      article's hero. Matches what /results card photos use
+    //      (REST summary's `originalimage`), so slide 1 of the
+    //      carousel ≡ the photo the user just clicked from.
+    //   2. showInGallery next — Wikipedia's "intended for the
+    //      page's gallery" flag. These are editorial photos of the
+    //      subject (good carousel content) as opposed to reference/
+    //      citation thumbnails.
+    //   3. Everything else last.
+    // We sort BEFORE the photo-filename filter so the lead image's
+    // priority survives any blocklist drop-throughs.
+    const sorted = [...items].sort((a, b) => {
+      const aLead = a.leadImage ? 2 : a.showInGallery ? 1 : 0;
+      const bLead = b.leadImage ? 2 : b.showInGallery ? 1 : 0;
+      return bLead - aLead;
+    });
+
     const seen = new Set<string>();
     const urls: string[] = [];
-    for (const item of items) {
+    for (const item of sorted) {
       if (item.type !== "image") continue;
       const filename = (item.title || "").replace(/^File:/i, "");
       if (!looksLikePhoto(filename)) continue;

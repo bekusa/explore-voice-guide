@@ -260,11 +260,25 @@ function SavedRow({ item }: { item: SavedItem }) {
             // can land on a same-named place in a different country
             // (Beka caught Bangkok's Grand Palace flipping to
             // Dadiani Palace in Georgia when opened from Saved tab).
+            //
+            // Forward the saved-card photo too — slide 1 of the
+            // attraction page's hero carousel will use it so the
+            // click-through visually continues from whatever the
+            // user saw on their Saved tab.
+            //
+            // We forward http(s) URLs only — base64 `data:` URLs
+            // (the saved hero snapshot blob captured at save time)
+            // are tens of KB each and would blow past the URL
+            // length limit. The attraction page does its own
+            // photo lookup anyway, so dropping the data URL just
+            // means slide 1 falls back to that lookup; cosmetic
+            // regression only, no broken navigation.
             search={{
               name: item.name,
               ...(typeof item.attraction.city === "string" && item.attraction.city
                 ? { city: item.attraction.city }
                 : {}),
+              ...(photo && /^https?:\/\//i.test(photo) ? { photo } : {}),
             }}
             className="flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-gold px-2 py-2.5 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02] whitespace-normal break-words"
           >

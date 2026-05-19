@@ -522,7 +522,21 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
       // hero photo lookup falls into the right country (the Met
       // straight to New York, the Louvre to Paris, …) instead of
       // resolving to a Tbilisi-area lookalike.
-      search={{ name: museum.name, city: museum.city }}
+      //
+      // Forward the resolved card photo too — slide 1 of the
+      // attraction page's hero carousel will use it, so the
+      // click-through doesn't visually swap to a different angle
+      // of the same museum. Beka's spec, 2026-05-20.
+      search={{
+        name: museum.name,
+        city: museum.city,
+        // Only forward the resolved Wikipedia photo — NOT the
+        // LoremFlickr fallback (`museum.image`). Forwarding the
+        // LoremFlickr seed would land slide 1 of the attraction
+        // page on a random Flickr photo that isn't actually OF
+        // the museum.
+        ...(fetched && !imgFailed ? { photo: fetched } : {}),
+      }}
       className="group relative h-[170px] w-[240px] flex-shrink-0 overflow-hidden rounded-2xl border border-border bg-card transition-smooth hover:border-primary/50 active:scale-[0.98]"
     >
       {photo ? (

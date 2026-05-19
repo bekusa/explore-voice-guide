@@ -74,7 +74,29 @@ import {
 import { DEFAULT_INTEREST, INTERESTS } from "@/lib/interests";
 import { useT } from "@/hooks/useT";
 
-type Search = { name?: string; city?: string };
+type Search = { name?: string; city?: string; photo?: string };
+
+/**
+ * Extract the Wikimedia Commons base filename from a URL so that
+ * the originalimage URL (`commons/X/Y/Louvre_Pyramid.jpg`) and the
+ * srcset thumb URL (`commons/thumb/X/Y/Louvre_Pyramid.jpg/1280px-…`)
+ * dedupe against each other in the hero carousel.
+ *
+ * Returns null when the URL isn't a Wikimedia Commons file we can
+ * parse — the caller falls back to raw-URL dedupe in that case.
+ */
+function commonsBaseFilename(url: string): string | null {
+  // Matches both:
+  //   /wikipedia/commons/3/35/Louvre_Pyramid.jpg              (original)
+  //   /wikipedia/commons/thumb/3/35/Louvre_Pyramid.jpg/…      (thumb)
+  // The leading two path segments after `commons` are a one-char
+  // shard + two-char shard (md5 prefix of the filename) — Wikimedia's
+  // upload convention. We just want the filename that follows.
+  const m = url.match(
+    /\/wikipedia\/commons\/(?:thumb\/)?[0-9a-f]\/[0-9a-f]{2}\/([^/?#]+\.(?:jpe?g|png|webp|gif))/i,
+  );
+  return m ? m[1].toLowerCase() : null;
+}
 
 export const Route = createFileRoute("/attraction/$id")({
   validateSearch: (search: Record<string, unknown>): Search => ({
@@ -86,6 +108,16 @@ export const Route = createFileRoute("/attraction/$id")({
     // because the Google Places key has Tbilisi region bias and we
     // weren't sending the actual destination city).
     city: typeof search.city === "string" ? search.city : undefined,
+    // Photo URL handed over by the page that linked here (Results
+    // card, Home museum strip, Saved row, city-detail attractions
+    // list). When set, this URL becomes slide 1 of the hero
+    // carousel so the click-through visually continues whatever
+    // photo the user just tapped — no jarring swap to a different
+    // angle of the same place. Beka's spec, 2026-05-20: "let the
+    // user land on the same photo they came from". Empty / absent
+    // is fine; the carousel still falls back to the gallery and
+    // single-photo lookup chain.
+    photo: typeof search.photo === "string" ? search.photo : undefined,
   }),
   head: ({ params }) => {
     const title = unslugAttraction(params.id);
@@ -103,7 +135,11 @@ export const Route = createFileRoute("/attraction/$id")({
 
 function AttractionPage() {
   const { id } = Route.useParams();
-  const { name: searchName, city: searchCity } = Route.useSearch();
+  const {
+    name: searchName,
+    city: searchCity,
+    photo: searchPhoto,
+  } = Route.useSearch();
   const navigate = useNavigate();
   const preferredLanguage = usePreferredLanguage();
   const t = useT();
@@ -253,32 +289,50 @@ function AttractionPage() {
     cityHint: heroCity,
     skip: !!attraction?.image_url,
   });
-  // Compose the final slide list. Strategy:
-  //   1. WHEN GALLERY RESOLVED — use it as the source of truth.
-  //      Wikipedia's media-list returns the article's lead image
-  //      as the first item, so slide 1 is still "the canonical
-  //      hero shot" of the place. Why prefer gallery over
-  //      heroPhoto: heroPhoto comes from /api/photo's single-shot
-  //      lookup which caches the URL in Supabase. If the cache
-  //      row was written BEFORE the originalimage fix shipped, it
-  //      still serves the 320 px thumbnail and slide 1 looks
-  //      muddy next to slide 2's sharp 1600 px srcset image
-  //      (Beka caught this on Arc de Triomphe: identical photo
-  //      across slides 1 and 2, but slide 1 was blurry). The
-  //      gallery endpoint is brand-new code with no pre-fix cache
-  //      pollution, so its URLs are reliably sharp.
-  //   2. GALLERY MISS (empty) — fall back to heroPhoto for
-  //      places Wikipedia barely covers. Single-slide hero, no
-  //      visible regression vs. the old static layout.
-  //   3. NEITHER — return [] so HeroPhotoCarousel renders the
-  //      placeholder gradient.
-  // Cap at 8 to match the server cap.
+  // Compose the final slide list. Order matters — slide 1 is what
+  // the user lands on.
+  //
+  // Priority (Beka's spec, 2026-05-20):
+  //   1. searchPhoto — the photo URL the linking page (Results
+  //      card, Home museum strip, Saved row, …) passed through
+  //      navigation. When set, this is slide 1 so the click-
+  //      through continues visually from whatever photo the user
+  //      just tapped — no jarring swap to a different angle.
+  //   2. heroPhoto — REST-summary `originalimage`. Same source the
+  //      /results cards use when they DON'T forward a photo, so
+  //      slide 1 still matches what the user would have seen on
+  //      Results / Home if they navigated without searchPhoto.
+  //   3. Gallery URLs (media-list, sorted with leadImage first
+  //      and historical engravings / drawings filtered out at
+  //      the server) — slides 2-5.
+  //
+  // Dedupe by Wikimedia Commons base filename when extractable so
+  // slide 1 and slide 2 don't render the same image with different
+  // URL shapes (`commons/X/Y/file.jpg` vs
+  // `commons/thumb/X/Y/file.jpg/1280px-file.jpg`).
+  //
+  // Cap at 5.
   const heroSlides = useMemo(() => {
-    if (heroGalleryRaw.length > 0) {
-      return heroGalleryRaw.slice(0, 8);
+    const out: string[] = [];
+    const seenFilenames = new Set<string>();
+    const pushIfNew = (url: string) => {
+      const filename = commonsBaseFilename(url);
+      // Dedupe by Wikimedia Commons base filename when we can
+      // extract one; fall back to raw URL string for non-Commons
+      // hosts (Google Places redirects, n8n-provided image_url).
+      const key = filename ?? url;
+      if (seenFilenames.has(key)) return;
+      seenFilenames.add(key);
+      out.push(url);
+    };
+    if (searchPhoto) pushIfNew(searchPhoto);
+    if (heroPhoto) pushIfNew(heroPhoto);
+    for (const url of heroGalleryRaw) {
+      pushIfNew(url);
+      if (out.length >= 5) break;
     }
-    return heroPhoto ? [heroPhoto] : [];
-  }, [heroPhoto, heroGalleryRaw]);
+    return out.slice(0, 5);
+  }, [searchPhoto, heroPhoto, heroGalleryRaw]);
 
   useEffect(() => {
     let cancelled = false;
