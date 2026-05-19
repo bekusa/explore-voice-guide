@@ -1956,13 +1956,22 @@ function HighlightCard({
   return (
     <li className="overflow-hidden rounded-2xl border border-border bg-card transition-smooth hover:border-primary/40">
       {photo && (
-        <div className="relative h-[160px] w-full overflow-hidden bg-secondary">
+        // Artwork-friendly framing: a single fixed 160px row with
+        // `object-cover` was cropping the top/bottom of tall paintings
+        // (Beka caught the Mona Lisa losing its face + landscape). We
+        // need the WHOLE work visible. Two changes:
+        //   - bump the container to 280px so vertical paintings have
+        //     room to breathe without dwarfing landscape works,
+        //   - swap to `object-contain` so the painting is letterboxed
+        //     in full instead of cropped — the card background (the
+        //     dark bg-secondary) handles the bars cleanly.
+        <div className="relative h-[280px] w-full overflow-hidden bg-secondary">
           <img
             src={photo}
             alt={h.name}
             loading="lazy"
             onError={() => setPhoto(null)}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-contain"
           />
           {/* Rank pill on top of image */}
           <div className="absolute left-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-primary/60 bg-background/70 text-[11px] font-bold text-primary backdrop-blur-md">
