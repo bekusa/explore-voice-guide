@@ -219,8 +219,11 @@ JSON SHAPE:
   ]
 }
 
+COUNT (hard requirement):
+Return EXACTLY 30 highlights — no fewer, no more. The frontend paginates 10 per page across 3 pages and assumes 30. If you hit token budget, shorten the "story" field rather than dropping entries. Major encyclopedic museums (Louvre, Met, Vatican, British Museum, Hermitage, Prado, Uffizi) easily clear 30 collection-defining works.
+
 UNIQUENESS (critical — Beka's catch, Louvre had 6 Raft of the Medusa entries):
-Every entry MUST refer to a DIFFERENT work. Do NOT include preparatory studies, sketches, watercolour drafts, copies, replicas, or alternative versions of a work already in the list. One canonical entry per artwork. If you find yourself writing "(study)", "(sketch)", "(preparatory)", "(replica)", "(version 2)", "(copy)" — pick the canonical final version and drop the others.
+Every entry MUST refer to a DIFFERENT work. Do NOT include preparatory studies, sketches, watercolour drafts, copies, replicas, or alternative versions of a work already in the list. One canonical entry per artwork. If you find yourself writing "(study)", "(sketch)", "(preparatory)", "(replica)", "(version 2)", "(copy)" — pick the canonical final version and drop the others. After deduping in your head, replace the dropped slots with OTHER notable works so the final count is still 30.
 
 ORDERING (matters — the app paginates 10 per page):
 - Items 1-10: the universal must-sees. The works visitors travel from another continent for. Mona Lisa-level icons of THIS museum.

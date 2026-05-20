@@ -89,12 +89,19 @@ export const Route = createFileRoute("/api/museum-highlights")({
           // long narrated prose) reads the same on both models, so
           // there's no quality cost. Sonnet stays on /api/guide where
           // the multi-paragraph script genuinely benefits from it.
-          // maxTokens dropped 8192 → 6144 to leave further headroom.
+          //
+          // maxTokens was 6144 — bumped back to 8192 on 2026-05-20
+          // because Beka caught Louvre returning only 16 highlights
+          // instead of 30. The new `artist` field (added the same
+          // day to the JSON shape) pushed per-entry size from ~180
+          // tokens to ~220, and 30 × 220 = 6600 was clipping past
+          // the 6144 ceiling. Haiku at 150 tok/s × 8192 tokens is
+          // ~55 s — still inside Cloudflare's 100 s budget.
           const text = await callClaude({
             model: "claude-haiku-4-5",
             system,
             user,
-            maxTokens: 6144,
+            maxTokens: 8192,
           });
           const parsedRaw = parseClaudeJson(text);
           // Normalise so {items:[...]}, {data:{highlights:...}}, or
