@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
 import { getCachedPhoto, putCachedPhoto } from "@/lib/sharedCache.server";
+import { sanitizeWikiLang } from "./api.photo";
 
 /**
  * /api/photo-gallery — multi-photo lookup for the attraction + museum
