@@ -31,8 +31,8 @@ import { Route as AttractionIdRouteImport } from './routes/attraction.$id'
 import { Route as ApiTtsRouteImport } from './routes/api.tts'
 import { Route as ApiTranslateRouteImport } from './routes/api.translate'
 import { Route as ApiTimeMachineRouteImport } from './routes/api.time-machine'
-import { Route as ApiPhotoRouteImport } from './routes/api.photo'
 import { Route as ApiPhotoGalleryRouteImport } from './routes/api.photo-gallery'
+import { Route as ApiPhotoRouteImport } from './routes/api.photo'
 import { Route as ApiMuseumHighlightsRouteImport } from './routes/api.museum-highlights'
 import { Route as ApiGuideRouteImport } from './routes/api.guide'
 import { Route as ApiAttractionsRouteImport } from './routes/api.attractions'
@@ -148,14 +148,14 @@ const ApiTimeMachineRoute = ApiTimeMachineRouteImport.update({
   path: '/api/time-machine',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPhotoRoute = ApiPhotoRouteImport.update({
-  id: '/api/photo',
-  path: '/api/photo',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPhotoGalleryRoute = ApiPhotoGalleryRouteImport.update({
   id: '/api/photo-gallery',
   path: '/api/photo-gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPhotoRoute = ApiPhotoRouteImport.update({
+  id: '/api/photo',
+  path: '/api/photo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMuseumHighlightsRoute = ApiMuseumHighlightsRouteImport.update({
@@ -547,18 +547,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTimeMachineRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/photo': {
-      id: '/api/photo'
-      path: '/api/photo'
-      fullPath: '/api/photo'
-      preLoaderRoute: typeof ApiPhotoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/photo-gallery': {
       id: '/api/photo-gallery'
       path: '/api/photo-gallery'
       fullPath: '/api/photo-gallery'
       preLoaderRoute: typeof ApiPhotoGalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/photo': {
+      id: '/api/photo'
+      path: '/api/photo'
+      fullPath: '/api/photo'
+      preLoaderRoute: typeof ApiPhotoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/museum-highlights': {
