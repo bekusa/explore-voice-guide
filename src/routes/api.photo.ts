@@ -710,7 +710,7 @@ export const Route = createFileRoute("/api/photo")({
       GET: async ({ request }) => {
         const url = new URL(request.url);
         const q = url.searchParams.get("q")?.trim();
-        const lang = url.searchParams.get("lang") ?? "ka";
+        const lang = sanitizeWikiLang(url.searchParams.get("lang"), "ka");
         // City context — the original search query (e.g. "Batumi") helps
         // disambiguate generic names like "ბოტანიკური ბაღი" in Google.
         const city = url.searchParams.get("city")?.trim() || null;

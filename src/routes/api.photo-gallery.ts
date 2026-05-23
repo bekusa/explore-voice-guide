@@ -312,7 +312,7 @@ export const Route = createFileRoute("/api/photo-gallery")({
       GET: async ({ request }) => {
         const url = new URL(request.url);
         const q = url.searchParams.get("q")?.trim();
-        const lang = url.searchParams.get("lang") ?? "en";
+        const lang = sanitizeWikiLang(url.searchParams.get("lang"), "en");
         const city = url.searchParams.get("city")?.trim() || null;
         if (!q) return corsJson({ urls: [] });
 
