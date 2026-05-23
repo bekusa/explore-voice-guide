@@ -237,15 +237,21 @@
    *              status bar (~24-30 px) and gives the iPhone notch
    *              its 50+ px via the calc() branch.
    *
-   * `pb-safe`  = at least 2 rem (32 px), or safe-area-inset-bottom
-   *              plus 1 rem padding — whichever is larger. The
-   *              floor went from 24 px to 32 px to handle Android
-   *              edge-to-edge mode (API 35+, Pixel 10 Pro) where
-   *              env(safe-area-inset-bottom) resolves to 0 inside
-   *              the Capacitor WebView even though the gesture bar
-   *              IS overlapping the content. 32 px clears the bar
-   *              in that case; phones that report a real inset get
-   *              extra breathing room via the calc() branch.
+   * `pb-safe`  = at least 4 rem (64 px), or safe-area-inset-bottom
+   *              plus 1 rem padding — whichever is larger. The floor
+   *              went from 32 px to 64 px after Beka caught the sign-
+   *              in page footer still clipping behind Samsung's 3-
+   *              button navigation bar — the WebView extends edge-to-
+   *              edge AND env(safe-area-inset-bottom) resolves to 0
+   *              inside Capacitor on that device, so the bar (~48-60
+   *              px tall) overlapped the bottom content. 64 px floor
+   *              clears even the tallest 3-button bars on Samsung
+   *              One UI; phones that report a real inset get more
+   *              via the calc() branch. Trades a bit of empty space
+   *              at the bottom on phones that don't need it for
+   *              reliable bar clearance everywhere — the alternative
+   *              (per-page bottom padding) keeps breaking when new
+   *              full-screen pages get added.
    *
    * env() resolves to 0 on browsers without notch / gesture
    * chrome so desktop preview keeps a tight phone frame.
@@ -254,7 +260,7 @@
     padding-top: max(2.25rem, calc(env(safe-area-inset-top) + 0.75rem));
   }
   .pb-safe {
-    padding-bottom: max(2rem, calc(env(safe-area-inset-bottom) + 1rem));
+    padding-bottom: max(4rem, calc(env(safe-area-inset-bottom) + 1rem));
   }
 
   .font-display {

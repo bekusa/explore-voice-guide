@@ -187,18 +187,19 @@ export function HomeScreen() {
               language pill. Beka's spec: keep Settings + Notifications
               on top, drop the language pill to its own line so it can
               breathe at full width without crowding the city pill. */}
-          {/* Canonical top spacing — `max(4rem, env+1rem)` mirrors
-              `.pt-safe` in styles.css, which every other page header
-              uses (settings, map, attraction, saved, …). Beka caught
-              the home top bar sitting 20 px higher than the map/etc.
-              bars on the same device; the old floor was 2.75rem
-              (44 px) — tightened relative to the canonical 4rem
-              (64 px). Aligning the floor with `.pt-safe` makes the
-              header position pixel-identical across every page on
-              devices without notch/punch-hole, and identical relative
-              to the safe-area inset on devices with one. */}
+          {/* Canonical top spacing — mirrors `.pt-safe` in styles.css
+              so the home header lines up pixel-perfectly with the
+              back-arrow position on every other page. Floor was
+              4rem (64 px) briefly, tightened to 2.25rem (36 px)
+              when Beka caught the home top bar leaving ~30 px of
+              empty space above "WHERE NEXT?" on his real Android
+              device. iPhones with notches still get full clearance
+              via the env() branch (env+0.75rem); the change only
+              narrows top space on bezel-only / hole-punch Android
+              phones, which is exactly where the empty band was
+              showing up. */}
           <div
-            style={{ top: "max(4rem, calc(env(safe-area-inset-top) + 1rem))" }}
+            style={{ top: "max(2.25rem, calc(env(safe-area-inset-top) + 0.75rem))" }}
             className="absolute left-5 right-5 z-[5] flex flex-col gap-3"
           >
             <div className="flex items-start justify-between">

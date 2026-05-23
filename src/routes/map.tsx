@@ -330,7 +330,7 @@ function MapPage() {
             real device measurement on top so Pixel 10 Pro punch-
             hole + iPhone Dynamic Island stay clear. */}
         <header
-          style={{ paddingTop: "max(4rem, calc(env(safe-area-inset-top) + 1rem))" }}
+          style={{ paddingTop: "max(2.25rem, calc(env(safe-area-inset-top) + 0.75rem))" }}
           className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between px-5"
         >
           <Link
