@@ -32,6 +32,11 @@
       "style": "DARK",
       "backgroundColor": "#0f0f0f",
       "overlaysWebView": false
+    },
+    "GoogleAuth": {
+      "scopes": ["profile", "email"],
+      "serverClientId": "859999970433-lh1ph628p83us5aoel81mefgt926n58i.apps.googleusercontent.com",
+      "forceCodeForRefreshToken": true
     }
   }
 }

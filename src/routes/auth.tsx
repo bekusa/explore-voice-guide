@@ -65,46 +65,76 @@ function AuthPage() {
   const signInWithProvider = async (provider: "google" | "apple") => {
     setOauthLoading(provider);
     try {
-      // Different redirect target + browser strategy depending on platform:
-      // - Web → "${origin}/auth"; the browser stays in this tab and
-      //   the OAuth flow lands back on this page, where the auth
-      //   state-change subscription routes to /onboarding or /.
-      // - Native (Android/iOS via Capacitor) → "com.lokali.app://auth/callback";
-      //   Google as of 2021 BLOCKS OAuth from inside WebViews entirely
-      //   (Disallowed user-agent: "embedded WebView"). We can't just
-      //   navigate the wrapped WebView to the OAuth URL — the page
-      //   refuses to render. Instead we ask Supabase for the OAuth URL
-      //   (skipBrowserRedirect: true), then open it in Chrome Custom
-      //   Tabs via @capacitor/browser. After the user authorises,
-      //   Supabase redirects to com.lokali.app://auth/callback?code=…;
-      //   Android's intent filter wakes the wrapped app, useCapacitorBridge
-      //   sees the deep link, closes the Custom Tab, and calls
-      //   exchangeCodeForSession to finalise the session inside the WebView.
       const { Capacitor } = await import("@capacitor/core");
       const isNative = Capacitor.isNativePlatform();
-      const redirectTo = isNative
-        ? "com.lokali.app://auth/callback"
-        : `${window.location.origin}/auth`;
 
-      if (isNative) {
+      if (isNative && provider === "google") {
+        // Native Android/iOS Google Sign-In via the system Credential
+        // Manager (no in-app browser, no custom-scheme redirect).
+        // Background on why this matters: Google as of 2021 refuses to
+        // render OAuth pages inside Capacitor's wrapped WebView; the
+        // earlier Custom-Tab workaround hung on the redirect from
+        // Supabase back to `com.lokali.app://`. The native plugin
+        // skips the browser entirely — Google's SDK opens its own
+        // account picker, returns a signed ID token, and we hand that
+        // token straight to Supabase via signInWithIdToken to
+        // exchange it for a session. No deep links, no redirects.
+        const { GoogleAuth } = await import("@codetrix-studio/capacitor-google-auth");
+        // Initialize is idempotent in the plugin — calling it on each
+        // sign-in is fine and means we don't need a separate boot-time
+        // wire-up in useCapacitorBridge.
+        await GoogleAuth.initialize({
+          clientId:
+            "859999970433-lh1ph628p83us5aoel81mefgt926n58i.apps.googleusercontent.com",
+          scopes: ["profile", "email"],
+          grantOfflineAccess: true,
+        });
+        const result = await GoogleAuth.signIn();
+        // Capacitor 7 + this plugin return the ID token under
+        // authentication.idToken. If it's missing we bail — Supabase's
+        // signInWithIdToken needs the token's `aud` claim to match the
+        // serverClientId we configured, and an empty token gives a
+        // confusing "invalid token" error from Supabase.
+        const idToken = result?.authentication?.idToken;
+        if (!idToken) {
+          throw new Error("Google Sign-In returned no ID token");
+        }
+        const { error } = await supabase.auth.signInWithIdToken({
+          provider: "google",
+          token: idToken,
+        });
+        if (error) throw error;
+        // The onAuthStateChange listener in this component handles the
+        // navigation (onboarding vs home) — nothing else to do here.
+      } else if (isNative && provider === "apple") {
+        // Apple Sign-In via Supabase still uses the OAuth-in-browser
+        // pattern: open Apple's auth URL in a Chrome Custom Tab and
+        // come back via the com.lokali.app:// deep link.
+        // Apple, unlike Google, does NOT block embedded browsers for
+        // its OAuth flow, so this path actually works — and a native
+        // Apple plugin requires an Apple Developer account + Sign In
+        // with Apple capability which we don't have yet. Once Lokali
+        // ships to iOS this branch will switch to the native plugin.
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider,
-          options: { redirectTo, skipBrowserRedirect: true },
+          options: {
+            redirectTo: "com.lokali.app://auth/callback",
+            skipBrowserRedirect: true,
+          },
         });
         if (error) throw error;
         if (!data?.url) {
-          throw new Error("OAuth URL missing from Supabase response");
+          throw new Error("Apple OAuth URL missing from Supabase response");
         }
         const { Browser } = await import("@capacitor/browser");
         await Browser.open({ url: data.url, presentationStyle: "popover" });
-        // Custom Tab now owns the flow; useCapacitorBridge will close it
-        // on appUrlOpen. Leave oauthLoading=provider so the button stays
-        // disabled while the user is still in the Custom Tab — if they
-        // cancel and come back, the next interaction will clear it.
       } else {
+        // Web flow: regular OAuth redirect, same tab, lands back on
+        // /auth where the auth-state-change subscription routes the
+        // user onward.
         const { error } = await supabase.auth.signInWithOAuth({
           provider,
-          options: { redirectTo },
+          options: { redirectTo: `${window.location.origin}/auth` },
         });
         if (error) throw error;
         // signInWithOAuth navigates the current tab; nothing else to do.
