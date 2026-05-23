@@ -77,6 +77,20 @@ export function useCapacitorBridge(router: Router) {
           if (!url.pathname.includes("/auth/callback")) return;
           const code = url.searchParams.get("code");
           if (!code) return;
+          // Close the Chrome Custom Tab that auth.tsx opened for the
+          // OAuth flow. Without this the tab stays floating over the
+          // app after the deep link fires. Fire-and-forget — failures
+          // are non-fatal (Browser.close throws if no tab is open).
+          void (async () => {
+            try {
+              const { Browser } = await import("@capacitor/browser");
+              await Browser.close();
+            } catch {
+              // ignore — tab was already closed by the user, or the
+              // plugin wasn't ever opened (web flow shouldn't reach
+              // here, but be defensive).
+            }
+          })();
           // exchangeCodeForSession is idempotent — if the session was
           // already established by Supabase's own client (which can
           // happen if the WebView captured the redirect through a

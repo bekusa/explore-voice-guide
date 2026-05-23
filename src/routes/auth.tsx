@@ -65,27 +65,50 @@ function AuthPage() {
   const signInWithProvider = async (provider: "google" | "apple") => {
     setOauthLoading(provider);
     try {
-      // Different redirect target depending on platform:
+      // Different redirect target + browser strategy depending on platform:
       // - Web → "${origin}/auth"; the browser stays in this tab and
       //   the OAuth flow lands back on this page, where the auth
       //   state-change subscription routes to /onboarding or /.
       // - Native (Android/iOS via Capacitor) → "com.lokali.app://auth/callback";
-      //   Supabase redirects the system browser back to that custom
-      //   scheme, AndroidManifest's intent filter wakes the wrapped
-      //   app, and useCapacitorBridge calls exchangeCodeForSession to
-      //   finalise the session inside the WebView.
+      //   Google as of 2021 BLOCKS OAuth from inside WebViews entirely
+      //   (Disallowed user-agent: "embedded WebView"). We can't just
+      //   navigate the wrapped WebView to the OAuth URL — the page
+      //   refuses to render. Instead we ask Supabase for the OAuth URL
+      //   (skipBrowserRedirect: true), then open it in Chrome Custom
+      //   Tabs via @capacitor/browser. After the user authorises,
+      //   Supabase redirects to com.lokali.app://auth/callback?code=…;
+      //   Android's intent filter wakes the wrapped app, useCapacitorBridge
+      //   sees the deep link, closes the Custom Tab, and calls
+      //   exchangeCodeForSession to finalise the session inside the WebView.
       const { Capacitor } = await import("@capacitor/core");
-      const redirectTo = Capacitor.isNativePlatform()
+      const isNative = Capacitor.isNativePlatform();
+      const redirectTo = isNative
         ? "com.lokali.app://auth/callback"
         : `${window.location.origin}/auth`;
 
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: { redirectTo },
-      });
-      if (error) throw error;
-      // signInWithOAuth opens an external redirect; we won't return
-      // here unless the redirect failed.
+      if (isNative) {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider,
+          options: { redirectTo, skipBrowserRedirect: true },
+        });
+        if (error) throw error;
+        if (!data?.url) {
+          throw new Error("OAuth URL missing from Supabase response");
+        }
+        const { Browser } = await import("@capacitor/browser");
+        await Browser.open({ url: data.url, presentationStyle: "popover" });
+        // Custom Tab now owns the flow; useCapacitorBridge will close it
+        // on appUrlOpen. Leave oauthLoading=provider so the button stays
+        // disabled while the user is still in the Custom Tab — if they
+        // cancel and come back, the next interaction will clear it.
+      } else {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider,
+          options: { redirectTo },
+        });
+        if (error) throw error;
+        // signInWithOAuth navigates the current tab; nothing else to do.
+      }
     } catch (err) {
       setOauthLoading(null);
       const msg = err instanceof Error ? err.message : t("auth.somethingWrong");
