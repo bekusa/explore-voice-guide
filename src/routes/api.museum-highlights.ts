@@ -125,7 +125,7 @@ export const Route = createFileRoute("/api/museum-highlights")({
               preview,
             );
             return jsonResponse(
-              { highlights: [], debug: { museum: museum.name, textPreview: preview } },
+              { highlights: [] },
               200,
               "MISS",
               "upstream-empty",
