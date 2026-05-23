@@ -14,22 +14,23 @@ export function TabBar() {
   const tapHaptic = () => void haptic("light");
   return (
     <nav
-      // 74px is the original touch-target height (icon + label + padding).
-      // We grow the nav vertically by env(safe-area-inset-bottom) so it
-      // stays visible above Android's navigation gestures bar (the
-      // | O < strip) and iPhone's home indicator. env() resolves to 0
-      // in browsers without notch/gestures, so desktop preview and
-      // older Android keep the original look.
+      // Tap-target = 56 px (icon 19 + 4 gap + label 10 + padding).
+      // Was 74 px but Beka caught the nav looking visibly oversized
+      // on a real Android device — Material Design's standard
+      // BottomNavigationView is 56 dp, iOS tab bar is 49 pt, so
+      // 56 keeps us in normal-app territory. Below the tap-target
+      // we add a safe-area inset so the labels stay clear of
+      // Android's gestures bar / iPhone's home indicator.
       style={{
         // max() with a hardcoded floor — on Android edge-to-edge
         // (Pixel 10 Pro, API 35+) env(safe-area-inset-bottom) often
         // resolves to 0 even though the gesture bar IS overlapping.
-        // Floor of 24 px keeps labels clear of the bar regardless;
-        // devices with real inset get more breathing room. Total
-        // nav height = 74 px tap-target + floor, so the icons
-        // never disappear behind system chrome.
-        height: "calc(74px + max(24px, env(safe-area-inset-bottom)))",
-        paddingBottom: "max(24px, calc(1rem + env(safe-area-inset-bottom)))",
+        // 16 px floor keeps labels clear of the bar without
+        // ballooning the total height; devices with real inset
+        // get extra breathing room. Total nav height = 56 px tap-
+        // target + floor → ~72 px on edge-to-edge Android (was 98 px).
+        height: "calc(56px + max(16px, env(safe-area-inset-bottom)))",
+        paddingBottom: "max(16px, env(safe-area-inset-bottom))",
       }}
       className="absolute bottom-0 left-0 right-0 z-50 flex items-start justify-around border-t border-border bg-background/95 px-2 pt-2 backdrop-blur-xl"
     >

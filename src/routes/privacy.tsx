@@ -37,7 +37,7 @@ function PrivacyPage() {
 
   return (
     <div className="min-h-[100dvh] w-full bg-background text-foreground">
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-2xl flex-col px-6 pt-safe pb-10">
+      <div className="mx-auto flex min-h-[100dvh] w-full max-w-2xl flex-col px-6 pt-safe pb-safe">
         <Link
           to="/settings"
           className="mb-8 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-smooth"

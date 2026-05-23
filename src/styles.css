@@ -227,23 +227,34 @@
    * the header visibly clear of the status bar / punch-hole even
    * when the inset value lies.
    *
-   * `pt-safe`  = at least 4 rem (64 px), or safe-area-inset-top
-   *              plus 1 rem padding above the controls — whichever
-   *              is larger. Beka requested more breathing room
-   *              after the first round still overlapped on his
-   *              Samsung / Pixel test devices.
+   * `pt-safe`  = at least 2.25 rem (36 px), or safe-area-inset-top
+   *              plus 0.75 rem padding above the controls — whichever
+   *              is larger. Was 4 rem briefly but Beka caught a real
+   *              Android device showing ~64 px of empty space above
+   *              the back arrow / hero on every page (too much
+   *              breathing room when the inset is already accounted
+   *              for separately). 36 px clears a typical Android
+   *              status bar (~24-30 px) and gives the iPhone notch
+   *              its 50+ px via the calc() branch.
    *
-   * `pb-safe`  = at least 1.5 rem (24 px), or the gesture inset —
-   *              whichever is larger.
+   * `pb-safe`  = at least 2 rem (32 px), or safe-area-inset-bottom
+   *              plus 1 rem padding — whichever is larger. The
+   *              floor went from 24 px to 32 px to handle Android
+   *              edge-to-edge mode (API 35+, Pixel 10 Pro) where
+   *              env(safe-area-inset-bottom) resolves to 0 inside
+   *              the Capacitor WebView even though the gesture bar
+   *              IS overlapping the content. 32 px clears the bar
+   *              in that case; phones that report a real inset get
+   *              extra breathing room via the calc() branch.
    *
    * env() resolves to 0 on browsers without notch / gesture
    * chrome so desktop preview keeps a tight phone frame.
    */
   .pt-safe {
-    padding-top: max(4rem, calc(env(safe-area-inset-top) + 1rem));
+    padding-top: max(2.25rem, calc(env(safe-area-inset-top) + 0.75rem));
   }
   .pb-safe {
-    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+    padding-bottom: max(2rem, calc(env(safe-area-inset-bottom) + 1rem));
   }
 
   .font-display {

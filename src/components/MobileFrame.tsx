@@ -38,18 +38,19 @@ export function MobileFrame({
   floatingPanel?: ReactNode;
 }) {
   // Reserve room at the bottom of the scroll area so the last item
-  // doesn't sit underneath the TabBar (74 px tap zone + at least
-  // 24 px below it for Android gesture bar / iPhone home indicator)
+  // doesn't sit underneath the TabBar (56 px tap zone + at least
+  // 16 px below it for Android gesture bar / iPhone home indicator)
   // and, when present, the floating panel above it. max() guards
   // against Android edge-to-edge cases where env() resolves to 0.
-  // Numbers stay in sync with TabBar's height calculation.
+  // Numbers stay in sync with TabBar's height calculation — when
+  // editing one, update the other.
   const bottomPad =
     !hideTabBar && floatingPanel
-      ? "pb-[calc(280px+max(24px,env(safe-area-inset-bottom)))]"
+      ? "pb-[calc(280px+max(16px,env(safe-area-inset-bottom)))]"
       : !hideTabBar
-        ? "pb-[calc(74px+max(24px,env(safe-area-inset-bottom)))]"
+        ? "pb-[calc(56px+max(16px,env(safe-area-inset-bottom)))]"
         : floatingPanel
-          ? "pb-[calc(200px+max(24px,env(safe-area-inset-bottom)))]"
+          ? "pb-[calc(200px+max(16px,env(safe-area-inset-bottom)))]"
           : "";
   return (
     // Use min-h-[100dvh] (dynamic viewport) instead of min-h-screen
@@ -91,8 +92,8 @@ export function MobileFrame({
           <div
             className={`absolute inset-x-0 z-30 ${
               hideTabBar
-                ? "bottom-[max(24px,env(safe-area-inset-bottom))]"
-                : "bottom-[calc(74px+max(24px,env(safe-area-inset-bottom)))]"
+                ? "bottom-[max(16px,env(safe-area-inset-bottom))]"
+                : "bottom-[calc(56px+max(16px,env(safe-area-inset-bottom)))]"
             }`}
           >
             {floatingPanel}

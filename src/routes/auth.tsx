@@ -163,7 +163,15 @@ function AuthPage() {
 
   return (
     <div className="min-h-[100dvh] w-full bg-background text-foreground">
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-6 pt-safe pb-10">
+      {/* pb-safe (not pb-10) so the bottom OAuth / submit / mode-
+          toggle controls stay clear of Android's gesture bar.
+          Beka caught the previous pb-10 (40px) clipping the
+          footer behind the system bar on his test device, because
+          inside the Capacitor WebView env(safe-area-inset-bottom)
+          can resolve to 0 on Android edge-to-edge — the pb-10
+          alone didn't reserve enough room. pb-safe now has a
+          32px floor + 1rem extra when the inset reports real. */}
+      <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-6 pt-safe pb-safe">
         <Link
           to="/"
           className="mb-10 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-smooth"
