@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:background">@null</item>
+        <!--
+            android:fitsSystemWindows=true tells Android to push the
+            WebView IN by the system bar insets — so the WebView's
+            visible area sits between the status bar and the
+            navigation / gesture bar instead of extending behind
+            them. Beka caught the sign-in page's footer link
+            clipping behind Samsung's 3-button bar (env(safe-area-
+            inset-bottom) was resolving to 0 inside the WebView
+            even though the bar IS overlapping the content). With
+            fitsSystemWindows the WebView naturally never reaches
+            the bar area — env() still returns 0, but now that's
+            CORRECT because no part of the layout is overlapping.
+
+            Trade-off: the status bar / navigation bar render with
+            the OS's default colour, not the app's #0F0F0F charcoal.
+            We compensate via `theme-color` in __root.tsx + the
+            StatusBar plugin (overlaysWebView: false already set
+            in capacitor.config.json) so the bars colour-match the
+            app on Android 13+ where the OS honours the hint.
+        -->
+        <item name="android:fitsSystemWindows">true</item>
+    </style>
+
+
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="android:background">@drawable/splash</item>
+    </style>
+</resources>
