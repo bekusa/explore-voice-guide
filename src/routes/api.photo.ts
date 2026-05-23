@@ -25,6 +25,21 @@ import { getCachedPhoto, putCachedPhoto } from "@/lib/sharedCache.server";
 const GOOGLE_KEY =
   typeof process !== "undefined" ? (process.env?.GOOGLE_PLACES_KEY ?? "") : "";
 
+// Allowlist of Wikipedia language subdomains. Used to gate the `lang`
+// query parameter before it's interpolated into outbound fetch URLs
+// (SSRF guard — without it `?lang=evil.com/x` would coerce the Worker
+// into fetching attacker-controlled hosts via `https://${lang}.wikipedia.org/...`).
+const ALLOWED_WIKI_LANGS = new Set([
+  "en","ka","es","fr","de","it","pt","nl","pl","sv","nb","da","fi","cs","el",
+  "hu","ro","ru","uk","tr","ar","he","fa","hi","bn","ur","id","ms","th","vi",
+  "ja","ko","zh",
+]);
+export function sanitizeWikiLang(raw: string | null | undefined, fallback: string): string {
+  if (!raw) return fallback;
+  const base = raw.toLowerCase().split("-")[0];
+  return ALLOWED_WIKI_LANGS.has(base) ? base : fallback;
+}
+
 // Per-worker in-memory cache (resets on cold start, but cheap on a hot worker).
 const cache = new Map<string, string | null>();
 
@@ -710,7 +725,7 @@ export const Route = createFileRoute("/api/photo")({
       GET: async ({ request }) => {
         const url = new URL(request.url);
         const q = url.searchParams.get("q")?.trim();
-        const lang = url.searchParams.get("lang") ?? "ka";
+        const lang = sanitizeWikiLang(url.searchParams.get("lang"), "ka");
         // City context — the original search query (e.g. "Batumi") helps
         // disambiguate generic names like "ბოტანიკური ბაღი" in Google.
         const city = url.searchParams.get("city")?.trim() || null;

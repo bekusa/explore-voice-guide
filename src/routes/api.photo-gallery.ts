@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
 import { getCachedPhoto, putCachedPhoto } from "@/lib/sharedCache.server";
+import { sanitizeWikiLang } from "./api.photo";
 
 /**
  * /api/photo-gallery — multi-photo lookup for the attraction + museum
@@ -312,7 +313,7 @@ export const Route = createFileRoute("/api/photo-gallery")({
       GET: async ({ request }) => {
         const url = new URL(request.url);
         const q = url.searchParams.get("q")?.trim();
-        const lang = url.searchParams.get("lang") ?? "en";
+        const lang = sanitizeWikiLang(url.searchParams.get("lang"), "en");
         const city = url.searchParams.get("city")?.trim() || null;
         if (!q) return corsJson({ urls: [] });
 
