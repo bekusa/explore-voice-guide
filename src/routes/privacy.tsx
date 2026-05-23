@@ -8,7 +8,9 @@ import { MobileFrame } from "@/components/MobileFrame";
 
 /**
  * Privacy Policy — externally-fetchable at `https://lokali.ge/privacy`
- * (or `https://lokali-app.lovable.app/privacy` for the Lovable preview).
+ * (or `https://lokali-app.lovable.app/privacy` for the Lovable preview
+ * URL — kept for fallback even after Beka pointed lokali.ge at the same
+ * Lovable site, in case the custom-domain DNS ever lapses).
  * This URL is what Beka pastes into the Google Play Console and into
  * the OAuth consent screen → "App privacy policy" field; if the URL
  * 404s, those reviews fail. Keep this route stable.

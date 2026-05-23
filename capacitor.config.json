@@ -3,7 +3,7 @@
   "appName": "Lokali",
   "webDir": "dist/client",
   "server": {
-    "url": "https://lokali-app.lovable.app",
+    "url": "https://lokali.ge",
     "cleartext": false,
     "androidScheme": "https"
   },

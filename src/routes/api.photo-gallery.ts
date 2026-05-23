@@ -42,7 +42,7 @@ import { getCachedPhoto, putCachedPhoto } from "@/lib/sharedCache.server";
  */
 
 const WIKI_USER_AGENT =
-  "LokaliApp/1.0 (https://lokali-app.lovable.app; contact@lokali.ge)";
+  "LokaliApp/1.0 (https://lokali.ge; contact@lokali.ge)";
 const WIKI_HEADERS: HeadersInit = {
   "User-Agent": WIKI_USER_AGENT,
   Accept: "application/json",
