@@ -5,7 +5,11 @@
   "server": {
     "url": "https://lokali.ge",
     "cleartext": false,
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "allowNavigation": [
+      "lokali.ge",
+      "www.lokali.ge"
+    ]
   },
   "android": {
     "allowMixedContent": false,
