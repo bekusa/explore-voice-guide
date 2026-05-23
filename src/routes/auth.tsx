@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useT } from "@/hooks/useT";
+import { MobileFrame } from "@/components/MobileFrame";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -162,16 +163,18 @@ function AuthPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] w-full bg-background text-foreground">
-      {/* pb-safe (not pb-10) so the bottom OAuth / submit / mode-
-          toggle controls stay clear of Android's gesture bar.
-          Beka caught the previous pb-10 (40px) clipping the
-          footer behind the system bar on his test device, because
-          inside the Capacitor WebView env(safe-area-inset-bottom)
-          can resolve to 0 on Android edge-to-edge — the pb-10
-          alone didn't reserve enough room. pb-safe now has a
-          32px floor + 1rem extra when the inset reports real. */}
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-6 pt-safe pb-safe">
+    // Wrapped in MobileFrame so the sign-in page gets the same
+    // bottom TabBar + bar-clearance handling as every other page.
+    // Beka caught the standalone layout (its own min-h-[100dvh] +
+    // manual pb-10/pb-safe) still clipping the "ჯერ არ გაქვს
+    // ანგარიში?" link behind Samsung's 3-button bar — MobileFrame
+    // reserves the canonical 56 px + safe-area-inset for the bar,
+    // so the content area always sits comfortably above it.
+    // hideAiFooter — the "AI Generated Content" fineprint only
+    // makes sense on pages that show LLM-generated content. The
+    // sign-in form is pure UI chrome, so we suppress it.
+    <MobileFrame hideAiFooter>
+      <div className="mx-auto flex w-full max-w-md flex-col px-6 pt-safe pb-6">
         <Link
           to="/"
           className="mb-10 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-smooth"
@@ -363,7 +366,7 @@ function AuthPage() {
           </>
         )}
       </div>
-    </div>
+    </MobileFrame>
   );
 }
 

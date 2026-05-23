@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useT } from "@/hooks/useT";
+import { MobileFrame } from "@/components/MobileFrame";
 
 /**
  * Password reset landing page. Supabase emails this URL with a
@@ -78,8 +79,8 @@ function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] w-full bg-background text-foreground">
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-6 pt-safe pb-safe">
+    <MobileFrame hideAiFooter>
+      <div className="mx-auto flex w-full max-w-md flex-col px-6 pt-safe pb-6">
         <Link
           to="/auth"
           className="mb-10 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-smooth"
@@ -133,6 +134,6 @@ function ResetPasswordPage() {
           </button>
         </form>
       </div>
-    </div>
+    </MobileFrame>
   );
 }

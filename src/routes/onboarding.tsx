@@ -333,7 +333,7 @@ function LanguageStep({
           is wider than every phone viewport, so the bar takes 100%
           on mobile naturally). */}
       <div className="fixed inset-x-0 bottom-0 z-30">
-        <div className="mx-auto w-full max-w-md border-t border-border bg-background/95 px-6 py-4 pb-6 backdrop-blur-xl">
+        <div className="mx-auto w-full max-w-md border-t border-border bg-background/95 px-6 py-4 pb-safe backdrop-blur-xl">
           <button
             disabled={!selected}
             onClick={onContinue}
@@ -472,7 +472,7 @@ function VoiceStep({
           column so the bar matches the page's 448px desktop layout
           and goes full-bleed on every real mobile viewport. */}
       <div className="fixed inset-x-0 bottom-0 z-30">
-        <div className="mx-auto w-full max-w-md border-t border-border bg-background/95 px-6 py-4 pb-6 backdrop-blur-xl">
+        <div className="mx-auto w-full max-w-md border-t border-border bg-background/95 px-6 py-4 pb-safe backdrop-blur-xl">
           <button
             onClick={onFinish}
             disabled={saving}

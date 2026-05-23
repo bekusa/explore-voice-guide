@@ -4,6 +4,7 @@ import { LegalMarkdown } from "@/components/LegalMarkdown";
 import { pickLegalContent } from "@/lib/legalContent";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { useT } from "@/hooks/useT";
+import { MobileFrame } from "@/components/MobileFrame";
 
 /**
  * Terms of Service — paired with /privacy and served at the same
@@ -33,8 +34,8 @@ function TermsPage() {
   const content = pickLegalContent("terms", lang ?? "en");
 
   return (
-    <div className="min-h-[100dvh] w-full bg-background text-foreground">
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-2xl flex-col px-6 pt-safe pb-safe">
+    <MobileFrame hideAiFooter>
+      <div className="mx-auto flex w-full max-w-2xl flex-col px-6 pt-safe pb-6">
         <Link
           to="/settings"
           className="mb-8 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-smooth"
@@ -43,6 +44,6 @@ function TermsPage() {
         </Link>
         <LegalMarkdown source={content} />
       </div>
-    </div>
+    </MobileFrame>
   );
 }
