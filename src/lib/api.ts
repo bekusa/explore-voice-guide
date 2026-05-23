@@ -535,12 +535,20 @@ export async function fetchPlacePhoto(
   // caught Wikipedia matching the wrong picture for several Met
   // highlights; the Met's own API returns curator-attributed images.
   museum: string | null = null,
+  // Artist name when known. Forwarded to /api/photo so it can reject
+  // Wikipedia hits that landed on the artist's biography page
+  // ("The Turkish Bath Ingres" → Ingres's portrait photo; "The Swing
+  // Fragonard" → Fragonard's sketch). Filter only — does NOT vary
+  // the cache key, because the same (name, scope, city, museum)
+  // tuple should always converge to the same final URL.
+  artist: string | null = null,
 ): Promise<string | null> {
   const cleaned = name.trim();
   if (!cleaned) return null;
 
   const cleanCity = city?.trim() || "";
   const cleanMuseum = museum?.trim() || "";
+  const cleanArtist = artist?.trim() || "";
   const cacheKey = `${scope ?? ""}:${language}:${cleanCity}:${cleanMuseum}:${cleaned}`;
   if (photoCache.has(cacheKey)) return photoCache.get(cacheKey) ?? null;
 
@@ -548,6 +556,7 @@ export async function fetchPlacePhoto(
     const cityParam = cleanCity ? `&city=${encodeURIComponent(cleanCity)}` : "";
     const scopeParam = scope ? `&scope=${encodeURIComponent(scope)}` : "";
     const museumParam = cleanMuseum ? `&museum=${encodeURIComponent(cleanMuseum)}` : "";
+    const artistParam = cleanArtist ? `&artist=${encodeURIComponent(cleanArtist)}` : "";
     // 15-s ceiling — shorter than the 30-s POST timeout because
     // photo lookup is fire-and-forget: the card already renders
     // with the MapPin placeholder, and a slow Wikipedia / Google
@@ -559,7 +568,7 @@ export async function fetchPlacePhoto(
     let res: Response;
     try {
       res = await fetch(
-        `/api/photo?q=${encodeURIComponent(cleaned)}&lang=${encodeURIComponent(language)}${cityParam}${scopeParam}${museumParam}`,
+        `/api/photo?q=${encodeURIComponent(cleaned)}&lang=${encodeURIComponent(language)}${cityParam}${scopeParam}${museumParam}${artistParam}`,
         { signal: ac.signal },
       );
     } finally {

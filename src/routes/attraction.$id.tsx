@@ -2058,35 +2058,41 @@ function HighlightCard({
     // common artwork media as separate candidates.
     (async () => {
       // Candidate query ladder (Beka's iterative tuning):
-      //   1. Artist-qualified — strongest signal when present.
-      //      Wikipedia's canonical artwork article is usually titled
-      //      "{Work} ({Artist})", so "The Lute Player Caravaggio"
-      //      lands directly on the right page (skipping ambiguous
-      //      bare-name matches that resolved to films / villages /
-      //      panoramas).
-      //   2. Museum-qualified next — Wikipedia full-text search
-      //      tends to rank the museum's article ahead of bare
-      //      artwork names that share words with films. Now
-      //      protected by api.photo.ts's `museumToReject` filter
-      //      so a hit on the museum's own article gets rejected
-      //      and the loop falls through.
+      //   1. Parenthesised artist — Wikipedia's canonical
+      //      disambiguator format. "The Swing (Fragonard)" lands
+      //      directly on the painting article via REST summary.
+      //   2. Bare base name — many artworks have their own
+      //      article at exactly the bare title ("The Turkish Bath",
+      //      "Mona Lisa", "The Night Watch") so a direct-page
+      //      lookup wins here without any disambiguation.
       //   3. Medium-qualified — "painting", "sculpture", "artwork".
-      //      Disambiguates between same-named topics.
-      //   4. Bare name — last resort.
+      //      Disambiguates between same-named films / books / songs.
+      //   4. Museum-qualified — Beka's `museumToReject` filter on
+      //      api.photo.ts now catches the museum-self misfires the
+      //      raw museum-suffix used to produce.
+      //   5. Artist-suffixed (no parens) — last resort. This form
+      //      USED to be candidate #1, but the no-paren version
+      //      ("The Turkish Bath Ingres") routinely landed on the
+      //      artist's biography page (lead image: a portrait photo
+      //      of the painter). api.photo.ts's `artistToReject` +
+      //      `isPersonBiography` filters now catch that, but the
+      //      direct/intitle paths above already resolve most cases.
       const artist = typeof h.artist === "string" ? h.artist.trim() : "";
       const candidates: string[] = [];
       if (artist) {
-        candidates.push(`${baseName} ${artist}`);
         candidates.push(`${baseName} (${artist})`);
       }
       candidates.push(
-        `${baseName} ${museum.name}`,
-        `${baseName} ${museum.name} ${museum.city}`,
+        baseName,
         `${baseName} painting`,
         `${baseName} sculpture`,
         `${baseName} artwork`,
-        baseName,
+        `${baseName} ${museum.name}`,
+        `${baseName} ${museum.name} ${museum.city}`,
       );
+      if (artist) {
+        candidates.push(`${baseName} ${artist}`);
+      }
       for (const q of candidates) {
         if (cancelled) return;
         // scope="artwork" tells /api/photo to skip Google Places
@@ -2099,8 +2105,17 @@ function HighlightCard({
         // Pass the museum name through so /api/photo can try the
         // museum's own collection API first (currently the Met) and
         // only fall back to Wikipedia / Google when the museum
-        // doesn't have a usable public API.
-        const url = await fetchPlacePhoto(q, "en", museum.city, "artwork", museum.name);
+        // doesn't have a usable public API. Pass the artist name
+        // through so /api/photo can reject Wikipedia hits that
+        // landed on the artist's biography page.
+        const url = await fetchPlacePhoto(
+          q,
+          "en",
+          museum.city,
+          "artwork",
+          museum.name,
+          artist || null,
+        );
         if (cancelled) return;
         if (url) {
           setPhoto(url);
@@ -2111,7 +2126,7 @@ function HighlightCard({
     return () => {
       cancelled = true;
     };
-  }, [queryName, museum.name, museum.city]);
+  }, [queryName, h.artist, museum.name, museum.city]);
 
   return (
     <li className="overflow-hidden rounded-2xl border border-border bg-card transition-smooth hover:border-primary/40">

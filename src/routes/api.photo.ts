@@ -214,6 +214,14 @@ type WikiLookupOpts = {
    *  photo because "The Flood Louvre" full-text-search ranked the
    *  Louvre article ahead of Leonardo's drawing). */
   museumToReject?: string;
+  /** Name of the artwork's artist. Used to reject Wikipedia hits
+   *  that landed on the ARTIST's biography page (Beka caught
+   *  "The Turkish Bath Ingres" → Ingres's portrait photo and
+   *  "The Swing Fragonard" → Fragonard's sketch portrait, because
+   *  full-text search ranks the painter's biography ahead of the
+   *  painting when the query mashes work + artist together with
+   *  no disambiguator). */
+  artistToReject?: string;
 };
 
 async function wikipediaPhoto(
@@ -406,6 +414,28 @@ async function tryWikiSummary(
       ) {
         return null;
       }
+      // (a2) Artist-self filter. "The Turkish Bath Ingres" full-
+      //      text-search lands on Wikipedia's biography of Ingres
+      //      (lead image: a 19th-c portrait photo of the painter)
+      //      instead of the painting article. "The Swing Fragonard"
+      //      lands on Fragonard's biography (lead image: a sketch
+      //      portrait of the artist). Reject when the matched title
+      //      is the artist's own name.
+      if (
+        opts.artistToReject &&
+        summaryData.title &&
+        isArtistSelfHit(summaryData.title, opts.artistToReject)
+      ) {
+        return null;
+      }
+      // (a3) Generic biography filter. Even without knowing the
+      //      artist's exact name, Wikipedia's REST description
+      //      tags biographies with a year-range lifespan
+      //      ("French Neoclassical painter (1780–1867)"). Reject
+      //      any summary that looks like a person's bio.
+      if (summaryData.description && isPersonBiography(summaryData.description)) {
+        return null;
+      }
       // (b) Wrong-topic-for-artwork filter. "The Wedding Feast at
       //     Cana" without disambiguation lands on the biblical
       //     village of Cana (described "Town in Northern Israel") →
@@ -553,6 +583,77 @@ function normaliseTitleSlug(s: string): string {
  * architecture / institution suffix as a reject. We also accept
  * common prefixes ("The Louvre", "Musée du Louvre").
  */
+/**
+ * Detect whether a Wikipedia article title is the ARTIST's own
+ * biography rather than the artwork. Wikipedia stores painters under
+ * pages like "Jean-Auguste-Dominique Ingres" or "Jean-Honoré
+ * Fragonard". A naive "{Work} {Artist}" full-text-search ranks these
+ * biographies above the painting article — Beka caught the Ingres
+ * portrait coming back for "The Turkish Bath" and Fragonard's sketch
+ * for "The Swing".
+ *
+ * Accept either:
+ *   - exact name match (after diacritic / case normalisation), OR
+ *   - title that ENDS with the artist's surname AND has 1-3 first-
+ *     name tokens ahead of it (handles middle names, hyphenated
+ *     given names: "Jean-Auguste-Dominique Ingres" → ends in
+ *     "ingres", 3 extra tokens — accept).
+ *
+ * The artist string is typically the full name, so we also try the
+ * trailing surname extracted from it.
+ */
+function isArtistSelfHit(title: string, artist: string): boolean {
+  const t = normaliseTitleSlug(title);
+  const a = normaliseTitleSlug(artist);
+  if (!t || !a) return false;
+  if (t === a) return true;
+  // Last-word surname from the artist string ("Jean-Auguste-Dominique
+  // Ingres" → "ingres"). Use it for endsWith / equality match.
+  const surnameTokens = a.split(" ").filter(Boolean);
+  const surname = surnameTokens[surnameTokens.length - 1] ?? "";
+  if (!surname || surname.length < 4) return false;
+  if (t === surname) return true;
+  if (t.endsWith(` ${surname}`)) {
+    const extra = t.slice(0, t.length - surname.length).trim().split(/\s+/);
+    // Bios have 1–4 first-name tokens; artworks usually have 0
+    // (bare title) or many (full phrase). Cap at 4 so a long
+    // painting title that happens to end with the surname doesn't
+    // get rejected.
+    if (extra.length >= 1 && extra.length <= 4) return true;
+  }
+  return false;
+}
+
+/**
+ * Reject Wikipedia summaries whose `description` field tags them
+ * as a person's biography rather than an artwork. Wikidata
+ * descriptions for biographies follow a tight pattern:
+ *   - "French Neoclassical painter (1780–1867)"
+ *   - "Italian Baroque painter (1593–1656)"
+ *   - "Dutch Golden Age painter (b. 1632)"
+ *
+ * Painting-article descriptions instead read:
+ *   - "Painting by Jean-Auguste-Dominique Ingres"
+ *   - "1862 painting by Ingres"
+ *   - "Oil on canvas painting by Caravaggio"
+ *
+ * The reliable discriminator is the year-range / "b. YYYY" / "d.
+ * YYYY" pattern in parentheses, which biographies have and paintings
+ * don't. We also catch "born YYYY" / "died YYYY" inline.
+ */
+function isPersonBiography(description: string): boolean {
+  // (YYYY–YYYY), (YYYY-YYYY), (YYYY‒YYYY), (YYYY−YYYY) — any of the
+  // common dash forms Wikipedia / Wikidata use for lifespans.
+  if (/\(\s*\d{3,4}\s*[-–—‒−]\s*\d{3,4}\s*\)/.test(description)) return true;
+  // (b. YYYY) or (d. YYYY) — "born" / "died" abbreviated forms.
+  if (/\(\s*[bd]\.\s*\d{3,4}\b/i.test(description)) return true;
+  // Inline "born YYYY" / "died YYYY" — less common but seen in
+  // longer Wikidata blurbs.
+  if (/\bborn\s+\d{3,4}\b/i.test(description)) return true;
+  if (/\bdied\s+\d{3,4}\b/i.test(description)) return true;
+  return false;
+}
+
 function isMuseumSelfHit(title: string, museum: string): boolean {
   const t = normaliseTitleSlug(title);
   const m = normaliseTitleSlug(museum);
@@ -629,12 +730,20 @@ export const Route = createFileRoute("/api/photo")({
         // priority because Wikipedia matches a wrong picture often
         // enough for canon-named artworks to be misleading.
         const museum = url.searchParams.get("museum")?.trim() || null;
+        // Artist context for artwork-scoped lookups. When known, lets
+        // /api/photo reject Wikipedia hits that landed on the artist's
+        // own biography page — Beka caught "The Turkish Bath Ingres"
+        // returning Ingres's portrait photo and "The Swing Fragonard"
+        // returning Fragonard's sketch, both because full-text-search
+        // ranks the painter's bio ahead of the painting article when
+        // the query lumps work + artist together.
+        const artist = url.searchParams.get("artist")?.trim() || null;
 
         if (!q) {
           return corsJson({ url: null });
         }
 
-        const cacheKey = `${scope ?? ""}:${lang}:${city ?? ""}:${museum ?? ""}:${q}`;
+        const cacheKey = `${scope ?? ""}:${lang}:${city ?? ""}:${museum ?? ""}:${artist ?? ""}:${q}`;
         if (cache.has(cacheKey)) {
           return corsJson({ url: cache.get(cacheKey) ?? null });
         }
@@ -719,6 +828,7 @@ export const Route = createFileRoute("/api/photo")({
             const wikiOpts: WikiLookupOpts = {
               isArtwork,
               museumToReject: museum ?? undefined,
+              artistToReject: artist ?? undefined,
             };
             // 1) bare q — catches famous attractions with a canonical
             //    Wikipedia article at the exact title.
