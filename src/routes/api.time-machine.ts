@@ -135,10 +135,7 @@ export const Route = createFileRoute("/api/time-machine")({
               preview,
             );
             return jsonResponse(
-              {
-                error: "Upstream returned no usable simulation",
-                debug: { moment: moment.name, role: key.role, textPreview: preview },
-              },
+              { error: "Upstream returned no usable simulation" },
               502,
               "MISS",
               "upstream-empty",
