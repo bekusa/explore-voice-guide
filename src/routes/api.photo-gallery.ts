@@ -295,6 +295,18 @@ async function fetchMediaList(title: string, lang: string): Promise<string[]> {
       const best = set[set.length - 1]?.src;
       if (!best) continue;
       const absolute = best.startsWith("//") ? `https:${best}` : best;
+      // Commons-only license gate (Lovable code-review caught the
+      // same fair-use redistribution risk on /api/photo). Wikipedia's
+      // media-list srcset can point at locally-uploaded fair-use
+      // assets — movie posters, album art, copyrighted modern works.
+      // Free, redistributable images live under /wikipedia/commons/;
+      // everything else is rejected to stay on the safe side of
+      // copyright. Acceptable false-negatives: a few articles whose
+      // hero photo is fair-use only will fall back to the single-
+      // photo lookup in /api/photo (which has the same filter), and
+      // ultimately to the placeholder glyph if no Commons photo
+      // exists at all.
+      if (!/\/wikipedia\/commons\//.test(absolute)) continue;
       if (seen.has(absolute)) continue;
       seen.add(absolute);
       urls.push(absolute);

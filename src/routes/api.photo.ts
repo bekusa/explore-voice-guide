@@ -502,6 +502,17 @@ async function tryWikiSummary(
     // photo, not a flag, so pretend this hit didn't exist and let
     // the next strategy (city-qualified search, full-text) try.
     if (url && /flag[_ ]of[_ ]/i.test(url)) return null;
+    // Commons-only license gate. Wikipedia's `originalimage`
+    // happily serves locally-uploaded fair-use images alongside
+    // Commons-hosted free ones — fair-use covers movie posters,
+    // album art, modern artworks under copyright, brand logos
+    // and the like. Redistributing those in our app would be a
+    // copyright issue. The URL itself tells us the license tier:
+    //   Commons (CC / public domain): /wikipedia/commons/...
+    //   Local fair-use:               /wikipedia/<lang>/...     ← reject
+    // (Lovable code-review caught this — "Wikipedia REST returns
+    // fair-use images; must filter or migrate to Commons API".)
+    if (url && !/\/wikipedia\/commons\//.test(url)) return null;
     return url;
   } catch {
     return null;
