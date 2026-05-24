@@ -107,6 +107,78 @@ export function clearAll() {
 /* ───────── Supabase mirror helpers ─────────────────────────────── */
 
 /**
+ * Pull the user's saved_tours rows from Supabase and merge them into
+ * localStorage. Restores the Saved tab on a fresh device or after a
+ * reinstall — Beka noticed his 4 saved attractions had dropped to 2
+ * after the Android-app re-install cycles during dev (every reinstall
+ * wipes localStorage, but the cloud rows survive because they're
+ * keyed by user_id + tour_slug).
+ *
+ * Local entries always win the merge: if a slug exists locally, we
+ * keep the local copy (which has the full Attraction + script +
+ * imageDataUrl), and only ADD cloud-only slugs as thin placeholders.
+ * The placeholder has just enough data to render the Saved row and
+ * let the user click through — opening the attraction page re-fetches
+ * the full details from /api/attractions.
+ *
+ * Safe to call multiple times (idempotent via the slug dedup). Fires
+ * the saved-changed event once at the end so any mounted Saved page
+ * re-renders.
+ */
+export async function hydrateFromCloud(): Promise<void> {
+  if (!isBrowser()) return;
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const user = sessionData.session?.user;
+    if (!user || user.is_anonymous) return;
+    const { data, error } = await supabase
+      .from("saved_tours")
+      .select("tour_slug, tour_title, tour_image_url, tour_duration, tour_rating, created_at")
+      .eq("user_id", user.id);
+    if (error) {
+      console.warn("[savedStore] cloud hydrate failed", error);
+      return;
+    }
+    if (!Array.isArray(data) || data.length === 0) return;
+    const local = getSaved();
+    const localIds = new Set(local.map((s) => s.id));
+    const additions: SavedItem[] = [];
+    for (const row of data) {
+      const slug = typeof row.tour_slug === "string" ? row.tour_slug : "";
+      if (!slug || localIds.has(slug)) continue;
+      // Build a minimal Attraction. Opening the attraction page will
+      // re-fetch the rich record; this placeholder just needs enough
+      // to render the Saved row without crashing.
+      const placeholderAttraction = {
+        name: row.tour_title || slug,
+        ...(typeof row.tour_image_url === "string" && row.tour_image_url
+          ? { image_url: row.tour_image_url }
+          : {}),
+        ...(typeof row.tour_duration === "string" && row.tour_duration
+          ? { duration: row.tour_duration }
+          : {}),
+        ...(typeof row.tour_rating === "number" ? { rating: row.tour_rating } : {}),
+      } as unknown as Attraction;
+      additions.push({
+        id: slug,
+        name: row.tour_title || slug,
+        language: "en",
+        savedAt: row.created_at ? new Date(row.created_at).getTime() : Date.now(),
+        attraction: placeholderAttraction,
+      });
+    }
+    if (additions.length === 0) return;
+    // Merge: cloud-only additions sorted by savedAt descending, then
+    // the existing local items (which keep their order). Cap at
+    // MAX_ITEMS via writeSaved's slice.
+    const merged = [...additions, ...local].sort((a, b) => b.savedAt - a.savedAt);
+    writeSaved(merged);
+  } catch (err) {
+    console.warn("[savedStore] cloud hydrate threw", err);
+  }
+}
+
+/**
  * Mirror a save into saved_tours when the user has a session.
  * Anonymous + signed-out users skip the call (anon users don't have
  * a profile yet, and `user_id = null` would violate the FK to

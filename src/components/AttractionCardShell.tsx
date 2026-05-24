@@ -105,11 +105,14 @@ export function AttractionCardShell({
             <MapPin className="h-7 w-7 text-primary" />
           </div>
         )}
-        {/* Light-theme darkening wash — same trick used by Home
-            and museum highlight cards so the cinematic photo
-            doesn't read pale on daylight. Zero opacity in dark
-            theme, 30% in light. */}
-        <div className="pointer-events-none absolute inset-0 bg-black/0 [.light_&]:bg-black/30" />
+        {/* Theme-aware darkening wash. Beka flagged sunny outdoor
+            photos reading too washed-out, especially in light theme
+            where the bright photo blends into the bright background.
+            We now apply a mild 15% darken in dark theme too so
+            high-key shots (snow, sand, sunny squares) sit more
+            cinematically against the surrounding UI, and a stronger
+            45% darken in light theme where contrast loss is worst. */}
+        <div className="pointer-events-none absolute inset-0 bg-black/15 [.light_&]:bg-black/45" />
         {topPill && <div className="absolute left-3 top-3">{topPill}</div>}
       </div>
 

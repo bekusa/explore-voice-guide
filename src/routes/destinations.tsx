@@ -30,6 +30,23 @@ function DestinationsPage() {
   const { q } = Route.useSearch();
   const t = useT();
   const [query, setQuery] = useState(q);
+  const matchRoute = useMatchRoute();
+  const inChild = matchRoute({ to: "/destinations/$slug", fuzzy: true });
+
+  // Translate every city name once so we can match the user's typed
+  // query against either the English source or its translation.
+  //
+  // CRITICAL: this hook MUST run on every render of DestinationsPage,
+  // including renders where we're about to bail out to <Outlet />.
+  // Previously it was called AFTER the `if (inChild)` early-return,
+  // which meant the hook count flipped between "parent list" and
+  // "child slug" renders — React caught the mismatch and threw the
+  // minified #300 "Too many re-renders" error Beka saw on his phone
+  // whenever the saved tab tried to deep-link into a city page.
+  // Keeping the hook above the early return restores a stable hook
+  // order and the deep-link path renders cleanly.
+  const translated = useTranslated(CITY_LIST);
+
   // When the URL points at a child route (`/destinations/$slug`),
   // render only the child via <Outlet />. TanStack Router's file-
   // based router treats `destinations.$slug.tsx` as a CHILD of
@@ -39,15 +56,9 @@ function DestinationsPage() {
   // detail page being invisible behind the browser list. Matching
   // with `fuzzy: true` so any deeper sub-path under /destinations/
   // also hands off to the child outlet.
-  const matchRoute = useMatchRoute();
-  const inChild = matchRoute({ to: "/destinations/$slug", fuzzy: true });
   if (inChild) {
     return <Outlet />;
   }
-
-  // Translate every city name once so we can match the user's typed
-  // query against either the English source or its translation.
-  const translated = useTranslated(CITY_LIST);
 
   const results = useMemo(() => {
     const needle = query.trim().toLowerCase();

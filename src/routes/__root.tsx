@@ -161,6 +161,35 @@ function RootComponent() {
     window.addEventListener("tg:lang-changed", syncLang);
     return () => window.removeEventListener("tg:lang-changed", syncLang);
   }, []);
+  // Rehydrate the Saved list from Supabase on every sign-in. Reinstalls
+  // and fresh devices wipe localStorage, but the cloud rows survive —
+  // without this hook Beka saw his 4 saved attractions drop to 2 after
+  // a debug reinstall cycle. Subscribe to auth state changes rather
+  // than just running on mount: cold sign-in flows finish AFTER the
+  // root mounts (OAuth redirects, exchangeCodeForSession), so the
+  // SIGNED_IN event is what we need to wait for.
+  useEffect(() => {
+    const cleanupRef: { current: (() => void) | null } = { current: null };
+    let cancelled = false;
+    void (async () => {
+      const { hydrateFromCloud } = await import("@/lib/savedStore");
+      const { supabase } = await import("@/integrations/supabase/client");
+      if (cancelled) return;
+      // Run once now in case we mounted with an existing session.
+      await hydrateFromCloud();
+      if (cancelled) return;
+      const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+          void hydrateFromCloud();
+        }
+      });
+      cleanupRef.current = () => sub.subscription.unsubscribe();
+    })();
+    return () => {
+      cancelled = true;
+      cleanupRef.current?.();
+    };
+  }, []);
   return (
     <>
       <Outlet />

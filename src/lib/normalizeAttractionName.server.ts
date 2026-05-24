@@ -39,10 +39,24 @@ const SYSTEM_PROMPT =
   "If the input is already in English, repeat it back unchanged. " +
   "If the input is a transliteration (e.g. Georgian phonetic spelling of a Thai place), " +
   "return the standard English Wikipedia / Google Maps spelling. " +
+  // STRICT NO-GUESS rule (Beka caught Haiku turning Tbilisi's "რიყის
+  // პარკი" into the unrelated "Rioni Park" — same-script, similar-
+  // sounding Georgian word for a totally different geographic
+  // feature). The model must transliterate the EXACT place the user
+  // typed, never auto-correct it to a more-famous similar-sounding
+  // place. If you don't recognise the place, keep the closest direct
+  // transliteration — do NOT swap in a different landmark.
+  "CRITICAL: NEVER swap an unfamiliar name for a more famous similar-sounding one. " +
+  '"რიყის" and "რიონის" sound similar but are different places — keep what the user typed. ' +
+  "When uncertain, return a direct phonetic transliteration of the EXACT input, not a substituted name. " +
   "Examples: " +
   '"პარიზი" → "Paris"; ' +
   '"პაკ ხლონგ ტალატი" → "Khlong Lat Mayom Floating Market"; ' +
   '"თბილისი" → "Tbilisi"; ' +
+  '"რიყის პარკი" → "Rike Park"; ' +
+  '"მთაწმინდის პარკი" → "Mtatsminda Park"; ' +
+  '"ნარიყალა" → "Narikala"; ' +
+  '"ანჩისხატის ეკლესია" → "Anchiskhati Basilica"; ' +
   '"Eiffel Tower" → "Eiffel Tower".';
 
 /**

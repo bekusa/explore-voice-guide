@@ -440,6 +440,14 @@ function AttractionPage() {
   // bias-tilted guide.
   useEffect(() => {
     const name = attraction?.name ?? fallbackName;
+    // Pass the host city to the guide endpoint so Claude can anchor
+    // the script to the right place. Without this, generic-named
+    // places ("Riyki Park") get cross-continent facts because the
+    // prompt sees only the attraction name. Prefer the attraction
+    // record's own city, fall back to whatever city the search
+    // landed on, mirror of the photo lookup's heroCity pattern.
+    const cityHint =
+      (typeof attraction?.city === "string" ? attraction.city : null) || searchCity || undefined;
     const cached = getCachedGuideData(name, language, interest);
     if (cached && cached.script) {
       setGuide(cached);
@@ -450,7 +458,7 @@ function AttractionPage() {
     setGuide(null);
     let cancelled = false;
     setLoadingScript(true);
-    fetchGuideData(name, language, interest)
+    fetchGuideData(name, language, interest, cityHint)
       .then((data) => {
         if (!cancelled) setGuide(data);
       })
@@ -463,7 +471,7 @@ function AttractionPage() {
     return () => {
       cancelled = true;
     };
-  }, [attraction?.name, fallbackName, language, interest]);
+  }, [attraction?.name, attraction?.city, fallbackName, language, interest, searchCity]);
 
   // Hero photo handled by useLazyPlacePhoto declared above.
 
@@ -2078,7 +2086,23 @@ function HighlightCard({
       //      `isPersonBiography` filters now catch that, but the
       //      direct/intitle paths above already resolve most cases.
       const artist = typeof h.artist === "string" ? h.artist.trim() : "";
+      // Wikipedia disambiguates by SURNAME, not full name. The article
+      // for Vermeer's painting lives at "The Lacemaker (Vermeer)", not
+      // "The Lacemaker (Johannes Vermeer)" — Beka caught us missing
+      // the painting article because the full-name candidate 404'd
+      // and we fell through to the bare title, which Wikipedia
+      // resolves to its disambiguation page (where the 1981 film
+      // poster lives among other senses). Same shape for Fragonard's
+      // "The Swing" — article at "The Swing (Fragonard)", not
+      // "The Swing (Jean-Honoré Fragonard)". Try the surname-only
+      // disambiguator first, then the full name, then bare.
+      const artistSurname = artist
+        ? (artist.split(/\s+/).filter(Boolean).pop() ?? "")
+        : "";
       const candidates: string[] = [];
+      if (artistSurname && artistSurname !== artist) {
+        candidates.push(`${baseName} (${artistSurname})`);
+      }
       if (artist) {
         candidates.push(`${baseName} (${artist})`);
       }

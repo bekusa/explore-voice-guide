@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Offline · Lokali</title>
+    <style>
+      /*
+        Capacitor server.errorPath fallback. The wrapped WebView lands
+        here only when https://lokali.ge fails to load (no internet,
+        DNS blocked, server down). It's intentionally self-contained —
+        no scripts, no Capacitor bridge, no remote assets — so it
+        works the moment the network drops.
+
+        When the user taps Retry, we just reload(); if connectivity
+        is back, the WebView returns to lokali.ge and the regular app
+        boots; if still offline, the WebView falls back here again.
+      */
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: #0f0f0f;
+        color: #f4f1ea;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 24px;
+        text-align: center;
+        gap: 24px;
+        padding-top: max(48px, env(safe-area-inset-top, 48px));
+        padding-bottom: max(48px, env(safe-area-inset-bottom, 48px));
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(244, 180, 0, 0.35);
+        background: rgba(244, 180, 0, 0.08);
+        color: #f4b400;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #f4b400;
+        box-shadow: 0 0 12px #f4b400;
+        animation: pulse 1.8s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%, 100% {
+          opacity: 0.55;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      h1 {
+        font-family: "Playfair Display", Georgia, serif;
+        font-weight: 500;
+        font-size: 32px;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+        margin: 0;
+        max-width: 18ch;
+      }
+      p {
+        margin: 0;
+        max-width: 30ch;
+        color: rgba(244, 241, 234, 0.7);
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      button {
+        appearance: none;
+        border: 0;
+        margin-top: 8px;
+        padding: 14px 32px;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: #0f0f0f;
+        background: linear-gradient(135deg, #f4b400 0%, #c98a00 100%);
+        border-radius: 999px;
+        cursor: pointer;
+        box-shadow: 0 12px 32px rgba(244, 180, 0, 0.18);
+        transition: transform 120ms ease, box-shadow 120ms ease;
+      }
+      button:active {
+        transform: scale(0.97);
+        box-shadow: 0 6px 16px rgba(244, 180, 0, 0.14);
+      }
+      .icon {
+        opacity: 0.85;
+      }
+    </style>
+  </head>
+  <body>
+    <span class="badge"><span class="dot"></span>Offline</span>
+    <svg
+      class="icon"
+      width="48"
+      height="48"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#f4b400"
+      stroke-width="1.6"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <line x1="2" y1="2" x2="22" y2="22"></line>
+      <path d="M8.5 16.5a5 5 0 0 1 7 0"></path>
+      <path d="M2 8.82a15 15 0 0 1 4.17-2.65"></path>
+      <path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76"></path>
+      <path d="M16.85 11.25a10 10 0 0 1 2.22 1.68"></path>
+      <path d="M5 13a10 10 0 0 1 5.17-2.69"></path>
+      <line x1="12" y1="20" x2="12.01" y2="20"></line>
+    </svg>
+    <h1>You're offline</h1>
+    <p>
+      Lokali needs a connection to fetch fresh stories. Saved tours are still on
+      your device — head back online to load the full app.
+    </p>
+    <button type="button" onclick="window.location.reload()">Retry</button>
+  </body>
+</html>

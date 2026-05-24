@@ -131,6 +131,12 @@ export function buildAttractionsUser(args: AttractionsPromptArgs): string {
 export type GuidePromptArgs = {
   /** Attraction name as the user clicked it. */
   name: string;
+  /** Host city — helps Claude disambiguate generic-named places
+   *  (e.g. "Riyki Park" in Tbilisi vs. a London park with similar
+   *   name). Optional but strongly recommended; Beka caught Claude
+   *   pulling London facts for a Tbilisi park because we used to
+   *   send only the bare name. */
+  city?: string;
   /** ISO-ish language tag. We always pass "en". */
   language: string;
   /** Interest bias — one of the INTERESTS ids. Defaults to "editors". */
@@ -178,13 +184,25 @@ All text in clear, natural English. The frontend will translate this baseline in
 
 export function buildGuideUser(args: GuidePromptArgs): string {
   const interest = args.interest || "editors";
-  return [
-    `ATTRACTION: ${args.name}`,
-    `LANGUAGE: ${args.language || "en"}`,
-    `INTEREST: ${interest}`,
-    "",
+  const lines = [`ATTRACTION: ${args.name}`];
+  // Pass the host city when we have one. Two reasons:
+  //  1. Disambiguation — "Grand Palace" exists in dozens of cities,
+  //     "Riyki Park" sits in Tbilisi but Claude has also seen London
+  //     parks named similarly; without a city anchor it can pull
+  //     facts from the wrong continent (Beka caught this on Riyki).
+  //  2. Locality — facts about transit, neighbourhood, currency,
+  //     architectural era are all city-dependent and read wrong
+  //     when guessed from a generic name.
+  if (args.city && args.city.trim()) {
+    lines.push(`CITY: ${args.city.trim()}`);
+  }
+  lines.push(`LANGUAGE: ${args.language || "en"}`);
+  lines.push(`INTEREST: ${interest}`);
+  lines.push("");
+  lines.push(
     "Now return the JSON. Remember: first character must be `{`, no markdown fences, no commentary, no stage directions inside strings.",
-  ].join("\n");
+  );
+  return lines.join("\n");
 }
 
 /* ───────── Museum highlights prompt ───────── */

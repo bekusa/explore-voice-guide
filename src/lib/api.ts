@@ -458,6 +458,7 @@ export async function fetchGuideData(
   attraction: string,
   language = "ka",
   interest?: string,
+  city?: string,
 ): Promise<GuideData> {
   // Lazy import — keeps SSR clean (guideCache + prefs touch localStorage)
   const { getCachedGuideData, setCachedGuideData } = await import("./guideCache");
@@ -469,13 +470,17 @@ export async function fetchGuideData(
   const cached = getCachedGuideData(attraction, language, effectiveInterest);
   if (cached && cached.script) return cached;
 
-  // 2. Network — and persist for next time
+  // 2. Network — and persist for next time. Send city when we have
+  // one so the server can disambiguate generic names ("Grand Palace",
+  // "Riyki Park"); the absence of city here used to make Claude
+  // fabricate facts from the wrong continent.
   const raw = await postJSON<unknown>(GUIDE_URL, {
     attraction,
     language,
     interest: effectiveInterest,
     // Send as array too for forward-compat if we ever ship multi-pick.
     interests: [effectiveInterest],
+    ...(city && city.trim() ? { city: city.trim() } : {}),
   });
   const data = normalizeGuide(raw, attraction);
   if (data.script) setCachedGuideData(attraction, language, data, effectiveInterest);

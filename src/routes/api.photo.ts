@@ -561,6 +561,19 @@ function isWrongTopicForArtwork(description: string): boolean {
   if (/\b(feast day|feast of|christian festival|religious festival|jewish festival|public holiday)\b/.test(d)) {
     return true;
   }
+  // Films / albums / songs / novels / plays. Beka caught Wikipedia
+  // returning "La Dentellière" (the 1981 Isabelle Huppert film) for
+  // Vermeer's "The Lacemaker", and Santana's album "The Swing of
+  // Delight" for Fragonard's "The Swing". These all carry descriptions
+  // like "1981 film", "studio album by Santana", "1925 novel by
+  // Fitzgerald". The artwork we want has descriptions like
+  // "1665 painting by Johannes Vermeer" — we need to keep painting
+  // (which is why this filter is separate from isNonPlaceTopic) but
+  // reject any media-type that ISN'T a visual artwork.
+  if (/\b(\d{4}\s+(?:film|movie|tv film|television film))\b/.test(d)) return true;
+  if (/\b(album by|studio album|live album|compilation album|soundtrack|extended play|single by)\b/.test(d)) return true;
+  if (/\b(\d{4}\s+(?:novel|play|opera|musical|video game|comic|manga|short story|poem))\b/.test(d)) return true;
+  if (/\b(song by|song from|composition by|symphony by)\b/.test(d)) return true;
   return false;
 }
 

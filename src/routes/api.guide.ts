@@ -81,6 +81,7 @@ export const Route = createFileRoute("/api/guide")({
           const system = buildGuideSystem();
           const user = buildGuideUser({
             name: key.name,
+            city: key.city,
             language: "en",
             interest: key.interest,
           });
@@ -144,6 +145,7 @@ export const Route = createFileRoute("/api/guide")({
  */
 function extractGuideKey(rawBody: string): {
   name: string;
+  city?: string;
   language: string;
   interest: string;
 } | null {
@@ -154,13 +156,22 @@ function extractGuideKey(rawBody: string): {
       (typeof obj.attraction === "string" && obj.attraction) ||
       (typeof obj.place_name === "string" && obj.place_name) ||
       "";
+    const city =
+      (typeof obj.city === "string" && obj.city.trim()) ||
+      (typeof obj.host_city === "string" && obj.host_city.trim()) ||
+      "";
     const language =
       (typeof obj.language === "string" && obj.language) ||
       (typeof obj.lang === "string" && obj.lang) ||
       "";
     const interest = (typeof obj.interest === "string" && obj.interest) || "editors";
     if (!name.trim() || !language.trim()) return null;
-    return { name: name.trim(), language: language.trim(), interest: interest.trim() };
+    return {
+      name: name.trim(),
+      city: city || undefined,
+      language: language.trim(),
+      interest: interest.trim(),
+    };
   } catch {
     return null;
   }

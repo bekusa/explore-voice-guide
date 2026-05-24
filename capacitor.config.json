@@ -6,6 +6,7 @@
     "url": "https://lokali.ge",
     "cleartext": false,
     "androidScheme": "https",
+    "errorPath": "offline.html",
     "allowNavigation": [
       "lokali.ge",
       "www.lokali.ge"
