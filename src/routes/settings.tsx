@@ -653,6 +653,29 @@ function SettingsPage() {
           </Link>
         </div>
 
+        {/* Wikimedia Commons attribution. Lokali fetches landmark and
+            artwork photos from Wikimedia Commons under their various
+            Creative Commons + public-domain licenses. CC-BY and
+            CC-BY-SA require attribution; rather than render the
+            author + license string under every photo (heavy work for
+            an MVP), we cluster the attribution into a single credits
+            line here and point users at commons.wikimedia.org where
+            each file's individual licensing page lives. Same pattern
+            Pinterest, Wikipedia mobile and a long tail of CC-using
+            apps adopted before adding per-image bylines. */}
+        <p className="px-6 pt-4 text-center text-[10px] leading-relaxed text-muted-foreground">
+          Photos from{" "}
+          <a
+            href="https://commons.wikimedia.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-foreground/80 underline-offset-2 hover:underline"
+          >
+            Wikimedia Commons
+          </a>
+          {" "}contributors under various Creative Commons and public-domain licenses.
+        </p>
+
         <p className="px-6 pt-4 text-center text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
           {t("set.appVersion")}
         </p>
