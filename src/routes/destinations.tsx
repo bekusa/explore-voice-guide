@@ -33,19 +33,23 @@ function DestinationsPage() {
   const matchRoute = useMatchRoute();
   const inChild = matchRoute({ to: "/destinations/$slug", fuzzy: true });
 
-  // Translate every city name once so we can match the user's typed
-  // query against either the English source or its translation.
-  //
-  // CRITICAL: this hook MUST run on every render of DestinationsPage,
-  // including renders where we're about to bail out to <Outlet />.
-  // Previously it was called AFTER the `if (inChild)` early-return,
-  // which meant the hook count flipped between "parent list" and
-  // "child slug" renders — React caught the mismatch and threw the
-  // minified #300 "Too many re-renders" error Beka saw on his phone
-  // whenever the saved tab tried to deep-link into a city page.
-  // Keeping the hook above the early return restores a stable hook
-  // order and the deep-link path renders cleanly.
+  // CRITICAL: ALL hooks (useTranslated, useMemo) must run on every
+  // render of DestinationsPage, including renders where we're about
+  // to bail out to <Outlet />. The previous pass only moved
+  // useTranslated above the early return but left useMemo below —
+  // hook count still flipped between "parent list" and "child slug"
+  // renders, and Beka still saw the minified #300 error on
+  // /destinations/tbilisi?q=. Keep BOTH hooks above the early
+  // return, ALWAYS in the same order, before the inChild branch.
   const translated = useTranslated(CITY_LIST);
+  const results = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return CITY_LIST;
+    return CITY_LIST.filter((city, i) => {
+      const t = (translated[i] ?? city).toLowerCase();
+      return city.toLowerCase().includes(needle) || t.includes(needle);
+    });
+  }, [query, translated]);
 
   // When the URL points at a child route (`/destinations/$slug`),
   // render only the child via <Outlet />. TanStack Router's file-
@@ -59,15 +63,6 @@ function DestinationsPage() {
   if (inChild) {
     return <Outlet />;
   }
-
-  const results = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    if (!needle) return CITY_LIST;
-    return CITY_LIST.filter((city, i) => {
-      const t = (translated[i] ?? city).toLowerCase();
-      return city.toLowerCase().includes(needle) || t.includes(needle);
-    });
-  }, [query, translated]);
 
   return (
     <MobileFrame>
