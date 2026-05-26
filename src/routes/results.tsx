@@ -44,9 +44,11 @@ import { useT } from "@/hooks/useT";
 /**
  * URL state. Interest filtering moved to the attraction page (the bias
  * lives on the per-place guide, not the discovery list), so we no
- * longer surface it here. The `interests` and `duration` keys are kept
- * in the URL schema so old shared links don't crash validation, but
- * they're ignored on this page.
+ * longer surface it here. The `interests` key is kept in the URL
+ * schema so old shared links don't crash validation, but it's ignored
+ * on this page. The legacy `duration` filter (originally for audio-
+ * guide length) was retired entirely — the guide now has a single
+ * standard length.
  *
  * `page` drives client-side pagination — the full ≤30-item result set
  * is fetched once (and Supabase-cached in `cached_attractions` as a
@@ -57,11 +59,8 @@ import { useT } from "@/hooks/useT";
 type Search = {
   q: string;
   interests?: string;
-  duration?: string;
   page?: number;
 };
-
-const VALID_DURATIONS = new Set(["short", "medium", "long"]);
 
 /**
  * Pagination knobs. 10 results per page, capped at 3 pages — Beka's
@@ -80,7 +79,6 @@ const MAX_RESULTS = PAGE_SIZE * MAX_PAGES;
 
 export const Route = createFileRoute("/results")({
   validateSearch: (search: Record<string, unknown>): Search => {
-    const rawDuration = typeof search.duration === "string" ? search.duration : "";
     const rawInterests = typeof search.interests === "string" ? search.interests : "";
     const rawPage =
       typeof search.page === "number"
@@ -90,14 +88,14 @@ export const Route = createFileRoute("/results")({
           : 1;
     const page = Number.isFinite(rawPage) ? Math.min(MAX_PAGES, Math.max(1, rawPage)) : 1;
     // Interests + duration filters were retired from the discovery
-    // page (the bias now lives on the per-attraction guide). Strip
-    // their stale empty entries from the URL so /results?q=Tokyo
-    // doesn't render as /results?q=Tokyo&interests=&duration=&page=1.
-    // We still accept them on parse so old shared links don't crash
-    // validation — they're just silently dropped from the canonical URL.
+    // page (the bias now lives on the per-attraction guide; duration
+    // was retired entirely). Strip their stale empty entries from the
+    // URL so /results?q=Tokyo doesn't render as
+    // /results?q=Tokyo&interests=&page=1. We still accept `interests`
+    // on parse so old shared links don't crash validation — it's just
+    // silently dropped from the canonical URL.
     const out: Search = { q: typeof search.q === "string" ? search.q : "", page };
     if (rawInterests) out.interests = rawInterests;
-    if (VALID_DURATIONS.has(rawDuration)) out.duration = rawDuration;
     return out;
   },
   head: () => ({

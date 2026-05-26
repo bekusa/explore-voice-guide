@@ -27,7 +27,7 @@ export const EL: Partial<Record<UiKey, string>> = {
   "home.collections.title": "Επιλεγμένες συλλογές",
   "home.collections.sub": "Θεματικές για τον δικό σου τρόπο να ταξιδεύεις",
   "home.timeMachine.title": "Μηχανή του Χρόνου",
-  "home.timeMachine.sub": "Top 10 βυθιστικές στιγμές — μπες μέσα στην ιστορία",
+  "home.timeMachine.sub": "Top 10 καθηλωτικές στιγμές — μπες μέσα στην ιστορία",
   "unesco.title": "Μνημεία Παγκόσμιας Κληρονομιάς UNESCO",
   "unesco.short": "UNESCO",
   "home.featured.title": "Προτεινόμενες πόλεις",
@@ -49,7 +49,7 @@ export const EL: Partial<Record<UiKey, string>> = {
   "hero.paris.city": "Παρίσι",
   "hero.paris.tagline2": "ο Σηκουάνας",
   "hero.paris.blurb":
-    "Λεωφόροι του Οσμάν, το ποτάμι στο σούρουπο και η μακριά σκιά του φλανέρ σε κάθε βεράντα καφέ — το Παρίσι διαβάζει τον εαυτό του δυνατά αν επιβραδύνεις.",
+    "Λεωφόροι του Οσμάν, το ποτάμι στο σούρουπο και η μακριά σκιά του φλανέρ σε κάθε βεράντα καφέ — το Παρίσι διαβάζει τον εαυτό του δυνατά, αν περπατήσεις πιο αργά.",
   "hero.rome.country": "Ιταλία",
   "hero.rome.city": "Ρώμη",
   "hero.rome.tagline2": "Αιώνια Ρώμη",
@@ -79,7 +79,7 @@ export const EL: Partial<Record<UiKey, string>> = {
   "hero.marrakech.city": "Μαρακές",
   "hero.marrakech.tagline2": "η Κόκκινη Πόλη",
   "hero.marrakech.blurb":
-    "Φωτισμένες με φανάρια μεδίνες, αυλές ριάντ και το θέατρο των τυμπάνων στην πλατεία Τζεμάα ελ-Φνα — αισθητηριακή έκσταση, στην καλύτερη της μορφή.",
+    "Φωτισμένες με φανάρια μεδίνες, αυλές ριάντ και το θέατρο των τυμπάνων στην πλατεία Τζεμάα ελ-Φνα — αισθητηριακή έκσταση, στην καλύτερή της μορφή.",
 
   // "Available in every language" badge under the search bar.
   "home.everyLang.title": "Διαθέσιμο σε κάθε γλώσσα",
@@ -92,8 +92,8 @@ export const EL: Partial<Record<UiKey, string>> = {
   "dest.beginJourney": "Ξεκίνα το ταξίδι",
   "dest.firstChapter": "Άκου το πρώτο κεφάλαιο",
   "dest.freeMin": "Δωρεάν · 3 λεπτά",
-  "dest.searchIn": "Αναζήτηση σε {city}…",
-  "dest.inside": "Μέσα στο {city}",
+  "dest.searchIn": "Αναζήτηση: {city}…",
+  "dest.inside": "Μέσα στην πόλη {city}",
   "dest.insideSub": "Επιλεγμένες στάσεις, αφηγημένες από ντόπιους",
   "dest.otherCities": "Άλλες πόλεις",
   "dest.cat.all": "Όλα",
@@ -102,7 +102,7 @@ export const EL: Partial<Record<UiKey, string>> = {
   "dest.cat.culinary": "Γαστρονομικά",
   "dest.cat.hidden": "Κρυμμένα",
   "dest.cat.fortress": "Φρούρια",
-  "dest.nowPlaying": "Κεφάλαιο 2 · Θείο & Πέτρα",
+  "dest.nowPlaying": "Κεφάλαιο 2 · Θειάφι & πέτρα",
 
   // Near-you / attraction card
   "card.audioGuide": "Ηχητικός οδηγός",
@@ -113,19 +113,19 @@ export const EL: Partial<Record<UiKey, string>> = {
   "card.download": "Λήψη",
   "card.saving": "Αποθήκευση",
   "card.details": "Λεπτομέρειες",
-  "card.play": "Αναπαραγωγή αφηγημένου οδηγού",
+  "card.play": "Αναπαραγωγή ηχητικού οδηγού",
   "card.fallbackDesc":
-    "Ένας επιμελημένος περίπατος μέσα από {title}. Πάτησε «Άνοιξε λεπτομέρειες» για τον πλήρη αφηγημένο οδηγό και την ιστορία στάση προς στάση.",
+    "Ένας επιμελημένος περίπατος μέσα από {title}. Πάτησε «Λεπτομέρειες» για τον πλήρη ηχητικό οδηγό και την ιστορία στάση προς στάση.",
 
   // Attraction page
   "attr.aboutThis": "Για αυτό το μέρος",
   "attr.theStops": "Οι στάσεις",
   "attr.chapters": "{n} κεφάλαια",
-  "attr.beginJourney": "Ξεκίνα το ταξίδι",
-  "attr.listenNarrated": "Άκου τον αφηγημένο οδηγό",
+  "attr.beginJourney": "Ξεκίνα την περιήγηση",
+  "attr.listenNarrated": "Άκου τον ηχητικό οδηγό",
   "attr.tapBegin":
-    "Πάτησε «Ξεκίνα το ταξίδι» για να ακούσεις την αφηγημένη ιστορία αυτού του μέρους.",
-  "attr.stopsAppear": "Οι στάσεις θα εμφανιστούν μόλις δημιουργηθεί ο αφηγημένος οδηγός.",
+    "Πάτησε «Ξεκίνα την περιήγηση» για να ακούσεις την ιστορία αυτού του μέρους.",
+  "attr.stopsAppear": "Οι στάσεις θα εμφανιστούν μόλις δημιουργηθεί ο ηχητικός οδηγός.",
 
   // Results filters
   "filters.interests": "Ενδιαφέροντα",
@@ -141,12 +141,12 @@ export const EL: Partial<Record<UiKey, string>> = {
   "toast.removedFromSaved": "Αφαιρέθηκε από τα Αποθηκευμένα",
   "toast.saved": "Αποθηκεύτηκε",
   "toast.savedDesc": "Πάτησε Λήψη για να κρατήσεις τον οδηγό εκτός σύνδεσης.",
-  "toast.alreadyCached": "Ήδη στην κρυφή μνήμη",
-  "toast.alreadyCachedDesc": "Αυτός ο οδηγός παίζει εκτός σύνδεσης.",
+  "toast.alreadyCached": "Ήδη αποθηκευμένο εκτός σύνδεσης",
+  "toast.alreadyCachedDesc": "Αυτός ο οδηγός λειτουργεί εκτός σύνδεσης.",
   "toast.youreOffline": "Είσαι εκτός σύνδεσης",
   "toast.youreOfflineDesc": "Συνδέσου μία φορά για να κατεβάσεις τον οδηγό.",
   "toast.downloaded": "Κατέβηκε για χρήση εκτός σύνδεσης",
-  "toast.noGuide": "Δεν επιστράφηκε οδηγός",
+  "toast.noGuide": "Δεν βρέθηκε οδηγός",
   "toast.downloadFailed": "Η λήψη απέτυχε",
   "toast.tryAgain": "Δοκίμασε ξανά αργότερα.",
   "toast.langUpdated": "Η γλώσσα ενημερώθηκε",
@@ -159,7 +159,7 @@ export const EL: Partial<Record<UiKey, string>> = {
   "toast.couldNotSave": "Η αποθήκευση απέτυχε",
   "toast.noVoiceAvailable": "Δεν υπάρχει διαθέσιμη φωνή",
   "toast.libCleared": "Η βιβλιοθήκη εκτός σύνδεσης διαγράφηκε",
-  "toast.speechUnsupported": "Η ομιλία δεν υποστηρίζεται σε αυτή τη συσκευή",
+  "toast.speechUnsupported": "Η φωνητική αναπαραγωγή δεν υποστηρίζεται σε αυτή τη συσκευή",
   "toast.couldNotLoadGuide": "Ο οδηγός δεν φορτώθηκε",
   "toast.tryAgainPlease": "Δοκίμασε ξανά παρακαλώ.",
   "toast.voiceUnavailableTitle": "Η φωνή δεν είναι ακόμη διαθέσιμη για αυτή τη γλώσσα",
@@ -168,7 +168,7 @@ export const EL: Partial<Record<UiKey, string>> = {
     "Αυτός ο οδηγός δεν έχει κατέβει ακόμα. Συνδέσου μία φορά για να αποθηκευτεί.",
   "toast.couldNotLoadAttractions": "Τα αξιοθέατα δεν φορτώθηκαν",
   "toast.allSet": "Όλα έτοιμα",
-  "toast.allSetDesc": "Καλώς ήρθες στο Voices.",
+  "toast.allSetDesc": "Καλώς ήρθες στο Lokali.",
   "toast.setupFailed": "Η εγκατάσταση απέτυχε",
   "toast.signedOut": "Αποσυνδέθηκες",
 
@@ -186,7 +186,7 @@ export const EL: Partial<Record<UiKey, string>> = {
   // Saved page
   "saved.title": "Αποθηκευμένα",
   "saved.offlineLib": "Βιβλιοθήκη εκτός σύνδεσης",
-  "saved.your": "Τα σου",
+  "saved.your": "Τα",
   "saved.placesOne": "μέρος",
   "saved.placesMany": "μέρη",
   "saved.storedHelp": "Αποθηκευμένα σε αυτή τη συσκευή — η αφήγηση παίζει χωρίς σύνδεση.",
@@ -221,7 +221,7 @@ export const EL: Partial<Record<UiKey, string>> = {
   "set.tuneYour": "Συντόνισε το",
   "set.journey": "ταξίδι σου",
   "set.intro":
-    "Γλώσσα, φωνή, θέμα και αποθήκευση εκτός σύνδεσης — όλα όσα διαμορφώνουν τον τρόπο που η Tbilisi σού ψιθυρίζει πίσω.",
+    "Γλώσσα, φωνή, θέμα και αποθήκευση εκτός σύνδεσης — όλα όσα διαμορφώνουν πώς η Τιφλίδα θα σου αφηγηθεί την ιστορία της.",
   "set.account": "Λογαριασμός",
   "set.signedInAs": "Συνδεδεμένος ως",
   "set.displayName": "Εμφανιζόμενο όνομα",
@@ -242,8 +242,8 @@ export const EL: Partial<Record<UiKey, string>> = {
   "set.onlineHelp": "Κατέβασε τους οδηγούς τώρα για να συνεχίσουν να παίζουν χωρίς σήμα.",
   "set.offlineHelp":
     "Οι αποθηκευμένοι οδηγοί συνεχίζουν να δουλεύουν — οι υπόλοιποι θα φορτώσουν όταν συνδεθείς ξανά.",
-  "set.savedSummaryOne": "{saved} αποθηκευμένα · {cached} οδηγός στην κρυφή μνήμη",
-  "set.savedSummaryMany": "{saved} αποθηκευμένα · {cached} οδηγοί στην κρυφή μνήμη",
+  "set.savedSummaryOne": "{saved} αποθηκευμένα · {cached} οδηγός εκτός σύνδεσης",
+  "set.savedSummaryMany": "{saved} αποθηκευμένα · {cached} οδηγοί εκτός σύνδεσης",
   "set.cacheSize": "{flag} {native} · ~{kb} KB σε αυτή τη συσκευή",
   "set.downloadAllOne": "Κατέβασε {n} οδηγό για χρήση εκτός σύνδεσης",
   "set.downloadAllMany": "Κατέβασε {n} οδηγούς για χρήση εκτός σύνδεσης",
@@ -261,8 +261,8 @@ export const EL: Partial<Record<UiKey, string>> = {
   "set.searchLanguages": "Αναζήτηση γλωσσών…",
   "set.noLanguagesMatch": "Καμία γλώσσα δεν ταιριάζει",
   "set.noNativeVoice":
-    "Δεν βρέθηκε γηγενής φωνή για αυτή τη γλώσσα. Η ομιλία θα χρησιμοποιήσει γενική φωνή.",
-  "set.noVoiceForLang": "Δεν βρέθηκε γηγενής φωνή σε αυτή τη συσκευή για {code}.",
+    "Δεν βρέθηκε φωνή για αυτή τη γλώσσα. Θα χρησιμοποιηθεί μια γενική φωνή.",
+  "set.noVoiceForLang": "Δεν βρέθηκε φωνή για {code} σε αυτή τη συσκευή.",
   "set.installVoicesHelp":
     "Θα επιστρέψουμε στην προεπιλογή του προγράμματος περιήγησης. Εγκατέστησε επιπλέον φωνές στις ρυθμίσεις προσβασιμότητας του λειτουργικού σου.",
   "voice.onDevice": "Στη συσκευή",
@@ -288,7 +288,7 @@ export const EL: Partial<Record<UiKey, string>> = {
   "loading.searching": "Αναζητούμε πληροφορίες…",
   "loading.checkingSources": "Ελέγχουμε τις πιο πρόσφατες πηγές…",
   "loading.selectingDetails": "Επιλέγουμε τις πιο εύγλωττες λεπτομέρειες…",
-  "loading.preparingRecommendations": "Ετοιμάζουμε προτάσεις ειδικά για εσάς…",
+  "loading.preparingRecommendations": "Ετοιμάζουμε προτάσεις ειδικά για εσένα…",
   "loading.almostReady": "Σχεδόν έτοιμο…",
   "results.countOne": "{n} αποτέλεσμα για",
   "results.countMany": "{n} αποτελέσματα για",
@@ -310,7 +310,7 @@ export const EL: Partial<Record<UiKey, string>> = {
   // Destinations
   "dest.exploreTitle": "Εξερεύνηση",
   "dest.chooseDest": "Διάλεξε προορισμό",
-  "dest.searchAny": "Οποιαδήποτε πόλη, χώρα ή αξιοθέατο…",
+  "dest.searchAny": "Πόλη, χώρα ή αξιοθέατο…",
   "dest.searchHint": "Πάτησε Enter για να ανακαλύψεις οπουδήποτε στη Γη με το Lokali AI.",
   "dest.allCount": "Όλα ({n})",
   "dest.countOne": "{n} προορισμός",
@@ -322,7 +322,7 @@ export const EL: Partial<Record<UiKey, string>> = {
   "dest.loadingTop": "Φόρτωση κορυφαίων αξιοθέατων…",
   "dest.topPicks": "Κορυφαίες επιλογές, αφηγημένες από ντόπιους",
   "dest.insideWord": "Μέσα",
-  "dest.showingCurated": "Εμφανίζουμε επιμελημένες επιλογές αντ' αυτού.",
+  "dest.showingCurated": "Εμφανίζουμε επιμελημένες επιλογές αντί γι’ αυτό.",
 
   // Time Machine
   "tm.title": "Μηχανή του Χρόνου",
@@ -354,7 +354,7 @@ export const EL: Partial<Record<UiKey, string>> = {
   "tm.loading.candleLit.title": "Το κερί άναψε…",
   "tm.loading.candleLit.sub": "ο χαρακτήρας σου προχωρά",
   "tm.loading.scrollUnfolds.title": "Ο πάπυρος ξετυλίγεται…",
-  "tm.loading.scrollUnfolds.sub": "Claude τελειώνει την προσομοίωση",
+  "tm.loading.scrollUnfolds.sub": "βάζουμε τις τελευταίες πινελιές στην προσομοίωση",
   "tm.role.merchant.label": "Έμπορος",
   "tm.role.merchant.hint": "Εμπορεύεται παντού, κινείται ελεύθερα",
   "tm.role.soldier.label": "Στρατιώτης / Φρουρός",
@@ -370,7 +370,7 @@ export const EL: Partial<Record<UiKey, string>> = {
   "tm.role.spy.label": "Κατάσκοπος / Πληροφοριοδότης",
   "tm.role.spy.hint": "Δεν εμπιστεύεται κανέναν, παρατηρεί τα πάντα",
   "tm.role.survivor.label": "Επιζών",
-  "tm.role.survivor.hint": "Δραπέτευσε από καταστροφή, πόλεμο ή τον δρόμο",
+  "tm.role.survivor.hint": "Επέζησε από καταστροφή, πόλεμο ή μακρύ δρόμο",
 
   // Auth
   "auth.welcomeBack": "Καλώς ήρθες πίσω",
@@ -381,7 +381,7 @@ export const EL: Partial<Record<UiKey, string>> = {
     "Αποθήκευσε περιηγήσεις, συγχρόνισε κεφάλαια και ξεκλείδωσε κινηματογραφική αφήγηση στη γλώσσα σου.",
   "auth.name": "Όνομα",
   "auth.yourName": "Το όνομά σου",
-  "auth.emailPlaceholder": "esi@example.com",
+  "auth.emailPlaceholder": "you@example.com",
   "auth.password": "Κωδικός",
   "auth.signIn": "Σύνδεση",
   "auth.signUp": "Δημιουργία λογαριασμού",
@@ -408,7 +408,7 @@ export const EL: Partial<Record<UiKey, string>> = {
   "onb.continue": "Συνέχεια",
   "onb.back": "Πίσω",
   "onb.noNativeVoice":
-    "Δεν βρέθηκε γηγενής φωνή σε αυτή τη συσκευή. Οι ηχητικοί οδηγοί θα χρησιμοποιήσουν εφεδρική φωνή.",
+    "Δεν βρέθηκε φωνή για αυτή τη γλώσσα σε αυτή τη συσκευή. Οι ηχητικοί οδηγοί θα χρησιμοποιήσουν εφεδρική φωνή.",
   "onb.voiceCountOne": "{n} φωνή διαθέσιμη σε αυτή τη συσκευή",
   "onb.voiceCountMany": "{n} φωνές διαθέσιμες σε αυτή τη συσκευή",
   "onb.previewVoice": "Προεπισκόπηση φωνής",
@@ -427,9 +427,9 @@ export const EL: Partial<Record<UiKey, string>> = {
   "attr.keyFacts": "Βασικά στοιχεία",
   "attr.keyFactsTitle": "Βασικά στοιχεία",
   "attr.whatToLook": "Τι να προσέξεις",
-  "attr.tips": "συμβουλές",
+  "attr.tips": "Συμβουλές",
   "attr.practical": "Πρακτικά",
-  "attr.nearbyWord": "Κοντά",
+  "attr.nearbyWord": "Κοντινά",
   "attr.places": "μέρη",
   "attr.onTheMap": "Στον",
   "attr.mapWord": "χάρτη",
@@ -457,7 +457,7 @@ export const EL: Partial<Record<UiKey, string>> = {
   "player.audioGuide": "Ηχητικός οδηγός",
   "player.cachedOffline": "Αποθηκευμένο εκτός σύνδεσης",
   "player.offlineMode": "Λειτουργία εκτός σύνδεσης",
-  "player.transcript": "Μεταγραφή",
+  "player.transcript": "Κείμενο αφήγησης",
   "player.noNarration": "Δεν υπάρχει διαθέσιμη αφήγηση ακόμα για αυτό το μέρος.",
   "player.resume": "Συνέχεια",
   "player.pause": "Παύση",

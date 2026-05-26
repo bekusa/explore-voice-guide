@@ -112,7 +112,6 @@ export const Route = createFileRoute("/api/attractions")({
             language: "en",
             count: 10,
             interests: key.filters.interests,
-            duration: key.filters.duration,
           });
           // Haiku, not Sonnet — Beka observed first-page loads taking
           // ~45 s with Sonnet's slower throughput (50 tok/s × 4096 max
@@ -180,7 +179,7 @@ export const Route = createFileRoute("/api/attractions")({
 function extractAttractionsKey(rawBody: string): {
   query: string;
   language: string;
-  filters: { interests?: string[]; duration?: string };
+  filters: { interests?: string[] };
 } | null {
   try {
     const obj = JSON.parse(rawBody) as Record<string, unknown>;
@@ -196,12 +195,11 @@ function extractAttractionsKey(rawBody: string): {
     const interests = Array.isArray(obj.interests)
       ? obj.interests.filter((s): s is string => typeof s === "string")
       : [];
-    const duration = typeof obj.duration === "string" ? obj.duration : "";
     if (!query.trim() || !language.trim()) return null;
     return {
       query: query.trim(),
       language: language.trim(),
-      filters: { interests, duration },
+      filters: { interests },
     };
   } catch {
     return null;
@@ -330,7 +328,6 @@ async function handleExtensionRequest(
       count: extras.count,
       exclude: extras.exclude,
       interests: key.filters.interests,
-      duration: key.filters.duration,
     });
     // Haiku here too — same reasoning as the first-page call. Bigger
     // maxTokens because extension calls can ask for up to 30 more

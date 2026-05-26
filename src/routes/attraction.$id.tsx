@@ -798,8 +798,9 @@ function AttractionPage() {
 
         {/* Nearby section retired per Beka's request — felt redundant
             next to the Map below it, and the LLM-suggested neighbours
-            were often unevenly curated. The data is still in
-            guide.nearby_suggestions if we want to bring it back later. */}
+            were often unevenly curated. The `nearby_suggestions` field
+            has now been stripped from the prompt + types + cache so
+            we stop paying tokens to generate data we throw away. */}
 
         {/* Must-see highlights — only renders when the attraction is
             one of the curated MUSEUMS. Self-paginates 10 per page,
@@ -1418,55 +1419,6 @@ function ChipsSection({
             {item}
           </span>
         ))}
-      </div>
-    </section>
-  );
-}
-
-/**
- * Nearby — renders nearby_suggestions as clickable links to each
- * place's own attraction page. Each tap routes to /attraction/$id with
- * the raw place name in search params, so the destination page can
- * skip slug-guessing and fetch the n8n guide directly. Visually keeps
- * the amber tone of the old chips so the section still reads as
- * "places around you", but the chevron + hover state communicates
- * that they're tappable.
- */
-function NearbyLinks({ items }: { items?: string[] }) {
-  const t = useT();
-  if (!items || items.length === 0) return null;
-  return (
-    <section className="mt-8 px-6">
-      <div className="flex items-center gap-2">
-        <h2 className="font-display text-[20px] text-foreground">
-          <span className="mr-2" aria-hidden>
-            📍
-          </span>
-          <span className="italic text-primary">{t("attr.nearbyWord")}</span> {t("attr.places")}
-        </h2>
-      </div>
-      <div className="mt-4 flex flex-col gap-2">
-        {items.map((name, i) => {
-          const trimmed = name.trim();
-          if (!trimmed) return null;
-          return (
-            <Link
-              key={`${trimmed}-${i}`}
-              to="/attraction/$id"
-              params={{ id: attractionSlug(trimmed) }}
-              search={{ name: trimmed }}
-              className="group flex items-center justify-between gap-3 rounded-2xl border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-amber-100 transition-smooth hover:border-amber-300/60 hover:bg-amber-500/15"
-            >
-              <span className="flex items-center gap-2.5">
-                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-amber-400/20 text-amber-200">
-                  <MapPin className="h-3.5 w-3.5" />
-                </span>
-                <span className="text-[13px] font-medium leading-tight">{trimmed}</span>
-              </span>
-              <ChevronRight className="h-4 w-4 shrink-0 text-amber-200/70 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-          );
-        })}
       </div>
     </section>
   );

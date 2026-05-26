@@ -44,10 +44,16 @@ export type GuideResponse = {
 };
 
 /**
- * Full guide payload (Lokali shape). The n8n /guide workflow returns
+ * Full guide payload (Lokali shape). The /api/guide endpoint returns
  * `script` plus a few optional rich fields that the attraction page
  * renders as chips/lists. Only `script` is guaranteed; UI must
  * tolerate any subset of the others being missing.
+ *
+ * Historical: `nearby_suggestions: string[]` used to live here as
+ * well, but the section was retired (LLM-suggested neighbours were
+ * uneven and felt redundant next to the on-page Map). Removed from
+ * the prompt + types + cache so we stop paying tokens to generate
+ * data we throw away.
  */
 export type GuideData = {
   title?: string;
@@ -56,7 +62,6 @@ export type GuideData = {
   key_facts?: string[];
   tips?: string[];
   look_for?: string[];
-  nearby_suggestions?: string[];
 };
 
 // Same-origin proxy routes (avoid n8n CORS by relaying through our server).
@@ -335,12 +340,6 @@ async function postJSON<T>(url: string, body: unknown): Promise<T> {
 export type AttractionFilters = {
   /** User-selected interest tags, e.g. ["history", "couples"]. */
   interests?: string[];
-  /**
-   * Preferred audio-guide narration length: "short" | "medium" | "long".
-   * NOTE: this is how long the spoken guide should run, not how long
-   * the user will spend walking the route on the ground.
-   */
-  duration?: string;
 };
 
 export async function fetchAttractions(
@@ -351,8 +350,10 @@ export async function fetchAttractions(
   // n8n workflow reads body.city / body.country (it triages LANDMARK / COUNTRY
   // / CITY mode based on the contents). Send both `query` (legacy) and
   // `city` / `country` so it works whichever shape the workflow expects.
-  // Filters (`interests`, `duration`) are extra hints the n8n prompt can
-  // use to bias the curated list — empty / undefined means "no preference".
+  // The `interests` filter is an extra hint the prompt can use to bias
+  // the curated list — empty / undefined means "no preference". The
+  // legacy `duration` filter (originally for audio-guide length) was
+  // retired entirely; the guide now has a single standard length.
   const interests = (filters.interests ?? []).filter(Boolean);
   const data = await postJSON<AttractionsResponse | Attraction[]>(ATTRACTIONS_URL, {
     query,
@@ -360,7 +361,6 @@ export async function fetchAttractions(
     country: "",
     language,
     interests,
-    duration: filters.duration ?? "",
   });
   // Tolerate both wrapped and bare-array shapes
   if (Array.isArray(data)) return data;
@@ -396,7 +396,6 @@ export async function fetchMoreAttractions(
     country: "",
     language,
     interests,
-    duration: filters.duration ?? "",
     exclude: excludeNames,
     count,
   });
@@ -429,7 +428,6 @@ function normalizeGuide(raw: unknown, fallbackTitle: string): GuideData {
     key_facts: asStringArray(obj.key_facts),
     tips: asStringArray(obj.tips),
     look_for: asStringArray(obj.look_for),
-    nearby_suggestions: asStringArray(obj.nearby_suggestions),
   };
 }
 

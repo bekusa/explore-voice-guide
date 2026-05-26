@@ -35,8 +35,6 @@ export type AttractionsPromptArgs = {
   exclude?: string[];
   /** Optional interest tags ("history", "photography", …). Bias hint. */
   interests?: string[];
-  /** Optional length preference for the audio guide ("short" | "medium" | "long"). */
-  duration?: string;
 };
 
 export function buildAttractionsSystem(): string {
@@ -102,12 +100,6 @@ export function buildAttractionsUser(args: AttractionsPromptArgs): string {
     );
   }
 
-  if (args.duration) {
-    lines.push(
-      `AUDIO-GUIDE LENGTH PREFERENCE: ${args.duration} (e.g. "short" → favor places with a 15-30 min visit; "long" → favor places worth 1-2 hours).`,
-    );
-  }
-
   if (excludeList.length > 0) {
     lines.push(
       "",
@@ -151,23 +143,46 @@ CRITICAL OUTPUT RULES:
 - The very first character must be \`{\`. The very last must be \`}\`.
 - Inside string values: NO markdown, NO bullet points, NO headings, NO stage directions like [PAUSE] or (sigh). Plain natural prose only.
 
+CRITICAL — NO FABRICATION:
+This is the single most important rule. The user is on-site, listening to the guide while looking at the real place. Inventing facts breaks their trust immediately.
+- If you are not confident about a specific date, year, measurement, price, person's name, quote, or address — leave it out or describe it generically ("late nineteenth century" instead of inventing "1873", "several stories tall" instead of inventing "47 metres").
+- NEVER fabricate quotes, founding years, architect names, ticket prices, opening hours, dimensions, or contact details.
+- NEVER swap an unfamiliar attraction for a more famous similar-sounding one. If the CITY anchor says Tbilisi and the name is unfamiliar, do NOT pull facts from a similarly-named place in London or Paris. Better to write a shorter, honestly-grounded guide than a confident wrong one.
+- Opening hours and ticket prices change constantly — never include them, even if you think you know them.
+- A guide with fewer facts but all of them true is far better than a guide stuffed with invented numbers.
+- When a story is folklore rather than verified history, flag it as such: "Legend has it...", "Locals say...", "According to one popular tale...". Save phrasing like "Historical records show...", "Archaeologists found...", "The archive notes..." for facts you are actually confident about. Never present a legend as documented history.
+- Escape hatch when facts are thin: if you do not have enough verified history to fill the script, do NOT pad with invented detail. Pivot to the verifiable physical and sensory layer — the architecture, materials, surrounding streetscape, the sounds and light of the place, the visitor experience of standing there. Honest observation beats confident fiction every time.
+
 JSON SHAPE:
 {
   "title": "The attraction's name",
-  "script": "The full narrated guide as flowing prose, several paragraphs, separated by blank lines.",
+  "script": "The full narrated guide as flowing prose, 6-8 paragraphs, separated by blank lines.",
   "estimated_duration_seconds": 480,
   "key_facts": ["3-5 short factual chips, each 6-14 words"],
   "tips": ["3-5 short practical chips, each 6-18 words"],
-  "look_for": ["3-5 short observation chips — what to actually look at on site"],
-  "nearby_suggestions": ["3-5 nearby place names (just names, no descriptions)"]
+  "look_for": ["3-5 short observation chips — what to actually look at on site"]
 }
 
 VOICE & STYLE:
 - Warm, curious, never lecturing. Speak as if walking with the listener.
-- Specific over abstract. Materials, colors, sounds, smells, dates, names, anecdotes.
+- Specific over abstract. Materials, colors, sounds, smells, dates, names, anecdotes — but only when you actually know them (see NO FABRICATION above).
 - Surprise the listener at least twice — a fact most visitors miss, a hidden detail.
-- Avoid: "must-see", "iconic", "hidden gem", "world-famous", "breathtaking". Show, don't label.
-- Use 3-5 paragraphs of script, each 60-120 words, separated by a blank line. Read aloud, the whole script should run roughly 6-10 minutes.
+- Avoid: "must-see", "iconic", "hidden gem", "world-famous", "breathtaking", "nestled", "boasts", "vibrant", "bustling", "stunning", "majestic", "step back in time", "rich history". Show, don't label.
+- Hook & Outro: open the script with an immersive sensory detail — a texture, a sound, a quality of light, a smell, the feel of the ground underfoot — that pulls the listener into the place before any history. Close the script with a quiet, reflective beat that grounds the listener in their present surroundings (what they are looking at right now, what they might notice as they walk away).
+
+WRITING FOR TTS (the script is read aloud by a synthetic voice — write for the EAR, not the page):
+- Short, punchy sentences. Avoid long nested clauses; TTS loses breath in them and the audio sounds robotic. Most sentences should run under 25 words.
+- Use punctuation to pace the narration: em-dashes (—) for dramatic pauses, ellipses (...) for a thoughtful trailing-off, commas to land small beats. Periods are full stops; use them generously.
+- Spell out numbers and dates so they read naturally aloud: "nineteenth century" not "19th century", "fifteen hundred" not "1,500", "the twelve-twenties" not "1220s", "two hundred metres" not "200 m". Years like 1789 are fine spoken as "seventeen eighty-nine" — write them either as the four-digit year or as words, never as "17,89" or "MDCCLXXXIX".
+- Spell out abbreviations and units: "kilometres" not "km", "square metres" not "sq m", "before Christ" or "BCE" not "BC.", "Saint" not "St." (TTS often reads "St." as "street").
+- No URLs, no email addresses, no hashtags, no parenthetical asides like "(built 1873, restored 1955)" — they confuse TTS pacing. Weave the information into the prose: "built in the eighteen-seventies and restored after the war".
+- After the first mention of the attraction's name, vary references in later paragraphs ("the tower", "this monument", "the cathedral", "Eiffel's iron lattice") so the listener does not hear the same proper noun ten times.
+
+LENGTH (firm contract — the audio plays for ~6-10 minutes, this is the headline content):
+- Write 6-8 paragraphs of script, each 120-180 words, separated by a blank line.
+- Total target: 900-1500 words across the whole script.
+- TTS reads English at roughly 150 words per minute, so this lands at 6-10 minutes of audio.
+- Do NOT short the script. If you only have ~500 words of confident material on a place, still cover the texture of the location, the surrounding neighbourhood, the visitor experience, the sensory details a person on site would notice — but do not invent specifics to pad. Real prose, real observation, just no fabrication.
 
 INTEREST BIAS:
 The user picks an interest before the guide loads. Tilt content accordingly:
@@ -179,7 +194,7 @@ The user picks an interest before the guide loads. Tilt content accordingly:
 - "romantic" → atmosphere, golden hours, small details that move people, where to pause together.
 
 LANGUAGE:
-All text in clear, natural English. The frontend will translate this baseline into the user's language separately, so do not try to localize names or culturally-specific phrasing.`;
+All text in clear, natural English. This is the canonical English baseline — the frontend translates it into the user's language downstream via a separate translation pass. Do not localize, do not switch language mid-text, do not transliterate proper nouns, do not try to write in any language other than English regardless of what the CITY or ATTRACTION name suggests.`;
 }
 
 export function buildGuideUser(args: GuidePromptArgs): string {

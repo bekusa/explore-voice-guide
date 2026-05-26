@@ -116,13 +116,16 @@ export function normalizeName(name: string): string {
 /**
  * Stable string key for the `filters` argument to /attractions —
  * empty filters collapse to "{}" so "no preference" hits a single
- * shared row regardless of how the client serialized them.
+ * shared row regardless of how the client serialized them. Historically
+ * also included a `duration` field (audio-guide length preference);
+ * that filter was retired entirely, so the key shape is now just
+ * `{interests: [...]}`. Existing cache rows with the old duration-
+ * inclusive key remain valid but get re-keyed on next write.
  */
-export function filtersKey(filters: { interests?: string[]; duration?: string }): string {
+export function filtersKey(filters: { interests?: string[] }): string {
   const interests = (filters.interests ?? []).map((s) => s.trim().toLowerCase()).sort();
-  const duration = (filters.duration ?? "").trim().toLowerCase();
-  if (interests.length === 0 && !duration) return "{}";
-  return JSON.stringify({ interests, duration });
+  if (interests.length === 0) return "{}";
+  return JSON.stringify({ interests });
 }
 
 /* ─── Guides ─── */
@@ -210,7 +213,7 @@ async function bumpGuideHit(key: GuideKey): Promise<void> {
 export type AttractionsKey = {
   query: string;
   language: string;
-  filters: { interests?: string[]; duration?: string };
+  filters: { interests?: string[] };
 };
 
 export async function getCachedAttractions(key: AttractionsKey): Promise<unknown | null> {

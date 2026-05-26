@@ -12,8 +12,10 @@ const EVENT = "tg:guide-cache-changed";
 
 /**
  * Cache entry. `text` (script) is required for back-compat with older
- * cached payloads; rich Lokali fields (key_facts/tips/look_for/nearby)
- * are optional and added when fetched via fetchGuideData().
+ * cached payloads; rich Lokali fields (key_facts/tips/look_for) are
+ * optional and added when fetched via fetchGuideData(). `nearby_-
+ * suggestions` used to live here too but the section was retired —
+ * old entries that still carry it just go ignored on read.
  */
 type Entry = {
   text: string;
@@ -25,7 +27,6 @@ type Entry = {
   key_facts?: string[];
   tips?: string[];
   look_for?: string[];
-  nearby_suggestions?: string[];
 };
 
 type CacheMap = Record<string, Entry>;
@@ -38,7 +39,6 @@ export type CachedGuideData = {
   key_facts?: string[];
   tips?: string[];
   look_for?: string[];
-  nearby_suggestions?: string[];
 };
 
 function isBrowser() {
@@ -148,7 +148,6 @@ export function getCachedGuideData(
     key_facts: entry.key_facts,
     tips: entry.tips,
     look_for: entry.look_for,
-    nearby_suggestions: entry.nearby_suggestions,
   };
 }
 
@@ -172,7 +171,6 @@ export function setCachedGuideData(
     key_facts: data.key_facts,
     tips: data.tips,
     look_for: data.look_for,
-    nearby_suggestions: data.nearby_suggestions,
   };
   write(map);
 }

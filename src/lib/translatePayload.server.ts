@@ -260,9 +260,12 @@ const GUIDE_TRANSLATABLE_FIELDS = ["title", "script"] as const;
 const GUIDE_TRANSLATABLE_ARRAYS = ["key_facts", "look_for", "tips"] as const;
 
 /**
- * Translate a rich guide payload (script + chips + tips + nearby).
+ * Translate a rich guide payload (script + chips + tips).
  * Returns both the result and a `translated` flag — see the
- * attractions variant above for the rationale.
+ * attractions variant above for the rationale. The `nearby_suggestions`
+ * field used to be translated here as well, but the section was
+ * retired from the prompt + UI — any legacy payloads that still carry
+ * it just pass through untranslated and the UI ignores them.
  */
 export async function translateGuidePayload(
   payload: unknown,
@@ -298,22 +301,6 @@ export async function translateGuidePayload(
         }
       });
     }
-  }
-
-  // nearby_suggestions: array of {name, desc} — translate desc only
-  const nearby = cloned.nearby_suggestions;
-  if (Array.isArray(nearby)) {
-    nearby.forEach((entry, idx) => {
-      if (entry && typeof entry === "object") {
-        const obj = entry as Record<string, unknown>;
-        if (typeof obj.desc === "string" && obj.desc.trim().length > 0) {
-          sources.push(obj.desc);
-          setters.push((value) => {
-            (nearby[idx] as Record<string, unknown>).desc = value;
-          });
-        }
-      }
-    });
   }
 
   if (sources.length === 0) return { payload: cloned, translated: true };
