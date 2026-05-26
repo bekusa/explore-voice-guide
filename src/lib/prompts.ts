@@ -251,25 +251,41 @@ CRITICAL OUTPUT RULES:
 - Respond with ONLY a single valid JSON object. No markdown fences. No preamble. No commentary.
 - The very first character must be \`{\`. The very last must be \`}\`.
 
+CRITICAL — NO FABRICATION:
+This is the single most important rule. The user will walk to a specific room in the museum looking for the work you listed. Inventing a work, mis-attributing it, or pointing to the wrong wing wastes their visit and breaks their trust.
+- Every entry MUST be a real object that is currently held by this specific museum. Do NOT include works that are loaned out long-term, deaccessioned, destroyed, returned to source countries, or that you are even slightly uncertain about.
+- NEVER attribute a work to the wrong museum. The Mona Lisa is at the Louvre, not the Uffizi. Venus de Milo is at the Louvre, not the British Museum. If you cannot confidently say "this work is in THIS museum," do not list it.
+- NEVER invent an artist for an unattributed work. If you do not know, use "Unknown", "Anonymous", or the cultural attribution ("Roman, 2nd century", "Ming Dynasty workshop").
+- NEVER invent dates, dimensions, prior owners, acquisition stories, or restoration details. If a "story" claim is something you would hesitate to defend to a curator — leave it out.
+- For "story" — when the surprising-fact angle is thin, pivot to the verifiable visual layer: composition, light, scale, materials, the room atmosphere, why visitors stop in front of it. Honest description beats invented anecdotes.
+
 JSON SHAPE:
 {
   "highlights": [
     {
-      "name": "Canonical name of the object/work/space",
+      "name": "Canonical English name of the object/work/space",
       "artist": "Artist / maker / culture (e.g. \\"Leonardo da Vinci\\", \\"Caravaggio\\", \\"Unknown Egyptian\\", \\"Ancient Greek\\"). Empty string if irrelevant (architecture, room).",
       "era": "Short period or date label",
       "brief": "1 sentence, 15-25 words — what is it and why it matters.",
-      "story": "2-3 sentences, 45-80 words — vivid hook, one surprising detail, the why-it-stops-people moment.",
-      "location_hint": "Gallery / wing / room reference (e.g. \\"Denon Wing, Salle 711\\"), or empty if not stable."
+      "story": "2-3 sentences, 45-80 words — vivid hook, one surprising verifiable detail, the why-it-stops-people moment.",
+      "location_hint": "Gallery / wing / room reference, or empty if not confidently stable."
     }
   ]
 }
 
-COUNT (hard requirement):
-Return EXACTLY 30 highlights — no fewer, no more. The frontend paginates 10 per page across 3 pages and assumes 30. If you hit token budget, shorten the "story" field rather than dropping entries. Major encyclopedic museums (Louvre, Met, Vatican, British Museum, Hermitage, Prado, Uffizi) easily clear 30 collection-defining works.
+LOCATION HINT DISCIPLINE:
+Museums reorganise rooms constantly — pointing visitors to the wrong floor is worse than not pointing at all.
+- Only include location_hint when the placement has been stable for at least five years AND you are confident about the exact room number / wing name (Mona Lisa's Salle 711 in the Denon Wing, Pergamon Altar's main hall, Rosetta Stone's Room 4).
+- For movable works, recently rotated rooms, recent renovations, or any uncertainty — LEAVE EMPTY. The frontend handles empty location_hint gracefully.
+- NEVER guess at a gallery number to make the entry look more authoritative.
+
+COUNT:
+Return up to 30 highlights, ordered by importance.
+- Major encyclopedic museums (Louvre, Met, Vatican, British Museum, Hermitage, Prado, Uffizi, Rijksmuseum) easily clear 30 collection-defining works — return the full 30.
+- Smaller museums (most regional museums, single-artist museums, specialist collections) may genuinely lack 30 must-see-level works. In that case, fill the list down to the point of legitimate must-see status (could be 18, 22, 27) — but DO NOT pad with invented works or with items you are not confident this museum actually owns. Return however many real entries you can stand behind. Better 22 trustworthy entries than 30 with 8 fabricated.
 
 UNIQUENESS (critical — Beka's catch, Louvre had 6 Raft of the Medusa entries):
-Every entry MUST refer to a DIFFERENT work. Do NOT include preparatory studies, sketches, watercolour drafts, copies, replicas, or alternative versions of a work already in the list. One canonical entry per artwork. If you find yourself writing "(study)", "(sketch)", "(preparatory)", "(replica)", "(version 2)", "(copy)" — pick the canonical final version and drop the others. After deduping in your head, replace the dropped slots with OTHER notable works so the final count is still 30.
+Every entry MUST refer to a DIFFERENT work. Do NOT include preparatory studies, sketches, watercolour drafts, copies, replicas, or alternative versions of a work already in the list. One canonical entry per artwork. If you find yourself writing "(study)", "(sketch)", "(preparatory)", "(replica)", "(version 2)", "(copy)" — pick the canonical final version and drop the others. After deduping in your head, replace the dropped slots with OTHER notable works that genuinely exist in this museum.
 
 ORDERING (matters — the app paginates 10 per page):
 - Items 1-10: the universal must-sees. The works visitors travel from another continent for. Mona Lisa-level icons of THIS museum.
@@ -281,12 +297,17 @@ Spread across mediums and periods. A great museum guide doesn't return 30 oil pa
 
 VOICE & STYLE:
 - Warm, knowledgeable, never lecturing. The visitor's smart friend.
-- Specific over abstract. Names, dates, materials, dimensions, anecdotes, attribution histories.
-- Each "story" should surprise — a hidden fact, a forgery scandal, a wartime rescue, an x-ray finding, a sitter's true identity.
-- Avoid clichés: "world-famous", "must-see", "breathtaking", "iconic". Show, don't label.
+- Specific over abstract. Names, dates, materials, dimensions, anecdotes, attribution histories — but only when you actually know them (see NO FABRICATION above).
+- Each "story" should surprise — a hidden fact, a forgery scandal, a wartime rescue, an x-ray finding, a sitter's true identity. But only if true. A clichéd story is better than a fabricated revelation.
+- Avoid clichés: "world-famous", "must-see", "breathtaking", "iconic", "jewel of the collection", "magnum opus", "step back in time", "awe-inspiring". Show, don't label.
 
 LANGUAGE:
-All text in clear, natural English. The frontend translates this baseline into the user's language separately — don't try to localize proper nouns or culturally-specific phrasing.`;
+All text in clear, natural English. The frontend translates this baseline into the user's language separately — don't try to localize proper nouns or culturally-specific phrasing.
+
+TRANSLATION-SAFE ENGLISH (the brief and story fields are machine-translated into ~35 languages):
+- Avoid metaphorical verbs that read as confident English but produce awkward output in other languages. Bad: "the canvas SPEAKS of grief", "the marble WHISPERS of empire", "the brushwork SINGS with movement", "the sculpture EMBODIES the city's faith", "the colours DANCE across the panel". These literalise into broken target-language sentences.
+- Prefer concrete, literal verbs: "the canvas shows grief through...", "the marble carries Roman imperial style", "the brushwork captures rapid movement", "the sculpture marks a turning point in...", "the colours shift from cool to warm across the panel".
+- Keep sentences subject-verb-object where possible. Avoid heavy fronting, dangling participles, and elliptical constructions — translators mis-handle them.`;
 }
 
 export function buildMuseumHighlightsUser(args: MuseumHighlightsPromptArgs): string {
