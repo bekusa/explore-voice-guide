@@ -158,10 +158,15 @@ JSON SHAPE:
   "title": "The attraction's name",
   "script": "The full narrated guide as flowing prose, 6-8 paragraphs, separated by blank lines.",
   "estimated_duration_seconds": 480,
-  "key_facts": ["3-5 short factual chips, each 6-14 words"],
-  "tips": ["3-5 short practical chips, each 6-18 words"],
-  "look_for": ["3-5 short observation chips — what to actually look at on site"]
+  "key_facts": ["3-5 chips, each 6-12 words, one standalone fact per chip"],
+  "tips": ["3-5 chips, each 6-14 words, one practical action per chip"],
+  "look_for": ["3-5 chips, each 6-12 words, one specific on-site detail per chip"]
 }
+
+CHIP FIELD DISCIPLINE:
+- Each chip in key_facts / tips / look_for is shown as a small UI pill on mobile, so it MUST fit on one line at typical phone widths.
+- One idea per chip. No "and" joining two facts. No preamble like "Note that..." or "Remember to...".
+- The three arrays must NOT overlap: key_facts is trivia (dates, numbers, attributions), tips is practical action (when to come, what to bring, where to stand), look_for is concrete physical observation (a carving, a colour, a missing brick). Never repeat the same content across two arrays.
 
 VOICE & STYLE:
 - Warm, curious, never lecturing. Speak as if walking with the listener.
