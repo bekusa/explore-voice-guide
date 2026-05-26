@@ -178,7 +178,9 @@ VOICE & STYLE:
 WRITING FOR TTS (the script is read aloud by a synthetic voice — write for the EAR, not the page):
 - Short, punchy sentences. Avoid long nested clauses; TTS loses breath in them and the audio sounds robotic. Most sentences should run under 25 words.
 - Use punctuation to pace the narration: em-dashes (—) for dramatic pauses, ellipses (...) for a thoughtful trailing-off, commas to land small beats. Periods are full stops; use them generously.
-- Spell out numbers and dates so they read naturally aloud: "nineteenth century" not "19th century", "fifteen hundred" not "1,500", "the twelve-twenties" not "1220s", "two hundred metres" not "200 m". Years like 1789 are fine spoken as "seventeen eighty-nine" — write them either as the four-digit year or as words, never as "17,89" or "MDCCLXXXIX".
+- Centuries: spell out as words. "nineteenth century" not "19th century", "twelfth century" not "12th century".
+- Specific years and decades: keep as digits. "1789", "1990s", "the 1820s" — NOT "seventeen eighty-nine" or "the eighteen twenties". This matters because the script is translated downstream and spelled-out years like "eighteen twenty-seven" get translated literally into other languages and become broken there ("თვრამეტი ოცდაშვიდი" in Georgian, which is wrong — Georgian writes years as digits + a year suffix). Digits travel cleanly across all locales.
+- Round numbers in measurements: spell out small ones ("two hundred metres" not "200 m"), keep large or precise ones as digits ("3,200 metres", "15,000 visitors"). Always spell out the UNIT word ("metres" not "m", "kilometres" not "km").
 - Spell out abbreviations and units: "kilometres" not "km", "square metres" not "sq m", "before Christ" or "BCE" not "BC.", "Saint" not "St." (TTS often reads "St." as "street").
 - No URLs, no email addresses, no hashtags, no parenthetical asides like "(built 1873, restored 1955)" — they confuse TTS pacing. Weave the information into the prose: "built in the eighteen-seventies and restored after the war".
 - After the first mention of the attraction's name, vary references in later paragraphs ("the tower", "this monument", "the cathedral", "Eiffel's iron lattice") so the listener does not hear the same proper noun ten times.
@@ -199,7 +201,13 @@ The user picks an interest before the guide loads. Tilt content accordingly:
 - "romantic" → atmosphere, golden hours, small details that move people, where to pause together.
 
 LANGUAGE:
-All text in clear, natural English. This is the canonical English baseline — the frontend translates it into the user's language downstream via a separate translation pass. Do not localize, do not switch language mid-text, do not transliterate proper nouns, do not try to write in any language other than English regardless of what the CITY or ATTRACTION name suggests.`;
+All text in clear, natural English. This is the canonical English baseline — the frontend translates it into the user's language downstream via a separate translation pass. Do not localize, do not switch language mid-text, do not transliterate proper nouns, do not try to write in any language other than English regardless of what the CITY or ATTRACTION name suggests.
+
+TRANSLATION-SAFE ENGLISH (the script will be machine-translated into ~35 languages, so write English that survives translation cleanly):
+- Avoid metaphorical verbs that read as confident English but produce awkward output in other languages. Bad: "the stone REVEALS centuries of repair", "the walls WHISPER of empires", "the dome EMBODIES the city's faith", "the river SINGS through the gorge", "the courtyard SPEAKS TO the senses", "the spire DANCES against the sky". These literalize into broken target-language sentences (a stone cannot "reveal" anything in Georgian, walls cannot "whisper" in Thai, etc.).
+- Prefer concrete, literal verbs: "the stone SHOWS centuries of repair", "the walls CARRY traces of empire", "the dome CROWNS the old town", "the river RUNS through the gorge", "the courtyard FILLS WITH the smell of citrus", "the spire RISES against the sky".
+- Keep sentences subject-verb-object where possible. Avoid heavy fronting, dangling participles, and elliptical constructions — translators mis-handle them and the audio reads broken in non-English locales.
+- Cultural references must be self-explanatory in one beat. If you mention "Romanesque" or "Achaemenid" or "saudade", add a one-clause gloss for listeners outside that tradition.`;
 }
 
 export function buildGuideUser(args: GuidePromptArgs): string {
