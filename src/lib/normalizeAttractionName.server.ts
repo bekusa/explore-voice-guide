@@ -33,31 +33,32 @@ import { callClaude } from "@/lib/anthropic.server";
 const nameCache = new Map<string, string>();
 const CACHE_LIMIT = 5000;
 
+// Rules-only canonicalisation prompt — no few-shot examples by Beka's
+// call. Earlier versions used 8 worked examples but one of them
+// ("პაკ ხლონგ ტალატი" → "Khlong Lat Mayom Floating Market") was
+// itself wrong (two different Bangkok markets), which actively
+// taught Haiku the substitution behaviour we were trying to ban.
+// Rather than maintain a vetted example set, we ship the rules
+// straight. The numbered list + strict OUTPUT FORMAT block carries
+// most of the work the examples used to do.
 const SYSTEM_PROMPT =
-  "You translate landmark / attraction / city names into their canonical English form. " +
-  "Respond with ONLY the English name. No quotes, no markdown, no explanation, no punctuation around it. " +
-  "If the input is already in English, repeat it back unchanged. " +
-  "If the input is a transliteration (e.g. Georgian phonetic spelling of a Thai place), " +
-  "return the standard English Wikipedia / Google Maps spelling. " +
-  // STRICT NO-GUESS rule (Beka caught Haiku turning Tbilisi's "რიყის
-  // პარკი" into the unrelated "Rioni Park" — same-script, similar-
-  // sounding Georgian word for a totally different geographic
-  // feature). The model must transliterate the EXACT place the user
-  // typed, never auto-correct it to a more-famous similar-sounding
-  // place. If you don't recognise the place, keep the closest direct
-  // transliteration — do NOT swap in a different landmark.
-  "CRITICAL: NEVER swap an unfamiliar name for a more famous similar-sounding one. " +
-  '"რიყის" and "რიონის" sound similar but are different places — keep what the user typed. ' +
-  "When uncertain, return a direct phonetic transliteration of the EXACT input, not a substituted name. " +
-  "Examples: " +
-  '"პარიზი" → "Paris"; ' +
-  '"პაკ ხლონგ ტალატი" → "Khlong Lat Mayom Floating Market"; ' +
-  '"თბილისი" → "Tbilisi"; ' +
-  '"რიყის პარკი" → "Rike Park"; ' +
-  '"მთაწმინდის პარკი" → "Mtatsminda Park"; ' +
-  '"ნარიყალა" → "Narikala"; ' +
-  '"ანჩისხატის ეკლესია" → "Anchiskhati Basilica"; ' +
-  '"Eiffel Tower" → "Eiffel Tower".';
+  "You normalize a single place name into its canonical English form.\n\n" +
+  "The input may be a landmark, attraction, neighborhood, park, museum, religious site, natural site, city, region, or country. " +
+  "It may be written in Georgian, Cyrillic, Arabic, Persian, Chinese, Japanese, Korean, Thai, Devanagari, English, or phonetic transliteration.\n\n" +
+  "OUTPUT FORMAT (strict):\n" +
+  "- Respond with ONLY the normalized English place name on a single line.\n" +
+  '- No quotes. No markdown. No explanation. No alternative names. No parenthetical notes. No trailing punctuation. No prefatory phrases like "Here is..." or "The answer is...".\n' +
+  '- If you cannot resolve the input, still return a single-line phonetic English transliteration of the EXACT input — never apologise, never say "I cannot find...", never return an empty answer.\n\n' +
+  "NORMALIZATION RULES:\n" +
+  "1. Canonical source: use the exact Wikipedia article title spelling, including any diacritics Wikipedia includes. When Wikipedia and Google Maps disagree, prefer Wikipedia.\n" +
+  "2. If the input is already a correct English place name, return it unchanged.\n" +
+  "3. If the input is in a non-Latin script, transliterate to the standard English Wikipedia spelling of that EXACT place.\n" +
+  "4. Preserve the exact intended place. Do not replace it with a more famous, nearby, or similar-sounding attraction. Accuracy beats popularity — a lesser-known exact match is always better than a famous but wrong substitution. This is the most important rule.\n" +
+  "5. If multiple real places could match the input, choose the closest direct transliteration of the EXACT input rather than guessing which famous place the user meant.\n" +
+  "6. If you have ANY doubt about which real place is meant, return a direct phonetic transliteration of the input rather than substituting a different landmark. The downstream cache will simply miss and re-fetch — that is safe. Substitution is not.\n" +
+  '7. Do NOT add generic words ("Museum", "Park", "Church", "Square", "City") unless they are part of the official Wikipedia title.\n' +
+  "8. Do NOT remove meaningful place-type words when they ARE part of the name.\n" +
+  '9. If the input includes a city qualifier after a landmark name ("Hagia Sophia Istanbul", "Eiffel Tower, Paris", "Louvre in Paris"), return ONLY the landmark name.';
 
 /**
  * Translate `name` to its canonical English form. English inputs
@@ -103,7 +104,10 @@ export async function normalizeToCanonicalEnglish(
       model: "claude-haiku-4-5",
       system: SYSTEM_PROMPT,
       user: trimmed,
-      maxTokens: 256,
+      // A place name is at most ~10 words. 64 tokens is roomy headroom
+      // and a hard ceiling against runaway output if Claude ignores the
+      // "no explanation" rule and starts writing prose.
+      maxTokens: 64,
       temperature: 0.1, // tight — we want consistency, not creativity
     });
     // Strip leading / trailing quotes and whitespace; Claude
