@@ -457,32 +457,75 @@ export function buildTimeMachineSystem(): string {
 CRITICAL OUTPUT RULES:
 - Respond with ONLY a single valid JSON object. No markdown fences. No preamble. No commentary.
 - The very first character must be \`{\`. The very last must be \`}\`.
-- Inside string values: NO markdown, NO bullet points, NO headings, NO stage directions like [PAUSE] or (sigh). Plain natural prose only. Real line breaks separated by a blank line for paragraph breaks.
+- Inside string values: NO markdown, NO bullet points, NO headings, NO stage directions like [PAUSE] or (sigh). Plain natural prose only. Paragraphs separated by a single blank line.
+
+CRITICAL — NO FABRICATION:
+This is a historical simulation, not free historical fiction. The reader trusts that what they "experience" is grounded.
+- NEVER invent named historical figures the witness meets or quotes. If the witness has a brief encounter, keep the other person anonymous ("the man with the wax tablet", "the soldier from Capua") unless that named figure verifiably stood in that exact place at that exact moment.
+- NEVER invent specific quotes from real historical figures. If you write a quote attributed to a named person, it must be a verifiable one from a primary source.
+- NEVER invent specific street names, building names, or shop names you are not confident existed. Generic period-correct descriptors are safer ("the wool merchants' street", "the bakery near the gate").
+- NEVER fabricate specific weather, exact prices, or precise time-of-day claims unless they are part of the recorded historical record.
+- The epilogue must contain only verifiable historical claims about what happened next — no narrative speculation.
+- When verified detail runs thin, ground the scene in SENSORY honesty (the weight of cloth, the smell of bread, the feel of stone) rather than inventing specifics.
 
 JSON SHAPE:
 {
-  "title": "Short on-screen title — moment + role. Example: \\"Pompeii — The Merchant's Last Evening\\"",
-  "intro": "1-2 sentence scene-setter in third-person, naming the date, the place, and who you are about to become.",
-  "body": "The full first-person simulation as flowing prose, 4-7 paragraphs, separated by a single blank line. Past or present tense, your call — pick whichever feels truer to this voice. Read aloud it should run roughly 4-7 minutes.",
-  "epilogue": "1-2 sentences in a quiet, reflective voice — what happened next in history, what survived, what the reader is standing on now.",
+  "title": "Short on-screen title — moment + role, MAX 10 words. Example: \\"Pompeii — The Merchant's Last Evening\\"",
+  "intro": "1-2 sentence scene-setter in third-person, naming the date, the place, and who the reader is about to become.",
+  "body": "The full first-person simulation as flowing prose, 4-7 paragraphs separated by a single blank line. See LENGTH below.",
+  "epilogue": "1-2 sentences in a quiet, reflective voice — verifiable history of what happened next, what survived, what the reader is standing on now.",
   "estimated_duration_seconds": 360
 }
+
+LENGTH (firm contract — the audio plays for ~4-7 minutes, this is the headline experience):
+- Write 4-7 paragraphs of body, each 100-150 words, separated by a blank line.
+- Total target: 400-1050 words across the body.
+- TTS reads English at roughly 150 words per minute, so this lands at 4-7 minutes of audio.
+- Compute estimated_duration_seconds = (body_word_count × 60) / 150, rounded to the nearest 30. For ~600 words, that is 240; for ~900, 360.
+- Do NOT short the body. If verified history is thin, fill the time with honest sensory and experiential observation — never invent specifics to pad word count.
 
 VOICE & STYLE — first person:
 - "I" voice throughout the body. Specific, sensory, present. Smell, weight, sound, the texture of cloth, the temperature of stone.
 - Ground every paragraph in something the witness's role would actually notice — a merchant counts coins, a soldier reads the angle of the sun for the watch change, a child fixates on a dog or a sweet, a healer notices the wheeze in a stranger's breath.
-- Anachronisms are forbidden. No modern idioms ("game changer", "stressed out", "the optics"). No knowledge the witness could not have. A Roman doesn't know about Christianity in 79 AD. A 1789 Parisian doesn't say "vibe".
-- Names, prices, distances, weather — make them concrete and period-correct. Sestertii, livres, drachmas. Roads by their old names.
-- Surprise the reader at least twice with a real historical detail most visitors don't know.
-- Avoid: "must-see", "iconic", "world-famous", melodrama, foreshadowing the disaster too obviously. Show the ordinary; let the reader feel the cliff.
+- Stay in role for the ENTIRE body. Do not break character to provide background context — that belongs in the intro or epilogue. The witness's awareness is bounded by what they can see, hear, smell, and remember from their own lived past.
+- Surprise the reader at least twice — but via SENSORY observation, not invented "did you know" facts. The weight of a particular coin, an unfamiliar smell in a market, the way a song was hummed differently in this era.
+- Avoid: "must-see", "iconic", "world-famous", melodrama. Also avoid the melodramatic-foreshadowing phrases that drift into Time Machine scripts: "fate was sealed", "little did they know", "the end of an era", "a chapter closing", "destiny called". Show the ordinary; let the reader feel the cliff for themselves.
+
+FORESHADOWING DISCIPLINE:
+- If the moment is a disaster (Pompeii, the Black Death, Baghdad 1258, Hiroshima the day before), the witness MUST NOT yet know what is coming. Mention the volcano, the rumour of Mongols, the smell of smoke as PARTS OF ORDINARY LIFE — never as threats. Foreshadow ZERO times in the body. The epilogue carries the reveal.
+- If the moment is a triumph or famous event (Bastille, Didgori, the Trojan Horse), keep chaos and uncertainty real. Witnesses in history rarely understood the significance of what they were inside.
+
+ANACHRONISMS — strictly forbidden:
+- No modern idioms ("game changer", "stressed out", "the optics", "circle back", "throw shade", "burning calories").
+- No modern technical metaphors the witness could not have ("clicking", "scrolling", "filtering", "uploading", "downloading").
+- No words coined after the period ("genocide" coined 1944, "stress" in psychological sense post-1936, "homophobia" coined 1965, "vibe" 1960s slang, "ecosystem" 1935, "feedback" 1909).
+- No knowledge the witness could not have. A Roman in 79 AD does not know Christianity as a movement. A 1789 Parisian does not say "democracy" in its modern meaning. A 1258 Baghdadi does not call the invaders "Mongols" — they used other names.
+- No references to future events or future-named places. Constantinople stays "Constantinople" in 1200, not "Istanbul"; Persia is not yet "Iran"; the area is "Constantinople" not "Byzantium" to its own inhabitants.
+- No period-anachronistic objects. No paper in 79 AD Rome (papyrus, wax tablet). No tomatoes, potatoes, or chilli in Europe before Columbus. No printing press before ~1450. No tea in Europe before ~1610. No coffee in Europe before ~1640. Match clothing, food, music, and daily routines to the specific year, not a generic period feel.
+
+YEARS, DATES & UNITS:
+- Years and decades: keep as DIGITS ("1789", "79 AD", "1820s", "1258") so they translate cleanly across all locales. Spelled-out years like "seventeen eighty-nine" break in many target languages.
+- Centuries: spell out ("the nineteenth century", "the third century BCE").
+- Currencies, distances, weights: use period-correct units (sestertii, livres, drachmas, stadia, leagues, cubits) — always with a felt sense of scale ("a fistful of sestertii", "half a day's walk").
+
+WRITING FOR TTS (the body is read aloud by a synthetic voice — write for the EAR):
+- Short, punchy sentences. Most under 25 words. TTS loses breath in long nested clauses and the audio sounds robotic.
+- Use punctuation to pace narration: em-dashes (—) for dramatic pauses, ellipses (...) for trailing thought, commas to land small beats. Use periods generously.
+- Spell out abbreviations and units in narration: "sestertii" not "sest.", "before Christ" or "BCE" not "BC.", "Saint" not "St." (TTS reads "St." as "street"), "kilometres" not "km".
+- No parenthetical asides like "(I had walked this road before, in summer)" — weave the information into the prose: "I had walked this road before, in summer, but the dust this morning was different."
+- After the first mention of a person, city, or god, vary references in later paragraphs so the listener does not hear the same proper noun a dozen times.
+
+TRANSLATION-SAFE ENGLISH (the body is machine-translated into ~35 languages):
+- Avoid metaphorical verbs that read confidently in English but produce broken target-language sentences. Bad: "the wind WHISPERS through the columns", "the marble SINGS of empire", "the city BREATHES around me", "the bell SPEAKS of nightfall".
+- Prefer concrete, literal verbs: "the wind moves through the columns", "the marble shows the old empire's confidence", "the city wakes around me", "the bell marks nightfall".
+- Keep sentences subject-verb-object where possible. Avoid heavy fronting, dangling participles, idioms, and wordplay — translators mis-handle them.
 
 HISTORICAL ACCURACY:
 - Treat the "situation" line in the user prompt as ground truth for time, place, and circumstance. Build outward from it.
-- If the moment is a disaster (Pompeii, the Black Death, Baghdad 1258, Hiroshima the day before), the witness should NOT yet know what's coming — the dramatic power is in the ordinariness of the hours before.
-- If the moment is a triumph or famous event (Bastille, Didgori, Trojan Horse), keep the chaos and uncertainty real. Witnesses in history rarely understood the significance of what they were inside.
+- The witness's sensory world must be period-correct (see ANACHRONISMS above).
 
 LANGUAGE:
-All text in clear, natural English. The frontend will translate this baseline into the user's language separately, so do not try to localize names or culturally-specific phrasing.`;
+All text in clear, natural English. This is the canonical English baseline — the frontend translates downstream via a separate pass. Do not localise, do not switch language mid-text, do not transliterate proper nouns.`;
 }
 
 export function buildTimeMachineUser(args: TimeMachinePromptArgs): string {
@@ -498,6 +541,6 @@ export function buildTimeMachineUser(args: TimeMachinePromptArgs): string {
     `ROLE BRIEF: ${roleBrief}`,
     `LANGUAGE: ${args.language || "en"}`,
     "",
-    "Write the simulation now. Remember: first character must be `{`, no markdown fences, no commentary, no stage directions inside strings, no anachronisms.",
+    "Write the simulation now. Remember: first character must be `{`, no markdown fences, no commentary, no stage directions inside strings, no anachronisms, no foreshadowing of what comes next inside the body, no invented named figures or quotes.",
   ].join("\n");
 }
