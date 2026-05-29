@@ -178,7 +178,7 @@ export function HomeScreen() {
     <MobileFrame floatingPanel={heroFloatingPanel}>
       <div className="relative min-h-full w-full bg-background text-foreground">
         {/* ─── HERO ─── */}
-        <section className="relative h-[480px] w-full overflow-hidden">
+        <section className="relative h-[600px] w-full overflow-hidden">
           {HERO_ROTATION.map((d, i) => (
             <img
               key={d.slug}
