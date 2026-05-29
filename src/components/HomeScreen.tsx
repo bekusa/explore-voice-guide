@@ -193,13 +193,8 @@ export function HomeScreen() {
                 the dark theme (the body bg is already dark, so the
                 hero photo reads with enough contrast) but kicks in on
                 the light theme where Beka caught the photos looking
-                washed-out behind the hero copy. Bumped 25% → 45% in
-                the second pass after Beka caught the photos still
-                reading milky on the Featured Cities row + the home
-                hero. Paired with `[.light_&]:` text overrides + drop-
-                shadow on the title and blurb below so they stay legible
-                on the now-darker wash. */}
-            <div className="pointer-events-none absolute inset-0 bg-black/0 [.light_&]:bg-black/45" />
+                washed-out behind the hero copy. */}
+            <div className="pointer-events-none absolute inset-0 bg-black/0 [.light_&]:bg-black/25" />
             <div className="absolute inset-0 bg-gradient-hero" />
             <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background/60 to-transparent" />
 
