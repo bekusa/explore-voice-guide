@@ -21,15 +21,6 @@
  * destinationStore + useSelectedDestination still need.
  */
 
-// WebP — converted from the original JPGs in the pre-Capacitor image
-// optimization pass (Phase 2.4). ImageMagick @ quality 80 brought the
-// 27-image bundle from 4.4 MB → 2.5 MB (-43%) with no visible quality
-// loss in the hero frame at 1280×800. Capacitor's mobile WebView
-// supports WebP natively on iOS 14+ / Android 4.0+, well below our
-// minimum target.
-import tbilisiHero from "@/assets/tbilisi-hero.webp";
-import romeImg from "@/assets/destinations/rome.webp";
-
 export type Destination = {
   slug: string;
   city: string;
@@ -59,8 +50,8 @@ export type Destination = {
  */
 export const DESTINATIONS: Destination[] = [
   // ─── Hero rotation cities (have hero images) ────────────────────
-  { slug: "tbilisi", city: "Tbilisi", country: "Georgia", hero: tbilisiHero, lat: 41.7151, lng: 44.8271 },
-  { slug: "rome", city: "Rome", country: "Italy", hero: romeImg, lat: 41.9028, lng: 12.4964 },
+  { slug: "tbilisi", city: "Tbilisi", country: "Georgia", hero: "https://images.unsplash.com/photo-1565008447742-97f6f38c985c?auto=format&fit=crop&w=1280&q=80", lat: 41.7151, lng: 44.8271 },
+  { slug: "rome", city: "Rome", country: "Italy", hero: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1280&q=80", lat: 41.9028, lng: 12.4964 },
   {
     slug: "paris",
     city: "Paris",
@@ -87,15 +78,13 @@ export const DESTINATIONS: Destination[] = [
   },
 
   // Istanbul promoted into the Home hero rotation per Beka's spec
-  // (Tbilisi → Rome → Istanbul). Hero image from Unsplash (Hagia
-  // Sophia + the Bosphorus skyline at golden hour); swap for a local
-  // /assets/destinations/istanbul.webp later if the hosted URL ever
-  // disappears.
+  // (Tbilisi → Rome → Istanbul). Hero image from Unsplash (Galata
+  // Tower + the Bosphorus at golden hour).
   {
     slug: "istanbul",
     city: "Istanbul",
     country: "Türkiye",
-    hero: "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?auto=format&fit=crop&w=1280&q=80",
+    hero: "https://images.unsplash.com/photo-1527838832700-5059252407fa?auto=format&fit=crop&w=1280&q=80",
     lat: 41.0082,
     lng: 28.9784,
   },
