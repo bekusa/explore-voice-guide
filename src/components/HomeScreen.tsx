@@ -193,10 +193,13 @@ export function HomeScreen() {
               the dark theme (the body bg is already dark, so the
               hero photo reads with enough contrast) but kicks in on
               the light theme where Beka caught the photos looking
-              washed-out behind the dark hero copy. The .light variant
-              uses a 25%-black wash; the dark theme keeps the photo
-              at full punch via opacity 0. */}
-          <div className="pointer-events-none absolute inset-0 bg-black/0 [.light_&]:bg-black/25" />
+              washed-out behind the hero copy. Bumped 25% → 45% in
+              the second pass after Beka caught the photos still
+              reading milky on the Featured Cities row + the home
+              hero. Paired with `[.light_&]:` text overrides + drop-
+              shadow on the title and blurb below so they stay legible
+              on the now-darker wash. */}
+          <div className="pointer-events-none absolute inset-0 bg-black/0 [.light_&]:bg-black/45" />
           <div className="absolute inset-0 bg-gradient-hero" />
           <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background/60 to-transparent" />
 
@@ -348,10 +351,14 @@ export function HomeScreen() {
               <Sparkles className="h-2.5 w-2.5" />
               {t("home.featuredBadge")} · {heroCountry}
             </span>
-            <h1 className="font-display mt-4 text-[44px] font-medium leading-[0.98] tracking-[-0.025em] text-foreground">
+            {/* Light-theme overrides: text flips to white with drop-
+                shadow so it reads against the brighter hero photos.
+                Dark theme is unchanged — `text-foreground` already
+                resolves to white-ish there. */}
+            <h1 className="font-display mt-4 text-[44px] font-medium leading-[0.98] tracking-[-0.025em] text-foreground [.light_&]:text-white [.light_&]:drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)]">
               {heroPart1} <span className="italic text-primary">{heroPart2}</span>
             </h1>
-            <p className="mt-4 max-w-[320px] text-[14px] leading-[1.55] text-foreground/75">
+            <p className="mt-4 max-w-[320px] text-[14px] leading-[1.55] text-foreground/75 [.light_&]:text-white/90 [.light_&]:drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
               {heroBlurb}
             </p>
             {/* Beka noticed the "Open {city}" verb pushed the button
@@ -633,18 +640,20 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
         // reads as "loading" rather than "broken".
         <div className="absolute inset-0 bg-gradient-to-br from-secondary to-card" />
       )}
-      {/* Light-theme darkening wash — same trick as the hero photo
-          (Beka caught the cards reading too bright on daylight). The
-          dark theme keeps the photo at full punch via opacity 0. */}
-      <div className="pointer-events-none absolute inset-0 bg-black/0 [.light_&]:bg-black/30" />
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-background/10" />
-      <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-primary/50 bg-background/55 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-md">
+      {/* Bottom gradient + label are LOCKED to dark/white in both
+          themes — `bg-background`-based gradients washed the photo
+          milky in light mode (Beka caught it on Featured Cities and
+          on this Top Museums strip). Hardcoded black gradient + white
+          text + drop-shadow keep the photo punchy and the label legible
+          on either theme. Matches the CityCard pattern. */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
+      <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-primary/50 bg-black/45 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-md">
         #{rank}
       </div>
       {/* Beka asked to drop the decorative emoji from museum cards —
           the photo is doing the visual work. */}
       <div className="absolute inset-x-3.5 bottom-3.5">
-        <div className="font-display text-[15px] font-medium leading-tight text-foreground line-clamp-2">
+        <div className="font-display text-[15px] font-medium leading-tight text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)] line-clamp-2">
           {name}
         </div>
       </div>
@@ -675,28 +684,34 @@ function TimeMachineMomentCard({
         loading="lazy"
         className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
       />
-      {/* Light-theme darkening wash, same trick as the museum card. */}
-      <div className="pointer-events-none absolute inset-0 bg-black/0 [.light_&]:bg-black/30" />
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-background/10" />
+      {/* Bottom gradient + labels locked dark/white in both themes —
+          same fix as MuseumCard and CityCard. The previous
+          `bg-background` gradient washed the photo milky in light
+          theme; hardcoded black gradient + white text + drop-shadow
+          keeps the photo punchy in both. */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
 
       {/* Rank pill */}
-      <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-primary/50 bg-background/55 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-md">
+      <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-primary/50 bg-black/45 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-md">
         <Sparkles className="h-2.5 w-2.5" /> #{rank}
       </div>
 
       {/* Year pill */}
-      <div className="absolute right-3 top-3 rounded-full border border-foreground/15 bg-background/45 px-2 py-0.5 text-[9.5px] font-semibold tracking-wide text-foreground/80 backdrop-blur-md">
+      <div className="absolute right-3 top-3 rounded-full border border-white/20 bg-black/45 px-2 py-0.5 text-[9.5px] font-semibold tracking-wide text-white/85 backdrop-blur-md">
         {attraction.year}
       </div>
 
       <div className="absolute inset-x-3.5 bottom-3.5">
         {/* Decorative emoji removed per Beka — same call we made on
             the museum strip; the photo + rank/year pills already
-            carry the visual weight. */}
-        <div className="font-display text-[15px] font-medium leading-tight text-foreground line-clamp-2">
+            carry the visual weight. White text + drop-shadow stays
+            legible on either theme. */}
+        <div className="font-display text-[15px] font-medium leading-tight text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)] line-clamp-2">
           {name}
         </div>
-        <div className="mt-1 text-[10.5px] leading-snug text-foreground/65">{era}</div>
+        <div className="mt-1 text-[10.5px] leading-snug text-white/75 drop-shadow-[0_1px_3px_rgba(0,0,0,0.45)]">
+          {era}
+        </div>
       </div>
     </Link>
   );

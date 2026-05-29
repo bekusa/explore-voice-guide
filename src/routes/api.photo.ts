@@ -618,6 +618,18 @@ function isWrongTopicForArtwork(description: string): boolean {
   ) {
     return true;
   }
+  // Historical maps / atlases / charts. Beka caught "The Winged Bull
+  // (Lamassu)" returning a Wikipedia map of the Achaemenid Empire —
+  // full-text search ranked the historical map ahead of the Lamassu
+  // article because the map article mentions winged bulls as imperial
+  // iconography. Reject cartographic article descriptions.
+  if (
+    /\b(map of|atlas of|historical map|world map|map showing|chart of|map depicting|topographic map|administrative map|political map|geographic map|cartographic|empire in|kingdom in|caliphate in|dynasty in)\b/.test(
+      d,
+    )
+  ) {
+    return true;
+  }
   return false;
 }
 
@@ -902,6 +914,33 @@ export const Route = createFileRoute("/api/photo")({
               museumToReject: museum ?? undefined,
               artistToReject: artist ?? undefined,
             };
+            // PARENTHETICAL-INNER FAST PATH: when Claude emits a name
+            // like "The Winged Bull (Lamassu)" (against the no-parens
+            // prompt rule), the OUTER name routinely lands on a wrong
+            // article (Beka caught a Persian-Empire historical map for
+            // "The Winged Bull" outer) while the INNER name is usually
+            // the canonical Wikipedia title ("Lamassu" resolves cleanly
+            // to the Assyrian sculpture article). Try the inner as a
+            // standalone query first when it looks like a canonical
+            // proper-noun title (1-3 capitalized tokens, no descriptive
+            // commas / "by"). The rest of the lookup chain still runs
+            // if the inner misses.
+            if (isArtwork) {
+              const parenMatch = q.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+              if (parenMatch) {
+                const inner = parenMatch[2].trim();
+                const innerTokens = inner.split(/\s+/);
+                const looksLikeCanonical =
+                  innerTokens.length >= 1 &&
+                  innerTokens.length <= 3 &&
+                  /^\p{Lu}/u.test(inner) &&
+                  !/^\d/.test(inner) &&
+                  !/[,;:]|\bby\b|\bof\b/i.test(inner);
+                if (looksLikeCanonical) {
+                  photoUrl = await wikipediaPhoto(inner, lang, wikiOpts);
+                }
+              }
+            }
             // ARTWORK-WITH-ARTIST FAST PATH: when we have an artist
             // (museum-highlights always passes one when it knows it),
             // the most reliable Wikipedia lookup is the artist-

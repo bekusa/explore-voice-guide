@@ -352,6 +352,11 @@ Every entry must refer to a DIFFERENT physical object. Two entries are duplicate
 - Same physical artwork under different titles (e.g. "The Clothed Maja" and "La Maja Vestida"; "Christ on the Cross" and "Crucifixion (Velázquez)"; "The Nativity" and "La Adoración de los Magos" when both reference the same painting). If the same canvas could be visited only once at the museum, only one entry is allowed.
 - Study, sketch, preparatory drawing, replica, copy, or alternative version of a work already in your list (e.g. the Raft of the Medusa final canvas + its preparatory studies).
 - Same artist's variations on a theme that share a museum object number.
+
+ABSOLUTELY FORBIDDEN in the name field (Beka caught entries like "Lamassu (duplicate or study)" and "The Winged Bull (Lamassu) (duplicate)" — both indicate the rule below was violated):
+- The words "duplicate", "study", "version 2", "version 3", "copy", "replica", "alternate", "variant", or any equivalent marker. If you find yourself about to write any of these in the name, that is a SIGNAL the entry is a duplicate. STOP, do not write it, pick a different work.
+- Multiple parenthetical groups in the name. The name field allows at most ONE parenthetical for genuine Wikipedia disambiguation, e.g. "The Lacemaker (Vermeer)". Forms like "X (Y) (Z)" indicate you are stacking duplicates.
+
 Before generating each entry, scan your already-emitted entries for ANY of these overlaps with the work you are about to write. If you spot one, STOP — do not generate that entry. Select only the canonical version, leave the slot empty, and fill it with a completely different notable work that genuinely exists in this museum. (LLMs cannot delete an entry once written, so deduplicate BEFORE writing each item, not after.)
 When a work has both an English title and a local-language title in common use, list it under the English Wikipedia article title (see "name" field rule). The OTHER title should NEVER appear as a separate entry — it is the same physical object.
 
