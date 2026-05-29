@@ -346,10 +346,8 @@ export function HomeScreen() {
               <Sparkles className="h-2.5 w-2.5" />
               {t("home.featuredBadge")} · {heroCountry}
             </span>
-            {/* Light-theme overrides: text flips to white with drop-
-                shadow so it reads against the brighter hero photos.
-                Dark theme is unchanged — `text-foreground` already
-                resolves to white-ish there. */}
+            {/* Removed light-theme white overrides — text now stays
+                `text-foreground` (dark on light theme) for readability. */}
             <h1 className="font-display mt-4 text-[44px] font-medium leading-[0.98] tracking-[-0.025em] text-foreground">
               {heroPart1} <span className="italic text-primary">{heroPart2}</span>
             </h1>
