@@ -194,7 +194,7 @@ export function HomeScreen() {
                 hero photo reads with enough contrast) but kicks in on
                 the light theme where Beka caught the photos looking
                 washed-out behind the hero copy. */}
-            <div className="pointer-events-none absolute inset-0 bg-black/0 [.light_&]:bg-black/25" />
+            <div className="pointer-events-none absolute inset-0 bg-black/0 [.light_&]:bg-black/0" />
             <div className="absolute inset-0 bg-gradient-hero" />
             <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background/60 to-transparent" />
 
