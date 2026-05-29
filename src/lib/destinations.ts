@@ -1,4 +1,4 @@
-import tbilisiHero from "@/assets/tbilisi-hero-v4.jpg";
+import tbilisiHero from "@/assets/tbilisi-hero-v5.jpg";
 import romeHeroV1 from "@/assets/rome-hero-v1.jpg";
 
 /**
