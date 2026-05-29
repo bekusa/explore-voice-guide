@@ -585,6 +585,39 @@ function isWrongTopicForArtwork(description: string): boolean {
   if (/\b(album by|studio album|live album|compilation album|soundtrack|extended play|single by)\b/.test(d)) return true;
   if (/\b(\d{4}\s+(?:novel|play|opera|musical|video game|comic|manga|short story|poem))\b/.test(d)) return true;
   if (/\b(song by|song from|composition by|symphony by)\b/.test(d)) return true;
+  // Music groups and bands. Beka caught "The Spinners" (Velázquez's
+  // "Las Hilanderas") landing on Wikipedia's article for the Detroit
+  // R&B group — the resulting hero photo was five musicians in white
+  // suits, not the Prado canvas. Wikipedia summaries tag bands with
+  // genre + format compounds: "American R&B group", "British boy band",
+  // "Hip-hop trio", "Vocal quartet", etc.
+  if (
+    /\b(music group|musical group|vocal group|vocal trio|vocal quartet|vocal duo|vocal ensemble|vocal harmony group|rock band|pop band|punk band|metal band|jazz band|jazz ensemble|brass band|funk band|disco band|r ?& ?b group|r ?& ?b trio|r ?& ?b vocal|soul group|soul trio|hip[- ]hop group|hip[- ]hop trio|hip[- ]hop duo|boy band|girl group|boy group|girl band)\b/.test(
+      d,
+    )
+  ) {
+    return true;
+  }
+  // Real-world buildings the artwork DEPICTS (the artwork article and
+  // the building article are separate Wikipedia pages). Beka caught
+  // "Flatford Mill" returning the actual Suffolk watermill instead of
+  // Constable's 1816-17 canvas. The building article describes the
+  // physical site ("watermill in Suffolk, England"); the painting
+  // article would say "1816-1817 oil painting by John Constable".
+  // Reject building descriptions when the same description does NOT
+  // also flag a visual-artwork medium — safest gate, doesn't filter
+  // out architectural artworks that happen to be themselves famous
+  // (e.g. the Sainte-Chapelle interior reproduced as illuminations).
+  if (
+    /\b(mill in|watermill|windmill|sawmill|manor in|manor house|country house|country estate|cottage in|farmhouse|townhouse|barn in|stable in|inn in|tavern in|warehouse in|factory in|building in|cathedral in|chapel in|church in|monastery in|abbey in|priory in|castle in|fortress in|tower in|bridge in|station in|theatre in|theater in|stadium in|opera house in|residence in|palace in|villa in|garden in|park in)\b/.test(
+      d,
+    ) &&
+    !/\b(painting|sculpture|drawing|fresco|altarpiece|tapestry|engraving|lithograph|mural|watercolor|watercolour|illumination|illustration|etching|pastel|miniature|woodcut|print by|series of paintings|cycle of paintings)\b/.test(
+      d,
+    )
+  ) {
+    return true;
+  }
   return false;
 }
 
@@ -869,10 +902,50 @@ export const Route = createFileRoute("/api/photo")({
               museumToReject: museum ?? undefined,
               artistToReject: artist ?? undefined,
             };
-            // 1) bare q — catches famous attractions with a canonical
-            //    Wikipedia article at the exact title.
-            photoUrl = await wikipediaPhoto(q, lang, wikiOpts);
-            // 2) q + city — only if bare missed AND we have a city
+            // ARTWORK-WITH-ARTIST FAST PATH: when we have an artist
+            // (museum-highlights always passes one when it knows it),
+            // the most reliable Wikipedia lookup is the artist-
+            // disambiguated form Wikipedia itself uses for ambiguous
+            // titles. Beka's catches that this fixes:
+            //   - "The Spinners" alone landed on Wikipedia's Detroit
+            //     R&B group, returning a black-and-white photo of
+            //     five musicians; the painting article is at
+            //     "Las Hilanderas" with an alternate redirect from
+            //     "The Spinners (Velázquez)".
+            //   - "Flatford Mill" alone landed on the real Suffolk
+            //     watermill; Constable's painting article is at
+            //     "Flatford Mill (Constable)".
+            // We try the parenthetical-disambiguator form first, then
+            // a bare "Artist Surname Title" combination, BEFORE
+            // falling through to the bare title that mis-resolves.
+            // The artist's last token is enough — Wikipedia
+            // disambiguators use the surname ("(Vermeer)", "(El
+            // Greco)", "(Velázquez)") rather than the full name.
+            if (isArtwork && artist) {
+              const artistTokens = artist.trim().split(/\s+/).filter(Boolean);
+              const artistSurname = artistTokens[artistTokens.length - 1] ?? "";
+              if (artistSurname && !q.toLowerCase().includes(artistSurname.toLowerCase())) {
+                // 1a) "{Artwork} ({Surname})" — Wikipedia disambiguator
+                //     form. Matches articles like
+                //     "Flatford Mill (Constable)" exactly.
+                photoUrl = await wikipediaPhoto(`${q} (${artistSurname})`, lang, wikiOpts);
+                // 1b) "{Artist Full Name} {Artwork}" — for cases
+                //     where Wikipedia stores the painting under a
+                //     different canonical title, the full-text search
+                //     with artist name as a prefix is very specific.
+                if (!photoUrl) {
+                  photoUrl = await wikipediaPhoto(`${artist} ${q}`, lang, wikiOpts);
+                }
+              }
+            }
+            // 2) bare q — catches famous attractions with a canonical
+            //    Wikipedia article at the exact title. Runs after the
+            //    artwork+artist fast path so the Detroit R&B group
+            //    no longer wins for "The Spinners".
+            if (!photoUrl) {
+              photoUrl = await wikipediaPhoto(q, lang, wikiOpts);
+            }
+            // 3) q + city — only if bare missed AND we have a city
             //    that isn't already part of the name. Helps when the
             //    bare title resolves to a disambiguation page (e.g.
             //    "Grand Palace") where the city qualifier picks the

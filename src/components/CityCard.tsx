@@ -123,23 +123,35 @@ export function CityCard({ city }: { city: string }) {
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-secondary to-card" />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+      {/* Bottom gradient + label text are LOCKED to dark / white in
+          both themes. The previous `from-background` gradient followed
+          the theme — fine in dark mode, but in light mode it poured
+          a near-white wash over the bottom half of the photo and
+          bleached the cityscape (Beka caught this on the Featured
+          Cities row: Tbilisi, Rome, and Istanbul all looked milky
+          under the title labels). Hardcoding a black-based gradient
+          keeps the photo punchy in both themes while still giving
+          enough contrast for the white city name. */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
 
       {/* Curated-page badge — top-right pill on cards that route to
           the editorial /destinations/$slug page. Helps users spot
           which cities have full landing pages (intro / gallery /
           museums / neighborhoods / local-loves) vs the search-only
-          dispatch for everything else. Gold pill matches brand. */}
+          dispatch for everything else. Gold pill matches brand. Uses
+          a dark frosted background in both themes for the same
+          reason as the bottom gradient — light-theme `bg-background`
+          made the badge nearly invisible against bright skies. */}
       {hasProfile && (
-        <div className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full border border-primary/50 bg-background/55 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-primary backdrop-blur-md">
+        <div className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full border border-primary/50 bg-black/45 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-primary backdrop-blur-md">
           ★ Lokali Guide
         </div>
       )}
       <div className="absolute inset-x-4 bottom-4">
-        <h3 className="font-display text-[26px] font-medium leading-[1.05] text-foreground">
+        <h3 className="font-display text-[26px] font-medium leading-[1.05] text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.45)]">
           {label}
         </h3>
-        <div className="mt-2 inline-flex items-center gap-1 text-[10px] text-foreground/70">
+        <div className="mt-2 inline-flex items-center gap-1 text-[10px] text-white/80 drop-shadow-[0_1px_3px_rgba(0,0,0,0.45)]">
           <MapPin className="h-2.5 w-2.5" /> {label}
         </div>
       </div>
