@@ -346,12 +346,12 @@ export function HomeScreen() {
               <Sparkles className="h-2.5 w-2.5" />
               {t("home.featuredBadge")} · {heroCountry}
             </span>
-            {/* Removed light-theme white overrides — text now stays
-                `text-foreground` (dark on light theme) for readability. */}
-            <h1 className="font-display mt-4 text-[44px] font-medium leading-[0.98] tracking-[-0.025em] text-foreground">
+            {/* Dark text on light theme with white glow for readability
+                over the photo middle (no longer darkened). */}
+            <h1 className="font-display mt-4 text-[44px] font-medium leading-[0.98] tracking-[-0.025em] text-foreground [.light_&]:drop-shadow-[0_2px_12px_rgba(255,255,255,0.85)]">
               {heroPart1} <span className="italic text-primary">{heroPart2}</span>
             </h1>
-            <p className="mt-4 max-w-[320px] text-[14px] leading-[1.55] text-foreground/75">
+            <p className="mt-4 max-w-[320px] text-[14px] leading-[1.55] text-foreground/85 [.light_&]:drop-shadow-[0_1px_6px_rgba(255,255,255,0.9)]">
               {heroBlurb}
             </p>
             {/* Beka noticed the "Open {city}" verb pushed the button
