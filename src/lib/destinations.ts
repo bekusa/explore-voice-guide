@@ -1,4 +1,5 @@
 import tbilisiHero from "@/assets/tbilisi-hero-v4.jpg";
+import romeHeroV1 from "@/assets/rome-hero-v1.jpg";
 
 /**
  * Curated destination catalogue — slimmed.
@@ -53,7 +54,7 @@ export type Destination = {
 export const DESTINATIONS: Destination[] = [
   // ─── Hero rotation cities (have hero images) ────────────────────
   { slug: "tbilisi", city: "Tbilisi", country: "Georgia", hero: tbilisiHero, lat: 41.7151, lng: 44.8271 },
-  { slug: "rome", city: "Rome", country: "Italy", hero: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1280&q=80", lat: 41.9028, lng: 12.4964 },
+  { slug: "rome", city: "Rome", country: "Italy", hero: romeHeroV1, lat: 41.9028, lng: 12.4964 },
   {
     slug: "paris",
     city: "Paris",
