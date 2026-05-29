@@ -353,7 +353,7 @@ export function HomeScreen() {
             <h1 className="font-display mt-4 text-[44px] font-medium leading-[0.98] tracking-[-0.025em] text-foreground">
               {heroPart1} <span className="italic text-primary">{heroPart2}</span>
             </h1>
-            <p className="mt-4 max-w-[320px] text-[14px] leading-[1.55] text-foreground/75 [.light_&]:text-white/90 [.light_&]:drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
+            <p className="mt-4 max-w-[320px] text-[14px] leading-[1.55] text-foreground/75">
               {heroBlurb}
             </p>
             {/* Beka noticed the "Open {city}" verb pushed the button
