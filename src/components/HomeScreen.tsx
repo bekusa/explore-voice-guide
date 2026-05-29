@@ -197,10 +197,11 @@ export function HomeScreen() {
               the second pass after Beka caught the photos still
               reading milky on the Featured Cities row + the home
               hero. Paired with `[.light_&]:` text overrides + drop-
-              shadow on the title and blurb below so they stay legible
-              on the now-darker wash. */}
+               shadow on the title and blurb below so they stay legible
+               on the now-darker wash. */}
+          <div className="pointer-events-none absolute inset-0 bg-black/[0.12]" />
 
-          {/* Hero carousel chrome — side arrows + bottom dots. Only
+           {/* Hero carousel chrome — side arrows + bottom dots. Only
               renders when there are at least 2 cities to swipe between,
               so a single-city HERO_ROTATION (e.g. local dev override)
               shows no visual difference. Tapping any of the controls
