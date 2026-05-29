@@ -205,16 +205,12 @@ function Profile({ profile }: { profile: CityProfile }) {
             standalone "where to stay" feature, not the editorial
             landing. */}
 
-        {/* ─── What locals love (pull-quotes) ─────────────────────── */}
-        <section className="px-6 pt-8">
-          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
-            {t("city.localsLove")}
-          </span>
-          <h2 className="mt-2 font-display text-[1.5rem] font-medium leading-tight">
-            {t("city.localsLoveHead")}
-          </h2>
-          <LocalLovesList quotes={profile.localLoves} />
-        </section>
+        {/* "What locals love" section retired per Beka's spec
+            (2026-05-27). The hand-written pull-quotes in cityProfiles
+            felt thin once the editorial layout settled, and the
+            section pushed the more useful Etiquette tips below the
+            fold. Quotes still live in cityProfiles.ts as data we
+            could surface elsewhere later. */}
 
         {/* ─── Etiquette tips ────────────────────────────────────── */}
         <section className="px-6 pt-8">

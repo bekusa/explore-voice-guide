@@ -348,7 +348,12 @@ TARGET: 30 highlights, ordered by importance.
 - DO NOT pad with weak, uncertain, duplicate, or generic entries to reach 30. Better 22 trustworthy entries than 30 with 8 borderline or fabricated. But for a museum that obviously HAS 30+ defining works, returning only 15 is its own failure mode — keep going until you reach 30.
 
 UNIQUENESS (Beka's catch, Louvre had 6 Raft of the Medusa entries):
-Every entry must refer to a DIFFERENT work, object, room, or space. Before generating an entry: if you find yourself considering a study, sketch, preparatory work, replica, copy, or alternative version of a work already in your list — STOP, do not generate that entry. Select only the canonical final version. Fill the freed slot with a completely different notable work that genuinely exists in this museum. (LLMs cannot delete an entry once written, so deduplicate BEFORE writing each item, not after.)
+Every entry must refer to a DIFFERENT physical object. Two entries are duplicates and must be collapsed to one when ANY of these is true:
+- Same physical artwork under different titles (e.g. "The Clothed Maja" and "La Maja Vestida"; "Christ on the Cross" and "Crucifixion (Velázquez)"; "The Nativity" and "La Adoración de los Magos" when both reference the same painting). If the same canvas could be visited only once at the museum, only one entry is allowed.
+- Study, sketch, preparatory drawing, replica, copy, or alternative version of a work already in your list (e.g. the Raft of the Medusa final canvas + its preparatory studies).
+- Same artist's variations on a theme that share a museum object number.
+Before generating each entry, scan your already-emitted entries for ANY of these overlaps with the work you are about to write. If you spot one, STOP — do not generate that entry. Select only the canonical version, leave the slot empty, and fill it with a completely different notable work that genuinely exists in this museum. (LLMs cannot delete an entry once written, so deduplicate BEFORE writing each item, not after.)
+When a work has both an English title and a local-language title in common use, list it under the English Wikipedia article title (see "name" field rule). The OTHER title should NEVER appear as a separate entry — it is the same physical object.
 
 ORDERING (matters — the app paginates 10 per page):
 Structure your response with this descending curve of importance regardless of the final count:
