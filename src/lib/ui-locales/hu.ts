@@ -44,42 +44,14 @@ export const HU: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.city": "Tbiliszi",
   "hero.tbilisi.tagline2": "Régi Tbiliszi",
   "hero.tbilisi.blurb":
-    "Kénes fürdőktől és görbe erkélyektől a Szioni-templom énekéig — filmszerű séta az óváros lelkén át.",
-  "hero.paris.country": "Franciaország",
-  "hero.paris.city": "Párizs",
-  "hero.paris.tagline2": "a Szajna",
-  "hero.paris.blurb":
-    "Haussmann sugárútjai, a folyó alkonyatkor és minden kávéházi terasz hosszú flâneur-árnyéka — Párizs hangosan olvassa fel önmagát, ha lelassítasz.",
+    "Kénfürdők, faragott fa erkélyek és a Sioni-székesegyház harangjai. Filmes séta Tbiliszi legrégebbi utcáin.",
   "hero.rome.country": "Olaszország",
   "hero.rome.city": "Róma",
   "hero.rome.tagline2": "Az örök Róma",
   "hero.rome.blurb":
-    "A Forum szellemei, barokk szökőkutak és Trastevere vacsoraasztalai közt — a város, amely soha nem szűnik meg önmaga lenni.",
-  "hero.bangkok.country": "Thaiföld",
-  "hero.bangkok.city": "Bangkok",
-  "hero.bangkok.tagline2": "az Angyalok Városa",
-  "hero.bangkok.blurb":
-    "Khlong-csatornák és aranyozott templomtornyok, szikrázó utcai wokok, és a Chao Phraya, amely a long-tail csónakok mögött ragyog az alkonyatban.",
-  "hero.london.country": "Egyesült Királyság",
-  "hero.london.city": "London",
-  "hero.london.tagline2": "a Temze",
-  "hero.london.blurb":
-    "Fekete taxik az esőben, vasárnapi harangok a Westminsternél, és évszázados birodalom egy folyó mentén, amely még mindig mindent összefog.",
-  "hero.kyoto.country": "Japán",
-  "hero.kyoto.city": "Kiotó",
-  "hero.kyoto.tagline2": "Régi Kiotó",
-  "hero.kyoto.blurb":
-    "Lampionos sikátorok Gionban, mohás templomok és Fusimi tízezer cinóberkapuja — Japán csendes, ősi lelke.",
-  "hero.lisbon.country": "Portugália",
-  "hero.lisbon.city": "Lisszabon",
-  "hero.lisbon.tagline2": "a Tejo folyó",
-  "hero.lisbon.blurb":
-    "Saudade, fado és csempés dombok lejtenek az Atlanti-óceán felé — Lisszabon az azulejo kékjében énekli melankóliáját.",
-  "hero.marrakech.country": "Marokkó",
-  "hero.marrakech.city": "Marrákes",
-  "hero.marrakech.tagline2": "a Vörös Város",
-  "hero.marrakech.blurb":
-    "Lampionos medinák, riad-udvarok és a Dzsemma el-Fna dobszínháza — érzéki túltöltöttség, a legszebb formában.",
+    "A Római Fórum romjai, barokk szökőkutak és vacsoraasztalok Trasteverében. Egy város, amely minden nap viseli a történelmét.",
+  "hero.istanbul.blurb":
+    "A Hagia Szófia kupolái, a naplementekori imára szólítás, és egy rövid komp, amely Európából Ázsiába visz.",
 
   // "Available in every language" badge under the search bar.
   "home.everyLang.title": "Minden nyelven elérhető",

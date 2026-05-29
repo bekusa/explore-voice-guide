@@ -44,42 +44,14 @@ export const VI: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.city": "Tbilisi",
   "hero.tbilisi.tagline2": "Tbilisi cổ",
   "hero.tbilisi.blurb":
-    "Từ những phòng tắm lưu huỳnh và ban công xiêu vẹo đến tiếng kinh của Sioni — một cuộc dạo bước điện ảnh xuyên qua linh hồn phố cổ.",
-  "hero.paris.country": "Pháp",
-  "hero.paris.city": "Paris",
-  "hero.paris.tagline2": "sông Seine",
-  "hero.paris.blurb":
-    "Đại lộ Haussmann, dòng sông lúc hoàng hôn và bóng dài của kẻ flâneur trên từng hiên quán cà phê — Paris tự đọc lên thành tiếng nếu bạn chậm lại.",
+    "Phòng tắm lưu huỳnh, ban công gỗ chạm khắc, và tiếng chuông Nhà thờ Sioni. Một cuộc dạo bộ điện ảnh qua những con phố cổ nhất của Tbilisi.",
   "hero.rome.country": "Ý",
   "hero.rome.city": "Rome",
   "hero.rome.tagline2": "Rome vĩnh hằng",
   "hero.rome.blurb":
-    "Giữa những bóng ma của Forum, đài phun nước baroque và những bàn ăn tối ở Trastevere — thành phố không bao giờ thực sự ngừng là chính mình.",
-  "hero.bangkok.country": "Thái Lan",
-  "hero.bangkok.city": "Bangkok",
-  "hero.bangkok.tagline2": "Thành phố của các Thiên thần",
-  "hero.bangkok.blurb":
-    "Những kênh khlong và đỉnh chùa dát vàng, chảo wok bên đường tóe lửa, và Chao Phraya rực sáng sau những chiếc thuyền đuôi dài lúc hoàng hôn.",
-  "hero.london.country": "Vương quốc Anh",
-  "hero.london.city": "London",
-  "hero.london.tagline2": "sông Thames",
-  "hero.london.blurb":
-    "Những chiếc taxi đen trong mưa, tiếng chuông Chủ nhật ở Westminster và hàng thế kỷ đế chế xếp lớp dọc một dòng sông vẫn còn níu giữ mọi thứ lại với nhau.",
-  "hero.kyoto.country": "Nhật Bản",
-  "hero.kyoto.city": "Kyoto",
-  "hero.kyoto.tagline2": "Kyoto cổ",
-  "hero.kyoto.blurb":
-    "Những con hẻm rực sáng đèn lồng ở Gion, đền phủ rêu và mười nghìn cổng son đỏ Fushimi — linh hồn cổ kính tĩnh lặng của Nhật Bản.",
-  "hero.lisbon.country": "Bồ Đào Nha",
-  "hero.lisbon.city": "Lisbon",
-  "hero.lisbon.tagline2": "sông Tagus",
-  "hero.lisbon.blurb":
-    "Saudade, fado và những ngọn đồi ốp gạch nghiêng xuống Đại Tây Dương — Lisbon ngân vang nỗi u sầu trong sắc xanh azulejo.",
-  "hero.marrakech.country": "Maroc",
-  "hero.marrakech.city": "Marrakech",
-  "hero.marrakech.tagline2": "Thành phố Đỏ",
-  "hero.marrakech.blurb":
-    "Những medina rực ánh đèn lồng, sân riad và sân khấu trống mê hoặc của Jemaa el-Fnaa — một cơn lũ giác quan, ở dạng đẹp nhất.",
+    "Tàn tích Diễn đàn La Mã, đài phun nước baroque, và những bàn ăn tối ở Trastevere. Một thành phố mặc lên lịch sử của mình mỗi ngày.",
+  "hero.istanbul.blurb":
+    "Mái vòm Hagia Sophia, lời gọi cầu nguyện lúc hoàng hôn, và một chuyến phà ngắn đưa bạn từ châu Âu sang châu Á.",
 
   // "Available in every language" badge under the search bar.
   "home.everyLang.title": "Có sẵn ở mọi ngôn ngữ",

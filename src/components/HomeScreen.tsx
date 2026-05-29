@@ -4,6 +4,8 @@ import {
   ArrowRight,
   Bell,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Globe,
   MapPin,
   Play,
@@ -50,11 +52,14 @@ const TIME_MACHINE_TOP_10 = [...TIME_MACHINE_ATTRACTIONS]
   .sort((a, b) => b.score - a.score)
   .slice(0, 10);
 
-// Trimmed to the 3 cities Beka wants surfaced as the brand carousel:
+// The 3 cities Beka wants surfaced as the brand carousel:
 // Tbilisi (Lokali's home base), Rome (the canonical European audio-
-// guide city), Istanbul (East–West crossroads). Paris / Bangkok /
-// London hero copy stays in i18n.ts as harmless leftovers; re-add
-// them to this array later if we want a fuller rotation.
+// guide city), Istanbul (East–West crossroads). The Paris / Bangkok /
+// London / Kyoto / Lisbon / Marrakech hero copy that previously sat in
+// i18n.ts and the locale files as leftover entries has been removed
+// — re-add the corresponding `hero.<slug>.{country,city,tagline2,blurb}`
+// keys to i18n.ts plus translations in each locale file if we want to
+// grow the rotation.
 const HERO_ROTATION = ["tbilisi", "rome", "istanbul"]
   .map((slug) => DESTINATIONS.find((d) => d.slug === slug))
   .filter((d): d is Destination => !!d);
@@ -95,19 +100,39 @@ export function HomeScreen() {
   // narration (Beka's spec — "თუ დაჭერილია Listen ენაზე Hero უნდა
   // ჩერდებოდეს რომ არ გაწყდეს ვოისი").
   const [listening, setListening] = useState(false);
+  // Set true the moment the user taps an arrow or a dot — auto-
+  // rotation then stops for the rest of the session. Same UX as the
+  // attraction-page photo carousel: surprise movement after someone
+  // has engaged feels wrong.
+  const [heroPaused, setHeroPaused] = useState(false);
 
   // Defer client-only state (notifications) until after hydration.
   useEffect(() => setMounted(true), []);
 
   // Slow rotation through featured cinematic shots. Skipped while
-  // the user is listening — see `listening` state above.
+  // the user is listening (Listen panel open) OR has manually swiped
+  // to a city via the arrows / dots — `heroPaused` locks in for the
+  // rest of the visit once engaged.
   useEffect(() => {
-    if (listening) return;
+    if (listening || heroPaused || HERO_ROTATION.length <= 1) return;
     const t = setInterval(() => setHeroIdx((i) => (i + 1) % HERO_ROTATION.length), 7000);
     return () => clearInterval(t);
-  }, [listening]);
+  }, [listening, heroPaused]);
 
   const heroDest = HERO_ROTATION[heroIdx];
+
+  /**
+   * Move the carousel to a specific index. Used by both the side
+   * arrows and the bottom dots. Wraps negative / out-of-range values
+   * so callers can pass `heroIdx - 1` even when at index 0. The first
+   * call also flips `heroPaused` on, stopping auto-rotation for good.
+   */
+  const goHero = (next: number) => {
+    const total = HERO_ROTATION.length;
+    if (total <= 1) return;
+    setHeroPaused(true);
+    setHeroIdx(((next % total) + total) % total);
+  };
 
   // Selected-destination chips still translate on the fly — selected
   // can be any of the 30+ catalog entries, so a static dict isn't
@@ -121,13 +146,7 @@ export function HomeScreen() {
   // would have otherwise burned five gateway calls per language for
   // the same hand-authored copy. The literal "Lokali" tagline prefix
   // stays English everywhere (brand name).
-  const heroKey = heroDest.slug as
-    | "tbilisi"
-    | "paris"
-    | "rome"
-    | "bangkok"
-    | "london"
-    | "istanbul";
+  const heroKey = heroDest.slug as "tbilisi" | "rome" | "istanbul";
   const heroCountry = t(`hero.${heroKey}.country` as UiKey);
   const heroPart1 = "Lokali";
   const heroPart2 = t(`hero.${heroKey}.tagline2` as UiKey);
@@ -180,6 +199,64 @@ export function HomeScreen() {
           <div className="pointer-events-none absolute inset-0 bg-black/0 [.light_&]:bg-black/25" />
           <div className="absolute inset-0 bg-gradient-hero" />
           <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background/60 to-transparent" />
+
+          {/* Hero carousel chrome — side arrows + bottom dots. Only
+              renders when there are at least 2 cities to swipe between,
+              so a single-city HERO_ROTATION (e.g. local dev override)
+              shows no visual difference. Tapping any of the controls
+              freezes auto-rotation for the rest of the visit via
+              `setHeroPaused(true)` inside `goHero`. Matches the
+              attraction-page photo carousel pattern (see HeroPhotoCarousel
+              in attraction.$id.tsx). */}
+          {HERO_ROTATION.length > 1 && (
+            <>
+              {/* Side arrows — glass-morphic so they read on any photo
+                  exposure. 44 × 44 tap target for mobile. z-[15] keeps
+                  them above the gradient overlays but below the top
+                  bar's settings / language icons (z-[5] / z-[15] are
+                  both fine because the arrows sit at vertical center
+                  and the icons sit at the top — no overlap). */}
+              <button
+                type="button"
+                onClick={() => goHero(heroIdx - 1)}
+                aria-label={`Previous city (${HERO_ROTATION[(heroIdx - 1 + HERO_ROTATION.length) % HERO_ROTATION.length].city})`}
+                className="absolute left-3 top-1/2 z-[15] grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => goHero(heroIdx + 1)}
+                aria-label={`Next city (${HERO_ROTATION[(heroIdx + 1) % HERO_ROTATION.length].city})`}
+                className="absolute right-3 top-1/2 z-[15] grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+
+              {/* Bottom dots — sit JUST ABOVE the hero copy block.
+                  The hero copy is pinned at `bottom-9` (36px) and its
+                  content (badge + h1 + blurb + CTA row) runs ~225px
+                  upward, putting the top edge of the copy at roughly
+                  bottom-[260px]. Placing the dots at bottom-[268px]
+                  leaves a small breathing gap above the badge. Active
+                  dot widens to `w-6` per Beka's existing dot-style
+                  convention (same on /destinations/$slug carousel). */}
+              <div className="pointer-events-none absolute bottom-[268px] left-1/2 z-[14] flex -translate-x-1/2 items-center gap-1.5">
+                {HERO_ROTATION.map((d, i) => (
+                  <button
+                    key={d.slug}
+                    type="button"
+                    onClick={() => goHero(i)}
+                    aria-label={`Go to ${d.city}`}
+                    aria-current={i === heroIdx ? "true" : undefined}
+                    className={`pointer-events-auto h-1.5 rounded-full transition-all ${
+                      i === heroIdx ? "w-6 bg-primary" : "w-1.5 bg-foreground/30 hover:bg-foreground/50"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
 
           {/* Top bar — original Row 1 layout restored (Where next +
               city on the left, Settings + Notifications icons on the

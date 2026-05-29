@@ -44,42 +44,14 @@ export const PL: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.city": "Tbilisi",
   "hero.tbilisi.tagline2": "Stare Tbilisi",
   "hero.tbilisi.blurb":
-    "Od łaźni siarkowych i krzywych balkonów po śpiewy soboru Sioni — kinowy spacer przez duszę starego miasta.",
-  "hero.paris.country": "Francja",
-  "hero.paris.city": "Paryż",
-  "hero.paris.tagline2": "Sekwana",
-  "hero.paris.blurb":
-    "Bulwary Haussmanna, rzeka o zmierzchu i długi cień flâneura na każdym tarasie kawiarni — Paryż czyta się sam na głos, jeśli zwolnisz.",
+    "Łaźnie siarkowe, rzeźbione drewniane balkony i dzwony katedry Sioni. Filmowy spacer po najstarszych ulicach Tbilisi.",
   "hero.rome.country": "Włochy",
   "hero.rome.city": "Rzym",
   "hero.rome.tagline2": "Wieczny Rzym",
   "hero.rome.blurb":
-    "Pośród duchów Forum, barokowych fontann i kolacyjnych stołów Trastevere — miasto, które nigdy całkiem nie przestaje być sobą.",
-  "hero.bangkok.country": "Tajlandia",
-  "hero.bangkok.city": "Bangkok",
-  "hero.bangkok.tagline2": "Miasto Aniołów",
-  "hero.bangkok.blurb":
-    "Kanały khlong i pozłacane wieże świątyń, uliczne woki sypiące iskrami i Chao Phraya lśniąca za łodziami long-tail o zmierzchu.",
-  "hero.london.country": "Wielka Brytania",
-  "hero.london.city": "Londyn",
-  "hero.london.tagline2": "Tamiza",
-  "hero.london.blurb":
-    "Czarne taksówki w deszczu, niedzielne dzwony przy Westminster i stulecia imperium ułożone wzdłuż rzeki, która wciąż wszystko spaja.",
-  "hero.kyoto.country": "Japonia",
-  "hero.kyoto.city": "Kioto",
-  "hero.kyoto.tagline2": "Stare Kioto",
-  "hero.kyoto.blurb":
-    "Oświetlone latarniami uliczki Gion, omszałe świątynie i dziesięć tysięcy cynobrowych bram Fushimi — cicha, dawna dusza Japonii.",
-  "hero.lisbon.country": "Portugalia",
-  "hero.lisbon.city": "Lizbona",
-  "hero.lisbon.tagline2": "rzeka Tag",
-  "hero.lisbon.blurb":
-    "Saudade, fado i wzgórza wyłożone azulejos opadające ku Atlantykowi — Lizbona śpiewa swoją melancholię w błękicie azulejos.",
-  "hero.marrakech.country": "Maroko",
-  "hero.marrakech.city": "Marrakesz",
-  "hero.marrakech.tagline2": "Czerwone Miasto",
-  "hero.marrakech.blurb":
-    "Oświetlone latarniami medyny, dziedzińce riadów i bębniarski teatr Dżamaa el-Fna — zmysłowy nadmiar w najpiękniejszej formie.",
+    "Ruiny Forum Romanum, barokowe fontanny i kolacje w Trastevere. Miasto, które każdego dnia nosi swoją historię.",
+  "hero.istanbul.blurb":
+    "Kopuły Hagia Sophia, wezwanie do modlitwy o zachodzie słońca i krótka przeprawa promem z Europy do Azji.",
 
   // "Available in every language" badge under the search bar.
   "home.everyLang.title": "Dostępne w każdym języku",

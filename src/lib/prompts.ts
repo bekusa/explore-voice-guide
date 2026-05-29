@@ -72,14 +72,16 @@ JSON SHAPE (return exactly this shape):
 }
 
 LOCATION INTERPRETATION:
-- City query ("Tbilisi", "Rome", "Bangkok"): return attractions inside the city plus places commonly visited as part of that city's experience (a famous nearby viewpoint, an immediate day-trip).
+- City query ("Tbilisi", "Rome", "Bangkok"): return attractions whose ACTUAL geographic location is within roughly 30 km / 45 minutes drive of the queried city's historic center. Before emitting each entry, mentally check: "Is this place's real-world location within that radius of the city I was asked about?" If you would need to travel on a highway / take a long bus or train ride to reach it, EXCLUDE IT — even if it is nationally famous. National fame is not a substitute for being in the right city.
+- The 1-2 immediate day-trip slots are reserved for places traditionally packaged with this city in tourism AND within the ~1-hour radius (Mtskheta and Jvari Monastery for Tbilisi, Versailles for Paris, Pompeii for Naples, Tivoli for Rome). A place that is 100+ km away, in a different administrative city, in a different region of the same country — does NOT qualify, no matter how famous or scenic. Excludes apply at the metropolitan-area level, not at the country level.
+- When in doubt about whether a place is geographically close enough, exclude it rather than include it. A shorter list of real-in-this-city attractions is always better than a longer list that drifts across the country.
 - Country or region query ("Italy", "Tuscany", "Andalusia"): spread picks across the most relevant destinations in that area — do not concentrate in one city.
 - Landmark query ("Eiffel Tower", "Acropolis"): treat as the surrounding city and return that city's full attractions list with the landmark as entry 1.
 - Ambiguous query with one widely recognized travel meaning ("Paris" → Paris, France; "Cambridge" → Cambridge, UK): use the famous interpretation. If genuinely ambiguous (e.g. "Springfield"), pick the most famous match and mention the ambiguity in the first attraction's insider_desc.
 - Too vague or not a real destination: return \`{"attractions":[]}\`.
 
 FIELD GUIDANCE:
-- "name": Use the well-known English name when one widely exists ("Eiffel Tower", "Acropolis", "Brandenburg Gate"). Otherwise use the official or commonly used local/romanized name. No emojis.
+- "name": Use the EXACT Wikipedia article title — no parenthetical disambiguators, no alternative names in brackets, no neighborhood qualifiers attached. Examples: "Eiffel Tower", "Acropolis", "Brandenburg Gate", "Lamassu" (NOT "Winged Bull with Human Head (Lamassu)"), "Sulfur Baths" (NOT "Sulfur Baths (Abanotubani)"). The clean single name lets the frontend photo lookup find the right Wikipedia article and return the correct image. If two real places share a name within the city, append the city neighborhood AFTER a comma rather than inside parens: "Sulfur Baths, Abanotubani". No emojis.
 - "type": ONE noun, MAXIMUM two words, capitalized. Examples: Museum, Park, Cathedral, Square, Market, Viewpoint, Neighborhood, Street, Bridge, Palace, Castle, Food Market. NOT "Historical Religious Building" or "Boutique Coffee Shop".
 - "outside_desc": 35-60 words. Neutral, factual, magazine-tone. What the place is and why it matters.
 - "insider_desc": 20-40 words. Warm and specific. Must add something \`outside_desc\` did NOT already cover — practical timing, sensory detail, a quiet corner, a viewing angle, a small ritual. Do not restate the same fact in different words.
@@ -95,9 +97,10 @@ FIELD GUIDANCE:
 - "lat" / "lng": Approximate decimal coordinates. Set BOTH to \`null\` (do not omit the fields) if you are not confident the coordinates are correct to within roughly 10 metres AND that the place is in the specified city. Wrong coordinates place a pin in the wrong neighbourhood and break trust — \`null\` is safer than a guess. The frontend has Wikipedia and Google Places fallback for null coordinates.
 
 WHAT NOT TO INCLUDE:
+- Attractions whose actual geographic location is outside the queried city's metropolitan area (see LOCATION INTERPRETATION above). Apply the distance check to EVERY entry before emitting it.
 - Hotels, hostels, B&Bs.
-- Restaurants and bars, unless the place is a food market or a culinary landmark in its own right (a centuries-old café, a UNESCO-recognised food market).
-- Shopping malls and chain stores (Starbucks, McDonald's, H&M).
+- Modern dining establishments: restaurants, cafés, bars, wine bars, food trucks, breweries, pubs, bistros. The ONLY food-related entries allowed are (a) traditional public food MARKETS (a hall or open-air bazaar of stalls), and (b) culinary INSTITUTIONS that pass BOTH tests: at least 100 years old AND have their own dedicated Wikipedia article. If you cannot confirm both criteria, do NOT include the place — even if it is locally beloved.
+- Shopping malls, department stores, and chain stores (Starbucks, McDonald's, H&M, Zara, IKEA).
 - Active construction sites or fully scaffolded buildings.
 - Permanently closed, destroyed, or relocated places.
 - Pop-up exhibitions or temporary installations.
@@ -149,7 +152,7 @@ export function buildAttractionsUser(args: AttractionsPromptArgs): string {
   if (excludeList.length > 0) {
     lines.push(
       "",
-      "EXCLUDE (already shown to the user — do NOT repeat any of these, find OTHER attractions; second-tier landmarks, neighborhoods, museums, viewpoints, hidden gems are all fair game):",
+      "EXCLUDE (already shown to the user — do NOT repeat any of these). Find OTHER attractions IN THE SAME CITY OR METROPOLITAN AREA as QUERY above: second-tier landmarks, neighborhoods, museums, viewpoints, food markets, walking streets, parks within the queried city are all fair game. Do NOT widen the search to other cities, regions, or the wider country just to fill the list. If you genuinely run out of must-see-level attractions inside the queried city, return fewer entries rather than adding far-away places.",
       excludeList.map((n) => `- ${n}`).join("\n"),
     );
   } else {
@@ -339,10 +342,10 @@ ROOMS & ARCHITECTURAL SPACES:
 Rooms, halls, and architectural features can be entries when they are collection-defining experiences (the Sistine Chapel inside the Vatican Museums, the Hall of Mirrors at the Palace of Versailles, the Pantheon's oculus). For these, "artist" is the empty string "". Do not include generic museum rooms (cafés, lobbies, gift shops, stairwells).
 
 COUNT:
-Return up to 30 highlights, ordered by importance.
-- Return 30 only when you can confidently stand behind all 30 entries — every one a real, currently-visitable, collection-defining work.
-- For smaller, regional, single-artist, or specialist museums that genuinely lack 30 must-see-level works, return however many real entries you trust (could be 18, 22, 27).
-- DO NOT pad with weak, uncertain, duplicate, or generic entries to reach 30. Better 22 trustworthy entries than 30 with 8 borderline or fabricated.
+TARGET: 30 highlights, ordered by importance.
+- For major encyclopedic museums (Louvre, Met, Vatican Museums, British Museum, Hermitage, Prado, Uffizi, Rijksmuseum, MoMA, National Gallery London, Tate Britain, State Tretyakov, Pergamonmuseum, Egyptian Museum, Topkapi Palace Museum), the goal IS exactly 30. These all have 30+ universally-recognised collection-defining works — under-shooting on these museums leaves obvious masterpieces missing. Push to 30.
+- Return fewer than 30 ONLY for genuinely small, regional, single-artist, or specialist museums where 30 must-see-level works do not exist in this collection. For those, return however many real entries you can stand behind (could be 18, 22, 27).
+- DO NOT pad with weak, uncertain, duplicate, or generic entries to reach 30. Better 22 trustworthy entries than 30 with 8 borderline or fabricated. But for a museum that obviously HAS 30+ defining works, returning only 15 is its own failure mode — keep going until you reach 30.
 
 UNIQUENESS (Beka's catch, Louvre had 6 Raft of the Medusa entries):
 Every entry must refer to a DIFFERENT work, object, room, or space. Before generating an entry: if you find yourself considering a study, sketch, preparatory work, replica, copy, or alternative version of a work already in your list — STOP, do not generate that entry. Select only the canonical final version. Fill the freed slot with a completely different notable work that genuinely exists in this museum. (LLMs cannot delete an entry once written, so deduplicate BEFORE writing each item, not after.)
@@ -358,7 +361,7 @@ VARIETY:
 Spread across mediums and periods. A great museum guide doesn't return 30 oil paintings or 30 Greek vases. Mix sculpture, painting, manuscripts, decorative arts, archaeological artefacts, design objects, and architectural features when they're collection-defining. Do not place more than 3 consecutive entries of the same medium or period.
 
 FIELD RULES:
-- "name": Canonical English title commonly used by the museum or major art references. If a colloquial and a formal title differ, use the visitor-recognisable one ("Mona Lisa", not "La Gioconda / Portrait of Lisa Gherardini").
+- "name": Use the EXACT Wikipedia article title — no parenthetical disambiguators, no alternative names in brackets, no clarifying qualifiers inside parens. Examples: "Mona Lisa" (NOT "Mona Lisa (La Gioconda)"), "Lamassu" (NOT "Winged Bull with Human Head (Lamassu)"), "Venus de Milo" (NOT "Venus de Milo (Aphrodite of Milos)"). The clean single name lets the frontend photo lookup find the right Wikipedia article and return the correct image. If a colloquial and a formal title differ, use the visitor-recognisable one ("Mona Lisa", not "La Gioconda / Portrait of Lisa Gherardini").
 - "artist": Known artist, maker, workshop, culture, dynasty, or attribution. Use full canonical name for individuals ("Leonardo da Vinci", not "Da Vinci" or "Leonardo"). Use "Unknown", "Anonymous", or a cultural attribution ("Roman, 2nd century", "Achaemenid Persian", "Ming Dynasty workshop") when authorship is unknown. Use "" for architectural spaces. Never invent an attribution.
 - "era": Short, defensible label such as "c. 1503-1519", "2nd century BCE", "Ming Dynasty", "Achaemenid, c. 550-330 BCE", "Roman Imperial", "13th-century Romanesque, restored 19th c.". Use "c." prefix for approximate dates.
 - "brief": 15-25 words. What the work is and why it matters. Concrete, not hype.

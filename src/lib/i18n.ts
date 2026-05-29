@@ -142,43 +142,31 @@ export const UI_STRINGS = {
   "home.tours.one": "{n} tour",
   "home.tours.many": "{n} tours",
 
-  // Hero rotation copy — pre-translated for the five featured cities
-  // on Home (tbilisi / rome / kyoto / lisbon / marrakech). Static keys
-  // mean we don't burn an /api/translate call per visitor for content
-  // we author and can lock in. Each city contributes 4 keys: country,
-  // tagline2 (the italic word/phrase after "Lokali |"), blurb, city.
-  // The literal "Lokali" tagline prefix stays English everywhere —
-  // it's a brand name, not copy.
+  // Hero rotation copy — pre-translated for the 3 featured cities on
+  // Home (tbilisi / rome / istanbul). Static keys mean we don't burn
+  // an /api/translate call per visitor for content we author and can
+  // lock in. Each city contributes 4 keys: country, tagline2 (the
+  // italic word/phrase after "Lokali |"), blurb, city. The literal
+  // "Lokali" tagline prefix stays English everywhere — it's a brand
+  // name, not copy. Paris / Bangkok / London / Kyoto / Lisbon /
+  // Marrakech blocks were removed from i18n.ts and all locale files
+  // — re-add them here (and translations in each locale) if the
+  // rotation grows past three.
   "hero.tbilisi.country": "Georgia",
   "hero.tbilisi.city": "Tbilisi",
   "hero.tbilisi.tagline2": "Old Tbilisi",
   "hero.tbilisi.blurb":
-    "From sulfur baths and crooked balconies to the chants of Sioni — a cinematic walk through the soul of the old town.",
-  "hero.paris.country": "France",
-  "hero.paris.city": "Paris",
-  "hero.paris.tagline2": "the Seine",
-  "hero.paris.blurb":
-    "Haussmann boulevards, the river at dusk, and the long flâneur shadow of every café terrace — Paris reads itself aloud if you slow down.",
+    "Sulfur baths, carved wooden balconies, and the bells of Sioni Cathedral. A cinematic walk through Tbilisi's oldest streets.",
   "hero.rome.country": "Italy",
   "hero.rome.city": "Rome",
   "hero.rome.tagline2": "Eternal Rome",
   "hero.rome.blurb":
-    "Through the Forum's ghosts, baroque fountains and trastevere supper tables — the city that never quite stops being itself.",
-  "hero.bangkok.country": "Thailand",
-  "hero.bangkok.city": "Bangkok",
-  "hero.bangkok.tagline2": "the City of Angels",
-  "hero.bangkok.blurb":
-    "Khlong canals and gilded temple spires, street-side woks throwing sparks, and the Chao Phraya glowing past the long-tail boats at dusk.",
-  "hero.london.country": "United Kingdom",
-  "hero.london.city": "London",
-  "hero.london.tagline2": "the Thames",
-  "hero.london.blurb":
-    "Black cabs in the rain, Sunday bells at Westminster, and centuries of empire stacked along a river that still pulls everything together.",
+    "Roman Forum ruins, baroque fountains, and dinner tables in Trastevere. A city that wears its history every day.",
   "hero.istanbul.country": "Türkiye",
   "hero.istanbul.city": "Istanbul",
   "hero.istanbul.tagline2": "two continents",
   "hero.istanbul.blurb":
-    "Where Hagia Sophia's domes catch the call to prayer and the Bosphorus carries you from Europe to Asia between two sips of tea.",
+    "Hagia Sophia's domes, the call to prayer at sunset, and a short ferry that takes you from Europe to Asia.",
   // City detail page (/destinations/$slug)
   "city.about": "About the city",
   "city.practical": "Practical",
@@ -213,21 +201,6 @@ export const UI_STRINGS = {
   // leftovers — they're not in HERO_ROTATION today but a future
   // rotation tweak (or seasonal carousel) can re-enable them
   // without re-adding the strings.
-  "hero.kyoto.country": "Japan",
-  "hero.kyoto.city": "Kyoto",
-  "hero.kyoto.tagline2": "Old Kyoto",
-  "hero.kyoto.blurb":
-    "Lantern-lit alleys of Gion, mossy temples, and the ten thousand vermillion gates of Fushimi — Japan's quiet old soul.",
-  "hero.lisbon.country": "Portugal",
-  "hero.lisbon.city": "Lisbon",
-  "hero.lisbon.tagline2": "the Tagus",
-  "hero.lisbon.blurb":
-    "Saudade, fado, and tile-clad hills tipping toward the Atlantic — Lisbon sings its melancholy in azulejo blue.",
-  "hero.marrakech.country": "Morocco",
-  "hero.marrakech.city": "Marrakech",
-  "hero.marrakech.tagline2": "the Red City",
-  "hero.marrakech.blurb":
-    "Lantern-lit medinas, riad courtyards, and the trance-drum theatre of Jemaa el-Fnaa — sensory overload, in the best way.",
 
   // "Available in every language" badge under the search bar on Home.
   // Beka asked for a confidence-building line that surfaces Lokali's

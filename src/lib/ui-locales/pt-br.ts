@@ -44,42 +44,14 @@ export const PT_BR: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.city": "Tbilisi",
   "hero.tbilisi.tagline2": "Velha Tbilisi",
   "hero.tbilisi.blurb":
-    "Dos banhos de enxofre e varandas tortas aos cânticos de Sioni — uma caminhada cinematográfica pela alma da cidade velha.",
-  "hero.paris.country": "França",
-  "hero.paris.city": "Paris",
-  "hero.paris.tagline2": "o Sena",
-  "hero.paris.blurb":
-    "Os bulevares de Haussmann, o rio ao entardecer e a longa sombra do flâneur em cada terraço de café — Paris se lê em voz alta para quem desacelera.",
+    "Banhos sulfurosos, sacadas de madeira esculpida e os sinos da Catedral de Sioni. Um passeio cinematográfico pelas ruas mais antigas de Tbilisi.",
   "hero.rome.country": "Itália",
   "hero.rome.city": "Roma",
   "hero.rome.tagline2": "Roma eterna",
   "hero.rome.blurb":
-    "Entre os fantasmas do Fórum, fontes barrocas e as mesas de jantar de Trastevere — a cidade que nunca deixa por completo de ser ela mesma.",
-  "hero.bangkok.country": "Tailândia",
-  "hero.bangkok.city": "Bangkok",
-  "hero.bangkok.tagline2": "a Cidade dos Anjos",
-  "hero.bangkok.blurb":
-    "Canais khlong e flechas douradas dos templos, woks de rua soltando faíscas e o Chao Phraya brilhando atrás dos barcos long-tail ao entardecer.",
-  "hero.london.country": "Reino Unido",
-  "hero.london.city": "Londres",
-  "hero.london.tagline2": "o Tâmisa",
-  "hero.london.blurb":
-    "Táxis pretos na chuva, sinos de domingo em Westminster e séculos de império empilhados às margens de um rio que ainda costura tudo.",
-  "hero.kyoto.country": "Japão",
-  "hero.kyoto.city": "Quioto",
-  "hero.kyoto.tagline2": "Velha Quioto",
-  "hero.kyoto.blurb":
-    "Becos iluminados por lanternas em Gion, templos cobertos de musgo e os dez mil portais vermelhos de Fushimi — a alma antiga e silenciosa do Japão.",
-  "hero.lisbon.country": "Portugal",
-  "hero.lisbon.city": "Lisboa",
-  "hero.lisbon.tagline2": "o Tejo",
-  "hero.lisbon.blurb":
-    "Saudade, fado e colinas vestidas de azulejos descendo até o Atlântico — Lisboa canta sua melancolia no azul dos azulejos.",
-  "hero.marrakech.country": "Marrocos",
-  "hero.marrakech.city": "Marraquexe",
-  "hero.marrakech.tagline2": "a Cidade Vermelha",
-  "hero.marrakech.blurb":
-    "Medinas iluminadas por lanternas, pátios de riads e o teatro de tambores da Jemaa el-Fnaa — um mergulho sensorial no seu melhor.",
+    "Ruínas do Fórum Romano, fontes barrocas e mesas de jantar em Trastevere. Uma cidade que veste sua história todos os dias.",
+  "hero.istanbul.blurb":
+    "As cúpulas da Hagia Sophia, o chamado à oração ao pôr do sol e uma curta balsa que leva você da Europa à Ásia.",
 
   // "Available in every language" badge under the search bar.
   "home.everyLang.title": "Disponível em todos os idiomas",

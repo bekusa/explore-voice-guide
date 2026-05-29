@@ -44,42 +44,14 @@ export const SV: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.city": "Tbilisi",
   "hero.tbilisi.tagline2": "Gamla Tbilisi",
   "hero.tbilisi.blurb":
-    "Från svavelbad och sneda balkonger till Sionis kyrkosång — en filmisk vandring genom gamla stans själ.",
-  "hero.paris.country": "Frankrike",
-  "hero.paris.city": "Paris",
-  "hero.paris.tagline2": "Seine",
-  "hero.paris.blurb":
-    "Haussmanns boulevarder, floden i skymningen och den långa flâneurskuggan vid varje kaféterrass — Paris läser sig själv högt om du saktar ner.",
+    "Svavelbad, snidade träbalkonger och klockorna i Sioni-katedralen. En cinematisk promenad genom Tbilisis äldsta gator.",
   "hero.rome.country": "Italien",
   "hero.rome.city": "Rom",
   "hero.rome.tagline2": "Det eviga Rom",
   "hero.rome.blurb":
-    "Genom Forums skuggor, barocka fontäner och kvällsborden i Trastevere — staden som aldrig riktigt slutar vara sig själv.",
-  "hero.bangkok.country": "Thailand",
-  "hero.bangkok.city": "Bangkok",
-  "hero.bangkok.tagline2": "Änglarnas stad",
-  "hero.bangkok.blurb":
-    "Khlong-kanaler och förgyllda tempelspiror, gatuwokar som sprutar gnistor och Chao Phraya som lyser bakom long-tail-båtarna i skymningen.",
-  "hero.london.country": "Storbritannien",
-  "hero.london.city": "London",
-  "hero.london.tagline2": "Themsen",
-  "hero.london.blurb":
-    "Svarta taxibilar i regnet, söndagsklockor vid Westminster och århundraden av imperium staplade längs en flod som fortfarande håller ihop allt.",
-  "hero.kyoto.country": "Japan",
-  "hero.kyoto.city": "Kyoto",
-  "hero.kyoto.tagline2": "Gamla Kyoto",
-  "hero.kyoto.blurb":
-    "Lyktbelysta gränder i Gion, mossiga tempel och de tiotusen cinnoberröda portarna i Fushimi — Japans tysta, gamla själ.",
-  "hero.lisbon.country": "Portugal",
-  "hero.lisbon.city": "Lissabon",
-  "hero.lisbon.tagline2": "Tejofloden",
-  "hero.lisbon.blurb":
-    "Saudade, fado och kakelklädda kullar som lutar mot Atlanten — Lissabon sjunger sin melankoli i azulejo-blått.",
-  "hero.marrakech.country": "Marocko",
-  "hero.marrakech.city": "Marrakech",
-  "hero.marrakech.tagline2": "Den röda staden",
-  "hero.marrakech.blurb":
-    "Lyktbelysta medinor, riad-gårdar och trummorna på Jemaa el-Fnaa — ett sinnesflöde när det är som vackrast.",
+    "Ruinerna av Forum Romanum, barocka fontäner och middagsbord i Trastevere. En stad som bär sin historia varje dag.",
+  "hero.istanbul.blurb":
+    "Hagia Sofias kupoler, böneutropet vid solnedgång och en kort färja som tar dig från Europa till Asien.",
 
   // "Available in every language" badge under the search bar.
   "home.everyLang.title": "Tillgängligt på alla språk",

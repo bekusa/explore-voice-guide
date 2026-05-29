@@ -44,42 +44,14 @@ export const FI: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.city": "Tbilisi",
   "hero.tbilisi.tagline2": "Vanha Tbilisi",
   "hero.tbilisi.blurb":
-    "Rikkikylpylöistä ja vinoista parvekkeista Sionin kirkon kuoroihin — elokuvallinen kävely vanhankaupungin sieluun.",
-  "hero.paris.country": "Ranska",
-  "hero.paris.city": "Pariisi",
-  "hero.paris.tagline2": "Seine",
-  "hero.paris.blurb":
-    "Haussmannin bulevardit, joki hämärässä ja pitkä flâneurin varjo jokaisella kahvilan terassilla — Pariisi lukee itseään ääneen, jos hidastat tahtia.",
+    "Rikkikylpyjä, koristeltuja puuparvekkeita ja Sionin katedraalin kellot. Elokuvallinen kävely Tbilisin vanhimmilla kaduilla.",
   "hero.rome.country": "Italia",
   "hero.rome.city": "Rooma",
   "hero.rome.tagline2": "Ikuinen Rooma",
   "hero.rome.blurb":
-    "Forumin haamujen, barokkisuihkulähteiden ja Trasteveren illallispöytien läpi — kaupunki, joka ei koskaan lakkaa olemasta oma itsensä.",
-  "hero.bangkok.country": "Thaimaa",
-  "hero.bangkok.city": "Bangkok",
-  "hero.bangkok.tagline2": "Enkelten kaupunki",
-  "hero.bangkok.blurb":
-    "Khlong-kanavia, kullattuja temppelinhuippuja, kipinöitä sinkoavia katukeittiöitä ja Chao Phraya hohtamassa long-tail-veneiden takana hämärässä.",
-  "hero.london.country": "Yhdistynyt kuningaskunta",
-  "hero.london.city": "Lontoo",
-  "hero.london.tagline2": "Thames",
-  "hero.london.blurb":
-    "Mustat taksit sateessa, sunnuntain kellot Westminsterissä ja vuosisatojen imperiumi pinottuna joen varrelle, joka yhä pitää kaiken koossa.",
-  "hero.kyoto.country": "Japani",
-  "hero.kyoto.city": "Kioto",
-  "hero.kyoto.tagline2": "Vanha Kioto",
-  "hero.kyoto.blurb":
-    "Gionin lyhdyin valaistut kujat, sammaltuneet temppelit ja Fushimin kymmenentuhatta vermilionipunaista porttia — Japanin hiljainen vanha sielu.",
-  "hero.lisbon.country": "Portugali",
-  "hero.lisbon.city": "Lissabon",
-  "hero.lisbon.tagline2": "Tejojoki",
-  "hero.lisbon.blurb":
-    "Saudadea, fadoa ja kaakelein kirjavia kukkuloita kallistumassa kohti Atlanttia — Lissabon laulaa melankoliansa azulejojen sinessä.",
-  "hero.marrakech.country": "Marokko",
-  "hero.marrakech.city": "Marrakech",
-  "hero.marrakech.tagline2": "Punainen kaupunki",
-  "hero.marrakech.blurb":
-    "Lyhtyjen valaisema medina, riadien sisäpihat ja Jemaa el-Fnaan rummuttava näyttämö — aistien tulva parhaassa muodossaan.",
+    "Forum Romanumin rauniot, barokin suihkulähteet ja illalliset Trasteveressä. Kaupunki, joka kantaa historiansa joka päivä.",
+  "hero.istanbul.blurb":
+    "Hagia Sofian kupolit, rukouskutsu auringonlaskussa ja lyhyt lautta Euroopasta Aasiaan.",
 
   // "Available in every language" badge under the search bar.
   "home.everyLang.title": "Saatavilla kaikilla kielillä",

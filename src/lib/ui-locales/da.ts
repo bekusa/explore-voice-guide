@@ -44,42 +44,14 @@ export const DA: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.city": "Tbilisi",
   "hero.tbilisi.tagline2": "Det gamle Tbilisi",
   "hero.tbilisi.blurb":
-    "Fra svovlbade og skæve altaner til Sionis salmer — en filmisk vandring gennem den gamle bys sjæl.",
-  "hero.paris.country": "Frankrig",
-  "hero.paris.city": "Paris",
-  "hero.paris.tagline2": "Seinen",
-  "hero.paris.blurb":
-    "Haussmanns boulevarder, floden i skumringen og flanørens lange skygge ved hver caféterrasse — Paris læser sig selv højt, hvis du sætter farten ned.",
+    "Svovlbade, udskårne træbalkoner og klokkerne fra Sioni-katedralen. En filmisk vandring gennem Tbilisis ældste gader.",
   "hero.rome.country": "Italien",
   "hero.rome.city": "Rom",
   "hero.rome.tagline2": "Det evige Rom",
   "hero.rome.blurb":
-    "Gennem Forum Romanums spøgelser, barokke springvand og middagsborde i Trastevere — byen, der aldrig helt holder op med at være sig selv.",
-  "hero.bangkok.country": "Thailand",
-  "hero.bangkok.city": "Bangkok",
-  "hero.bangkok.tagline2": "Englenes by",
-  "hero.bangkok.blurb":
-    "Khlong-kanaler og forgyldte tempelspir, gadewokker der sprøjter gnister, og Chao Phraya der lyser bag long-tail-bådene i skumringen.",
-  "hero.london.country": "Storbritannien",
-  "hero.london.city": "London",
-  "hero.london.tagline2": "Themsen",
-  "hero.london.blurb":
-    "Sorte taxier i regnen, søndagsklokker ved Westminster og århundreder af imperium stablet langs en flod, der stadig holder alt sammen.",
-  "hero.kyoto.country": "Japan",
-  "hero.kyoto.city": "Kyoto",
-  "hero.kyoto.tagline2": "Det gamle Kyoto",
-  "hero.kyoto.blurb":
-    "Lygtebelyste stræder i Gion, mosgroede templer og de ti tusind cinnoberporte i Fushimi — Japans stille gamle sjæl.",
-  "hero.lisbon.country": "Portugal",
-  "hero.lisbon.city": "Lissabon",
-  "hero.lisbon.tagline2": "Tejofloden",
-  "hero.lisbon.blurb":
-    "Saudade, fado og flisebeklædte bakker, der hælder mod Atlanten — Lissabon synger sin melankoli i azulejo-blå.",
-  "hero.marrakech.country": "Marokko",
-  "hero.marrakech.city": "Marrakech",
-  "hero.marrakech.tagline2": "Den røde by",
-  "hero.marrakech.blurb":
-    "Lygtebelyste medinaer, riad-gårde og trommetransens teater på Jemaa el-Fnaa — sanseoverload, på den bedste måde.",
+    "Ruinerne af Forum Romanum, barokke fontæner og middagsborde i Trastevere. En by, der bærer sin historie hver dag.",
+  "hero.istanbul.blurb":
+    "Hagia Sofias kupler, bønneråbet ved solnedgang og en kort færge, der tager dig fra Europa til Asien.",
 
   // "Available in every language" badge under the search bar.
   "home.everyLang.title": "Tilgængelig på alle sprog",

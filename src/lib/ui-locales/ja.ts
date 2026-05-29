@@ -44,42 +44,14 @@ export const JA: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.city": "トビリシ",
   "hero.tbilisi.tagline2": "古都トビリシ",
   "hero.tbilisi.blurb":
-    "硫黄風呂と傾いたバルコニーから、シオニ大聖堂の聖歌まで — 旧市街の魂を歩く、映画のような散策。",
-  "hero.paris.country": "フランス",
-  "hero.paris.city": "パリ",
-  "hero.paris.tagline2": "セーヌ",
-  "hero.paris.blurb":
-    "オスマンの大通り、夕暮れの川、そしてカフェのテラスごとに伸びるフラヌールの長い影 — ゆっくり歩けば、パリは自らを声に出して読み聞かせてくれる。",
+    "硫黄温泉、彫刻された木製のバルコニー、そしてシオニ大聖堂の鐘。トビリシ最古の通りを歩く映画のような散歩。",
   "hero.rome.country": "イタリア",
   "hero.rome.city": "ローマ",
   "hero.rome.tagline2": "永遠の都ローマ",
   "hero.rome.blurb":
-    "フォロ・ロマーノの亡霊たち、バロックの噴水、トラステヴェレの夕食の卓を抜けて — けっして自分であることをやめない街。",
-  "hero.bangkok.country": "タイ",
-  "hero.bangkok.city": "バンコク",
-  "hero.bangkok.tagline2": "天使の都",
-  "hero.bangkok.blurb":
-    "クローン運河と金色に輝く寺院の尖塔、火花を散らす屋台の中華鍋、そして夕暮れにロングテールボートの向こうで光るチャオプラヤー川。",
-  "hero.london.country": "イギリス",
-  "hero.london.city": "ロンドン",
-  "hero.london.tagline2": "テムズ",
-  "hero.london.blurb":
-    "雨の中の黒いタクシー、ウェストミンスターの日曜日の鐘、そして今もすべてをつなぐ川沿いに積み重なる帝国の幾世紀。",
-  "hero.kyoto.country": "日本",
-  "hero.kyoto.city": "京都",
-  "hero.kyoto.tagline2": "古都・京都",
-  "hero.kyoto.blurb":
-    "提灯に照らされた祇園の路地、苔むす寺院、そして伏見の一万本の朱色の鳥居 — 日本の静かな古い魂。",
-  "hero.lisbon.country": "ポルトガル",
-  "hero.lisbon.city": "リスボン",
-  "hero.lisbon.tagline2": "テージョ川",
-  "hero.lisbon.blurb":
-    "サウダージ、ファド、そして大西洋へと傾く瓦葺きの丘 — リスボンはその哀愁をアズレージョの青で歌う。",
-  "hero.marrakech.country": "モロッコ",
-  "hero.marrakech.city": "マラケシュ",
-  "hero.marrakech.tagline2": "赤い都市",
-  "hero.marrakech.blurb":
-    "提灯が灯るメディナ、リヤドの中庭、ジャマ・エル・フナのトランス太鼓劇場 — 最良のかたちでの五感の洪水。",
+    "ローマ・フォルムの遺跡、バロックの噴水、そしてトラステヴェレの夕食のテーブル。歴史を毎日まとうこの街。",
+  "hero.istanbul.blurb":
+    "アヤソフィアのドーム、夕暮れの礼拝の呼び声、そしてヨーロッパからアジアへの短いフェリー。",
 
   // "Available in every language" badge under the search bar.
   "home.everyLang.title": "すべての言語で利用可能",

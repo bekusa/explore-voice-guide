@@ -44,42 +44,14 @@ export const RO: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.city": "Tbilisi",
   "hero.tbilisi.tagline2": "Vechiul Tbilisi",
   "hero.tbilisi.blurb":
-    "De la băile cu sulf și balcoanele strâmbe la cântările de la Sioni — o plimbare cinematografică prin sufletul orașului vechi.",
-  "hero.paris.country": "Franța",
-  "hero.paris.city": "Paris",
-  "hero.paris.tagline2": "Sena",
-  "hero.paris.blurb":
-    "Bulevardele lui Haussmann, fluviul în amurg și umbra lungă a flâneurului pe fiecare terasă de cafenea — Parisul se citește cu voce tare dacă încetinești.",
+    "Băi sulfuroase, balcoane din lemn sculptat și clopotele Catedralei Sioni. O plimbare cinematografică pe cele mai vechi străzi din Tbilisi.",
   "hero.rome.country": "Italia",
   "hero.rome.city": "Roma",
   "hero.rome.tagline2": "Roma eternă",
   "hero.rome.blurb":
-    "Printre fantomele Forumului, fântânile baroce și mesele de cină din Trastevere — orașul care nu încetează niciodată cu totul să fie el însuși.",
-  "hero.bangkok.country": "Thailanda",
-  "hero.bangkok.city": "Bangkok",
-  "hero.bangkok.tagline2": "Orașul Îngerilor",
-  "hero.bangkok.blurb":
-    "Canale khlong și turle aurite de temple, wokuri pe stradă scuipând scântei și Chao Phraya strălucind în spatele bărcilor long-tail în amurg.",
-  "hero.london.country": "Regatul Unit",
-  "hero.london.city": "Londra",
-  "hero.london.tagline2": "Tamisa",
-  "hero.london.blurb":
-    "Taxiuri negre în ploaie, clopote de duminică la Westminster și secole de imperiu îngrămădite de-a lungul unui râu care încă leagă totul.",
-  "hero.kyoto.country": "Japonia",
-  "hero.kyoto.city": "Kyoto",
-  "hero.kyoto.tagline2": "Vechiul Kyoto",
-  "hero.kyoto.blurb":
-    "Alei luminate cu felinare în Gion, temple acoperite de mușchi și cele zece mii de porți roșii de la Fushimi — sufletul tăcut și străvechi al Japoniei.",
-  "hero.lisbon.country": "Portugalia",
-  "hero.lisbon.city": "Lisabona",
-  "hero.lisbon.tagline2": "râul Tejo",
-  "hero.lisbon.blurb":
-    "Saudade, fado și dealuri îmbrăcate în plăci ceramice ce se înclină spre Atlantic — Lisabona își cântă melancolia în albastrul azulejos.",
-  "hero.marrakech.country": "Maroc",
-  "hero.marrakech.city": "Marrakech",
-  "hero.marrakech.tagline2": "Orașul Roșu",
-  "hero.marrakech.blurb":
-    "Medine luminate cu felinare, curți de riad și teatrul tobelor din Jemaa el-Fnaa — o revărsare de senzații în cea mai frumoasă formă.",
+    "Ruinele Forumului Roman, fântâni baroce și mese de cină în Trastevere. Un oraș care își poartă istoria în fiecare zi.",
+  "hero.istanbul.blurb":
+    "Cupolele Sfintei Sofia, chemarea la rugăciune la apus și un feribot scurt care te duce din Europa în Asia.",
 
   // "Available in every language" badge under the search bar.
   "home.everyLang.title": "Disponibil în orice limbă",

@@ -44,42 +44,14 @@ export const KO: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.city": "트빌리시",
   "hero.tbilisi.tagline2": "옛 트빌리시",
   "hero.tbilisi.blurb":
-    "유황 목욕탕과 비뚤어진 발코니에서 시오니 성당의 성가까지 — 구시가지의 영혼을 따라 걷는 시네마틱한 산책.",
-  "hero.paris.country": "프랑스",
-  "hero.paris.city": "파리",
-  "hero.paris.tagline2": "센강",
-  "hero.paris.blurb":
-    "오스만의 대로, 황혼의 강, 카페 테라스에 길게 드리운 플라뇌르의 그림자 — 천천히 걸으면 파리는 자기 이야기를 들려줘요.",
+    "유황 목욕, 조각된 나무 발코니, 그리고 시오니 대성당의 종소리. 트빌리시의 가장 오래된 거리를 거니는 영화 같은 산책.",
   "hero.rome.country": "이탈리아",
   "hero.rome.city": "로마",
   "hero.rome.tagline2": "영원한 로마",
   "hero.rome.blurb":
-    "포룸의 그림자, 바로크 분수, 트라스테베레의 저녁 식탁을 지나 — 끝내 자기다움을 잃지 않는 도시.",
-  "hero.bangkok.country": "태국",
-  "hero.bangkok.city": "방콕",
-  "hero.bangkok.tagline2": "천사의 도시",
-  "hero.bangkok.blurb":
-    "끄렁 운하와 금빛 사원 첨탑, 불꽃을 튀기는 길거리 웍, 그리고 황혼 무렵 롱테일 보트 너머로 빛나는 짜오프라야강.",
-  "hero.london.country": "영국",
-  "hero.london.city": "런던",
-  "hero.london.tagline2": "템스강",
-  "hero.london.blurb":
-    "비 내리는 거리의 검은 캡, 웨스트민스터의 일요일 종소리, 그리고 여전히 모든 것을 잇는 강을 따라 쌓인 수 세기 제국의 흔적.",
-  "hero.kyoto.country": "일본",
-  "hero.kyoto.city": "교토",
-  "hero.kyoto.tagline2": "옛 교토",
-  "hero.kyoto.blurb":
-    "등불이 켜진 기온의 골목, 이끼 낀 사찰, 그리고 후시미의 만 개의 주홍 도리이 — 일본의 고요한 옛 영혼.",
-  "hero.lisbon.country": "포르투갈",
-  "hero.lisbon.city": "리스본",
-  "hero.lisbon.tagline2": "테주강",
-  "hero.lisbon.blurb":
-    "사우다드, 파두, 그리고 대서양으로 기울어진 아줄레주 언덕들 — 리스본은 그리움을 푸른 타일빛으로 노래해요.",
-  "hero.marrakech.country": "모로코",
-  "hero.marrakech.city": "마라케시",
-  "hero.marrakech.tagline2": "붉은 도시",
-  "hero.marrakech.blurb":
-    "등불이 켜진 메디나, 리아드의 안뜰, 그리고 북소리로 물드는 제마 엘프나의 무대 — 감각이 가장 아름답게 밀려오는 곳.",
+    "로마 포로 로마노의 폐허, 바로크 분수, 그리고 트라스테베레의 저녁 식탁. 매일 자신의 역사를 입는 도시.",
+  "hero.istanbul.blurb":
+    "아야 소피아의 돔, 일몰의 기도 시간 외침, 그리고 유럽에서 아시아로 데려다주는 짧은 페리.",
 
   // "Available in every language" badge under the search bar.
   "home.everyLang.title": "모든 언어로 이용 가능",

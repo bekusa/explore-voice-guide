@@ -44,42 +44,14 @@ export const IT: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.city": "Tbilisi",
   "hero.tbilisi.tagline2": "Vecchia Tbilisi",
   "hero.tbilisi.blurb":
-    "Dai bagni di zolfo e balconi storti ai canti di Sioni — una passeggiata cinematografica nell'anima della città vecchia.",
-  "hero.paris.country": "Francia",
-  "hero.paris.city": "Parigi",
-  "hero.paris.tagline2": "la Senna",
-  "hero.paris.blurb":
-    "I boulevard di Haussmann, il fiume al crepuscolo e la lunga ombra del flâneur su ogni terrazza di caffè — Parigi si legge ad alta voce se rallenti.",
+    "Bagni sulfurei, balconi in legno intagliato e le campane della cattedrale di Sioni. Una passeggiata cinematografica tra le strade più antiche di Tbilisi.",
   "hero.rome.country": "Italia",
   "hero.rome.city": "Roma",
   "hero.rome.tagline2": "Roma eterna",
   "hero.rome.blurb":
-    "Tra i fantasmi del Foro, le fontane barocche e le tavolate di Trastevere — la città che non smette mai del tutto di essere sé stessa.",
-  "hero.bangkok.country": "Thailandia",
-  "hero.bangkok.city": "Bangkok",
-  "hero.bangkok.tagline2": "la Città degli Angeli",
-  "hero.bangkok.blurb":
-    "Canali khlong e guglie dorate dei templi, wok da strada che sprigionano scintille, e il Chao Phraya che brilla dietro le long-tail al tramonto.",
-  "hero.london.country": "Regno Unito",
-  "hero.london.city": "Londra",
-  "hero.london.tagline2": "il Tamigi",
-  "hero.london.blurb":
-    "Black cab sotto la pioggia, campane domenicali a Westminster e secoli di impero impilati lungo un fiume che continua a tenere tutto insieme.",
-  "hero.kyoto.country": "Giappone",
-  "hero.kyoto.city": "Kyoto",
-  "hero.kyoto.tagline2": "Vecchia Kyoto",
-  "hero.kyoto.blurb":
-    "Vicoli illuminati dalle lanterne di Gion, templi coperti di muschio e i diecimila portali vermigli di Fushimi — l'anima antica e silenziosa del Giappone.",
-  "hero.lisbon.country": "Portogallo",
-  "hero.lisbon.city": "Lisbona",
-  "hero.lisbon.tagline2": "il Tago",
-  "hero.lisbon.blurb":
-    "Saudade, fado e colline rivestite di azulejos che si inclinano verso l'Atlantico — Lisbona canta la sua malinconia nel blu degli azulejos.",
-  "hero.marrakech.country": "Marocco",
-  "hero.marrakech.city": "Marrakech",
-  "hero.marrakech.tagline2": "la Città Rossa",
-  "hero.marrakech.blurb":
-    "Medine illuminate dalle lanterne, cortili dei riad e il teatro dei tamburi in trance di Jemaa el-Fnaa — un'esplosione sensoriale, nella sua forma più bella.",
+    "Le rovine del Foro Romano, fontane barocche e tavoli da cena a Trastevere. Una città che indossa la sua storia ogni giorno.",
+  "hero.istanbul.blurb":
+    "Le cupole di Santa Sofia, il richiamo alla preghiera al tramonto e un breve traghetto che ti porta dall'Europa all'Asia.",
 
   // "Available in every language" badge under the search bar.
   "home.everyLang.title": "Disponibile in ogni lingua",

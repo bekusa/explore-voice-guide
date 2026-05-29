@@ -44,42 +44,14 @@ export const ID: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.city": "Tbilisi",
   "hero.tbilisi.tagline2": "Tbilisi Lama",
   "hero.tbilisi.blurb":
-    "Dari pemandian belerang dan balkon-balkon miring hingga nyanyian Sioni — jalan-jalan sinematik melalui jiwa kota tua.",
-  "hero.paris.country": "Prancis",
-  "hero.paris.city": "Paris",
-  "hero.paris.tagline2": "Sungai Seine",
-  "hero.paris.blurb":
-    "Boulevard Haussmann, sungai saat senja, dan bayang panjang sang flâneur di setiap teras kafe — Paris membaca dirinya sendiri dengan suara lantang jika kau melambat.",
+    "Pemandian belerang, balkon kayu berukir, dan lonceng Katedral Sioni. Sebuah jalan-jalan sinematik melalui jalan-jalan tertua Tbilisi.",
   "hero.rome.country": "Italia",
   "hero.rome.city": "Roma",
   "hero.rome.tagline2": "Roma Abadi",
   "hero.rome.blurb":
-    "Melewati bayang-bayang Forum, air mancur barok dan meja makan malam Trastevere — kota yang tak pernah benar-benar berhenti menjadi dirinya sendiri.",
-  "hero.bangkok.country": "Thailand",
-  "hero.bangkok.city": "Bangkok",
-  "hero.bangkok.tagline2": "Kota Para Bidadari",
-  "hero.bangkok.blurb":
-    "Kanal khlong dan menara kuil berlapis emas, wajan jalanan yang memuntahkan percik api, dan Chao Phraya yang berkilau di balik perahu long-tail saat senja.",
-  "hero.london.country": "Britania Raya",
-  "hero.london.city": "London",
-  "hero.london.tagline2": "Sungai Thames",
-  "hero.london.blurb":
-    "Taksi hitam di tengah hujan, lonceng Minggu di Westminster, dan berabad-abad kekaisaran tertumpuk di tepi sungai yang masih menyatukan segalanya.",
-  "hero.kyoto.country": "Jepang",
-  "hero.kyoto.city": "Kyoto",
-  "hero.kyoto.tagline2": "Kyoto Lama",
-  "hero.kyoto.blurb":
-    "Gang-gang Gion bermandi lentera, kuil berlumut, dan sepuluh ribu gerbang merah cinnabar Fushimi — jiwa Jepang yang tenang dan kuno.",
-  "hero.lisbon.country": "Portugal",
-  "hero.lisbon.city": "Lisbon",
-  "hero.lisbon.tagline2": "Sungai Tagus",
-  "hero.lisbon.blurb":
-    "Saudade, fado, dan bukit-bukit berhias ubin yang miring ke Atlantik — Lisbon menyenandungkan melankolinya dalam biru azulejo.",
-  "hero.marrakech.country": "Maroko",
-  "hero.marrakech.city": "Marrakech",
-  "hero.marrakech.tagline2": "Kota Merah",
-  "hero.marrakech.blurb":
-    "Medina bermandi lentera, halaman riad, dan teater tabuh genderang Jemaa el-Fnaa — banjir sensori dalam bentuknya yang terbaik.",
+    "Reruntuhan Forum Romawi, air mancur barok, dan meja makan malam di Trastevere. Sebuah kota yang mengenakan sejarahnya setiap hari.",
+  "hero.istanbul.blurb":
+    "Kubah-kubah Hagia Sophia, panggilan azan saat matahari terbenam, dan kapal feri pendek yang membawamu dari Eropa ke Asia.",
 
   // "Available in every language" badge under the search bar.
   "home.everyLang.title": "Tersedia dalam setiap bahasa",

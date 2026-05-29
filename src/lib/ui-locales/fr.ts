@@ -44,42 +44,14 @@ export const FR: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.city": "Tbilissi",
   "hero.tbilisi.tagline2": "Vieux Tbilissi",
   "hero.tbilisi.blurb":
-    "Des bains de soufre et balcons de guingois jusqu'aux chants de Sioni — une promenade cinématographique dans l'âme de la vieille ville.",
-  "hero.paris.country": "France",
-  "hero.paris.city": "Paris",
-  "hero.paris.tagline2": "la Seine",
-  "hero.paris.blurb":
-    "Boulevards haussmanniens, fleuve au crépuscule et longue ombre du flâneur sur chaque terrasse de café — Paris se lit à voix haute pour qui sait ralentir.",
+    "Bains de soufre, balcons en bois sculpté et les cloches de la cathédrale Sioni. Une promenade cinématographique dans les plus vieilles rues de Tbilissi.",
   "hero.rome.country": "Italie",
   "hero.rome.city": "Rome",
   "hero.rome.tagline2": "Rome éternelle",
   "hero.rome.blurb":
-    "À travers les fantômes du Forum, les fontaines baroques et les tablées du Trastevere — la ville qui ne cesse jamais tout à fait d'être elle-même.",
-  "hero.bangkok.country": "Thaïlande",
-  "hero.bangkok.city": "Bangkok",
-  "hero.bangkok.tagline2": "la Cité des Anges",
-  "hero.bangkok.blurb":
-    "Khlongs, flèches dorées des temples, woks de rue jetant des étincelles et Chao Phraya scintillant derrière les bateaux long-tail au crépuscule.",
-  "hero.london.country": "Royaume-Uni",
-  "hero.london.city": "Londres",
-  "hero.london.tagline2": "la Tamise",
-  "hero.london.blurb":
-    "Black cabs sous la pluie, cloches dominicales à Westminster et des siècles d'empire empilés le long d'un fleuve qui relie encore tout.",
-  "hero.kyoto.country": "Japon",
-  "hero.kyoto.city": "Kyoto",
-  "hero.kyoto.tagline2": "Vieux Kyoto",
-  "hero.kyoto.blurb":
-    "Ruelles éclairées aux lanternes de Gion, temples couverts de mousse et les dix mille portiques vermillon de Fushimi — l'âme ancienne et silencieuse du Japon.",
-  "hero.lisbon.country": "Portugal",
-  "hero.lisbon.city": "Lisbonne",
-  "hero.lisbon.tagline2": "le Tage",
-  "hero.lisbon.blurb":
-    "Saudade, fado et collines habillées d'azulejos qui basculent vers l'Atlantique — Lisbonne chante sa mélancolie dans le bleu de l'azulejo.",
-  "hero.marrakech.country": "Maroc",
-  "hero.marrakech.city": "Marrakech",
-  "hero.marrakech.tagline2": "la Ville Rouge",
-  "hero.marrakech.blurb":
-    "Médina éclairée aux lanternes, patios de riads et théâtre vibrant des tambours de Jemaa el-Fna — un débordement sensoriel dans ce qu'il a de plus beau.",
+    "Ruines du Forum romain, fontaines baroques et tables de dîner au Trastevere. Une ville qui porte son histoire chaque jour.",
+  "hero.istanbul.blurb":
+    "Les coupoles de Sainte-Sophie, l'appel à la prière au coucher du soleil, et un court ferry qui vous emmène d'Europe en Asie.",
 
   // "Available in every language" badge under the search bar.
   "home.everyLang.title": "Disponible dans toutes les langues",

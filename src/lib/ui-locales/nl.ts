@@ -44,42 +44,14 @@ export const NL: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.city": "Tbilisi",
   "hero.tbilisi.tagline2": "Oud Tbilisi",
   "hero.tbilisi.blurb":
-    "Van zwavelbaden en scheve balkons tot de gezangen van Sioni — een filmische wandeling door de ziel van de oude stad.",
-  "hero.paris.country": "Frankrijk",
-  "hero.paris.city": "Parijs",
-  "hero.paris.tagline2": "de Seine",
-  "hero.paris.blurb":
-    "Haussmann-boulevards, de rivier in de schemering en de lange flâneur-schaduw bij elk caféterras — Parijs leest zichzelf hardop voor als je vertraagt.",
+    "Zwavelbaden, gesneden houten balkons en de klokken van de Sioni-kathedraal. Een cinematische wandeling door de oudste straten van Tbilisi.",
   "hero.rome.country": "Italië",
   "hero.rome.city": "Rome",
   "hero.rome.tagline2": "Eeuwige Rome",
   "hero.rome.blurb":
-    "Tussen de geesten van het Forum, barokke fonteinen en de avondtafels van Trastevere — de stad die nooit helemaal ophoudt zichzelf te zijn.",
-  "hero.bangkok.country": "Thailand",
-  "hero.bangkok.city": "Bangkok",
-  "hero.bangkok.tagline2": "de Stad der Engelen",
-  "hero.bangkok.blurb":
-    "Khlong-kanalen en vergulde tempelspitsen, straatwoks die vonken spuwen en de Chao Phraya die in de schemering achter de long-tail-boten gloeit.",
-  "hero.london.country": "Verenigd Koninkrijk",
-  "hero.london.city": "Londen",
-  "hero.london.tagline2": "de Theems",
-  "hero.london.blurb":
-    "Zwarte taxi's in de regen, zondagse klokken bij Westminster en eeuwen imperium opgestapeld langs een rivier die nog steeds alles samenbrengt.",
-  "hero.kyoto.country": "Japan",
-  "hero.kyoto.city": "Kyoto",
-  "hero.kyoto.tagline2": "Oud Kyoto",
-  "hero.kyoto.blurb":
-    "Lantaarnverlichte steegjes van Gion, mosbegroeide tempels en de tienduizend vermiljoenen poorten van Fushimi — de stille oude ziel van Japan.",
-  "hero.lisbon.country": "Portugal",
-  "hero.lisbon.city": "Lissabon",
-  "hero.lisbon.tagline2": "de Taag",
-  "hero.lisbon.blurb":
-    "Saudade, fado en met tegels beklede heuvels die afhellen naar de Atlantische Oceaan — Lissabon zingt zijn melancholie in azulejo-blauw.",
-  "hero.marrakech.country": "Marokko",
-  "hero.marrakech.city": "Marrakech",
-  "hero.marrakech.tagline2": "de Rode Stad",
-  "hero.marrakech.blurb":
-    "Lantaarnverlichte medina's, riad-binnenplaatsen en het trommeltheater van Jemaa el-Fna — een feest voor de zintuigen, op zijn mooist.",
+    "Ruïnes van het Forum Romanum, barokke fonteinen en dinertafels in Trastevere. Een stad die haar geschiedenis elke dag draagt.",
+  "hero.istanbul.blurb":
+    "De koepels van de Hagia Sophia, de gebedsoproep bij zonsondergang en een korte veerboot die je van Europa naar Azië brengt.",
 
   // "Available in every language" badge under the search bar.
   "home.everyLang.title": "Beschikbaar in alle talen",

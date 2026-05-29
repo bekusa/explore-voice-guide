@@ -44,42 +44,14 @@ export const ZH_TW: Partial<Record<UiKey, string>> = {
   "hero.tbilisi.city": "提比里斯",
   "hero.tbilisi.tagline2": "老提比里斯",
   "hero.tbilisi.blurb":
-    "從硫磺浴池與歪斜的陽臺，到錫奧尼大教堂的聖詠 — 一場穿越老城靈魂的電影般漫步。",
-  "hero.paris.country": "法國",
-  "hero.paris.city": "巴黎",
-  "hero.paris.tagline2": "塞納河",
-  "hero.paris.blurb":
-    "奧斯曼大道、暮色中的河流、每座咖啡館露台上漫遊者的長長身影——只要放慢腳步，巴黎便會把自己朗讀出聲。",
+    "硫磺浴室、雕刻木陽臺，以及錫奧尼大教堂的鐘聲。在第比利斯最古老的街道上漫步，宛如電影畫面。",
   "hero.rome.country": "義大利",
   "hero.rome.city": "羅馬",
   "hero.rome.tagline2": "永恆之城",
   "hero.rome.blurb":
-    "穿過古羅馬廣場的幽影、巴洛克噴泉與特拉斯特維雷的晚餐桌 — 這是一座從不真正停止做自己的城市。",
-  "hero.bangkok.country": "泰國",
-  "hero.bangkok.city": "曼谷",
-  "hero.bangkok.tagline2": "天使之城",
-  "hero.bangkok.blurb":
-    "孔崙運河與鍍金的廟宇尖頂、街邊鐵鍋濺出的火星，以及暮色中長尾船後閃爍的昭披耶河。",
-  "hero.london.country": "英國",
-  "hero.london.city": "倫敦",
-  "hero.london.tagline2": "泰晤士河",
-  "hero.london.blurb":
-    "雨中的黑色計程車、西敏寺週日的鐘聲，以及沿著一條至今仍把一切串在一起的河流堆疊的數個世紀帝國。",
-  "hero.kyoto.country": "日本",
-  "hero.kyoto.city": "京都",
-  "hero.kyoto.tagline2": "古都京都",
-  "hero.kyoto.blurb":
-    "祇園燈火映照的小巷、覆滿青苔的寺院，以及伏見一萬座朱紅色鳥居 — 日本寧靜古老的靈魂。",
-  "hero.lisbon.country": "葡萄牙",
-  "hero.lisbon.city": "里斯本",
-  "hero.lisbon.tagline2": "特茹河",
-  "hero.lisbon.blurb":
-    "Saudade、法朵，以及鋪滿瓷磚、傾向大西洋的山丘 — 里斯本以葡式花磚的藍色吟唱它的憂愁。",
-  "hero.marrakech.country": "摩洛哥",
-  "hero.marrakech.city": "馬拉喀什",
-  "hero.marrakech.tagline2": "紅色之城",
-  "hero.marrakech.blurb":
-    "燈火映照的麥地那、里亞德庭院，以及不眠廣場上恍惚的鼓樂劇場 — 最美好形式的感官洪流。",
+    "古羅馬廣場的遺跡、巴洛克噴泉，以及特拉斯泰韋雷的晚餐桌。一座每天都披著自己歷史的城市。",
+  "hero.istanbul.blurb":
+    "聖索菲亞大教堂的圓頂、日落時分的祈禱呼喚，以及一段從歐洲到亞洲的短途渡輪。",
 
   // "Available in every language" badge under the search bar.
   "home.everyLang.title": "支援每一種語言",
