@@ -235,9 +235,10 @@ WRITING FOR TTS (the script is read aloud by a synthetic voice — write for the
 - After the first mention of the attraction's name, vary references in later paragraphs ("the tower", "this monument", "the cathedral", "Eiffel's iron lattice") so the listener does not hear the same proper noun ten times.
 
 LENGTH (firm contract — the audio plays for ~6-10 minutes, this is the headline content):
-- Write 6-8 paragraphs of script, each 120-180 words, separated by a blank line.
+- Write 10-14 paragraphs of script, each 60-110 words (~3-5 sentences), separated by a blank line.
 - Total target: 900-1500 words across the whole script.
 - TTS reads English at roughly 150 words per minute, so this lands at 6-10 minutes of audio.
+- Paragraph rhythm matters as much as total length. Users read along on a phone while listening — long monolithic paragraphs feel heavy on a small screen and the eye loses its place. Short, frequent paragraph breaks give the reader natural rests and let each idea breathe. Aim for one idea per paragraph: one sensory observation, one historical beat, one practical aside.
 - Do NOT short the script. If you only have ~500 words of confident material on a place, still cover the texture of the location, the surrounding neighbourhood, the visitor experience, the sensory details a person on site would notice — but do not invent specifics to pad. Real prose, real observation, just no fabrication.
 
 INTEREST BIAS:
