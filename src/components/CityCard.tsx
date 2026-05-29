@@ -132,6 +132,7 @@ export function CityCard({ city }: { city: string }) {
           under the title labels). Hardcoding a black-based gradient
           keeps the photo punchy in both themes while still giving
           enough contrast for the white city name. */}
+      <div className="pointer-events-none absolute inset-0 bg-black/20" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
 
       {/* Curated-page badge — top-right pill on cards that route to
