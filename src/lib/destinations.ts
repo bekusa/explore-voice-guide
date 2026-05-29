@@ -78,15 +78,13 @@ export const DESTINATIONS: Destination[] = [
   },
 
   // Istanbul promoted into the Home hero rotation per Beka's spec
-  // (Tbilisi → Rome → Istanbul). Hero image from Unsplash (Hagia
-  // Sophia + the Bosphorus skyline at golden hour); swap for a local
-  // /assets/destinations/istanbul.webp later if the hosted URL ever
-  // disappears.
+  // (Tbilisi → Rome → Istanbul). Hero image from Unsplash (Galata
+  // Tower + the Bosphorus at golden hour).
   {
     slug: "istanbul",
     city: "Istanbul",
     country: "Türkiye",
-    hero: "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?auto=format&fit=crop&w=1280&q=80",
+    hero: "https://images.unsplash.com/photo-1527838832700-5059252407fa?auto=format&fit=crop&w=1280&q=80",
     lat: 41.0082,
     lng: 28.9784,
   },
