@@ -52,7 +52,7 @@ export type Destination = {
  */
 export const DESTINATIONS: Destination[] = [
   // ─── Hero rotation cities (have hero images) ────────────────────
-  { slug: "tbilisi", city: "Tbilisi", country: "Georgia", hero: "https://images.unsplash.com/photo-1565008447742-97f6f38c985c?auto=format&fit=crop&w=1280&q=80", lat: 41.7151, lng: 44.8271 },
+  { slug: "tbilisi", city: "Tbilisi", country: "Georgia", hero: tbilisiHero, lat: 41.7151, lng: 44.8271 },
   { slug: "rome", city: "Rome", country: "Italy", hero: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1280&q=80", lat: 41.9028, lng: 12.4964 },
   {
     slug: "paris",
