@@ -63,6 +63,7 @@ type WikiSummaryResponse = {
    *  caller is looking for a physical attraction. */
   description?: string;
   type?: string;
+  title?: string;
 };
 
 /**
