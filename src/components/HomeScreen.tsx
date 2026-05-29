@@ -178,7 +178,7 @@ export function HomeScreen() {
     <MobileFrame floatingPanel={heroFloatingPanel}>
       <div className="relative min-h-full w-full bg-background text-foreground">
         {/* ─── HERO ─── */}
-        <section className="relative h-[600px] w-full overflow-hidden">
+        <section className="relative h-[480px] w-full overflow-hidden">
           {HERO_ROTATION.map((d, i) => (
             <img
               key={d.slug}
@@ -201,7 +201,7 @@ export function HomeScreen() {
               on the now-darker wash. */}
           <div className="pointer-events-none absolute inset-0 bg-black/0" />
           <div className="absolute inset-0 bg-gradient-hero" />
-          <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background/40 to-transparent" />
+          <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background/60 to-transparent" />
 
           {/* Hero carousel chrome — side arrows + bottom dots. Only
               renders when there are at least 2 cities to swipe between,
