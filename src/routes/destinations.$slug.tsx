@@ -302,14 +302,14 @@ function HeroCarousel({
   // a charcoal placeholder so the layout below still has a header.
   if (total === 0) {
     return (
-      <section className="relative h-[440px] w-full overflow-hidden bg-gradient-to-br from-secondary to-card">
+      <section className="relative h-[360px] w-full overflow-hidden bg-gradient-to-br from-secondary to-card">
         <CarouselChrome city={city} country={country} backLabel={backLabel} />
       </section>
     );
   }
 
   return (
-    <section className="relative h-[440px] w-full overflow-hidden">
+    <section className="relative h-[360px] w-full overflow-hidden">
       {/* Stacked slides, cross-fading. opacity drives visibility so
           we never unmount a slide once it loads — the lookup hook
           stays warm and the image cache survives a cycle. */}
