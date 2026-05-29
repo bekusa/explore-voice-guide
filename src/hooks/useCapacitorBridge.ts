@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import type { Router } from "@tanstack/react-router";
+import type { AnyRouter } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -31,7 +31,7 @@ import { supabase } from "@/integrations/supabase/client";
  * gates the import so the @capacitor/app module isn't even loaded in
  * the browser bundle's hot path.
  */
-export function useCapacitorBridge(router: Router) {
+export function useCapacitorBridge(router: AnyRouter) {
   useEffect(() => {
     let cleanup: (() => void) | undefined;
     let cancelled = false;

@@ -35,11 +35,11 @@ function loadNativeImpact() {
       const { Capacitor } = await import("@capacitor/core");
       if (!Capacitor.isNativePlatform()) return null;
       const { Haptics, ImpactStyle } = await import("@capacitor/haptics");
-      const map: Record<HapticIntensity, typeof ImpactStyle.Light> = {
+      const map = {
         light: ImpactStyle.Light,
         medium: ImpactStyle.Medium,
         heavy: ImpactStyle.Heavy,
-      };
+      } as const;
       return (intensity: HapticIntensity) => {
         void Haptics.impact({ style: map[intensity] }).catch(() => {});
       };
