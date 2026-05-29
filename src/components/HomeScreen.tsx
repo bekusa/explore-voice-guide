@@ -189,21 +189,19 @@ export function HomeScreen() {
               }`}
             />
           ))}
-          {/* Constant darkening layer over the photo — invisible on
-              the dark theme (the body bg is already dark, so the
-              hero photo reads with enough contrast) but kicks in on
-              the light theme where Beka caught the photos looking
-              washed-out behind the hero copy. Bumped 25% → 45% in
-              the second pass after Beka caught the photos still
-              reading milky on the Featured Cities row + the home
-              hero. Paired with `[.light_&]:` text overrides + drop-
-              shadow on the title and blurb below so they stay legible
-              on the now-darker wash. */}
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.4)_0%,transparent_60%)]" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-transparent" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-hero" />
-          <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background/60 to-transparent" />
+            {/* Constant darkening layer over the photo — invisible on
+                the dark theme (the body bg is already dark, so the
+                hero photo reads with enough contrast) but kicks in on
+                the light theme where Beka caught the photos looking
+                washed-out behind the hero copy. Bumped 25% → 45% in
+                the second pass after Beka caught the photos still
+                reading milky on the Featured Cities row + the home
+                hero. Paired with `[.light_&]:` text overrides + drop-
+                shadow on the title and blurb below so they stay legible
+                on the now-darker wash. */}
+            <div className="pointer-events-none absolute inset-0 bg-black/0 [.light_&]:bg-black/45" />
+            <div className="absolute inset-0 bg-gradient-hero" />
+            <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background/60 to-transparent" />
 
           {/* Hero carousel chrome — side arrows + bottom dots. Only
               renders when there are at least 2 cities to swipe between,
