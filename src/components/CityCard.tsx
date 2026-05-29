@@ -107,7 +107,7 @@ export function CityCard({ city }: { city: string }) {
   return (
     <Link
       {...linkProps}
-      className="group relative block h-[210px] overflow-hidden rounded-3xl border border-border transition-smooth hover:border-primary/50 hover:shadow-elegant active:scale-[0.99]"
+      className="group relative block h-[168px] overflow-hidden rounded-3xl border border-border transition-smooth hover:border-primary/50 hover:shadow-elegant active:scale-[0.99]"
     >
       {img ? (
         <img
