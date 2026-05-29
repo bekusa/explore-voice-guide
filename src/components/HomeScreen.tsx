@@ -199,7 +199,7 @@ export function HomeScreen() {
               hero. Paired with `[.light_&]:` text overrides + drop-
               shadow on the title and blurb below so they stay legible
               on the now-darker wash. */}
-          <div className="pointer-events-none absolute inset-0 bg-black/0 [.light_&]:bg-black/65" />
+          <div className="pointer-events-none absolute inset-0 bg-black/0 [.light_&]:bg-black/85" />
           <div className="absolute inset-0 bg-gradient-hero" />
           <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background/60 to-transparent" />
 
