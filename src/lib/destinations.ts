@@ -1,3 +1,5 @@
+import tbilisiHero from "@/assets/tbilisi-hero-v4.jpg";
+
 /**
  * Curated destination catalogue — slimmed.
  *
