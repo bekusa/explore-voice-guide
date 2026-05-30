@@ -4,8 +4,6 @@ import {
   ArrowRight,
   Bell,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Globe,
   MapPin,
   Play,
@@ -220,38 +218,11 @@ export function HomeScreen() {
               in attraction.$id.tsx). */}
           {HERO_ROTATION.length > 1 && (
             <>
-              {/* Side arrows — glass-morphic so they read on any photo
-                  exposure. 44 × 44 tap target for mobile. z-[15] keeps
-                  them above the gradient overlays but below the top
-                  bar's settings / language icons (z-[5] / z-[15] are
-                  both fine because the arrows sit at vertical center
-                  and the icons sit at the top — no overlap). */}
-              <button
-                type="button"
-                onClick={() => goHero(heroIdx - 1)}
-                aria-label={`Previous city (${HERO_ROTATION[(heroIdx - 1 + HERO_ROTATION.length) % HERO_ROTATION.length].city})`}
-                className="absolute left-3 top-1/2 z-[15] grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => goHero(heroIdx + 1)}
-                aria-label={`Next city (${HERO_ROTATION[(heroIdx + 1) % HERO_ROTATION.length].city})`}
-                className="absolute right-3 top-1/2 z-[15] grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-
-              {/* Bottom dots — sit JUST ABOVE the hero copy block.
-                  The hero copy is pinned at `bottom-9` (36px) and its
-                  content (badge + h1 + blurb + CTA row) runs ~225px
-                  upward, putting the top edge of the copy at roughly
-                  bottom-[260px]. Placing the dots at bottom-[268px]
-                  leaves a small breathing gap above the badge. Active
-                  dot widens to `w-6` per Beka's existing dot-style
-                  convention (same on /destinations/$slug carousel). */}
-              <div className="pointer-events-none absolute bottom-[268px] left-1/2 z-[14] flex -translate-x-1/2 items-center gap-1.5">
+              {/* Bottom dots — sit at the very bottom of the hero
+                   section so they act as a subtle footer. Active dot
+                   widens to `w-6` per Beka's existing dot-style
+                   convention (same on /destinations/$slug carousel). */}
+              <div className="pointer-events-none absolute bottom-4 left-1/2 z-[14] flex -translate-x-1/2 items-center gap-1.5">
                 {HERO_ROTATION.map((d, i) => (
                   <button
                     key={d.slug}
