@@ -189,10 +189,15 @@ function Profile({ profile }: { profile: CityProfile }) {
           lang={lang}
         />
 
-        {/* ─── Featured museums ──────────────────────────────────── */}
-        {profile.museumIds.length > 0 && (
-          <FeaturedMuseumsSection museumIds={profile.museumIds} />
-        )}
+        {/* Featured museums section retired per Beka's request
+            (2026-05-28). The "Inside the collections" strip lived
+            below the attraction list on every editorial city page
+            but felt redundant with the Top Museums strip on Home and
+            with the museum-highlights flow you reach via tapping a
+            museum result. The FeaturedMuseumsSection component +
+            translation keys (city.featuredMuseums / city.museumsHead)
+            stay defined so the section is one line away from coming
+            back if Beka changes his mind. */}
 
         {/* UNESCO section removed per Beka (2026-05-19) — the
             inscription count now lives as a chip in the Practical

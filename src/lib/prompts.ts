@@ -53,6 +53,10 @@ This is the single most important rule. Visitors will navigate to the attraction
 - NEVER invent image URLs, Google Places IDs, Wikipedia URLs, or any other external identifier.
 - For small places that genuinely lack many notable attractions, return fewer real entries rather than padding with weak or invented ones. Better 6 trustworthy entries than 10 with 4 fabricated.
 - If the query is too vague to ground (e.g. "somewhere nice") or names a place that is not a real travel destination, return \`{"attractions":[]}\`.
+- WIKIPEDIA SELF-CHECK: before emitting each entry, internally ask: "Does this place plausibly have its own Wikipedia article (in English or the local language)?" The failure pattern is GENERIC-SOUNDING NAMES that could be assembled from plausible parts — "River Park", "Old Bridge Plaza", "Heritage Square", "Mountain View Point", "Central Garden". If you cannot point to a specific real article and the name has that assembled-from-parts feel, the entry is almost certainly invented — exclude it. Specific named places that exist will pass this check; generic mashups will fail it. This is the single most reliable test against accidental hallucination.
+
+WHAT COUNTS AS AN ATTRACTION (definition gate):
+Attractions are places visited primarily for cultural, historical, architectural, religious, scenic, or geographic reasons — places where the visit itself is the point. They are NOT commercial leisure or entertainment venues whose primary draw is a paid experience: water parks, aquaparks, theme parks, amusement parks, indoor entertainment centres, trampoline parks, escape rooms, bowling alleys, mini-golf, go-karting, paintball, lasertag, climbing gyms, spas, casinos, nightclubs, cinemas, gyms. Those belong on a separate "things to do" list, NOT on this curated cultural-attractions list — even if a particular venue is locally popular or family-friendly. When in doubt, ask: would a traveller include this in a paragraph describing what makes the destination culturally distinctive? If the answer is no, exclude it.
 
 JSON SHAPE (return exactly this shape):
 {
