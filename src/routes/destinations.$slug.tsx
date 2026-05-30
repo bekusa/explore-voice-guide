@@ -548,7 +548,14 @@ function CityAttractionsSection({
     if (loadingMore || !canLoadMore) return;
     setLoadingMore(true);
     try {
-      const existingNames = items.map((a) => a.name);
+      // Use ENGLISH source names (`name_en`) when available — Claude
+      // generates against the English baseline and ignores exclude
+      // entries written in the user's display language, which produces
+      // duplicate page-2 / page-3 results on Georgian / Russian / etc.
+      // locales. The translator populates `name_en` on every row that
+      // went through the translation pass; falls back to `name` only
+      // when no translation ran (the English baseline path).
+      const existingNames = items.map((a) => a.name_en ?? a.name);
       const next = await fetchMoreAttractions(query, lang, existingNames, CITY_PAGE_SIZE);
       if (next && next.length > 0) {
         setItems((prev) => [...prev, ...next.slice(0, CITY_PAGE_SIZE)]);
