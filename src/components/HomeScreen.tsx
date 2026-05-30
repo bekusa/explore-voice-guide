@@ -4,8 +4,6 @@ import {
   ArrowRight,
   Bell,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Globe,
   MapPin,
   Play,
