@@ -83,7 +83,7 @@ LOCATION INTERPRETATION:
 - Too vague or not a real destination: return \`{"attractions":[]}\`.
 
 FIELD GUIDANCE:
-- "name": Use the well-known English name when one widely exists ("Eiffel Tower", "Acropolis", "Brandenburg Gate"). Otherwise use the official or commonly used local/romanized name. No emojis.
+- "name": Use the well-known English name when one widely exists ("Eiffel Tower", "Acropolis", "Brandenburg Gate"). Otherwise use the official or commonly used local/romanized name. Do NOT append parenthetical synonyms or alternate names — pick ONE canonical name and stop there. "Bridge of Peace" not "Bridge of Peace (Peace Bridge)"; "Liberty Square" not "Liberty Square (Tavisuplebis Moedani)"; "Old Town" not "Old Town (Historic District)". A parenthetical is only allowed for genuine geographic disambiguation across distinct places of the same name (e.g. "Cambridge, UK" vs "Cambridge, MA") and even then prefer a comma over parens. No emojis.
 - "type": ONE noun, MAXIMUM two words, capitalized. Examples: Museum, Park, Cathedral, Square, Market, Viewpoint, Neighborhood, Street, Bridge, Palace, Castle, Food Market. NOT "Historical Religious Building" or "Boutique Coffee Shop".
 - "outside_desc": 35-60 words. Neutral, factual, magazine-tone. What the place is and why it matters.
 - "insider_desc": 20-40 words. Warm and specific. Must add something \`outside_desc\` did NOT already cover — practical timing, sensory detail, a quiet corner, a viewing angle, a small ritual. Do not restate the same fact in different words.

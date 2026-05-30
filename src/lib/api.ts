@@ -342,6 +342,32 @@ export type AttractionFilters = {
   interests?: string[];
 };
 
+/**
+ * Apply `stripParenSuffix` to every name field on an attractions
+ * response. Beka caught "Bridge of Peace (Peace Bridge)" — Claude
+ * routinely emits parenthetical synonyms in the `name` field despite
+ * the prompt asking it not to. The full bracketed string breaks every
+ * downstream lookup (Wikipedia photo lookup, Google Maps click,
+ * /api/guide fetch) because no canonical record matches it exactly.
+ * Cleaning here means every consumer — results card, attraction page,
+ * saved items, city pages — sees the clean form. The Supabase cache
+ * row keeps the original Claude output; the stripping happens on the
+ * read path so a future prompt fix can re-introduce richer names
+ * without invalidating the cache.
+ */
+function cleanAttractionNames<T extends { name?: string; name_en?: string }>(
+  list: T[] | undefined | null,
+): T[] {
+  if (!Array.isArray(list)) return [];
+  return list.map((row) => {
+    if (!row) return row;
+    const next = { ...row };
+    if (typeof next.name === "string") next.name = stripParenSuffix(next.name);
+    if (typeof next.name_en === "string") next.name_en = stripParenSuffix(next.name_en);
+    return next;
+  });
+}
+
 export async function fetchAttractions(
   query: string,
   language = "ka",
@@ -363,8 +389,8 @@ export async function fetchAttractions(
     interests,
   });
   // Tolerate both wrapped and bare-array shapes
-  if (Array.isArray(data)) return data;
-  return data.attractions ?? [];
+  const list = Array.isArray(data) ? data : (data.attractions ?? []);
+  return cleanAttractionNames(list);
 }
 
 /**
@@ -399,8 +425,8 @@ export async function fetchMoreAttractions(
     exclude: excludeNames,
     count,
   });
-  if (Array.isArray(data)) return data;
-  return data.attractions ?? [];
+  const list = Array.isArray(data) ? data : (data.attractions ?? []);
+  return cleanAttractionNames(list);
 }
 
 /**
@@ -659,11 +685,39 @@ export async function fetchPlaceGallery(
 }
 
 /**
- * Stable, URL-safe id derived from an attraction name.
- * Used to round-trip between /results and /attraction/$id without a backend.
+ * Strip a trailing parenthetical suffix off an attraction / artwork
+ * name. The /api/attractions prompt asks Claude not to emit
+ * parenthetical synonyms in the `name` field, but it routinely slips
+ * one in anyway — "Bridge of Peace (Peace Bridge)", "Liberty Square
+ * (Tavisuplebis Moedani)", "Old Town (Historic District)". Those
+ * synonyms break every downstream lookup: Wikipedia and Google Maps
+ * have no article whose title matches the full bracketed string, so
+ * the click-through lands on a different place than the card
+ * advertised (Beka caught this on Bridge of Peace — clicking the card
+ * took him to a completely different bridge).
+ *
+ * Removes ONLY the final trailing parenthesised group ("X (Y)" → "X").
+ * Earlier parentheticals are left alone (rare, but e.g. a saint name
+ * inside an attraction title like "St. Mary's (Smetown) Park" stays
+ * intact). Whitespace before the paren is trimmed. Returns the
+ * original input if no trailing paren exists or if stripping would
+ * leave an empty string.
+ */
+export function stripParenSuffix(name: string): string {
+  if (!name) return name;
+  const stripped = name.replace(/\s*\([^()]*\)\s*$/, "").trim();
+  return stripped.length > 0 ? stripped : name;
+}
+
+/**
+ * Stable, URL-safe id derived from an attraction name. Routes through
+ * `stripParenSuffix` first so a name that Claude emitted with a
+ * synonym suffix and a name a user typed without the suffix collapse
+ * to the same slug — keeps the /attraction/$id cache key stable
+ * regardless of which variant the click came from.
  */
 export function attractionSlug(name: string): string {
-  return encodeURIComponent(name.trim().toLowerCase().replace(/\s+/g, "-"));
+  return encodeURIComponent(stripParenSuffix(name).trim().toLowerCase().replace(/\s+/g, "-"));
 }
 
 export function unslugAttraction(slug: string): string {
