@@ -201,10 +201,10 @@ export function HomeScreen() {
             <div
               className="pointer-events-none absolute inset-x-0 z-[1]"
               style={{
-                top: "65%",
-                height: "30%",
+                top: "45%",
+                height: "55%",
                 background:
-                  "linear-gradient(to bottom, transparent 0%, var(--background) 70%, var(--background) 100%)",
+                  "linear-gradient(to bottom, transparent 0%, var(--background) 55%, var(--background) 100%)",
               }}
             />
             <div className="absolute inset-0 bg-gradient-hero" />
