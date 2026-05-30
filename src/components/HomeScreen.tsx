@@ -194,7 +194,19 @@ export function HomeScreen() {
                 hero photo reads with enough contrast) but kicks in on
                 the light theme where Beka caught the photos looking
                 washed-out behind the hero copy. */}
-            <div className="pointer-events-none absolute inset-0 bg-black/0 [.light_&]:bg-black/20" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-[80%] bg-black/0 [.light_&]:bg-black/20" />
+            {/* Soft fade band straddling the image's bottom edge (80%)
+                so the photo blends into the section background on both
+                themes — kills the visible horizontal line. */}
+            <div
+              className="pointer-events-none absolute inset-x-0 z-[1]"
+              style={{
+                top: "65%",
+                height: "30%",
+                background:
+                  "linear-gradient(to bottom, transparent 0%, var(--background) 70%, var(--background) 100%)",
+              }}
+            />
             <div className="absolute inset-0 bg-gradient-hero" />
             <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background/60 to-transparent" />
 
