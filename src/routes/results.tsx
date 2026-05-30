@@ -193,7 +193,18 @@ function ResultsPage() {
 
     let cancelled = false;
     setPrefetching(true);
-    const excludeNames = results.map((a) => a.name).filter(Boolean);
+    // Build the exclude list using the ENGLISH source names whenever
+    // we have them (`name_en` is set on every row that went through
+    // the translation pass). The /api/attractions extension call
+    // forwards this list into Claude's prompt as "do not repeat" —
+    // Claude generates against the English baseline, so a list of
+    // localised names (e.g. "ძველი თბილისი", "Старый Тбилиси") never
+    // matches and Claude keeps emitting the same first-10 attractions
+    // again. Beka caught the page-2 prefetch returning duplicate
+    // entries in Georgian / Russian locales for exactly this reason.
+    // Falls back to `name` only when `name_en` is missing — i.e. the
+    // English baseline path where no translation ran.
+    const excludeNames = results.map((a) => a.name_en ?? a.name).filter(Boolean);
     // Fetch ONE page worth (10) instead of all-remaining. Smaller
     // generation payload = smaller translation chunk = lower chance
     // of hitting the rate limit on Tier-1.
