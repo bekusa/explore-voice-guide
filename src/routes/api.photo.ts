@@ -109,6 +109,105 @@ const GENERIC_ATTRACTION_WORDS = new Set([
 ]);
 
 /**
+ * Filename-pattern photo-suitability gate. Mirrors the gallery's
+ * looksLikePhoto check in api.photo-gallery.ts but applied to the
+ * single-image lookup path so it catches Wikipedia hero images that
+ * are obviously NOT modern photographs of the queried place.
+ *
+ * Returns true when the URL's filename suggests a usable modern
+ * photo; false when it looks like:
+ *   - non-photo media (SVG vectors, audio/video extensions)
+ *   - admin / branding chrome (flag, logo, coat of arms, emblem,
+ *     seal, signature)
+ *   - cartography (maps, plans, diagrams, blueprints)
+ *   - icons / wiki chrome
+ *   - historical illustrations (engravings, lithographs, woodcuts,
+ *     "drawing of", "painting of", "illustration of", "print of",
+ *     "watercolor")
+ *   - filenames carrying a 17xx / 18xx / pre-1940 year token, which
+ *     reliably mark Wikipedia files for historical photos / engravings
+ *     / paintings of a landmark (Beka caught Aivazovsky's 1869 "Tiflis"
+ *     painting coming back as the "Old Tbilisi" article's hero)
+ *
+ * The 1940 cut-off splits "actual historical photos / illustrations
+ * of the landmark" from "modern photos that happen to have a year in
+ * the filename" — uploads with 2010s / 2020s years pass cleanly.
+ */
+function looksLikeUsablePhoto(url: string): boolean {
+  if (!url) return false;
+  // Take just the filename portion of the URL for the heuristic so
+  // path components ("/wikipedia/commons/3/3a/") never trip the rejects.
+  const filename = (url.split("/").pop() ?? url).toLowerCase();
+  // Raster image extensions only — drop svgs, ogg audio, webm video.
+  if (!/\.(jpe?g|png|webp|gif)(\?|$)/.test(filename)) return false;
+  const reject = [
+    // Admin / branding assets.
+    "flag_of",
+    "flag-of",
+    "logo",
+    "coat_of_arms",
+    "seal_of",
+    "emblem",
+    "signature",
+    "wordmark",
+    // Cartography & diagrams.
+    "_map",
+    "map_",
+    "plan_of",
+    "floor_plan",
+    "floorplan",
+    "diagram",
+    "blueprint",
+    "schematic",
+    "graph",
+    "chart",
+    "spectrum",
+    // Icons & wiki chrome.
+    "icon",
+    "wikidata",
+    "wikimedia",
+    "commons-",
+    "blank_",
+    "question_book",
+    "ambox",
+    // Historical illustrations of the landmark / place.
+    "engraving",
+    "etching",
+    "lithograph",
+    "lithography",
+    "woodcut",
+    "drawing_of",
+    "drawing-of",
+    "sketch_of",
+    "sketch-of",
+    "painting_of",
+    "painting-of",
+    "illustration_of",
+    "illustration-of",
+    "print_of",
+    "print-of",
+    "watercolor",
+    "watercolour",
+    "engraved",
+    "depicted",
+    "1800s",
+    "19th_century",
+    "18th_century",
+    "17th_century",
+  ];
+  if (reject.some((r) => filename.includes(r))) return false;
+  // Pre-1940 year token in the filename — Wikipedia files for
+  // historical photos / engravings / paintings carry "Vue_du_Louvre_1798",
+  // "1850_view_of…", "Photo_of_Eiffel_Tower_1889". Modern uploads
+  // rarely have a 4-digit year that isolated. Word-boundary check
+  // keeps random hex / dimension tokens ("1280px") from false-firing.
+  if (/(?:^|[^0-9])(?:17\d{2}|18\d{2}|19[0-3]\d)(?:[^0-9]|$)/.test(filename)) {
+    return false;
+  }
+  return true;
+}
+
+/**
  * Returns true when every significant word (≥ 3 chars) in the name
  * is in the generic-vocabulary set. Strips punctuation before
  * splitting so trailing commas / apostrophes don't false-positive
@@ -608,6 +707,22 @@ async function tryWikiSummary(
     // (Lovable code-review caught this — "Wikipedia REST returns
     // fair-use images; must filter or migrate to Commons API".)
     if (url && !/\/wikipedia\/commons\//.test(url)) return null;
+    // Filename suitability gate — mirrors the gallery's looksLikePhoto
+    // check (see api.photo-gallery.ts). Beka caught three failure
+    // modes that this catches:
+    //   - Old Town in Tbilisi → Wikipedia's "Old Tbilisi" article
+    //     used Aivazovsky's 1869 painting as the hero image;
+    //     filename contained "1869" → year-token reject.
+    //   - Liberty Square in Tbilisi → article landed on a "Square"
+    //     typographic logo (SVG, "logo" in filename) → extension
+    //     and keyword reject.
+    //   - Various landmark cards → 18th/19th century engravings of
+    //     the place came back instead of modern photos; filenames
+    //     carry "engraving", "lithograph", "1798", etc.
+    // Non-artwork only: artworks legitimately ARE engravings /
+    // lithographs / paintings, so applying this filter to them would
+    // wrongly reject the actual museum-highlight images.
+    if (url && !opts.isArtwork && !looksLikeUsablePhoto(url)) return null;
     return url;
   } catch {
     return null;
