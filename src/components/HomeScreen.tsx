@@ -184,7 +184,7 @@ export function HomeScreen() {
               key={d.slug}
               src={d.hero}
               alt={`${d.city}, ${d.country}`}
-              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out ${
+              className={`absolute inset-x-0 top-0 h-[80%] w-full object-cover transition-opacity duration-[1500ms] ease-in-out ${
                 i === heroIdx ? "scale-100 opacity-100" : "scale-105 opacity-0"
               }`}
             />
