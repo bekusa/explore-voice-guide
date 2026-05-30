@@ -72,16 +72,14 @@ JSON SHAPE (return exactly this shape):
 }
 
 LOCATION INTERPRETATION:
-- City query ("Tbilisi", "Rome", "Bangkok"): return attractions whose ACTUAL geographic location is within roughly 30 km / 45 minutes drive of the queried city's historic center. Before emitting each entry, mentally check: "Is this place's real-world location within that radius of the city I was asked about?" If you would need to travel on a highway / take a long bus or train ride to reach it, EXCLUDE IT — even if it is nationally famous. National fame is not a substitute for being in the right city.
-- The 1-2 immediate day-trip slots are reserved for places traditionally packaged with this city in tourism AND within the ~1-hour radius (Mtskheta and Jvari Monastery for Tbilisi, Versailles for Paris, Pompeii for Naples, Tivoli for Rome). A place that is 100+ km away, in a different administrative city, in a different region of the same country — does NOT qualify, no matter how famous or scenic. Excludes apply at the metropolitan-area level, not at the country level.
-- When in doubt about whether a place is geographically close enough, exclude it rather than include it. A shorter list of real-in-this-city attractions is always better than a longer list that drifts across the country.
+- City query ("Tbilisi", "Rome", "Bangkok"): return attractions STRICTLY inside the city limits or its immediate metropolitan area. You may include AT MOST 1-2 nearby places ONLY when they are (a) reachable within roughly one hour AND (b) traditionally packaged with this city in tourism (Mtskheta and Jvari Monastery for Tbilisi; Versailles for Paris; Pompeii for Naples; Tivoli for Rome). Do NOT include attractions from other cities in the same country (Kutaisi or Batumi attractions belong on a Kutaisi / Batumi query, NOT on a Tbilisi query; Florence does not belong on Rome; Kyoto does not belong on Tokyo). When in doubt about whether a place is close enough or tourism-packaged enough, exclude it.
 - Country or region query ("Italy", "Tuscany", "Andalusia"): spread picks across the most relevant destinations in that area — do not concentrate in one city.
 - Landmark query ("Eiffel Tower", "Acropolis"): treat as the surrounding city and return that city's full attractions list with the landmark as entry 1.
 - Ambiguous query with one widely recognized travel meaning ("Paris" → Paris, France; "Cambridge" → Cambridge, UK): use the famous interpretation. If genuinely ambiguous (e.g. "Springfield"), pick the most famous match and mention the ambiguity in the first attraction's insider_desc.
 - Too vague or not a real destination: return \`{"attractions":[]}\`.
 
 FIELD GUIDANCE:
-- "name": Use the EXACT Wikipedia article title — no parenthetical disambiguators, no alternative names in brackets, no neighborhood qualifiers attached. Examples: "Eiffel Tower", "Acropolis", "Brandenburg Gate", "Lamassu" (NOT "Winged Bull with Human Head (Lamassu)"), "Sulfur Baths" (NOT "Sulfur Baths (Abanotubani)"). The clean single name lets the frontend photo lookup find the right Wikipedia article and return the correct image. If two real places share a name within the city, append the city neighborhood AFTER a comma rather than inside parens: "Sulfur Baths, Abanotubani". No emojis.
+- "name": Use the well-known English name when one widely exists ("Eiffel Tower", "Acropolis", "Brandenburg Gate"). Otherwise use the official or commonly used local/romanized name. No emojis.
 - "type": ONE noun, MAXIMUM two words, capitalized. Examples: Museum, Park, Cathedral, Square, Market, Viewpoint, Neighborhood, Street, Bridge, Palace, Castle, Food Market. NOT "Historical Religious Building" or "Boutique Coffee Shop".
 - "outside_desc": 35-60 words. Neutral, factual, magazine-tone. What the place is and why it matters.
 - "insider_desc": 20-40 words. Warm and specific. Must add something \`outside_desc\` did NOT already cover — practical timing, sensory detail, a quiet corner, a viewing angle, a small ritual. Do not restate the same fact in different words.
@@ -97,10 +95,10 @@ FIELD GUIDANCE:
 - "lat" / "lng": Approximate decimal coordinates. Set BOTH to \`null\` (do not omit the fields) if you are not confident the coordinates are correct to within roughly 10 metres AND that the place is in the specified city. Wrong coordinates place a pin in the wrong neighbourhood and break trust — \`null\` is safer than a guess. The frontend has Wikipedia and Google Places fallback for null coordinates.
 
 WHAT NOT TO INCLUDE:
-- Attractions whose actual geographic location is outside the queried city's metropolitan area (see LOCATION INTERPRETATION above). Apply the distance check to EVERY entry before emitting it.
+- Attractions in a DIFFERENT city or region than the one queried. If the query is "Tbilisi", do not include Kutaisi, Batumi, Borjomi, or Bagrati Cathedral. If the query is "Rome", do not include Florence, Naples, or Milan attractions. The only exception is the 1-2 nearby tourism-packaged places allowed under LOCATION INTERPRETATION.
 - Hotels, hostels, B&Bs.
-- Modern dining establishments: restaurants, cafés, bars, wine bars, food trucks, breweries, pubs, bistros. The ONLY food-related entries allowed are (a) traditional public food MARKETS (a hall or open-air bazaar of stalls), and (b) culinary INSTITUTIONS that pass BOTH tests: at least 100 years old AND have their own dedicated Wikipedia article. If you cannot confirm both criteria, do NOT include the place — even if it is locally beloved.
-- Shopping malls, department stores, and chain stores (Starbucks, McDonald's, H&M, Zara, IKEA).
+- Restaurants and bars, unless the place is a food market or a culinary landmark in its own right (a centuries-old café, a UNESCO-recognised food market).
+- Shopping malls and chain stores (Starbucks, McDonald's, H&M).
 - Active construction sites or fully scaffolded buildings.
 - Permanently closed, destroyed, or relocated places.
 - Pop-up exhibitions or temporary installations.
