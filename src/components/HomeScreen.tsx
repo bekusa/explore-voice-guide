@@ -222,7 +222,7 @@ export function HomeScreen() {
                    section so they act as a subtle footer. Active dot
                    widens to `w-6` per Beka's existing dot-style
                    convention (same on /destinations/$slug carousel). */}
-              <div className="pointer-events-none absolute bottom-4 left-1/2 z-[14] flex -translate-x-1/2 items-center gap-1.5">
+              <div className="pointer-events-none absolute bottom-8 left-1/2 z-[14] flex -translate-x-1/2 items-center gap-1.5">
                 {HERO_ROTATION.map((d, i) => (
                   <button
                     key={d.slug}
