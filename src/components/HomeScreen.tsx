@@ -216,29 +216,6 @@ export function HomeScreen() {
               `setHeroPaused(true)` inside `goHero`. Matches the
               attraction-page photo carousel pattern (see HeroPhotoCarousel
               in attraction.$id.tsx). */}
-          {HERO_ROTATION.length > 1 && (
-            <>
-              {/* Bottom dots — sit at the very bottom of the hero
-                   section so they act as a subtle footer. Active dot
-                   widens to `w-6` per Beka's existing dot-style
-                   convention (same on /destinations/$slug carousel). */}
-              <div className="pointer-events-none absolute bottom-32 left-1/2 z-[14] flex -translate-x-1/2 items-center gap-1.5">
-                {HERO_ROTATION.map((d, i) => (
-                  <button
-                    key={d.slug}
-                    type="button"
-                    onClick={() => goHero(i)}
-                    aria-label={`Go to ${d.city}`}
-                    aria-current={i === heroIdx ? "true" : undefined}
-                    className={`pointer-events-auto h-1.5 rounded-full transition-all ${
-                      i === heroIdx ? "w-6 bg-primary" : "w-1.5 bg-foreground/30 hover:bg-foreground/50"
-                    }`}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-
           {/* Top bar — original Row 1 layout restored (Where next +
               city on the left, Settings + Notifications icons on the
               right), with a new Row 2 BELOW that carries the wider
@@ -337,6 +314,22 @@ export function HomeScreen() {
             <p className="mt-4 max-w-[320px] text-[14px] leading-[1.55] text-foreground/85 [.light_&]:drop-shadow-[0_1px_6px_rgba(255,255,255,0.9)]">
               {heroBlurb}
             </p>
+            {HERO_ROTATION.length > 1 && (
+              <div className="mt-4 flex items-center justify-center gap-1.5">
+                {HERO_ROTATION.map((d, i) => (
+                  <button
+                    key={d.slug}
+                    type="button"
+                    onClick={() => goHero(i)}
+                    aria-label={`Go to ${d.city}`}
+                    aria-current={i === heroIdx ? "true" : undefined}
+                    className={`h-1.5 rounded-full transition-all ${
+                      i === heroIdx ? "w-6 bg-primary" : "w-1.5 bg-foreground/30 hover:bg-foreground/50"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
             {/* Beka noticed the "Open {city}" verb pushed the button
                 wider than the gold pill in some non-English locales —
                 e.g. Spanish "Abrir Roma" or German "Öffnen Rom" trim
