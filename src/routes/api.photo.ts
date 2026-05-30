@@ -43,6 +43,100 @@ export function sanitizeWikiLang(raw: string | null | undefined, fallback: strin
 // Per-worker in-memory cache (resets on cold start, but cheap on a hot worker).
 const cache = new Map<string, string | null>();
 
+/**
+ * Common-vocabulary attraction-name words. A name composed entirely
+ * from this set is "generic" — every city has an "Old Town", every
+ * country has "Sulphur Baths" or "Central Park" somewhere. Without
+ * a city qualifier, Wikipedia search for these returns the article
+ * for some other city's version (Beka caught Stralsund Altstadt
+ * coming back for a Tbilisi "Old Town" query).
+ *
+ * The set covers:
+ *   - directional / size modifiers (old, new, central, main, north…)
+ *   - generic place categories (town, city, square, plaza, street…)
+ *   - religious-building generics (cathedral, church, mosque…)
+ *   - civic-building generics (palace, castle, tower, gate, bridge…)
+ *   - market / leisure generics (market, bazaar, park, garden, bath…)
+ *   - water-feature generics (river, lake, embankment, fountain…)
+ *   - landscape generics (hill, mountain, valley, ridge, cliff…)
+ *   - district generics (district, quarter, neighborhood…)
+ *   - common connective words (the, of, in, on, at, by, and)
+ *
+ * A name is "generic" when EVERY significant word in it (≥ 3 chars)
+ * belongs to this set. Specific words (proper names: Eiffel, Acropolis,
+ * Mtatsminda, Bosphorus, Brandenburg) break the generic classification
+ * and route the lookup back to bare-first (the canonical-article path).
+ */
+const GENERIC_ATTRACTION_WORDS = new Set([
+  // directional / size modifiers
+  "old", "new", "central", "main", "great", "little", "small", "big",
+  "upper", "lower", "high", "low", "north", "south", "east", "west",
+  "inner", "outer", "royal", "imperial", "national", "public",
+  "ancient", "modern", "historical", "historic", "medieval",
+  "holy", "sacred", "eternal",
+  // generic place categories
+  "town", "city", "village", "settlement", "place",
+  "square", "plaza", "piazza", "street", "avenue", "boulevard",
+  "lane", "alley", "promenade", "walk",
+  // religious-building generics
+  "cathedral", "church", "basilica", "temple", "mosque", "synagogue",
+  "chapel", "monastery", "abbey", "priory", "shrine",
+  // civic-building generics
+  "palace", "castle", "fort", "fortress", "citadel",
+  "tower", "gate", "bridge", "wall", "walls",
+  "house", "mansion", "villa", "residence",
+  "theatre", "theater", "library",
+  "monument", "memorial", "statue", "obelisk",
+  // market / leisure generics
+  "market", "bazaar", "souk", "souq",
+  "park", "garden", "gardens",
+  "museum", "gallery", "exhibition",
+  "baths", "bath", "spa",
+  "sulphur", "sulfur", "thermal", "mineral", "hot", "cold",
+  // water features
+  "embankment", "boardwalk", "waterfront", "riverfront", "riverside",
+  "seafront", "lakefront", "harbour", "harbor", "port", "dock", "pier",
+  "river", "lake", "pond", "fountain", "well", "spring", "beach", "bay",
+  // landscape generics
+  "hill", "mountain", "peak", "valley", "ridge", "cliff", "summit",
+  "rock", "stone", "cave", "grove", "forest", "meadow", "field",
+  "view", "viewpoint", "lookout", "observation",
+  // district generics
+  "district", "quarter", "neighborhood", "neighbourhood",
+  "block", "area", "zone", "region",
+  // connectives + articles (don't count against generic-detection)
+  "the", "of", "in", "on", "at", "by", "and", "or", "for",
+]);
+
+/**
+ * Returns true when every significant word (≥ 3 chars) in the name
+ * is in the generic-vocabulary set. Strips punctuation before
+ * splitting so trailing commas / apostrophes don't false-positive
+ * a specific word as un-generic.
+ *
+ * Examples:
+ *   "Old Town"        → true  (old, town both generic)
+ *   "Sulphur Baths"   → true  (sulphur, baths both generic)
+ *   "Eiffel Tower"    → false ("eiffel" not generic)
+ *   "Mtatsminda Park" → false ("mtatsminda" not generic)
+ *   "Central Park"    → true  (every city has one)
+ *   "Liberty Square"  → false ("liberty" not generic)
+ */
+function isGenericAttractionName(name: string | null | undefined): boolean {
+  if (!name) return false;
+  const words = name
+    .toLowerCase()
+    .replace(/[^\p{L}\s]+/gu, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+  // Names with 0 or >4 words are unlikely to be the failure pattern;
+  // the bug is short generic compounds, not long ones.
+  if (words.length === 0 || words.length > 4) return false;
+  const significant = words.filter((w) => w.length >= 3);
+  if (significant.length === 0) return false;
+  return significant.every((w) => GENERIC_ATTRACTION_WORDS.has(w));
+}
+
 type FindPlaceResponse = {
   candidates?: Array<{
     photos?: Array<{ photo_reference: string }>;
@@ -977,6 +1071,32 @@ export const Route = createFileRoute("/api/photo")({
                   photoUrl = await wikipediaPhoto(`${artist} ${q}`, lang, wikiOpts);
                 }
               }
+            }
+            // GENERIC-VOCABULARY FAST PATH (non-artwork only): when the
+            // attraction name is made entirely of common nouns ("Old
+            // Town", "Sulphur Baths", "Central Park", "Town Square"),
+            // searching bare lands on Wikipedia's article for SOME
+            // city's old town / sulphur baths — Beka caught the Old
+            // Town card returning a photo of Stralsund Altstadt in
+            // Germany, and Sulphur Baths returning a random hot
+            // spring image. Wikipedia's relevance check passes because
+            // the wrong article literally contains "Old Town" or
+            // "Sulphur Baths" in its title. Fix: for generic-vocabulary
+            // names, try `q + city` FIRST so we land on the queried
+            // city's version. Specific names ("Eiffel Tower",
+            // "Mtatsminda Park", "Acropolis") still go bare-first
+            // because the bare title IS the canonical article and
+            // q+city risks dragging in noisy intitle matches (the
+            // Burj Khalifa Metro Station pattern that prompted the
+            // original bare-first ordering).
+            if (
+              !photoUrl &&
+              !isArtwork &&
+              city &&
+              isGenericAttractionName(q) &&
+              !q.toLowerCase().includes(city.toLowerCase())
+            ) {
+              photoUrl = await wikipediaPhoto(`${q} ${city}`, lang, wikiOpts);
             }
             // 2) bare q — catches famous attractions with a canonical
             //    Wikipedia article at the exact title. Runs after the
