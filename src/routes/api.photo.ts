@@ -1190,20 +1190,43 @@ export const Route = createFileRoute("/api/photo")({
             // GENERIC-VOCABULARY FAST PATH (non-artwork only): when the
             // attraction name is made entirely of common nouns ("Old
             // Town", "Sulphur Baths", "Central Park", "Town Square"),
-            // searching bare lands on Wikipedia's article for SOME
-            // city's old town / sulphur baths — Beka caught the Old
-            // Town card returning a photo of Stralsund Altstadt in
-            // Germany, and Sulphur Baths returning a random hot
-            // spring image. Wikipedia's relevance check passes because
-            // the wrong article literally contains "Old Town" or
-            // "Sulphur Baths" in its title. Fix: for generic-vocabulary
-            // names, try `q + city` FIRST so we land on the queried
-            // city's version. Specific names ("Eiffel Tower",
-            // "Mtatsminda Park", "Acropolis") still go bare-first
-            // because the bare title IS the canonical article and
-            // q+city risks dragging in noisy intitle matches (the
-            // Burj Khalifa Metro Station pattern that prompted the
-            // original bare-first ordering).
+            // Wikipedia's lead image for the queried-city version
+            // tends to be one of three things — and all three are
+            // wrong for the user:
+            //   (1) A panoramic / aerial view of the neighbourhood
+            //       (Abanotubani article shows a Tbilisi skyline with
+            //       the Mtkvari, not the iconic brick bath domes).
+            //   (2) A 19th-century painting of the city by an Old
+            //       Master (Old Tbilisi article uses Aivazovsky's 1869
+            //       canvas as the hero).
+            //   (3) Decorative typography for the bare term (Liberty
+            //       Square landed on a Wikipedia "SQUARE" wordmark
+            //       graphic).
+            // Google Places, in contrast, returns tourist close-ups
+            // of the actual landmark building — exactly what the
+            // result card needs. Route generic-vocabulary names to
+            // Google FIRST, fall through to Wikipedia only if Google
+            // misses (or the key isn't set). Specific named landmarks
+            // ("Eiffel Tower", "Mtatsminda Park", "Acropolis") still
+            // go to Wikipedia first because they have canonical
+            // articles with proper hero photos.
+            if (
+              !photoUrl &&
+              !isArtwork &&
+              city &&
+              isGenericAttractionName(q) &&
+              !q.toLowerCase().includes(city.toLowerCase())
+            ) {
+              try {
+                photoUrl = await googlePhoto(q, city);
+              } catch {
+                /* fall through to Wikipedia city-qualified search */
+              }
+            }
+            // Wikipedia city-qualified search — runs for generic
+            // names that Google missed AND as the original
+            // generic-fast-path (this is the previous behaviour, now
+            // a fallback after Google for generic names).
             if (
               !photoUrl &&
               !isArtwork &&
