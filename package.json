@@ -12,7 +12,11 @@
     "format": "prettier --write .",
     "cap:sync": "vite build && cap sync",
     "cap:android": "vite build && cap sync android && cap open android",
-    "cap:ios": "vite build && cap sync ios && cap open ios"
+    "cap:ios": "vite build && cap sync ios && cap open ios",
+    "photos:download": "node scripts/download-hero-photos.mjs",
+    "photos:download:cities": "node scripts/download-hero-photos.mjs --cities-only",
+    "photos:download:museums": "node scripts/download-hero-photos.mjs --museums-only",
+    "photos:download:missing": "node scripts/download-hero-photos.mjs --skip-existing"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",

@@ -28,6 +28,7 @@ import { CityCard } from "@/components/CityCard";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
 import { attractionSlug } from "@/lib/api";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
+import { getStaticMuseumHeroUrl } from "@/lib/museumHeroPhotos";
 import {
   ATTRACTIONS as TIME_MACHINE_ATTRACTIONS,
   type Attraction as TimeMachineAttraction,
@@ -545,12 +546,22 @@ export function HomeScreen() {
 function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
   const [name] = useTranslated([museum.name]);
   const slug = attractionSlug(museum.name);
+  // Curated static hero (bundled under public/images/museums/<slug>.jpg)
+  // — instant paint on first visit, no /api/photo round-trip. When
+  // the static file 404s (museum not yet downloaded via the
+  // download-hero-photos script), the <img onError> further down
+  // flips `staticFailed` and the existing Wikipedia lookup picks
+  // up the slack.
+  const staticHero = getStaticMuseumHeroUrl(museum.name);
+  const [staticFailed, setStaticFailed] = useState(false);
   // Wikipedia-sourced photo via the shared hook. scope="artwork"
   // forces the Wikipedia-only path so Tbilisi-biased Google Places
-  // results don't pollute the strip.
+  // results don't pollute the strip. We skip the network round-trip
+  // entirely while the static hero is winning.
   const fetched = useLazyPlacePhoto(museum.name, {
     cityHint: museum.city,
     scope: "artwork",
+    skip: !!staticHero && !staticFailed,
   });
   // Wikipedia URL can 404 after the page mounts (image deleted, etc.).
   // Flip imgFailed → falls back to the LoremFlickr seed image.
@@ -567,7 +578,15 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
   // LoremFlickr seed only kicks in when Wikipedia genuinely fails
   // (404, dead link). That happens rarely enough that no first-paint
   // flash is the right default.
-  const photo = imgFailed ? museum.image : fetched;
+  // Priority: curated static → Wikipedia (via fetched) → LoremFlickr
+  // seed only as last-ditch fallback. The first two skip when the
+  // step before them succeeded (see `skip` above and `staticFailed`).
+  const photo =
+    staticHero && !staticFailed
+      ? staticHero
+      : imgFailed
+        ? museum.image
+        : fetched;
   return (
     <Link
       to="/attraction/$id"
@@ -598,7 +617,16 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
           src={photo}
           alt={name}
           loading="lazy"
-          onError={() => setImgFailed(true)}
+          onError={() => {
+            // Static curated file 404'd (museum not yet downloaded
+            // via scripts/download-hero-photos.mjs) — drop down to
+            // the Wikipedia lookup path.
+            if (photo === staticHero && !staticFailed) {
+              setStaticFailed(true);
+              return;
+            }
+            setImgFailed(true);
+          }}
           className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
         />
       ) : (
