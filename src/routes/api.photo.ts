@@ -236,6 +236,49 @@ function isGenericAttractionName(name: string | null | undefined): boolean {
   return significant.every((w) => GENERIC_ATTRACTION_WORDS.has(w));
 }
 
+/**
+ * Wikimedia thumb URL transformer. Wikipedia's REST summary endpoint
+ * gives us `originalimage.source` — the original full-resolution upload
+ * which is often 2-6 MB per city panorama. Rendering 10 of those on the
+ * Home page made the first-paint feel sluggish even on a fast pipe
+ * (Beka caught the home-cities strip taking ~5 s to fill in over a
+ * mid-tier mobile connection).
+ *
+ * Wikipedia auto-generates a thumbnail at any reasonable width via the
+ * `/wikipedia/commons/thumb/<hash>/<filename>/<W>px-<filename>` URL
+ * shape; the file is rendered on first request and CDN-cached at the
+ * Wikimedia edge for everyone after that. Hot files (Tbilisi pano,
+ * Colosseum, Hagia Sophia) are already cached globally.
+ *
+ * We default to 1024px wide — sharp on a phone retina display
+ * (~720 effective pixels at 360px CSS width) and headroom for the
+ * /destinations hero (which goes a bit wider). For attraction-card
+ * thumbnails (~240px tall) this is overkill but the file is still
+ * tiny compared to originalimage.
+ *
+ * Pass-through (returns the URL unchanged) when:
+ *   - URL isn't an upload.wikimedia.org commons file
+ *   - URL is already a thumb (we'd double-thumb otherwise)
+ *   - Filename has no recognisable extension we can re-key around
+ */
+function toWikimediaThumb(url: string | null, width = 1024): string | null {
+  if (!url) return null;
+  if (!url.includes("upload.wikimedia.org/wikipedia/")) return url;
+  if (url.includes("/thumb/")) return url; // already a thumb
+  const match = url.match(
+    /^(https?:\/\/upload\.wikimedia\.org\/wikipedia\/[^/]+)\/([0-9a-f])\/([0-9a-f]{2})\/(.+)$/i,
+  );
+  if (!match) return url;
+  const [, prefix, h1, h2, filename] = match;
+  // Wikipedia renders SVG → PNG at the requested width; non-SVG just
+  // carries the original extension. Vector files keep their `.svg`
+  // suffix on the source path but the rendered thumb has a `.png`
+  // tail (e.g. `…/Flag.svg/1024px-Flag.svg.png`).
+  const isSvg = /\.svg$/i.test(filename);
+  const thumbName = isSvg ? `${width}px-${filename}.png` : `${width}px-${filename}`;
+  return `${prefix}/thumb/${h1}/${h2}/${filename}/${thumbName}`;
+}
+
 type FindPlaceResponse = {
   candidates?: Array<{
     photos?: Array<{ photo_reference: string }>;
@@ -1057,7 +1100,13 @@ export const Route = createFileRoute("/api/photo")({
           city: city ?? "",
           museum: museum ?? "",
         };
-        const persisted = await getCachedPhoto(persistentKey);
+        const persistedRaw = await getCachedPhoto(persistentKey);
+        // Rewrite legacy cache entries on read — rows written before
+        // the Wikimedia thumb transformation landed will still hold
+        // the full-resolution `originalimage` URL. Transforming on
+        // read means existing users see the speed-up without us
+        // having to wipe `cached_photos` and re-pay the lookup chain.
+        const persisted = toWikimediaThumb(persistedRaw);
         if (persisted) {
           cache.set(cacheKey, persisted);
           return corsJson(
@@ -1277,6 +1326,13 @@ export const Route = createFileRoute("/api/photo")({
         // for 30 days; misses get short no-store responses so a
         // retry from any client picks up the corrected lookup
         // immediately.
+        // Wikipedia thumb-URL re-write — drops file sizes from 2-6 MB
+        // to ~150-300 KB for upload.wikimedia.org URLs while leaving
+        // Google Places (`lh3.googleusercontent.com`) URLs untouched
+        // because those are already constrained to `s1600-w600`.
+        if (photoUrl) {
+          photoUrl = toWikimediaThumb(photoUrl);
+        }
         if (photoUrl) {
           // Per-worker in-memory cache (fast, resets on cold start).
           cache.set(cacheKey, photoUrl);

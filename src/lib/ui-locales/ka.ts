@@ -62,6 +62,9 @@ export const KA: Partial<Record<UiKey, string>> = {
   "hero.rome.tagline2": "მარადიული რომი",
   "hero.rome.blurb":
     "რომის ფორუმის ნანგრევები, ბაროკოს შადრევნები და ვახშმის სუფრები ტრასტევერეში. ქალაქი, რომელიც ყოველდღე ისტორიას ატარებს.",
+  "hero.istanbul.country": "თურქეთი",
+  "hero.istanbul.city": "სტამბული",
+  "hero.istanbul.tagline2": "ორი კონტინენტი",
   "hero.istanbul.blurb":
     "აია-სოფიას გუმბათები, მზის ჩასვლის ჟამის ლოცვაზე მოწოდება და მოკლე ბორანი ევროპიდან აზიამდე.",
 

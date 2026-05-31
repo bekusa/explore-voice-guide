@@ -161,6 +161,38 @@ function RootComponent() {
     window.addEventListener("tg:lang-changed", syncLang);
     return () => window.removeEventListener("tg:lang-changed", syncLang);
   }, []);
+
+  // Register the offline app-shell Service Worker so the next cold
+  // start works without internet. Capacitor's `errorPath: offline.html`
+  // fallback fires only when the WebView can't reach `lokali.ge` AT
+  // ALL; with a SW registered, fetch-event interception serves the
+  // cached app shell instead, the React app boots, and the user can
+  // reach `/saved` (rendered from @capacitor/preferences +
+  // @capacitor/filesystem — both already local).
+  //
+  // Registration is fire-and-forget; failures are logged and silently
+  // tolerated (Capacitor 7 supports SW in WebView, but a future
+  // platform / browser quirk shouldn't crash the root mount).
+  //
+  // We wait for `load` so the registration doesn't compete with
+  // critical first-paint work; if the page is already idle we
+  // schedule it immediately.
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+      return;
+    }
+    const register = () => {
+      void navigator.serviceWorker.register("/sw.js").catch((err) => {
+        console.warn("[lokali] Service Worker registration failed", err);
+      });
+    };
+    if (document.readyState === "complete") {
+      register();
+    } else {
+      window.addEventListener("load", register, { once: true });
+      return () => window.removeEventListener("load", register);
+    }
+  }, []);
   // Rehydrate the Saved list from Supabase on every sign-in. Reinstalls
   // and fresh devices wipe localStorage, but the cloud rows survive —
   // without this hook Beka saw his 4 saved attractions drop to 2 after

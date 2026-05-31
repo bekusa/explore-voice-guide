@@ -1,8 +1,22 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { MapPin } from "lucide-react";
-import { useTranslatedString, useUiLang } from "@/hooks/useT";
+import { useT, useTranslatedString, useUiLang } from "@/hooks/useT";
+import type { UiKey } from "@/lib/i18n";
 import { getCityProfile } from "@/lib/cityProfiles";
+import { getStaticCityHeroUrl } from "@/lib/cityHeroPhotos";
+
+/**
+ * Slugs of cities whose canonical localized name is stored in every
+ * locale's static UI dict as `hero.<slug>.city`. For these we trust
+ * the hand-authored translation instead of going through live Google
+ * Translate, which has been observed to drop trailing characters
+ * (Georgian "Tbilisi" → "თბილის" instead of "თბილისი") and stale-cache
+ * partial outputs in localStorage from the legacy Haiku pipeline.
+ *
+ * Other city names continue to flow through useTranslatedString.
+ */
+const STATIC_CITY_SLUGS = new Set(["tbilisi", "rome", "istanbul"]);
 
 /**
  * Persistent cross-session cache for city hero images. The server route
@@ -66,11 +80,34 @@ function clearCache(key: string) {
  */
 export function CityCard({ city }: { city: string }) {
   const lang = useUiLang();
-  const label = useTranslatedString(city);
+  const t = useT();
+  // For Tbilisi/Rome/Istanbul, read the canonical localized name
+  // from the static UI dictionary; otherwise fall back to live
+  // Google Translate via useTranslatedString. The static dict is
+  // hand-authored and won't drop trailing characters or stay stale
+  // across translation-pipeline migrations.
+  const slug = city.toLowerCase();
+  const fallbackLabel = useTranslatedString(city);
+  const label = STATIC_CITY_SLUGS.has(slug)
+    ? t(`hero.${slug}.city` as UiKey)
+    : fallbackLabel;
   const cacheKey = `${lang}:${city}`;
+  // Curated static hero URL for the 3 launch cities — paints on first
+  // frame without a /api/photo round-trip. Falls back to the API
+  // lookup only if the static URL fails to load (file moved, image
+  // taken down, etc.) via the `staticFailed` state below.
+  const staticHero = getStaticCityHeroUrl(slug);
+  const [staticFailed, setStaticFailed] = useState(false);
   const [img, setImg] = useState<string | null>(null);
 
   useEffect(() => {
+    // Static-hero path: trust the curated URL on first paint. We
+    // only kick off the API fallback if the <img onError> below
+    // flips `staticFailed` to true.
+    if (staticHero && !staticFailed) {
+      setImg(staticHero);
+      return;
+    }
     const cached = readCache(cacheKey);
     if (cached) {
       setImg(cached);
@@ -90,7 +127,7 @@ export function CityCard({ city }: { city: string }) {
     return () => {
       cancelled = true;
     };
-  }, [city, lang, cacheKey]);
+  }, [city, lang, cacheKey, staticHero, staticFailed]);
 
   // Route to the editorial city detail page when we've hand-authored
   // a profile for this city (Tbilisi / Rome / Istanbul today). Falls
@@ -98,7 +135,6 @@ export function CityCard({ city }: { city: string }) {
   // strip still works without needing per-city content. Beka's spec:
   // the 3 launch cities get a curated landing, the rest dispatch
   // straight to search.
-  const slug = city.toLowerCase();
   const hasProfile = !!getCityProfile(slug);
   const linkProps = hasProfile
     ? ({ to: "/destinations/$slug", params: { slug } } as const)
@@ -115,6 +151,15 @@ export function CityCard({ city }: { city: string }) {
           alt={city}
           loading="lazy"
           onError={() => {
+            // Static curated URL failed — flip the flag so the
+            // useEffect kicks the /api/photo fallback. Otherwise
+            // we'd be stuck on the placeholder gradient if a
+            // Wikipedia file got renamed or taken down.
+            if (img === staticHero && !staticFailed) {
+              setStaticFailed(true);
+              setImg(null);
+              return;
+            }
             clearCache(cacheKey);
             setImg(null);
           }}
