@@ -137,7 +137,29 @@ export async function inlineImageAsDataUrl(
   // Catches sources whose CORS headers come from the redirect target
   // rather than the initial response (so the fetch saw 0 bytes but
   // the browser's image loader handles the redirect correctly).
-  return canvasInline(url, 1024);
+  const canvasResult = await canvasInline(url, 1024);
+  if (canvasResult) return canvasResult;
+  // Strategy 3: server-side proxy. When both the direct fetch AND
+  // the canvas approach fail (CORS-tainted redirects, opaque
+  // responses), bounce the URL off `/api/image-proxy` which fetches
+  // the bytes from the Cloudflare Worker — no CORS rules apply
+  // there. Only same-origin /api/image-proxy is hit from the browser
+  // so this never trips CORS itself.
+  try {
+    const proxied = await fetch(
+      "/api/image-proxy?url=" + encodeURIComponent(url),
+    );
+    if (proxied.ok) {
+      const blob = await proxied.blob();
+      if (blob.size <= 1_200_000) {
+        const dataUrl = await blobToDataUrl(blob);
+        if (dataUrl) return dataUrl;
+      }
+    }
+  } catch {
+    /* network down — caller falls back to placeholder */
+  }
+  return null;
 }
 
 function blobToDataUrl(blob: Blob): Promise<string | null> {
@@ -200,8 +222,25 @@ function canvasInline(url: string, maxWidth: number): Promise<string | null> {
  * caller's optimistic save still stands.
  */
 export async function attachPhotoToSavedItem(id: string, photoUrl: string | null | undefined) {
+  console.log("[lokali] attachPhotoToSavedItem start", { id, photoUrl });
+  if (!photoUrl) {
+    console.warn("[lokali] attachPhotoToSavedItem: no photoUrl provided");
+    return;
+  }
   const dataUrl = await inlineImageAsDataUrl(photoUrl);
-  if (dataUrl) updateItem(id, { imageDataUrl: dataUrl });
+  if (dataUrl) {
+    console.log("[lokali] attachPhotoToSavedItem: inlined OK", {
+      id,
+      dataUrlPrefix: dataUrl.slice(0, 40),
+      dataUrlLength: dataUrl.length,
+    });
+    updateItem(id, { imageDataUrl: dataUrl });
+  } else {
+    console.warn(
+      "[lokali] attachPhotoToSavedItem: all 3 strategies returned null",
+      { id, photoUrl },
+    );
+  }
 }
 
 export async function backfillSavedToPreferences(): Promise<void> {
