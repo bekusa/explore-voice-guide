@@ -220,7 +220,7 @@
         Lokali needs a connection to fetch fresh stories. Your saved tours are
         below — tap Play to listen from the local cache.
       </p>
-      <button class="retry" type="button" onclick="window.location.reload()">Retry connection</button>
+      <button class="retry" type="button" id="retryBtn">Retry connection</button>
     </header>
 
     <h2 id="savedHeading">Saved tours</h2>
@@ -421,10 +421,29 @@
 
       async function loadSavedList() {
         showStatus("Loading saved tours…");
+        // Diagnostic: try fetching the bridge script directly so we
+        // can tell load failures (404, MIME error) apart from
+        // injection failures.
+        let bridgeFetchStatus = "unknown";
+        try {
+          const r = await fetch("/native-bridge.js", { cache: "no-store" });
+          bridgeFetchStatus = r.status + " " + (r.ok ? "ok" : "fail");
+        } catch (e) {
+          bridgeFetchStatus = "err: " + (e && e.message ? e.message : e);
+        }
         const hasBridge = await waitForCapacitor(3000);
         if (!hasBridge) {
           showStatus(
-            "Native bridge unavailable — open the app once with internet so it can sync the offline cache.",
+            "Native bridge unavailable. Debug — Capacitor: " +
+              (typeof window.Capacitor === "undefined" ? "undefined" : "present") +
+              ", registerPlugin: " +
+              (window.Capacitor && typeof window.Capacitor.registerPlugin === "function"
+                ? "yes"
+                : "no") +
+              ", Plugins: " +
+              (window.Capacitor && window.Capacitor.Plugins ? "yes" : "no") +
+              ", native-bridge.js fetch: " +
+              bridgeFetchStatus,
           );
           return;
         }
@@ -480,6 +499,16 @@
       // paints first.
       window.addEventListener("load", () => {
         setTimeout(loadSavedList, 0);
+      });
+
+      // Retry: stay inside the Capacitor WebView. `window.location.reload()`
+      // reloads the offline.html page itself (we're on capacitor://localhost),
+      // which doesn't re-attempt the lokali.ge navigation. Pointing the
+      // location at the absolute server URL forces the WebView to try
+      // loading lokali.ge again — if connectivity is back, the React app
+      // boots; if still offline, Capacitor falls back here.
+      document.getElementById("retryBtn").addEventListener("click", () => {
+        window.location.href = "https://lokali.ge/";
       });
     </script>
   </body>
