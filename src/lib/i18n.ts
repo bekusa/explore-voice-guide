@@ -765,6 +765,10 @@ const inflight = new Map<string, Promise<string[]>>();
 export async function translateBatch(texts: string[], lang: string): Promise<string[]> {
   const l = normalizeLang(lang);
   if (l === "en" || texts.length === 0) return texts;
+  // Offline guard — /api/translate would throw "Failed to fetch" with
+  // no network. Returning the source strings keeps the DevTools
+  // console clean and the /saved tab still renders (just in English).
+  if (typeof navigator !== "undefined" && navigator.onLine === false) return texts;
 
   const key = l + "::" + texts.join("\u0001");
   const existing = inflight.get(key);

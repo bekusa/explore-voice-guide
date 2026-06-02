@@ -86,27 +86,28 @@ export function TabBar() {
         <Bookmark className="h-[19px] w-[19px]" />
         <span className="text-[10px] font-medium">{t("nav.saved")}</span>
       </Link>
-      {user ? (
-        <button
-          onClick={() => {
-            tapHaptic();
-            void signOut();
-          }}
-          className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
-        >
-          <LogOut className="h-[19px] w-[19px]" />
-          <span className="text-[10px] font-medium">{t("nav.signOut")}</span>
-        </button>
-      ) : (
-        <Link
-          to="/auth"
-          onClick={tapHaptic}
-          className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
-        >
-          <UserIcon className="h-[19px] w-[19px]" />
-          <span className="text-[10px] font-medium">{t("nav.signIn")}</span>
-        </Link>
-      )}
+      {online &&
+        (user ? (
+          <button
+            onClick={() => {
+              tapHaptic();
+              void signOut();
+            }}
+            className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
+          >
+            <LogOut className="h-[19px] w-[19px]" />
+            <span className="text-[10px] font-medium">{t("nav.signOut")}</span>
+          </button>
+        ) : (
+          <Link
+            to="/auth"
+            onClick={tapHaptic}
+            className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
+          >
+            <UserIcon className="h-[19px] w-[19px]" />
+            <span className="text-[10px] font-medium">{t("nav.signIn")}</span>
+          </Link>
+        ))}
     </nav>
   );
 }

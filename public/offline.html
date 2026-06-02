@@ -505,15 +505,28 @@
       // doesn't have cache (truly first offline launch), the WebView
       // bounces back here and the `tried` flag stops us from looping.
       try {
-        const tried = sessionStorage.getItem("lokali.offline.tried");
-        if (!tried) {
-          sessionStorage.setItem("lokali.offline.tried", "1");
+        // Allow up to 3 retry attempts per session — the SW for
+        // lokali.ge sometimes needs a moment to activate after a
+        // fresh deploy, and the first navigation lands here before
+        // it's ready. Each retry gives it another chance. After 3
+        // failures we stop looping (network is genuinely down) and
+        // leave the user on this page with the manual Retry button.
+        const k = "lokali.offline.tries";
+        const tries = parseInt(sessionStorage.getItem(k) || "0", 10) || 0;
+        if (tries < 3) {
+          sessionStorage.setItem(k, String(tries + 1));
           // Tiny delay so the static page paints once first — gives
           // the user feedback that something happened rather than a
-          // blank-then-instant-replace.
+          // blank-then-instant-replace. We aim straight at `/saved`
+          // because that's the only route that's useful when offline
+          // — Home + Map both need live /api/* round-trips.
+          //
+          // Increasing delay on later attempts to give the SW more
+          // time to install/activate between bounces.
+          const delay = 400 + tries * 600;
           setTimeout(() => {
-            window.location.href = "https://lokali.ge/";
-          }, 400);
+            window.location.href = "https://lokali.ge/saved";
+          }, delay);
         }
       } catch {
         /* sessionStorage may be disabled — skip */
@@ -532,7 +545,9 @@
       // loading lokali.ge again — if connectivity is back, the React app
       // boots; if still offline, Capacitor falls back here.
       document.getElementById("retryBtn").addEventListener("click", () => {
-        window.location.href = "https://lokali.ge/";
+        // Land on /saved — same rationale as the auto-retry above.
+        // If the network came back, the user can tap Home themselves.
+        window.location.href = "https://lokali.ge/saved";
       });
     </script>
   </body>

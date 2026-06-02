@@ -114,21 +114,82 @@ export async function inlineImageAsDataUrl(
 ): Promise<string | null> {
   if (!url) return null;
   if (url.startsWith("data:")) return url; // already inline
-  if (typeof fetch === "undefined") return null;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const blob = await res.blob();
-    if (blob.size > 1_200_000) return null; // skip oversized — quota guard
-    return await new Promise<string | null>((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : null);
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(blob);
-    });
-  } catch {
-    return null;
+  if (typeof navigator !== "undefined" && navigator.onLine === false) return null;
+  // Strategy 1: direct fetch + base64. Works when the source allows
+  // CORS (Wikipedia upload.wikimedia.org does, Google Places photo
+  // redirects usually do once they land on lh3.googleusercontent.com).
+  if (typeof fetch !== "undefined") {
+    try {
+      const res = await fetch(url);
+      if (res.ok) {
+        const blob = await res.blob();
+        if (blob.size <= 1_200_000) {
+          const dataUrl = await blobToDataUrl(blob);
+          if (dataUrl) return dataUrl;
+        }
+      }
+    } catch {
+      /* fall through to canvas fallback */
+    }
   }
+  // Strategy 2: <img crossOrigin="anonymous"> + canvas. Same-origin
+  // OR CORS-allowed images can be drawn to a canvas and read back.
+  // Catches sources whose CORS headers come from the redirect target
+  // rather than the initial response (so the fetch saw 0 bytes but
+  // the browser's image loader handles the redirect correctly).
+  return canvasInline(url, 1024);
+}
+
+function blobToDataUrl(blob: Blob): Promise<string | null> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : null);
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(blob);
+  });
+}
+
+function canvasInline(url: string, maxWidth: number): Promise<string | null> {
+  return new Promise((resolve) => {
+    if (typeof document === "undefined" || typeof Image === "undefined") {
+      resolve(null);
+      return;
+    }
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    const cleanup = () => {
+      img.onload = null;
+      img.onerror = null;
+    };
+    img.onload = () => {
+      try {
+        const ratio = img.naturalWidth > maxWidth ? maxWidth / img.naturalWidth : 1;
+        const w = Math.round(img.naturalWidth * ratio);
+        const h = Math.round(img.naturalHeight * ratio);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          cleanup();
+          resolve(null);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+        cleanup();
+        resolve(dataUrl.length > 200 ? dataUrl : null);
+      } catch {
+        cleanup();
+        resolve(null);
+      }
+    };
+    img.onerror = () => {
+      cleanup();
+      resolve(null);
+    };
+    img.src = url;
+  });
 }
 
 /**

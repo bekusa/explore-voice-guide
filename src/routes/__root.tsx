@@ -169,12 +169,45 @@ function RootComponent() {
   useEffect(() => {
     void (async () => {
       try {
-        const { backfillSavedToPreferences } = await import("@/lib/savedStore");
+        const { backfillSavedToPreferences, getSaved, attachPhotoToSavedItem } =
+          await import("@/lib/savedStore");
         await backfillSavedToPreferences();
+        // Photo backfill — for any pre-existing Saved entry that
+        // doesn't have an inlined hero image yet, fetch the existing
+        // `image_url` and base64-encode it now while we're online.
+        // Skips when offline (image fetch would fail anyway) and when
+        // the item already has `imageDataUrl` set.
+        if (typeof navigator !== "undefined" && navigator.onLine !== false) {
+          for (const item of getSaved()) {
+            if (item.imageDataUrl) continue;
+            const url =
+              (item.attraction as { image_url?: string } | null)?.image_url ?? null;
+            if (!url) continue;
+            void attachPhotoToSavedItem(item.id, url);
+          }
+        }
       } catch (err) {
         console.warn("[lokali] Saved backfill failed", err);
       }
     })();
+  }, []);
+
+  // Offline-default route: when the app cold-starts without
+  // connectivity, send the user straight to /saved instead of the
+  // Home strip (which can't render without the live /api/attractions
+  // + /api/photo calls). Once back online, regular navigation
+  // resumes — the redirect only fires once on initial mount when
+  // the path is the root.
+  useEffect(() => {
+    if (typeof navigator === "undefined") return;
+    if (navigator.onLine !== false) return;
+    if (typeof window === "undefined") return;
+    if (window.location.pathname !== "/") return;
+    void router.navigate({ to: "/saved" });
+    // We don't add `online` as a dep — the redirect should only
+    // happen on the initial offline cold start, not every time
+    // connectivity flips.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Register the offline app-shell Service Worker so the next cold
