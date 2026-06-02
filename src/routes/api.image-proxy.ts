@@ -61,7 +61,10 @@ export const Route = createFileRoute("/api/image-proxy")({
             },
           });
           if (!upstream.ok) {
-            return jsonError(upstream.status, "upstream error");
+            return jsonError(
+              upstream.status,
+              `upstream ${upstream.status} for ${parsed.host}`,
+            );
           }
           const reader = upstream.body?.getReader();
           if (!reader) {
@@ -114,6 +117,16 @@ function mergeChunks(chunks: Uint8Array[], total: number): Uint8Array {
 function jsonError(status: number, message: string): Response {
   return new Response(JSON.stringify({ error: message }), {
     status,
-    headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    headers: {
+      ...CORS_HEADERS,
+      "Content-Type": "application/json",
+      // Stop Cloudflare's edge from caching errors. Without this, a
+      // transient upstream blip (Wikipedia 5xx, Google quota spike)
+      // can lock the edge into serving an error for hours, making
+      // the proxy look broken from some devices and fine from
+      // others (Beka caught this — mobile got the cached error
+      // while desktop hit a different edge with a fresh success).
+      "Cache-Control": "no-store",
+    },
   });
 }

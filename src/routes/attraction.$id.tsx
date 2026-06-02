@@ -2321,6 +2321,14 @@ function HeroPhotoCarousel({
           key={url}
           src={url}
           alt={alt}
+          // CORS-aware loading. The hero img is what the offline
+          // photo-inliner re-reads via canvas when the user saves
+          // a tour, and `crossOrigin="anonymous"` ensures the
+          // browser's HTTP cache stores the CORS headers so the
+          // canvas isn't tainted on re-use. Wikimedia + Google
+          // Places both serve `Access-Control-Allow-Origin: *` on
+          // their image URLs, so the request still succeeds.
+          crossOrigin="anonymous"
           // Eager-load current slide + immediate neighbours so the
           // next-arrow tap feels instant.
           loading={i === idx || i === prevIdx || i === nextIdx ? "eager" : "lazy"}
