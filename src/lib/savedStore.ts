@@ -194,6 +194,12 @@ export function clearAll() {
  */
 export async function hydrateFromCloud(): Promise<void> {
   if (!isBrowser()) return;
+  // Bail when offline — Supabase calls throw "TypeError: Failed to
+  // fetch" with no network and the noise pollutes the DevTools
+  // console (Beka caught this on the /saved tab in the offline mode
+  // demo). The mirror will re-run next time auth fires or the app
+  // boots online, so skipping here is just a polite cleanup.
+  if (typeof navigator !== "undefined" && navigator.onLine === false) return;
   try {
     const { data: sessionData } = await supabase.auth.getSession();
     const user = sessionData.session?.user;

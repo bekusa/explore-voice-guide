@@ -60,6 +60,10 @@ export function useLazyPlacePhoto(
 
   useEffect(() => {
     if (skip || !name) return;
+    // Skip /api/photo when offline — the fetch would throw
+    // "TypeError: Failed to fetch" and clutter the console without
+    // producing a usable URL (the placeholder gradient handles it).
+    if (typeof navigator !== "undefined" && navigator.onLine === false) return;
     let cancelled = false;
     fetchPlacePhoto(name, lang, cityHint, scope, museumName)
       .then((url) => {
@@ -117,6 +121,8 @@ export function useLazyPlaceGallery(
 
   useEffect(() => {
     if (skip || !name) return;
+    // Offline guard — same rationale as useLazyPlacePhoto above.
+    if (typeof navigator !== "undefined" && navigator.onLine === false) return;
     let cancelled = false;
     fetchPlaceGallery(name, lang, cityHint)
       .then((result) => {
