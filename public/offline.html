@@ -260,9 +260,13 @@
         list.appendChild(li);
       }
 
-      function hideSavedUI() {
-        heading.style.display = "none";
-        list.style.display = "none";
+      // Don't hide the saved section any more — keep it visible with a
+      // diagnostic message so we can see what state we're in without
+      // DevTools. Previous version called `hideSavedUI()` which made
+      // the page look identical to the old static offline.html and
+      // hid the failure from the user.
+      function showStatus(message) {
+        setEmpty(message);
       }
 
       function renderItems(items) {
@@ -373,18 +377,41 @@
         return URL.createObjectURL(blob);
       }
 
+      // Poll for Capacitor bridge — on some Android WebViews the
+      // bridge is injected slightly after DOMContentLoaded, so a
+      // single-shot check loses the race and we incorrectly conclude
+      // "no bridge". Try for up to ~3 s before giving up.
+      function waitForCapacitor(maxMs) {
+        return new Promise((resolve) => {
+          const start = Date.now();
+          (function poll() {
+            if (window.Capacitor && window.Capacitor.Plugins) {
+              resolve(true);
+              return;
+            }
+            if (Date.now() - start > maxMs) {
+              resolve(false);
+              return;
+            }
+            setTimeout(poll, 100);
+          })();
+        });
+      }
+
       async function loadSavedList() {
-        if (!window.Capacitor || !window.Capacitor.Plugins) {
-          // Plain browser context — no native bridge, no offline data
-          // to surface beyond what's in this same origin's
-          // localStorage (and lokali.ge's localStorage is on a
-          // DIFFERENT origin from here, so we wouldn't see it anyway).
-          hideSavedUI();
+        showStatus("Loading saved tours…");
+        const hasBridge = await waitForCapacitor(3000);
+        if (!hasBridge) {
+          showStatus(
+            "Native bridge unavailable — open the app once with internet so it can sync the offline cache.",
+          );
           return;
         }
         const { Preferences } = window.Capacitor.Plugins;
         if (!Preferences) {
-          hideSavedUI();
+          showStatus(
+            "Preferences plugin not registered. App needs to be reinstalled with the latest build.",
+          );
           return;
         }
         let raw;
@@ -393,30 +420,33 @@
           raw = result.value;
         } catch (err) {
           console.warn("offline.html: Preferences read failed", err);
-          setEmpty("Couldn't open the saved cache. Try Retry above.");
+          showStatus("Couldn't open the saved cache. Try Retry above.");
           return;
         }
         if (!raw) {
-          setEmpty("Nothing saved yet. Open a tour while online and tap Save.");
+          showStatus(
+            "Nothing in the offline cache yet. Open the app online once, save a tour, then come back.",
+          );
           return;
         }
         let parsed;
         try {
           parsed = JSON.parse(raw);
         } catch {
-          setEmpty("The saved cache looks corrupt. Try Retry above.");
+          showStatus("The saved cache looks corrupt. Try Retry above.");
           return;
         }
-        if (!Array.isArray(parsed)) {
-          setEmpty("Nothing saved yet. Open a tour while online and tap Save.");
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+          showStatus(
+            "Nothing saved yet. Open a tour while online and tap Save.",
+          );
           return;
         }
         renderItems(parsed);
       }
 
       // Defer the bridge call until next tick so the static page
-      // paints first — the loading spinner inside the bridge call
-      // is fast enough that the user sees content immediately.
+      // paints first.
       window.addEventListener("load", () => {
         setTimeout(loadSavedList, 0);
       });
