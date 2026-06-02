@@ -7,14 +7,19 @@
     <style>
       /*
         Capacitor server.errorPath fallback. The wrapped WebView lands
-        here only when https://lokali.ge fails to load (no internet,
-        DNS blocked, server down). It's intentionally self-contained —
-        no scripts, no Capacitor bridge, no remote assets — so it
-        works the moment the network drops.
+        here when https://lokali.ge fails to load.
 
-        When the user taps Retry, we just reload(); if connectivity
-        is back, the WebView returns to lokali.ge and the regular app
-        boots; if still offline, the WebView falls back here again.
+        WHY THIS IS NOT JUST A STATIC PAGE: it loads in the bundled
+        APK assets under capacitor://localhost (not lokali.ge), so any
+        localStorage / IndexedDB / Service Worker that lives on the
+        lokali.ge origin is invisible here. We CAN still talk to
+        @capacitor/preferences and @capacitor/filesystem — those
+        plugins talk to native storage that's shared across WebView
+        origins. So this page reads `lokali.saved.v1` from Preferences
+        (mirrored by `savedStore.writeSaved` whenever the user saves a
+        tour) and the cached mp3 from Filesystem (written by
+        `offlineStore.saveOfflineAudio`), and renders a working
+        offline player.
       */
       :root {
         color-scheme: dark;
@@ -37,13 +42,19 @@
       body {
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 32px 24px;
-        text-align: center;
-        gap: 24px;
+        align-items: stretch;
+        padding: 32px 20px;
         padding-top: max(48px, env(safe-area-inset-top, 48px));
         padding-bottom: max(48px, env(safe-area-inset-bottom, 48px));
+        gap: 20px;
+        min-height: 100%;
+      }
+      header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        text-align: center;
       }
       .badge {
         display: inline-flex;
@@ -78,37 +89,103 @@
       h1 {
         font-family: "Playfair Display", Georgia, serif;
         font-weight: 500;
-        font-size: 32px;
+        font-size: 28px;
         line-height: 1.1;
         letter-spacing: -0.02em;
         margin: 0;
-        max-width: 18ch;
       }
-      p {
+      .lede {
         margin: 0;
-        max-width: 30ch;
+        max-width: 32ch;
         color: rgba(244, 241, 234, 0.7);
-        font-size: 15px;
+        font-size: 14px;
         line-height: 1.5;
+        text-align: center;
       }
-      button {
+      .retry {
         appearance: none;
         border: 0;
-        margin-top: 8px;
-        padding: 14px 32px;
-        font-size: 14px;
+        margin-top: 4px;
+        padding: 12px 28px;
+        font-size: 13px;
         font-weight: 700;
         letter-spacing: 0.04em;
         color: #0f0f0f;
         background: linear-gradient(135deg, #f4b400 0%, #c98a00 100%);
         border-radius: 999px;
         cursor: pointer;
-        box-shadow: 0 12px 32px rgba(244, 180, 0, 0.18);
-        transition: transform 120ms ease, box-shadow 120ms ease;
+        box-shadow: 0 10px 28px rgba(244, 180, 0, 0.18);
       }
-      button:active {
+      .retry:active {
         transform: scale(0.97);
-        box-shadow: 0 6px 16px rgba(244, 180, 0, 0.14);
+      }
+      h2 {
+        margin: 12px 0 0;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: rgba(244, 241, 234, 0.55);
+      }
+      ul.saved {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      ul.saved > li {
+        border: 1px solid rgba(244, 241, 234, 0.1);
+        background: rgba(244, 241, 234, 0.04);
+        border-radius: 16px;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .title {
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 1.25;
+      }
+      .meta {
+        font-size: 11px;
+        color: rgba(244, 241, 234, 0.55);
+      }
+      .play {
+        appearance: none;
+        border: 0;
+        padding: 10px 18px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #0f0f0f;
+        background: #f4b400;
+        border-radius: 999px;
+        cursor: pointer;
+        align-self: flex-start;
+      }
+      .play.loading {
+        opacity: 0.6;
+        cursor: wait;
+      }
+      .play.error {
+        background: rgba(255, 80, 80, 0.2);
+        color: #ff9090;
+        border: 1px solid rgba(255, 80, 80, 0.4);
+      }
+      audio {
+        width: 100%;
+        margin-top: 6px;
+      }
+      .empty {
+        margin: 24px 0;
+        padding: 20px;
+        text-align: center;
+        color: rgba(244, 241, 234, 0.5);
+        font-size: 14px;
+        border: 1px dashed rgba(244, 241, 234, 0.15);
+        border-radius: 16px;
       }
       .icon {
         opacity: 0.85;
@@ -116,32 +193,233 @@
     </style>
   </head>
   <body>
-    <span class="badge"><span class="dot"></span>Offline</span>
-    <svg
-      class="icon"
-      width="48"
-      height="48"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#f4b400"
-      stroke-width="1.6"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      aria-hidden="true"
-    >
-      <line x1="2" y1="2" x2="22" y2="22"></line>
-      <path d="M8.5 16.5a5 5 0 0 1 7 0"></path>
-      <path d="M2 8.82a15 15 0 0 1 4.17-2.65"></path>
-      <path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76"></path>
-      <path d="M16.85 11.25a10 10 0 0 1 2.22 1.68"></path>
-      <path d="M5 13a10 10 0 0 1 5.17-2.69"></path>
-      <line x1="12" y1="20" x2="12.01" y2="20"></line>
-    </svg>
-    <h1>You're offline</h1>
-    <p>
-      Lokali needs a connection to fetch fresh stories. Saved tours are still on
-      your device — head back online to load the full app.
-    </p>
-    <button type="button" onclick="window.location.reload()">Retry</button>
+    <header>
+      <span class="badge"><span class="dot"></span>Offline</span>
+      <svg
+        class="icon"
+        width="44"
+        height="44"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#f4b400"
+        stroke-width="1.6"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <line x1="2" y1="2" x2="22" y2="22"></line>
+        <path d="M8.5 16.5a5 5 0 0 1 7 0"></path>
+        <path d="M2 8.82a15 15 0 0 1 4.17-2.65"></path>
+        <path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76"></path>
+        <path d="M16.85 11.25a10 10 0 0 1 2.22 1.68"></path>
+        <path d="M5 13a10 10 0 0 1 5.17-2.69"></path>
+        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+      </svg>
+      <h1>You're offline</h1>
+      <p class="lede">
+        Lokali needs a connection to fetch fresh stories. Your saved tours are
+        below — tap Play to listen from the local cache.
+      </p>
+      <button class="retry" type="button" onclick="window.location.reload()">Retry connection</button>
+    </header>
+
+    <h2 id="savedHeading">Saved tours</h2>
+    <ul id="savedList" class="saved"></ul>
+
+    <script>
+      /**
+       * Bootstraps the offline saved-tour list. Steps:
+       *   1. Read `lokali.saved.v1` from Capacitor Preferences. The
+       *      app's React savedStore mirrors writes here on every
+       *      save/remove on native — see `mirrorSavedToPreferences`.
+       *   2. For each entry, derive the audio filename used by the
+       *      offlineStore (`audioId = ${slug}-${language}-${voice}`),
+       *      and check Capacitor Filesystem for the mp3.
+       *   3. Wire a Play button that reads the base64 mp3 and feeds
+       *      it into an HTML5 <audio> element via blob URL.
+       *
+       * Everything here uses globals exposed by the Capacitor bridge
+       * (`window.Capacitor.Plugins.Preferences` etc.). The bridge is
+       * auto-injected into every page loaded inside the Capacitor
+       * WebView, including this local-asset offline.html.
+       *
+       * In a plain browser (lokali.ge tested in DevTools' offline
+       * mode), `window.Capacitor` is undefined → we show the lede
+       * + Retry button only. That matches the previous behaviour.
+       */
+
+      const heading = document.getElementById("savedHeading");
+      const list = document.getElementById("savedList");
+
+      function setEmpty(message) {
+        list.innerHTML = "";
+        const li = document.createElement("li");
+        li.className = "empty";
+        li.style.border = "1px dashed rgba(244, 241, 234, 0.15)";
+        li.textContent = message;
+        list.appendChild(li);
+      }
+
+      function hideSavedUI() {
+        heading.style.display = "none";
+        list.style.display = "none";
+      }
+
+      function renderItems(items) {
+        list.innerHTML = "";
+        if (!items.length) {
+          setEmpty("Nothing saved yet. Open a tour while online and tap Save.");
+          return;
+        }
+        for (const item of items) {
+          const li = document.createElement("li");
+
+          const title = document.createElement("div");
+          title.className = "title";
+          title.textContent = item.name;
+          li.appendChild(title);
+
+          const meta = document.createElement("div");
+          meta.className = "meta";
+          const cityPart = item.city ? item.city + " · " : "";
+          meta.textContent = cityPart + (item.language || "");
+          li.appendChild(meta);
+
+          const playBtn = document.createElement("button");
+          playBtn.className = "play";
+          playBtn.type = "button";
+          playBtn.textContent = "Play";
+          li.appendChild(playBtn);
+
+          const audio = document.createElement("audio");
+          audio.controls = true;
+          audio.preload = "none";
+          audio.style.display = "none";
+          li.appendChild(audio);
+
+          playBtn.addEventListener(
+            "click",
+            async () => {
+              if (audio.src) {
+                audio.style.display = "";
+                void audio.play();
+                return;
+              }
+              playBtn.classList.add("loading");
+              playBtn.textContent = "Loading…";
+              try {
+                const objectUrl = await loadOfflineAudio(item);
+                if (!objectUrl) {
+                  playBtn.classList.remove("loading");
+                  playBtn.classList.add("error");
+                  playBtn.textContent = "Audio not cached";
+                  return;
+                }
+                audio.src = objectUrl;
+                audio.style.display = "";
+                playBtn.style.display = "none";
+                void audio.play();
+              } catch (err) {
+                console.warn("offline.html: load audio failed", err);
+                playBtn.classList.remove("loading");
+                playBtn.classList.add("error");
+                playBtn.textContent = "Audio not cached";
+              }
+            },
+            { once: false },
+          );
+
+          list.appendChild(li);
+        }
+      }
+
+      function safeId(raw) {
+        return String(raw)
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/g, "-")
+          .slice(0, 200);
+      }
+
+      async function loadOfflineAudio(item) {
+        // Mirror of `offlineStore.audioId` — keep these in sync.
+        const audioFileId = safeId(
+          `${item.id}-${item.language}-${item.voice}`,
+        );
+        const path = `lokali/audio/${audioFileId}.mp3`;
+        if (!window.Capacitor || !window.Capacitor.Plugins) return null;
+        const { Filesystem } = window.Capacitor.Plugins;
+        if (!Filesystem) return null;
+        let base64;
+        try {
+          const result = await Filesystem.readFile({
+            path,
+            directory: "DATA",
+          });
+          base64 = result.data;
+        } catch (err) {
+          return null;
+        }
+        if (typeof base64 !== "string") return null;
+        // Strip data: prefix if it sneaks in (some Capacitor versions
+        // return it; offlineStore.ts strips it on write but defensive
+        // here in case of older saves).
+        const comma = base64.indexOf(",");
+        const raw = comma >= 0 ? base64.slice(comma + 1) : base64;
+        const binary = atob(raw);
+        const len = binary.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+        const blob = new Blob([bytes], { type: "audio/mpeg" });
+        return URL.createObjectURL(blob);
+      }
+
+      async function loadSavedList() {
+        if (!window.Capacitor || !window.Capacitor.Plugins) {
+          // Plain browser context — no native bridge, no offline data
+          // to surface beyond what's in this same origin's
+          // localStorage (and lokali.ge's localStorage is on a
+          // DIFFERENT origin from here, so we wouldn't see it anyway).
+          hideSavedUI();
+          return;
+        }
+        const { Preferences } = window.Capacitor.Plugins;
+        if (!Preferences) {
+          hideSavedUI();
+          return;
+        }
+        let raw;
+        try {
+          const result = await Preferences.get({ key: "lokali.saved.v1" });
+          raw = result.value;
+        } catch (err) {
+          console.warn("offline.html: Preferences read failed", err);
+          setEmpty("Couldn't open the saved cache. Try Retry above.");
+          return;
+        }
+        if (!raw) {
+          setEmpty("Nothing saved yet. Open a tour while online and tap Save.");
+          return;
+        }
+        let parsed;
+        try {
+          parsed = JSON.parse(raw);
+        } catch {
+          setEmpty("The saved cache looks corrupt. Try Retry above.");
+          return;
+        }
+        if (!Array.isArray(parsed)) {
+          setEmpty("Nothing saved yet. Open a tour while online and tap Save.");
+          return;
+        }
+        renderItems(parsed);
+      }
+
+      // Defer the bridge call until next tick so the static page
+      // paints first — the loading spinner inside the bridge call
+      // is fast enough that the user sees content immediately.
+      window.addEventListener("load", () => {
+        setTimeout(loadSavedList, 0);
+      });
+    </script>
   </body>
 </html>

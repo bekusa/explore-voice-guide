@@ -62,6 +62,73 @@ function writeSaved(items: SavedItem[]) {
       }
     }
   }
+  // Mirror to Capacitor Preferences on native so the bundled
+  // `public/offline.html` (which loads from a different origin —
+  // `capacitor://localhost` on Android — and therefore can't see
+  // this localStorage row) can render the same Saved list when the
+  // app cold-starts without internet. Mirroring is fire-and-forget:
+  // a failure here doesn't undo the localStorage write that's
+  // already succeeded.
+  void mirrorSavedToPreferences(items.slice(0, MAX_ITEMS)).catch((err) => {
+    console.warn("Saved → Preferences mirror failed", err);
+  });
+}
+
+/** Slim shape we persist to Capacitor Preferences for offline.html.
+ * We DON'T persist `attraction.image_url` blobs / Wikipedia URLs —
+ * those re-fetch fine when online, and offline.html doesn't render
+ * card thumbnails. The voice + audioId fields are what offline.html
+ * needs to locate the cached mp3 on disk via @capacitor/filesystem.
+ */
+type OfflineSavedItem = {
+  id: string;
+  name: string;
+  language: string;
+  voice: string;
+  city: string | null;
+};
+
+/**
+ * One-time backfill on app boot: copies the existing localStorage
+ * `tg.saved.v1` into Capacitor Preferences so offline.html can find
+ * tours saved BEFORE the Preferences mirror landed. Without this,
+ * users with pre-mirror saves would see "Nothing saved yet" on the
+ * first offline launch after upgrading. Idempotent — running it
+ * after the mirror has already populated Preferences just rewrites
+ * the same payload.
+ */
+export async function backfillSavedToPreferences(): Promise<void> {
+  if (!isBrowser()) return;
+  try {
+    await mirrorSavedToPreferences(getSaved());
+  } catch (err) {
+    console.warn("Saved backfill failed", err);
+  }
+}
+
+async function mirrorSavedToPreferences(items: SavedItem[]): Promise<void> {
+  // Bridge calls only happen on the native shell. On web there's
+  // nothing to mirror to (the same localStorage is the source of
+  // truth for /saved.tsx), so we short-circuit.
+  const { Capacitor } = await import("@capacitor/core");
+  if (!Capacitor.isNativePlatform()) return;
+  const { Preferences } = await import("@capacitor/preferences");
+  const slim: OfflineSavedItem[] = items.map((it) => ({
+    id: it.id,
+    name: it.name,
+    language: it.language,
+    // Voice is stamped onto the attraction at save time when the user
+    // tapped the "Save" button — it's how `audioId` reconstructs the
+    // Filesystem path. Falls back to the default Georgian voice the
+    // app uses on first launch (see Phase 3 spec).
+    voice:
+      (it.attraction as { voice?: string } | null | undefined)?.voice ?? "ka-GE-EkaNeural",
+    city: it.attraction?.city ?? null,
+  }));
+  await Preferences.set({
+    key: "lokali.saved.v1",
+    value: JSON.stringify(slim),
+  });
 }
 
 export function isSaved(id: string): boolean {

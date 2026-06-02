@@ -162,6 +162,21 @@ function RootComponent() {
     return () => window.removeEventListener("tg:lang-changed", syncLang);
   }, []);
 
+  // Backfill Capacitor Preferences with the current Saved list, so
+  // the bundled `public/offline.html` can render saved tours when the
+  // app cold-starts without internet. Mirroring is fire-and-forget;
+  // a failure here doesn't block app boot.
+  useEffect(() => {
+    void (async () => {
+      try {
+        const { backfillSavedToPreferences } = await import("@/lib/savedStore");
+        await backfillSavedToPreferences();
+      } catch (err) {
+        console.warn("[lokali] Saved backfill failed", err);
+      }
+    })();
+  }, []);
+
   // Register the offline app-shell Service Worker so the next cold
   // start works without internet. Capacitor's `errorPath: offline.html`
   // fallback fires only when the WebView can't reach `lokali.ge` AT
