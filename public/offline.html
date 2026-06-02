@@ -495,6 +495,30 @@
         renderItems(parsed);
       }
 
+      // Auto-retry once per launch: when the user opens the app
+      // offline, the SW for lokali.ge often has the home shell
+      // cached from a prior online session. Capacitor's errorPath
+      // lands us here BEFORE the SW gets a chance, but navigating
+      // back to lokali.ge gives the SW a second swing — its
+      // fetch handler picks up the navigation request, returns the
+      // cached HTML, and the React app boots. If the SW genuinely
+      // doesn't have cache (truly first offline launch), the WebView
+      // bounces back here and the `tried` flag stops us from looping.
+      try {
+        const tried = sessionStorage.getItem("lokali.offline.tried");
+        if (!tried) {
+          sessionStorage.setItem("lokali.offline.tried", "1");
+          // Tiny delay so the static page paints once first — gives
+          // the user feedback that something happened rather than a
+          // blank-then-instant-replace.
+          setTimeout(() => {
+            window.location.href = "https://lokali.ge/";
+          }, 400);
+        }
+      } catch {
+        /* sessionStorage may be disabled — skip */
+      }
+
       // Defer the bridge call until next tick so the static page
       // paints first.
       window.addEventListener("load", () => {

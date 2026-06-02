@@ -564,6 +564,11 @@ export function ResultCard({
       savedAt: Date.now(),
       attraction: { ...attraction, image_url: photo ?? attraction.image_url },
     });
+    // Inline the resolved hero photo as a data URL so the /saved
+    // tab can render the thumbnail when offline.
+    void import("@/lib/savedStore").then(({ attachPhotoToSavedItem }) => {
+      void attachPhotoToSavedItem(slug, photo ?? attraction.image_url ?? null);
+    });
     toast.success(t("toast.saved"), {
       description: t("toast.savedDesc"),
     });

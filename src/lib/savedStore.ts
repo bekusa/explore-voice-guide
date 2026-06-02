@@ -97,6 +97,52 @@ type OfflineSavedItem = {
  * after the mirror has already populated Preferences just rewrites
  * the same payload.
  */
+/**
+ * Best-effort fetch + base64-encode a remote image URL so it can be
+ * stored alongside the SavedItem and rendered offline. Returns null
+ * on any failure (CORS, 404, oversized blob, etc.) — the /saved row
+ * just falls back to its placeholder glyph in that case.
+ *
+ * Size cap: 1.2 MB raw bytes. Anything above that would blow the
+ * localStorage budget once base64 expands it ~1.33×. Above-cap images
+ * are silently dropped, callers see a `null` return and the lookup
+ * chain (`item.imageDataUrl || a.image_url || fetched`) skips to the
+ * URL fields.
+ */
+export async function inlineImageAsDataUrl(
+  url: string | null | undefined,
+): Promise<string | null> {
+  if (!url) return null;
+  if (url.startsWith("data:")) return url; // already inline
+  if (typeof fetch === "undefined") return null;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    if (blob.size > 1_200_000) return null; // skip oversized — quota guard
+    return await new Promise<string | null>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : null);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Inlines the hero photo into the SavedItem's `imageDataUrl` field
+ * AFTER the synchronous save has already returned. The /saved tab
+ * paints from the placeholder immediately, then re-renders with the
+ * inlined photo when this resolves. Failures are silent — the
+ * caller's optimistic save still stands.
+ */
+export async function attachPhotoToSavedItem(id: string, photoUrl: string | null | undefined) {
+  const dataUrl = await inlineImageAsDataUrl(photoUrl);
+  if (dataUrl) updateItem(id, { imageDataUrl: dataUrl });
+}
+
 export async function backfillSavedToPreferences(): Promise<void> {
   if (!isBrowser()) return;
   try {

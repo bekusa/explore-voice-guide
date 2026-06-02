@@ -2,11 +2,20 @@ import { Link } from "@tanstack/react-router";
 import { Bookmark, Home as HomeIcon, LogOut, MapPin, User as UserIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useT } from "@/hooks/useT";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { haptic } from "@/lib/haptics";
 
 export function TabBar() {
   const { user, signOut } = useAuth();
   const t = useT();
+  // Hide Home + Map when offline — both pages need /api/* round-trips
+  // (Home for the dynamic city + museum strips, Map for Leaflet tiles)
+  // and showing them in a disabled or broken state is worse than just
+  // collapsing the nav to what actually works offline: Saved tours +
+  // sign-out/sign-in. The full nav comes back as soon as the network
+  // returns (useOnlineStatus listens to `navigator.online`/`offline`
+  // events).
+  const online = useOnlineStatus();
   // Single shared light haptic for every tab tap. The Link's onClick
   // fires before the route transition starts, so the tap-feedback
   // happens at the moment of touch — exactly what users expect from
@@ -39,31 +48,35 @@ export function TabBar() {
       // nav bar.
       className="absolute bottom-0 left-0 right-0 z-50 flex min-h-14 items-center justify-around border-t border-border bg-background/95 px-2 pt-2 backdrop-blur-xl"
     >
-      <Link
-        to="/"
-        onClick={tapHaptic}
-        className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
-        activeOptions={{ exact: true }}
-        activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
-      >
-        <HomeIcon className="h-[19px] w-[19px]" />
-        <span className="text-[10px] font-medium">{t("nav.home")}</span>
-      </Link>
+      {online && (
+        <Link
+          to="/"
+          onClick={tapHaptic}
+          className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
+          activeOptions={{ exact: true }}
+          activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
+        >
+          <HomeIcon className="h-[19px] w-[19px]" />
+          <span className="text-[10px] font-medium">{t("nav.home")}</span>
+        </Link>
+      )}
       {/* Explore tab removed per Beka — the home page already
           surfaces destinations via the search bar and the Featured
           cities strip, so the standalone tab was redundant. The
           /destinations route itself stays alive (Home's search +
           city pill still navigate to it); this is just a tab-bar
           tidy. */}
-      <Link
-        to="/map"
-        onClick={tapHaptic}
-        className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
-        activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
-      >
-        <MapPin className="h-[19px] w-[19px]" />
-        <span className="text-[10px] font-medium">{t("nav.map")}</span>
-      </Link>
+      {online && (
+        <Link
+          to="/map"
+          onClick={tapHaptic}
+          className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
+          activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
+        >
+          <MapPin className="h-[19px] w-[19px]" />
+          <span className="text-[10px] font-medium">{t("nav.map")}</span>
+        </Link>
+      )}
       <Link
         to="/saved"
         onClick={tapHaptic}

@@ -916,6 +916,12 @@ function ActionRow({
       savedAt: Date.now(),
       attraction: attraction ?? { name },
     });
+    // Inline the current hero photo as a data URL so the /saved tab
+    // can render it offline. Best-effort — fires after the save so a
+    // slow network or CORS reject doesn't block the toast.
+    void import("@/lib/savedStore").then(({ attachPhotoToSavedItem }) => {
+      void attachPhotoToSavedItem(id, heroPhoto);
+    });
     toast.success(t("attr.savedForOffline"), {
       description: t("attr.findInSaved"),
     });
