@@ -226,6 +226,15 @@
     <h2 id="savedHeading">Saved tours</h2>
     <ul id="savedList" class="saved"></ul>
 
+    <!--
+      Capacitor injects `window.Capacitor` via WebViewClient JS evaluation
+      for pages it routes from `server.url` or `webDir/index.html` — but
+      NOT for `errorPath` fallback pages (Capacitor 7 quirk). Pulling in
+      `native-bridge.js` explicitly from the bundled APK assets root
+      gives us the same Capacitor object the rest of the app uses,
+      including `Capacitor.Plugins.Preferences` and `Capacitor.Plugins.Filesystem`.
+    -->
+    <script src="/native-bridge.js"></script>
     <script>
       /**
        * Bootstraps the offline saved-tour list. Steps:
@@ -350,8 +359,12 @@
           `${item.id}-${item.language}-${item.voice}`,
         );
         const path = `lokali/audio/${audioFileId}.mp3`;
-        if (!window.Capacitor || !window.Capacitor.Plugins) return null;
-        const { Filesystem } = window.Capacitor.Plugins;
+        if (!window.Capacitor) return null;
+        const Filesystem =
+          (window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) ||
+          (typeof window.Capacitor.registerPlugin === "function"
+            ? window.Capacitor.registerPlugin("Filesystem")
+            : null);
         if (!Filesystem) return null;
         let base64;
         try {
@@ -385,7 +398,15 @@
         return new Promise((resolve) => {
           const start = Date.now();
           (function poll() {
-            if (window.Capacitor && window.Capacitor.Plugins) {
+            // Either the auto-injected runtime (Plugins map present)
+            // or our manually-loaded native-bridge.js (which exposes
+            // registerPlugin) is enough — both routes give us a way
+            // to talk to native.
+            if (
+              window.Capacitor &&
+              (window.Capacitor.Plugins ||
+                typeof window.Capacitor.registerPlugin === "function")
+            ) {
               resolve(true);
               return;
             }
@@ -407,7 +428,17 @@
           );
           return;
         }
-        const { Preferences } = window.Capacitor.Plugins;
+        // After native-bridge.js loads, the bridge exposes
+        // `registerPlugin()` which returns a thin proxy that forwards
+        // calls to native. Auto-registered `Plugins.X` exists only
+        // when the regular Capacitor runtime (with bundled plugin
+        // shims) is loaded — in errorPath context we manually
+        // register the two plugins we need.
+        const Preferences =
+          (window.Capacitor.Plugins && window.Capacitor.Plugins.Preferences) ||
+          (typeof window.Capacitor.registerPlugin === "function"
+            ? window.Capacitor.registerPlugin("Preferences")
+            : null);
         if (!Preferences) {
           showStatus(
             "Preferences plugin not registered. App needs to be reinstalled with the latest build.",
