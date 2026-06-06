@@ -16,7 +16,8 @@ import {
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useUnreadCount } from "@/hooks/useNotifications";
 import { useSelectedDestination } from "@/hooks/useSelectedDestination";
-import { useT, useTranslated } from "@/hooks/useT";
+import { useT, useTranslated, useUiLang } from "@/hooks/useT";
+import { getMuseumStrings } from "@/lib/museumTranslations";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { InlineAudioPanel } from "@/components/InlineAudioPanel";
 import { MobileFrame } from "@/components/MobileFrame";
@@ -579,7 +580,8 @@ export function HomeScreen() {
  * uses for free-text attraction lookups.
  */
 function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
-  const [name] = useTranslated([museum.name]);
+  const lang = useUiLang();
+  const { name } = getMuseumStrings(museum, lang);
   const slug = attractionSlug(museum.name);
   // Curated static hero (bundled under public/images/museums/<slug>.jpg)
   // — instant paint on first visit, no /api/photo round-trip. When

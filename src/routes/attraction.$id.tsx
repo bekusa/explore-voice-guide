@@ -666,14 +666,29 @@ function AttractionPage() {
                      keys then broke everywhere downstream.
                 Falling back to fallbackName is acceptable for a
                 deep-linked attraction with no preserved city context. */}
-            <Link
-              to="/results"
-              search={{ q: searchCity || fallbackName }}
+            <button
+              type="button"
+              onClick={() => {
+                // Prefer browser-history back so the user lands
+                // exactly where they came from (Top Museums → MoMA
+                // → Back returns to /museums, not to a "Paris
+                // nearby" search). Falls back to /results with the
+                // city context for deep-linked entries that have
+                // no previous page (notification deep links, etc.).
+                if (typeof window !== "undefined" && window.history.length > 1) {
+                  window.history.back();
+                  return;
+                }
+                navigate({
+                  to: "/results",
+                  search: { q: searchCity || fallbackName },
+                });
+              }}
               aria-label={t("nav.back")}
               className="grid h-10 w-10 place-items-center rounded-full border border-foreground/20 bg-background/30 backdrop-blur-md transition-smooth hover:bg-background/50"
             >
               <ArrowLeft className="h-4 w-4" />
-            </Link>
+            </button>
             {/* Save / Download / Play live in the ActionRow below the hero
                 so the user has one consolidated place to act. */}
           </header>

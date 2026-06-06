@@ -2,10 +2,11 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, MapPin } from "lucide-react";
 import { MobileFrame } from "@/components/MobileFrame";
-import { useT } from "@/hooks/useT";
-import { useTranslated } from "@/hooks/useT";
+import { useT, useUiLang } from "@/hooks/useT";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
+import { getMuseumStrings } from "@/lib/museumTranslations";
+import { getStaticMuseumHeroUrl } from "@/lib/museumHeroPhotos";
 import { attractionSlug } from "@/lib/api";
 
 /**
@@ -81,31 +82,35 @@ function MuseumsPage() {
 }
 
 function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
-  // Translate the free-form display fields on the fly. id, image stay
-  // English (URL + slug stability), everything else flows through the
-  // gateway like destination cards do.
-  const [name, blurb, city, country] = useTranslated([
-    museum.name,
-    museum.blurb,
-    museum.city,
-    museum.country,
-  ]);
+  // Static, pre-translated copy from the build-time script — no
+  // runtime /api/translate calls. id + image stay English (URL +
+  // slug stability). The English baseline falls through when a
+  // locale hasn't been generated yet (stub generated file).
+  const lang = useUiLang();
+  const { name, blurb, city, country } = getMuseumStrings(museum, lang);
   const t = useT();
   // The attraction page resolves its content by name. Sending the
   // English `name` ensures the photo lookup and guide fetch land on
   // the right place even when the user is browsing in Georgian.
   const slug = attractionSlug(museum.name);
-  // Wikipedia-sourced photo via the artwork-scope path (Google
-  // Places skipped). Falls back to the LoremFlickr seed until
-  // Wikipedia returns. See the matching change on the home strip.
+  // Bundled hero photo from public/images/museums/*.jpg — instant
+  // paint, no /api/photo round-trip. The curated entry in
+  // museumHeroPhotos.ts maps the museum's slug to its bundled file.
+  // Wikipedia lookup only kicks in if the bundled file ever 404s.
+  const staticHero = getStaticMuseumHeroUrl(museum.name);
+  const [staticFailed, setStaticFailed] = useState(false);
   const fetched = useLazyPlacePhoto(museum.name, {
     cityHint: museum.city,
     scope: "artwork",
+    skip: !!staticHero && !staticFailed,
   });
-  // Wikipedia URL may 404 after mount — flip imgFailed → fall back
-  // to the LoremFlickr seed image so the card never goes blank.
   const [imgFailed, setImgFailed] = useState(false);
-  const photo = imgFailed ? museum.image : (fetched ?? museum.image);
+  const photo =
+    staticHero && !staticFailed
+      ? staticHero
+      : imgFailed
+        ? museum.image
+        : (fetched ?? museum.image);
   return (
     <Link
       to="/attraction/$id"
@@ -120,13 +125,29 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
         name: museum.name,
         ...(fetched && !imgFailed ? { photo: fetched } : {}),
       }}
-      className="group relative h-[200px] overflow-hidden rounded-2xl border border-border bg-card transition-smooth hover:border-primary/50 active:scale-[0.98]"
+      className="group relative h-[300px] overflow-hidden rounded-2xl border border-border bg-card transition-smooth hover:border-primary/50 active:scale-[0.98]"
     >
       <img
         src={photo ?? museum.image}
         alt={name}
         loading="lazy"
-        onError={() => setImgFailed(true)}
+        onError={() => {
+          if (photo === staticHero && !staticFailed) {
+            setStaticFailed(true);
+            return;
+          }
+          setImgFailed(true);
+        }}
+        onLoad={(e) => {
+          const target = e.currentTarget;
+          if (
+            photo === staticHero &&
+            !staticFailed &&
+            (target.naturalWidth === 0 || target.naturalHeight === 0)
+          ) {
+            setStaticFailed(true);
+          }
+        }}
         className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/10" />
