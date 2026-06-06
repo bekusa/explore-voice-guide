@@ -261,17 +261,17 @@ function isGenericAttractionName(name: string | null | undefined): boolean {
  *   - URL is already a thumb (we'd double-thumb otherwise)
  *   - Filename has no recognisable extension we can re-key around
  */
-function toWikimediaThumb(url: string | null, width = 640): string | null {
-  // 640 is the universal default — Wikimedia restricted custom thumb
-  // widths in mid-2024 (see https://w.wiki/GHai). The allowed list is
-  // 120 / 240 / 320 / 640 / 800 / 1280 / 2560, BUT files whose
-  // original raster size is smaller than the requested thumb return
-  // HTTP 400 ("Use thumbnail sizes listed on …"). 640 is wide enough
-  // to look crisp on phone retina (~720 effective px at 360 CSS
-  // width) AND small enough that essentially every uploaded Commons
-  // file supports it. Beka caught Batumi Boulevard's lead image
-  // failing to render at 800 px even though the URL came back from
-  // /api/photo — file's original was below the 800 threshold.
+function toWikimediaThumb(url: string | null): string | null {
+  // REVERTED 2026-06-07 per Beka — the thumb transformation was
+  // producing broken Wikipedia URLs on too many files. Wikimedia's
+  // 2024 width restriction (https://w.wiki/GHai) makes ANY hard-coded
+  // width unsafe: files smaller than the requested thumb return HTTP
+  // 400, and we have no easy way to know each file's true raster size
+  // in advance. Falling back to whatever URL `tryWikiSummary` already
+  // resolved (originalimage / thumbnail.source) means slower large
+  // photos but at least every URL is guaranteed to load. Performance
+  // optimisation can come back as a per-file size probe later.
+  return url;
   if (!url) return null;
   if (!url.includes("upload.wikimedia.org/wikipedia/")) return url;
   if (url.includes("/thumb/")) return url; // already a thumb
