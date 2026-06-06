@@ -261,7 +261,13 @@ function isGenericAttractionName(name: string | null | undefined): boolean {
  *   - URL is already a thumb (we'd double-thumb otherwise)
  *   - Filename has no recognisable extension we can re-key around
  */
-function toWikimediaThumb(url: string | null, width = 1024): string | null {
+function toWikimediaThumb(url: string | null, width = 800): string | null {
+  // 800 is the safe default — Wikimedia restricted custom thumb widths
+  // in mid-2024 (see https://w.wiki/GHai) and only a short list of
+  // sizes is still served (120, 240, 320, 640, 800, 1280, 2560). 1024
+  // — which we used before — now returns HTTP 400. 800 px is sharp
+  // enough on a phone retina display (~720 effective px at 360 CSS
+  // width) and stays well inside the cap.
   if (!url) return null;
   if (!url.includes("upload.wikimedia.org/wikipedia/")) return url;
   if (url.includes("/thumb/")) return url; // already a thumb
