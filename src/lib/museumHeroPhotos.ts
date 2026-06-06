@@ -1,50 +1,43 @@
 /**
- * Curated hero photos for the Home strip's Top Museums row.
+ * Curated hero photos for the Top Museums row + dedicated /museums
+ * page. Mirrors `MUSEUMS` in `topMuseums.ts` — both files are updated
+ * together when the curated set changes (2026-06-06: new top-15).
  *
- * Same architecture as `cityHeroPhotos.ts` — assets live under
- * `public/images/museums/`, fed by `scripts/download-hero-photos.mjs`
- * which runs against the live `/api/photo` endpoint. Each lookup is
- * by kebab-case slug derived from the museum's English `name` in
- * `src/lib/topMuseums.ts`.
+ * The image filenames here MUST match the actual files Beka dropped
+ * into `public/images/museums/`. Filenames are case-sensitive on
+ * Cloudflare's static asset host, so capitalisation matters.
  *
- * Graceful fallback when a file is missing:
- *   `useLazyPlacePhoto` keeps doing its existing job — if the static
- *   URL 404s, the consumer falls through to the dynamic API lookup
- *   exactly as before.
+ * Graceful fallback when a file is missing: `useLazyPlacePhoto` keeps
+ * doing its existing job — if the static URL 404s, the consumer falls
+ * through to the dynamic API lookup exactly as before.
  */
 const MUSEUM_HERO_PHOTOS: Record<string, string> = {
-  louvre: "/images/museums/louvre.jpg",
-  "british-museum": "/images/museums/british-museum.jpg",
-  "metropolitan-museum-of-art": "/images/museums/metropolitan-museum-of-art.jpg",
-  "vatican-museums": "/images/museums/vatican-museums.jpg",
-  "state-hermitage-museum": "/images/museums/state-hermitage-museum.jpg",
-  "uffizi-gallery": "/images/museums/uffizi-gallery.jpg",
-  "prado-museum": "/images/museums/prado-museum.jpg",
-  "national-gallery": "/images/museums/national-gallery.jpg",
-  rijksmuseum: "/images/museums/rijksmuseum.jpg",
-  "mus-e-d-orsay": "/images/museums/mus-e-d-orsay.jpg",
-  "museum-of-modern-art-moma": "/images/museums/museum-of-modern-art-moma.jpg",
-  "tate-modern": "/images/museums/tate-modern.jpg",
-  "acropolis-museum": "/images/museums/acropolis-museum.jpg",
-  "egyptian-museum": "/images/museums/egyptian-museum.jpg",
-  "national-museum-of-anthropology": "/images/museums/national-museum-of-anthropology.jpg",
-  "national-gallery-of-art": "/images/museums/national-gallery-of-art.jpg",
-  "pergamon-museum": "/images/museums/pergamon-museum.jpg",
-  "topkap-palace-museum": "/images/museums/topkap-palace-museum.jpg",
-  "galleria-dell-accademia": "/images/museums/galleria-dell-accademia.jpg",
-  "reina-sof-a": "/images/museums/reina-sof-a.jpg",
-  "georgian-national-museum": "/images/museums/georgian-national-museum.jpg",
-  "shalva-amiranashvili-museum-of-fine-arts":
-    "/images/museums/shalva-amiranashvili-museum-of-fine-arts.jpg",
-  "dimitri-shevardnadze-national-gallery":
-    "/images/museums/dimitri-shevardnadze-national-gallery.jpg",
-  "open-air-museum-of-ethnography": "/images/museums/open-air-museum-of-ethnography.jpg",
-  "galleria-borghese": "/images/museums/galleria-borghese.jpg",
-  "capitoline-museums": "/images/museums/capitoline-museums.jpg",
-  "national-roman-museum": "/images/museums/national-roman-museum.jpg",
-  "istanbul-archaeology-museums": "/images/museums/istanbul-archaeology-museums.jpg",
-  "istanbul-modern": "/images/museums/istanbul-modern.jpg",
-  "pera-museum": "/images/museums/pera-museum.jpg",
+  louvre: "/images/museums/Louvre.jpg",
+  "the-metropolitan-museum-of-art": "/images/museums/Metropolitan_Museum_of_Art.jpg",
+  "metropolitan-museum-of-art": "/images/museums/Metropolitan_Museum_of_Art.jpg",
+  "the-british-museum": "/images/museums/British_Museum.jpg",
+  "british-museum": "/images/museums/British_Museum.jpg",
+  "the-grand-egyptian-museum-gem": "/images/museums/Grand_Egyptian_Museum.jpg",
+  "grand-egyptian-museum": "/images/museums/Grand_Egyptian_Museum.jpg",
+  "vatican-museums": "/images/museums/Vatican_Museums.jpg",
+  "museo-nacional-del-prado": "/images/museums/Museo_Nacional_del_Prado.jpg",
+  "galleria-degli-uffizi": "/images/museums/Galleria_degli_Uffizi.jpg",
+  rijksmuseum: "/images/museums/Rijksmuseum.jpg",
+  "mus-e-d-orsay": "/images/museums/Musee_d_Orsay.jpg",
+  "musee-d-orsay": "/images/museums/Musee_d_Orsay.jpg",
+  "musee-dorsay": "/images/museums/Musee_d_Orsay.jpg",
+  "the-national-gallery": "/images/museums/The_National_Gallery_UK.JPG",
+  "national-gallery": "/images/museums/The_National_Gallery_UK.JPG",
+  "acropolis-museum": "/images/museums/The_Acropolis_Museum.jpg",
+  "national-palace-museum": "/images/museums/National_Palace_Museum.jpg",
+  "smithsonian-national-museum-of-natural-history":
+    "/images/museums/Smithsonian_National_Museum_of_Natural_History.jpg",
+  "smithsonian-natural-history":
+    "/images/museums/Smithsonian_National_Museum_of_Natural_History.jpg",
+  "national-museum-of-anthropology": "/images/museums/Musee_National_Anthropologie.jpg",
+  "the-museum-of-modern-art-moma": "/images/museums/The_Museum_of_Modern_Art_(MoMA).jpg",
+  "museum-of-modern-art-moma": "/images/museums/The_Museum_of_Modern_Art_(MoMA).jpg",
+  moma: "/images/museums/The_Museum_of_Modern_Art_(MoMA).jpg",
 };
 
 /** Same slug shape used by `scripts/download-hero-photos.mjs`. */

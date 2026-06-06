@@ -115,9 +115,9 @@ export const UI_STRINGS = {
   "home.timeMachine.title": "Time Machine",
   "home.timeMachine.sub": "Top 10 immersive moments — step inside history",
   "home.museums.title": "Top Museums",
-  "home.museums.sub": "20 collections that define a civilisation",
+  "home.museums.sub": "Top Museum collections that define a civilization",
   "museums.title": "Top Museums",
-  "museums.subtitle": "20 collections that define a civilisation",
+  "museums.subtitle": "Top Museum collections that define a civilization",
   "museums.openGuide": "Open guide",
   "museums.intro":
     "Hand-picked masterworks of human culture — from the Louvre to the Topkapı, with everything in between.",

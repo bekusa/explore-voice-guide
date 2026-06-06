@@ -662,6 +662,21 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
             }
             setImgFailed(true);
           }}
+          onLoad={(e) => {
+            // Lovable serves the SPA shell HTML as 200 OK for unknown
+            // image paths, so onError never fires for a missing
+            // /images/museums/<slug>.jpg. Catch the 0×0 decoded
+            // image and route to the Wikipedia lookup the same way
+            // a real 404 would.
+            const target = e.currentTarget;
+            if (
+              photo === staticHero &&
+              !staticFailed &&
+              (target.naturalWidth === 0 || target.naturalHeight === 0)
+            ) {
+              setStaticFailed(true);
+            }
+          }}
           className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
         />
       ) : (

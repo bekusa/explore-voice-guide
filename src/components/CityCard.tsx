@@ -163,6 +163,23 @@ export function CityCard({ city }: { city: string }) {
             clearCache(cacheKey);
             setImg(null);
           }}
+          onLoad={(e) => {
+            // Lovable / Cloudflare Pages serves the SPA index.html
+            // shell as a 200 OK for any unknown asset path — so a
+            // missing /images/cities/<slug>.jpg never triggers
+            // `onError`. The HTML response decodes to a 0×0 image
+            // with no pixels. Detect that here and fall through to
+            // the API lookup just like a real 404 would.
+            const target = e.currentTarget;
+            if (
+              img === staticHero &&
+              !staticFailed &&
+              (target.naturalWidth === 0 || target.naturalHeight === 0)
+            ) {
+              setStaticFailed(true);
+              setImg(null);
+            }
+          }}
           className="absolute inset-0 h-full w-full object-cover transition-smooth group-hover:scale-[1.04]"
         />
       ) : (

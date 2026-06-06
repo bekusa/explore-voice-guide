@@ -1,10 +1,10 @@
 /**
- * Top 20 museums — curated, hand-picked for the home strip and the
- * dedicated /museums page. Beka's brief: pick a globally recognisable
- * set spanning art, history, and culture, anchored in cities Lokali
- * already covers. Order roughly by international visibility +
- * collection significance — the first ~10 are universal must-knows,
- * the rest are deep-cut prestige institutions.
+ * Top 15 museums — curated, hand-picked for the home strip and the
+ * dedicated /museums page. Beka's brief (2026-06-06): replace the
+ * previous 30-entry list with a tight global top-15 spanning art,
+ * archaeology, and civilization-defining collections. Each photo is
+ * bundled under public/images/museums/ so the cards paint instantly
+ * without a /api/photo round-trip.
  *
  * Why it lives in code, not in the cache: this is editorial product
  * surface, not data we want the LLM rolling its own version of every
@@ -13,13 +13,13 @@
  * as TimeMachine.tsx).
  *
  * Adding a new museum:
- *   1. Append to MUSEUMS below.
- *   2. The id is what URLs and cache rows key on — keep it stable
+ *   1. Drop a high-quality 800-1024 px wide photo into
+ *      `public/images/museums/`.
+ *   2. Append to MUSEUMS below with the matching `image` path.
+ *   3. The `id` is what URLs and cache rows key on — keep it stable
  *      (lowercase, hyphenated, no diacritics).
- *   3. The `name` should match how the museum's own English-language
+ *   4. The `name` should match how the museum's own English-language
  *      site refers to itself; translation kicks in at render time.
- *   4. `image` is a LoremFlickr deterministic seeded URL — the lock
- *      ensures the same image returns every time.
  */
 
 export type Museum = {
@@ -33,18 +33,10 @@ export type Museum = {
   country: string;
   /** One-line teaser, in English. Translated on the client. */
   blurb: string;
-  /** Photo URL — themed, deterministic so the same image is returned. */
+  /** Photo URL — local bundled asset under public/images/museums/. */
   image: string;
   /** Decorative glyph for the card header. */
   emoji: string;
-};
-
-// LoremFlickr — themed photos with deterministic seeding so the same
-// keyword combination always returns the same image (no flicker on
-// re-render). Same helper TimeMachine uses.
-const img = (keywords: string) => {
-  const seed = Math.abs([...keywords].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0));
-  return `https://loremflickr.com/900/540/${encodeURIComponent(keywords)}?lock=${seed}`;
 };
 
 export const MUSEUMS: Museum[] = [
@@ -54,26 +46,36 @@ export const MUSEUMS: Museum[] = [
     city: "Paris",
     country: "France",
     blurb: "World's most-visited museum, from the Mona Lisa to the Code of Hammurabi.",
-    image: img("louvre,paris,museum"),
+    image: "/images/museums/Louvre.jpg",
     emoji: "🖼️",
   },
   {
-    id: "british-museum",
-    name: "British Museum",
-    city: "London",
-    country: "United Kingdom",
-    blurb: "Two million years of human history under one Bloomsbury roof.",
-    image: img("british,museum,london"),
-    emoji: "🗿",
-  },
-  {
     id: "metropolitan-museum-of-art",
-    name: "Metropolitan Museum of Art",
+    name: "The Metropolitan Museum of Art",
     city: "New York",
     country: "United States",
     blurb: "Five thousand years of art on the edge of Central Park.",
-    image: img("metropolitan,museum,new,york"),
+    image: "/images/museums/Metropolitan_Museum_of_Art.jpg",
     emoji: "🏛️",
+  },
+  {
+    id: "british-museum",
+    name: "The British Museum",
+    city: "London",
+    country: "United Kingdom",
+    blurb: "Two million years of human history under one Bloomsbury roof.",
+    image: "/images/museums/British_Museum.jpg",
+    emoji: "🗿",
+  },
+  {
+    id: "grand-egyptian-museum",
+    name: "The Grand Egyptian Museum (GEM)",
+    city: "Giza",
+    country: "Egypt",
+    blurb:
+      "World's largest archaeology museum — Tutankhamun's full treasure on display beside the Pyramids of Giza.",
+    image: "/images/museums/Grand_Egyptian_Museum.jpg",
+    emoji: "🪦",
   },
   {
     id: "vatican-museums",
@@ -81,44 +83,26 @@ export const MUSEUMS: Museum[] = [
     city: "Vatican City",
     country: "Vatican City",
     blurb: "Papal collections culminating in Michelangelo's Sistine Chapel.",
-    image: img("vatican,museum,sistine"),
+    image: "/images/museums/Vatican_Museums.jpg",
     emoji: "⛪",
   },
   {
-    id: "state-hermitage",
-    name: "State Hermitage Museum",
-    city: "Saint Petersburg",
-    country: "Russia",
-    blurb: "Catherine the Great's empire of art across six baroque buildings.",
-    image: img("hermitage,saint,petersburg"),
-    emoji: "👑",
-  },
-  {
-    id: "uffizi-gallery",
-    name: "Uffizi Gallery",
-    city: "Florence",
-    country: "Italy",
-    blurb: "The Renaissance in one building — Botticelli, Caravaggio, da Vinci.",
-    image: img("uffizi,florence,renaissance"),
-    emoji: "🎨",
-  },
-  {
-    id: "prado-museum",
-    name: "Prado Museum",
+    id: "museo-nacional-del-prado",
+    name: "Museo Nacional del Prado",
     city: "Madrid",
     country: "Spain",
     blurb: "Velázquez, Goya, El Greco — Spanish royal collection at full volume.",
-    image: img("prado,madrid,museum"),
+    image: "/images/museums/Museo_Nacional_del_Prado.jpg",
     emoji: "🖌️",
   },
   {
-    id: "national-gallery",
-    name: "National Gallery",
-    city: "London",
-    country: "United Kingdom",
-    blurb: "Western European painting from the 13th to the 20th century.",
-    image: img("national,gallery,london"),
-    emoji: "🖼️",
+    id: "galleria-degli-uffizi",
+    name: "Galleria degli Uffizi",
+    city: "Florence",
+    country: "Italy",
+    blurb: "The Renaissance in one building — Botticelli, Caravaggio, da Vinci.",
+    image: "/images/museums/Galleria_degli_Uffizi.jpg",
+    emoji: "🎨",
   },
   {
     id: "rijksmuseum",
@@ -126,7 +110,7 @@ export const MUSEUMS: Museum[] = [
     city: "Amsterdam",
     country: "Netherlands",
     blurb: "Vermeer, Rembrandt, and the soul of the Dutch Golden Age.",
-    image: img("rijksmuseum,amsterdam,dutch"),
+    image: "/images/museums/Rijksmuseum.jpg",
     emoji: "🌷",
   },
   {
@@ -135,26 +119,17 @@ export const MUSEUMS: Museum[] = [
     city: "Paris",
     country: "France",
     blurb: "Impressionism inside a converted Belle Époque railway station.",
-    image: img("orsay,impressionism,paris"),
+    image: "/images/museums/Musee_d_Orsay.jpg",
     emoji: "🚂",
   },
   {
-    id: "moma",
-    name: "Museum of Modern Art (MoMA)",
-    city: "New York",
-    country: "United States",
-    blurb: "Van Gogh's Starry Night, Picasso's Demoiselles, the modern canon.",
-    image: img("moma,modern,new,york"),
-    emoji: "✨",
-  },
-  {
-    id: "tate-modern",
-    name: "Tate Modern",
+    id: "the-national-gallery",
+    name: "The National Gallery",
     city: "London",
     country: "United Kingdom",
-    blurb: "A power station turned global temple of contemporary art.",
-    image: img("tate,modern,london,thames"),
-    emoji: "🔌",
+    blurb: "Western European painting from the 13th to the 20th century, on Trafalgar Square.",
+    image: "/images/museums/The_National_Gallery_UK.JPG",
+    emoji: "🖼️",
   },
   {
     id: "acropolis-museum",
@@ -162,171 +137,46 @@ export const MUSEUMS: Museum[] = [
     city: "Athens",
     country: "Greece",
     blurb: "Glass-floored temple to the Parthenon's marbles, in their hometown.",
-    image: img("acropolis,athens,museum"),
+    image: "/images/museums/The_Acropolis_Museum.jpg",
     emoji: "🏛️",
   },
   {
-    id: "egyptian-museum",
-    name: "Egyptian Museum",
-    city: "Cairo",
-    country: "Egypt",
-    blurb: "Tutankhamun's gold mask and 120,000 years of pharaonic Egypt.",
-    image: img("egyptian,museum,cairo,pharaoh"),
-    emoji: "🪦",
+    id: "national-palace-museum",
+    name: "National Palace Museum",
+    city: "Taipei",
+    country: "Taiwan",
+    blurb:
+      "The world's largest collection of Chinese imperial art — eight centuries of jade, porcelain, painting.",
+    image: "/images/museums/National_Palace_Museum.jpg",
+    emoji: "🐉",
   },
   {
-    id: "anthropology-museum-mexico",
+    id: "smithsonian-natural-history",
+    name: "Smithsonian National Museum of Natural History",
+    city: "Washington, D.C.",
+    country: "United States",
+    blurb:
+      "The Hope Diamond, a 14-metre blue whale, and 145 million natural specimens — free entry on the National Mall.",
+    image: "/images/museums/Smithsonian_National_Museum_of_Natural_History.jpg",
+    emoji: "🦕",
+  },
+  {
+    id: "national-museum-of-anthropology",
     name: "National Museum of Anthropology",
     city: "Mexico City",
     country: "Mexico",
     blurb: "Aztec sun stone, Mayan jade, the deepest pre-Columbian collection.",
-    image: img("anthropology,mexico,aztec"),
+    image: "/images/museums/Musee_National_Anthropologie.jpg",
     emoji: "🌞",
   },
   {
-    id: "national-gallery-of-art",
-    name: "National Gallery of Art",
-    city: "Washington",
+    id: "moma",
+    name: "The Museum of Modern Art (MoMA)",
+    city: "New York",
     country: "United States",
-    blurb: "Free admission, da Vinci on this side of the Atlantic.",
-    image: img("national,gallery,washington"),
-    emoji: "🇺🇸",
-  },
-  {
-    id: "pergamon-museum",
-    name: "Pergamon Museum",
-    city: "Berlin",
-    country: "Germany",
-    blurb: "The Ishtar Gate of Babylon and the Pergamon Altar, reassembled in full.",
-    image: img("pergamon,berlin,babylon"),
-    emoji: "🏺",
-  },
-  {
-    id: "topkapi-palace-museum",
-    name: "Topkapı Palace Museum",
-    city: "Istanbul",
-    country: "Turkey",
-    blurb: "The Ottoman sultans' palace, harem, and treasury — overlooking the Bosphorus.",
-    image: img("topkapi,istanbul,palace"),
-    emoji: "🏯",
-  },
-  {
-    id: "galleria-dellaccademia",
-    name: "Galleria dell'Accademia",
-    city: "Florence",
-    country: "Italy",
-    blurb: "Michelangelo's David in person, plus the unfinished Prisoners.",
-    image: img("accademia,florence,david"),
-    emoji: "🗿",
-  },
-  {
-    id: "reina-sofia",
-    name: "Reina Sofía",
-    city: "Madrid",
-    country: "Spain",
-    blurb: "Picasso's Guernica anchors a 20th-century Spanish art masterclass.",
-    image: img("reina,sofia,madrid,picasso"),
-    emoji: "🎨",
-  },
-
-  // ─── Tbilisi (added 2026-05-19 alongside the city detail page) ───
-  // Tbilisi's curated four. The Janashia & Amiranashvili buildings
-  // anchor the Georgian National Museum complex on Rustaveli Avenue;
-  // we surface them as two separate entries because each has a
-  // distinct collection focus.
-  {
-    id: "georgian-national-museum",
-    name: "Georgian National Museum",
-    city: "Tbilisi",
-    country: "Georgia",
-    blurb: "Five millennia of Caucasus history — Colchian gold, Soviet posters, and the country's oldest hominid finds.",
-    image: img("georgian,national,museum,tbilisi"),
-    emoji: "🏛️",
-  },
-  {
-    id: "museum-of-fine-arts-georgia",
-    name: "Shalva Amiranashvili Museum of Fine Arts",
-    city: "Tbilisi",
-    country: "Georgia",
-    blurb: "Medieval Georgian icons, gilded Khakhuli triptych, and the country's largest holdings of Pirosmani.",
-    image: img("amiranashvili,museum,tbilisi,art"),
-    emoji: "🖼️",
-  },
-  {
-    id: "georgian-national-gallery",
-    name: "Dimitri Shevardnadze National Gallery",
-    city: "Tbilisi",
-    country: "Georgia",
-    blurb: "A compact survey of 19th-20th century Georgian painting — Pirosmani, Gudiashvili, Kakabadze.",
-    image: img("shevardnadze,gallery,tbilisi,painting"),
-    emoji: "🎨",
-  },
-  {
-    id: "open-air-ethnographic-museum",
-    name: "Open Air Museum of Ethnography",
-    city: "Tbilisi",
-    country: "Georgia",
-    blurb: "Folk houses from every Georgian region rebuilt on a hillside above Vake — a country tour in a day.",
-    image: img("ethnographic,museum,tbilisi,folk"),
-    emoji: "🏡",
-  },
-
-  // ─── Rome (Vatican Museums entry already exists above) ───────────
-  {
-    id: "galleria-borghese",
-    name: "Galleria Borghese",
-    city: "Rome",
-    country: "Italy",
-    blurb: "Bernini's marbles you'd swear were breathing — plus Caravaggios and Titians in a Cardinal's pleasure villa.",
-    image: img("borghese,gallery,rome,bernini"),
-    emoji: "🗿",
-  },
-  {
-    id: "capitoline-museums",
-    name: "Capitoline Museums",
-    city: "Rome",
-    country: "Italy",
-    blurb: "The Capitoline Wolf, the Dying Gaul, and a Marcus Aurelius bronze on Michelangelo's piazza.",
-    image: img("capitoline,museum,rome,wolf"),
-    emoji: "🏛️",
-  },
-  {
-    id: "national-roman-museum",
-    name: "National Roman Museum",
-    city: "Rome",
-    country: "Italy",
-    blurb: "Frescoes from Livia's garden, the Augustus of Prima Porta, and the Boxer at Rest — Roman art at full intensity.",
-    image: img("national,roman,museum,rome"),
-    emoji: "🏺",
-  },
-
-  // ─── Istanbul (Topkapı Palace Museum entry already exists above) ──
-  {
-    id: "istanbul-archaeology-museums",
-    name: "Istanbul Archaeology Museums",
-    city: "Istanbul",
-    country: "Türkiye",
-    blurb: "The Alexander Sarcophagus, the Treaty of Kadesh tablet, and a tour of Anatolian + Mesopotamian antiquity.",
-    image: img("istanbul,archaeology,museum"),
-    emoji: "🏺",
-  },
-  {
-    id: "istanbul-modern",
-    name: "Istanbul Modern",
-    city: "Istanbul",
-    country: "Türkiye",
-    blurb: "Türkiye's first modern-art museum — Republic-era painting, photography, and contemporary installations on the Bosphorus.",
-    image: img("istanbul,modern,museum,contemporary"),
-    emoji: "🎨",
-  },
-  {
-    id: "pera-museum",
-    name: "Pera Museum",
-    city: "Istanbul",
-    country: "Türkiye",
-    blurb: "Osman Hamdi's Tortoise Trainer, Orientalist paintings, Kütahya ceramics, and Anatolian weights & measures.",
-    image: img("pera,museum,istanbul,orientalist"),
-    emoji: "🖼️",
+    blurb: "Van Gogh's Starry Night, Picasso's Demoiselles, the modern canon.",
+    image: "/images/museums/The_Museum_of_Modern_Art_(MoMA).jpg",
+    emoji: "✨",
   },
 ];
 
