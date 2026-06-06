@@ -177,7 +177,42 @@ export function HomeScreen() {
     <MobileFrame floatingPanel={heroFloatingPanel}>
       <div className="relative min-h-full w-full bg-background text-foreground">
         {/* ─── HERO ─── */}
-        <section className="relative h-[600px] w-full overflow-hidden">
+        <section
+          className="relative h-[600px] w-full overflow-hidden"
+          // Touch-swipe navigation for the hero carousel — Beka's
+          // spec: finger-swipe should rotate between cities the same
+          // way the side arrows do. We track the first touchstart
+          // X coordinate, then on touchend compare with the release X:
+          // > 40 px horizontal delta wins over vertical scroll intent.
+          onTouchStart={(e) => {
+            const t = e.touches[0];
+            if (!t) return;
+            (e.currentTarget as HTMLElement & { _heroSwipeStartX?: number })._heroSwipeStartX =
+              t.clientX;
+            (e.currentTarget as HTMLElement & { _heroSwipeStartY?: number })._heroSwipeStartY =
+              t.clientY;
+          }}
+          onTouchEnd={(e) => {
+            const el = e.currentTarget as HTMLElement & {
+              _heroSwipeStartX?: number;
+              _heroSwipeStartY?: number;
+            };
+            const startX = el._heroSwipeStartX;
+            const startY = el._heroSwipeStartY;
+            if (startX === undefined || startY === undefined) return;
+            const t = e.changedTouches[0];
+            if (!t) return;
+            const dx = t.clientX - startX;
+            const dy = t.clientY - startY;
+            el._heroSwipeStartX = undefined;
+            el._heroSwipeStartY = undefined;
+            // Horizontal swipe only — if the user mostly moved
+            // vertically (scroll intent) we ignore it.
+            if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
+            if (dx < 0) goHero(heroIdx + 1);
+            else goHero(heroIdx - 1);
+          }}
+        >
           {HERO_ROTATION.map((d, i) => (
             <img
               key={d.slug}
@@ -474,33 +509,8 @@ export function HomeScreen() {
           </div>
         </section>
 
-        {/* ─── TIME MACHINE STRIP ─── */}
-        <section className="mt-9">
-          <div className="mb-4 flex items-end justify-between px-5">
-            <div>
-              <h2 className="font-display text-[22px] font-medium leading-tight tracking-[-0.02em] text-foreground">
-                {t("home.timeMachine.title")}
-              </h2>
-              <p className="mt-1 text-[12px] leading-snug text-muted-foreground">
-                {t("home.timeMachine.sub")}
-              </p>
-            </div>
-            <Link
-              to="/time-machine"
-              className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary transition-smooth hover:opacity-80"
-            >
-              {t("home.seeAll")} <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
-          <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
-            {TIME_MACHINE_TOP_10.map((a, i) => (
-              <TimeMachineMomentCard key={a.id} attraction={a} rank={i + 1} />
-            ))}
-          </div>
-        </section>
-
         {/* ─── FEATURED DESTINATIONS ─── */}
-        <section className="mt-10">
+        <section className="mt-9">
           <div className="flex items-end justify-between px-5">
             <div>
               <h2 className="font-display text-[26px] font-medium leading-tight tracking-[-0.02em] text-foreground">
@@ -521,6 +531,31 @@ export function HomeScreen() {
           <div className="mt-5 flex flex-col gap-4 px-5">
             {HOME_CITIES.map((city) => (
               <CityCard key={city} city={city} />
+            ))}
+          </div>
+        </section>
+
+        {/* ─── TIME MACHINE STRIP ─── moved below Cities per Beka 2026-06-03 */}
+        <section className="mt-10 pb-10">
+          <div className="mb-4 flex items-end justify-between px-5">
+            <div>
+              <h2 className="font-display text-[22px] font-medium leading-tight tracking-[-0.02em] text-foreground">
+                {t("home.timeMachine.title")}
+              </h2>
+              <p className="mt-1 text-[12px] leading-snug text-muted-foreground">
+                {t("home.timeMachine.sub")}
+              </p>
+            </div>
+            <Link
+              to="/time-machine"
+              className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary transition-smooth hover:opacity-80"
+            >
+              {t("home.seeAll")} <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
+            {TIME_MACHINE_TOP_10.map((a, i) => (
+              <TimeMachineMomentCard key={a.id} attraction={a} rank={i + 1} />
             ))}
           </div>
         </section>

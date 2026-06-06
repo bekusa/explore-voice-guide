@@ -24,17 +24,12 @@
  * URL in the value — the helper passes those through unchanged.
  */
 const CITY_HERO_PHOTOS: Record<string, string> = {
-  // Tbilisi + Rome are curated for the launch hero carousel; both
-  // have hand-picked photos under public/images/cities/.
   tbilisi: "/images/cities/tbilisi.jpg",
   rome: "/images/cities/rome.jpg",
-  // Istanbul + London removed 2026-06-03 — Beka reported the static
-  // tiles weren't loading on mobile. With the static entries absent
-  // `getStaticCityHeroUrl` returns null and CityCard falls through
-  // to /api/photo, which currently surfaces better photos for these
-  // two on the production endpoint than the bundled files did.
+  istanbul: "/images/cities/istanbul.jpg",
   bangkok: "/images/cities/bangkok.jpg",
   paris: "/images/cities/paris.jpg",
+  london: "/images/cities/london.jpg",
   dubai: "/images/cities/dubai.jpg",
   singapore: "/images/cities/singapore.jpg",
   "new-york": "/images/cities/new-york.jpg",
