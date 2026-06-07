@@ -257,10 +257,22 @@ function AttractionPage() {
     // Beka 2026-06-08: voice should open with the attraction title,
     // then the "About this place" copy, before diving into the tour
     // script itself — gives the listener context before the deep
-    // narrative kicks in.
-    const titlePart = (a?.name ?? name ?? fallbackName ?? "").trim();
+    // narrative kicks in. We read directly from `attraction` here
+    // (rather than the later-declared `a` / `name` shorthand) so
+    // the useMemo callback doesn't trip a TDZ when those bindings
+    // aren't initialised yet at component-evaluation time.
+    const titlePart = (
+      attraction?.name ??
+      searchName ??
+      fallbackName ??
+      ""
+    ).trim();
     if (titlePart) parts.push(titlePart + ".");
-    const aboutPart = (a?.outside_desc ?? a?.description ?? "").trim();
+    const aboutPart = (
+      attraction?.outside_desc ??
+      attraction?.description ??
+      ""
+    ).trim();
     if (aboutPart) parts.push("\n\n" + aboutPart);
     if (guide.script) parts.push("\n\n" + guide.script);
     const join = (items: string[]) =>
