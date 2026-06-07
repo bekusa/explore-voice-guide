@@ -46,7 +46,7 @@ export const MUSEUMS: Museum[] = [
     city: "Paris",
     country: "France",
     blurb: "World's most-visited museum, from the Mona Lisa to the Code of Hammurabi.",
-    image: "/images/museums/Louvre.jpg",
+    image: "/images/museums/louvre.jpg",
     emoji: "🖼️",
   },
   {
@@ -110,7 +110,7 @@ export const MUSEUMS: Museum[] = [
     city: "Amsterdam",
     country: "Netherlands",
     blurb: "Vermeer, Rembrandt, and the soul of the Dutch Golden Age.",
-    image: "/images/museums/Rijksmuseum.jpg",
+    image: "/images/museums/rijksmuseum.jpg",
     emoji: "🌷",
   },
   {

@@ -12,7 +12,7 @@
  * through to the dynamic API lookup exactly as before.
  */
 const MUSEUM_HERO_PHOTOS: Record<string, string> = {
-  louvre: "/images/museums/Louvre.jpg",
+  louvre: "/images/museums/louvre.jpg",
   "the-metropolitan-museum-of-art": "/images/museums/Metropolitan_Museum_of_Art.jpg",
   "metropolitan-museum-of-art": "/images/museums/Metropolitan_Museum_of_Art.jpg",
   "the-british-museum": "/images/museums/British_Museum.jpg",
@@ -22,7 +22,7 @@ const MUSEUM_HERO_PHOTOS: Record<string, string> = {
   "vatican-museums": "/images/museums/Vatican_Museums.jpg",
   "museo-nacional-del-prado": "/images/museums/Museo_Nacional_del_Prado.jpg",
   "galleria-degli-uffizi": "/images/museums/Galleria_degli_Uffizi.jpg",
-  rijksmuseum: "/images/museums/Rijksmuseum.jpg",
+  rijksmuseum: "/images/museums/rijksmuseum.jpg",
   "mus-e-d-orsay": "/images/museums/Musee_d_Orsay.jpg",
   "musee-d-orsay": "/images/museums/Musee_d_Orsay.jpg",
   "musee-dorsay": "/images/museums/Musee_d_Orsay.jpg",
