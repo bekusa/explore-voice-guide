@@ -187,6 +187,31 @@ function looksLikePhoto(filename: string): boolean {
     "canaletto",
     "vasari",
     "merian",
+    // People / band / concert / portrait clutter — Wikipedia's media
+    // list for an article often includes portraits of architects /
+    // mayors / band members. The user wants the place, not the people.
+    "_portrait",
+    "-portrait",
+    "portrait_",
+    "portrait-",
+    "_band",
+    "band_",
+    "_concert",
+    "concert_",
+    "performance_",
+    "_performance",
+    "_singer",
+    "singer_",
+    "_musician",
+    "musician_",
+    "selfie",
+    "_headshot",
+    "headshot_",
+    "people_",
+    "_people",
+    "crowd_",
+    "_crowd",
+    "official_portrait",
   ];
   if (reject.some((r) => f.includes(r))) return false;
 
@@ -202,6 +227,43 @@ function looksLikePhoto(filename: string): boolean {
     return false;
   }
   return true;
+}
+
+/**
+ * Heuristic: every significant word (>= 3 chars) in the query is a
+ * generic English noun ("Old Town", "Sulphur Baths", "Central Park").
+ * Mirrors `isGenericAttractionName` in api.photo.ts so the gallery
+ * lookup applies the same "prepend city" rule that single-photo
+ * lookup already uses. Without this, bare "Old Town" was matching
+ * a music group on Wikipedia and surfacing band photos in the
+ * gallery instead of the actual neighbourhood.
+ */
+const GENERIC_VOCAB = new Set([
+  "old", "town", "city", "central", "park", "square", "street",
+  "avenue", "road", "boulevard", "river", "bridge", "lake",
+  "hill", "valley", "garden", "gardens", "market", "cathedral",
+  "church", "mosque", "temple", "palace", "castle", "fort",
+  "fortress", "tower", "wall", "walls", "gate", "gates", "harbour",
+  "harbor", "port", "beach", "coast", "mountain", "mountains",
+  "monument", "statue", "memorial", "museum", "library",
+  "theater", "theatre", "opera", "stadium", "fountain", "spring",
+  "springs", "bath", "baths", "sulphur", "sulfur", "thermal",
+  "historic", "historical", "ancient", "new", "main", "grand",
+  "great", "little", "lower", "upper", "north", "south", "east",
+  "west", "northern", "southern", "eastern", "western", "old town",
+]);
+
+function isGenericName(name: string | null | undefined): boolean {
+  if (!name) return false;
+  const words = name
+    .toLowerCase()
+    .replace(/[^\p{L}\s]+/gu, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+  if (words.length === 0 || words.length > 4) return false;
+  const significant = words.filter((w) => w.length >= 3);
+  if (significant.length === 0) return false;
+  return significant.every((w) => GENERIC_VOCAB.has(w));
 }
 
 /**
@@ -383,12 +445,23 @@ export const Route = createFileRoute("/api/photo-gallery")({
           );
         }
 
-        // Try bare q first. If that misses AND the caller gave us a
-        // city qualifier, retry with "q + city" to disambiguate
-        // common landmark names ("Grand Palace" — ambiguous, becomes
-        // "Grand Palace Bangkok" → Thailand's royal complex).
-        let title = await resolveWikiTitle(q, lang);
-        if (!title && city && !q.toLowerCase().includes(city.toLowerCase())) {
+        // For GENERIC vocabulary queries (Old Town / Sulphur Baths /
+        // Central Park) we put the city qualifier FIRST so Wikipedia
+        // lands on the right city's article instead of an unrelated
+        // band / song / album with the same English title. Beka caught
+        // London → Old Town pulling band photos because the bare title
+        // matched a music group page. Specific landmark names
+        // (Eiffel Tower, Mtatsminda Park) stay on the bare-first path
+        // — those have canonical articles at the exact title and the
+        // city qualifier only adds noise.
+        let title: { title: string; lang: string } | null = null;
+        const lowerQ = q.toLowerCase();
+        const cityInQ = city && lowerQ.includes(city.toLowerCase());
+        if (isGenericName(q) && city && !cityInQ) {
+          title = await resolveWikiTitle(`${q} ${city}`, lang);
+        }
+        if (!title) title = await resolveWikiTitle(q, lang);
+        if (!title && city && !cityInQ) {
           title = await resolveWikiTitle(`${q} ${city}`, lang);
         }
         if (!title) {
