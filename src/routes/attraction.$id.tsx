@@ -25,6 +25,7 @@ import {
   Shirt,
   Timer,
   BookOpen,
+  Info,
   Sparkles,
   ChevronLeft,
   ChevronRight,
@@ -253,7 +254,15 @@ function AttractionPage() {
   const fullScript = useMemo(() => {
     if (!guide) return "";
     const parts: string[] = [];
-    if (guide.script) parts.push(guide.script);
+    // Beka 2026-06-08: voice should open with the attraction title,
+    // then the "About this place" copy, before diving into the tour
+    // script itself — gives the listener context before the deep
+    // narrative kicks in.
+    const titlePart = (a?.name ?? name ?? fallbackName ?? "").trim();
+    if (titlePart) parts.push(titlePart + ".");
+    const aboutPart = (a?.outside_desc ?? a?.description ?? "").trim();
+    if (aboutPart) parts.push("\n\n" + aboutPart);
+    if (guide.script) parts.push("\n\n" + guide.script);
     const join = (items: string[]) =>
       items
         .map((s) => s.trim())
@@ -937,6 +946,43 @@ function ActionRow({
     void import("@/lib/savedStore").then(({ attachPhotoToSavedItem }) => {
       void attachPhotoToSavedItem(id, heroPhoto);
     });
+    // Beka 2026-06-08: Save → also pre-download the TTS audio + script
+    // so the saved tour is fully playable on the plane. Same effect
+    // the user used to get by hitting the separate Download button —
+    // now bundled into Save so there's one action.
+    void (async () => {
+      try {
+        let voicePref: string | null = null;
+        if (user) {
+          const { data } = await supabase
+            .from("profiles")
+            .select("preferred_voice")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          if (
+            data?.preferred_voice &&
+            /-[A-Z][A-Za-z]+Neural$/.test(data.preferred_voice)
+          ) {
+            voicePref = data.preferred_voice;
+          }
+        }
+        const voice = resolveAzureVoice(language, voicePref) ?? "";
+        if (!voice) return;
+        await fetchAndCacheTour({
+          slug: id,
+          name,
+          language,
+          voice,
+          // `fullScript` is the title-then-about-then-tour text we
+          // just built; downloading the same payload guarantees the
+          // cached audio matches what the user will hear when they
+          // tap Play.
+          script: fullScript || script,
+        });
+      } catch (err) {
+        console.warn("[attraction] auto-download on save failed", err);
+      }
+    })();
     toast.success(t("attr.savedForOffline"), {
       description: t("attr.findInSaved"),
     });
@@ -1257,9 +1303,12 @@ function AboutSection({ loading, aboutText }: { loading: boolean; aboutText: str
   if (loading) {
     return (
       <section className="mt-8 px-6">
-        <h2 className="font-display text-[20px] text-foreground">
-          {t("attr.aboutWord")} <span className="italic text-primary">{t("attr.thisPlace")}</span>
-        </h2>
+        <div className="flex items-center gap-2">
+          <Info className="h-4 w-4 text-primary" />
+          <h2 className="font-display text-[20px] text-foreground">
+            {t("attr.aboutWord")} <span className="italic text-primary">{t("attr.thisPlace")}</span>
+          </h2>
+        </div>
         <div className="mt-4 space-y-2">
           <div className="h-3 w-full animate-pulse rounded bg-secondary" />
           <div className="h-3 w-11/12 animate-pulse rounded bg-secondary/70" />
@@ -1271,9 +1320,12 @@ function AboutSection({ loading, aboutText }: { loading: boolean; aboutText: str
   if (paragraphs.length === 0) return null;
   return (
     <section className="mt-8 px-6">
-      <h2 className="font-display text-[20px] text-foreground">
-        {t("attr.aboutWord")} <span className="italic text-primary">{t("attr.thisPlace")}</span>
-      </h2>
+      <div className="flex items-center gap-2">
+        <Info className="h-4 w-4 text-primary" />
+        <h2 className="font-display text-[20px] text-foreground">
+          {t("attr.aboutWord")} <span className="italic text-primary">{t("attr.thisPlace")}</span>
+        </h2>
+      </div>
       <div className="mt-4 space-y-3 text-[13.5px] leading-relaxed text-foreground/80">
         {paragraphs.map((p, i) => (
           <p key={i}>{p}</p>

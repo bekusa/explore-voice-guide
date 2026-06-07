@@ -162,6 +162,31 @@ function looksLikePhoto(filename: string): boolean {
     "19th_century",
     "18th_century",
     "17th_century",
+    // Roman-numeral century markers — Wikipedia files for old art
+    // routinely tag the century in roman numerals ("Louvre_XVIII_jh").
+    "_xviii_",
+    "_xix_",
+    "_xvii_",
+    "_xvi_",
+    // "Old" / "antique" / "ancient" / "vintage" markers — caught
+    // historical drawings of Batumi Boulevard slipping through (2026-06-08).
+    "ancient_",
+    "antique_",
+    "vintage_",
+    "old_view",
+    "old-view",
+    "historic_",
+    "historic-",
+    "historical",
+    "gravure",
+    // Common artist signatures on historical depictions of European
+    // landmarks (Piranesi etchings of Rome, Bellotto vedute, etc).
+    // We intentionally avoid common modern photographer surnames.
+    "piranesi",
+    "bellotto",
+    "canaletto",
+    "vasari",
+    "merian",
   ];
   if (reject.some((r) => f.includes(r))) return false;
 
