@@ -27,9 +27,27 @@ export function isAzureConfigured(): boolean {
   return !!(env("AZURE_STORAGE_ACCOUNT") && env("AZURE_STORAGE_KEY") && env("AZURE_STORAGE_CONTAINER"));
 }
 
-export function getAzureBlobPublicUrl(blobName: string): string | null {
+/**
+ * Resolve which container to use for a given asset kind. Photos go
+ * into the `AZURE_STORAGE_CONTAINER` (default `attractions`) container,
+ * audio guides go into `audio` — Beka created this second container
+ * specifically for TTS mp3s so disk-usage metrics + lifecycle policies
+ * can be tracked separately. Override via env if the names ever
+ * change.
+ */
+function resolveContainer(kind: "photo" | "audio"): string | null {
+  if (kind === "audio") {
+    return env("AZURE_STORAGE_AUDIO_CONTAINER") ?? "audio";
+  }
+  return env("AZURE_STORAGE_CONTAINER");
+}
+
+export function getAzureBlobPublicUrl(
+  blobName: string,
+  kind: "photo" | "audio" = "photo",
+): string | null {
   const account = env("AZURE_STORAGE_ACCOUNT");
-  const container = env("AZURE_STORAGE_CONTAINER");
+  const container = resolveContainer(kind);
   if (!account || !container) return null;
   return `https://${account}.blob.core.windows.net/${container}/${encodeURIComponent(blobName)}`;
 }
@@ -40,8 +58,11 @@ export function getAzureBlobPublicUrl(blobName: string): string | null {
  * accept network glitches as "missing" rather than retrying; the
  * caller can fall through to a fresh upstream fetch + upload.
  */
-export async function blobExists(blobName: string): Promise<boolean> {
-  const url = getAzureBlobPublicUrl(blobName);
+export async function blobExists(
+  blobName: string,
+  kind: "photo" | "audio" = "photo",
+): Promise<boolean> {
+  const url = getAzureBlobPublicUrl(blobName, kind);
   if (!url) return false;
   try {
     const res = await fetch(url, { method: "HEAD" });
@@ -62,10 +83,11 @@ export async function uploadToAzureBlob(
   blobName: string,
   bytes: Uint8Array,
   contentType: string,
+  kind: "photo" | "audio" = "photo",
 ): Promise<string | null> {
   const account = env("AZURE_STORAGE_ACCOUNT");
   const key = env("AZURE_STORAGE_KEY");
-  const container = env("AZURE_STORAGE_CONTAINER");
+  const container = resolveContainer(kind);
   if (!account || !key || !container) return null;
 
   const url = `https://${account}.blob.core.windows.net/${container}/${encodeURIComponent(blobName)}`;

@@ -72,7 +72,8 @@ type DbWithCache = {
       | "cached_attractions"
       | "cached_museum_highlights"
       | "cached_time_machine"
-      | "cached_photos",
+      | "cached_photos"
+      | "cached_audio",
   ) => AnyTable;
 };
 
@@ -532,5 +533,60 @@ export async function putCachedPhoto(
     if (error) console.warn("[sharedCache] putCachedPhoto error", error.message);
   } catch (err) {
     console.warn("[sharedCache] putCachedPhoto threw", err);
+  }
+}
+
+/* ─── cached_audio ─────────────────────────────────────────────────
+ * Mirror of cached_photos but for TTS mp3 blobs. Cache key is a SHA-1
+ * over (script, voice, language) — every unique combo gets generated
+ * by Azure Speech once, uploaded to the `audio` blob container, and
+ * then served from blob forever after. Massive cost saver: Azure
+ * Speech is $16/M chars; blob bandwidth is $0.087/GB. A 5KB mp3
+ * served 1000 times = $0.0004 from blob, vs ~$0.80 if re-synthesised.
+ */
+
+export async function getCachedAudio(cacheKey: string): Promise<string | null> {
+  const db = getDb();
+  if (!db) return null;
+  try {
+    const { data, error } = await db
+      .from("cached_audio")
+      .select("url")
+      .eq("cache_key", cacheKey)
+      .maybeSingle();
+    if (error) {
+      console.warn("[sharedCache] getCachedAudio error", error.message);
+      return null;
+    }
+    return (data?.url as string | undefined) ?? null;
+  } catch (err) {
+    console.warn("[sharedCache] getCachedAudio threw", err);
+    return null;
+  }
+}
+
+export async function putCachedAudio(
+  cacheKey: string,
+  url: string,
+  meta: { voice?: string | null; language?: string | null; sourceUrl?: string | null } = {},
+): Promise<void> {
+  if (!url) return;
+  const db = getDb();
+  if (!db) return;
+  try {
+    const { error } = await db.from("cached_audio").upsert(
+      {
+        cache_key: cacheKey,
+        url,
+        ...(meta.sourceUrl ? { source_url: meta.sourceUrl } : {}),
+        ...(meta.voice ? { voice: meta.voice } : {}),
+        ...(meta.language ? { language: meta.language } : {}),
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "cache_key" },
+    );
+    if (error) console.warn("[sharedCache] putCachedAudio error", error.message);
+  } catch (err) {
+    console.warn("[sharedCache] putCachedAudio threw", err);
   }
 }
