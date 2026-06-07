@@ -740,9 +740,33 @@ function writeCache(map: CacheShape) {
   }
 }
 
+/**
+ * Hardcoded overrides for specific (source, lang) pairs where Google
+ * Translate returns wrong / lossy output. Beka 2026-06-09 caught two
+ * persistent offenders in Georgian:
+ *   - "Tbilisi" → "თბილის" (missing final ი)
+ *   - "Georgia" → "ჯორჯია" (the US state, not the country)
+ * These override BOTH the runtime translateBatch result AND any
+ * previously-cached bad value in localStorage. Add new entries here
+ * whenever a translation is clearly wrong; the override map wins
+ * before either the cache or the live API.
+ */
+const TRANSLATION_OVERRIDES: Record<string, Record<string, string>> = {
+  ka: {
+    Tbilisi: "თბილისი",
+    tbilisi: "თბილისი",
+    Georgia: "საქართველო",
+    georgia: "საქართველო",
+    "United States": "ამერიკის შეერთებული შტატები",
+    "United Kingdom": "გაერთიანებული სამეფო",
+  },
+};
+
 export function getCachedTranslation(text: string, lang: string): string | null {
   const l = normalizeLang(lang);
   if (l === "en") return text;
+  const override = TRANSLATION_OVERRIDES[l]?.[text];
+  if (override) return override;
   const map = readCache();
   return map[l]?.[text] ?? null;
 }

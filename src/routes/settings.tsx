@@ -448,42 +448,13 @@ function SettingsPage() {
             </Link>
           </Group>
         )}
-        {user && !user.is_anonymous && (
-          <Group title={t("set.account")}>
-            <div className="flex items-center gap-3 px-4 py-4">
-              <span className="grid h-11 w-11 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow">
-                <UserIcon className="h-4 w-4" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  <Mail className="h-2.5 w-2.5" /> {t("set.signedInAs")}
-                </div>
-                <div className="truncate text-[13px] font-semibold">{user.email}</div>
-              </div>
-            </div>
-            <Divider />
-            <div className="flex flex-col gap-2 px-4 py-4">
-              <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                {t("set.displayName")}
-              </label>
-              <div className="flex gap-2">
-                <Input
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder={t("set.yourName")}
-                  className="h-10 rounded-xl border-border bg-background text-[13px]"
-                />
-                <button
-                  onClick={saveDisplayName}
-                  disabled={savingProfile}
-                  className="rounded-xl bg-foreground px-4 text-[11px] font-bold uppercase tracking-[0.16em] text-background transition-smooth hover:scale-[1.02] disabled:opacity-50"
-                >
-                  {savingProfile ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : t("set.save")}
-                </button>
-              </div>
-            </div>
-          </Group>
-        )}
+        {/* Account section removed per Beka 2026-06-09 — the signed-in
+            email + display-name editor lived here previously. Auth
+            state is still accessible via the sign-out tab and the
+            cloud-sync indicators elsewhere; the dedicated row was
+            redundant once the bottom-nav avatar/sign-out moved in.
+            Restore from git history if reintroducing user-profile
+            edits in v1.1. */}
 
         {/* Audio guide */}
         <Group title={t("set.audioGuide")}>
