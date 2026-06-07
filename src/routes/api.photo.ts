@@ -1409,6 +1409,12 @@ export const Route = createFileRoute("/api/photo")({
         if (photoUrl) {
           photoUrl = toWikimediaThumb(photoUrl);
         }
+        // Track the upstream URL BEFORE the Azure mirror swaps it for
+        // the blob URL — Beka wants the original Wikipedia / Google
+        // Places URL stored in `cached_photos.source_url` so he can
+        // periodically click through and QA whether the lookup picked
+        // the right photo.
+        const sourceUrl: string | null = photoUrl;
         // Azure Blob mirror — fetch the upstream bytes ONCE per photo
         // ever, upload them to our own blob container, and from this
         // point on hand out the blob URL instead of the upstream one.
@@ -1440,7 +1446,7 @@ export const Route = createFileRoute("/api/photo")({
           // the user. Worth it — once written, every subsequent
           // visitor reads from Postgres in ~50 ms and skips the
           // ~12 s Wikipedia / Google round-trip.
-          await putCachedPhoto(persistentKey, photoUrl);
+          await putCachedPhoto(persistentKey, photoUrl, sourceUrl);
         }
         return corsJson(
           { url: photoUrl },

@@ -506,15 +506,25 @@ export async function getCachedPhoto(key: PhotoKey): Promise<string | null> {
  * shouldn't be blocked by a stale "miss" row pinning users to no
  * image for days.
  */
-export async function putCachedPhoto(key: PhotoKey, url: string): Promise<void> {
+export async function putCachedPhoto(
+  key: PhotoKey,
+  url: string,
+  sourceUrl?: string | null,
+): Promise<void> {
   if (!url) return;
   const db = getDb();
   if (!db) return;
   try {
+    // `source_url` records the upstream URL (Wikipedia / Google Places)
+    // BEFORE we mirrored it into Azure Blob. Beka uses this column to
+    // periodically QA whether the lookup picked the right photo —
+    // clicking it opens the original Wikipedia file page so he can
+    // see the article / file metadata and judge accuracy.
     const { error } = await db.from("cached_photos").upsert(
       {
         cache_key: photoCacheKey(key),
         url,
+        ...(sourceUrl ? { source_url: sourceUrl } : {}),
         updated_at: new Date().toISOString(),
       },
       { onConflict: "cache_key" },
