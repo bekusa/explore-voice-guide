@@ -1,13 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
 import { getCachedPhoto, putCachedPhoto } from "@/lib/sharedCache.server";
-import {
-  blobExists,
-  blobNameForUrl,
-  getAzureBlobPublicUrl,
-  isAzureConfigured,
-  uploadToAzureBlob,
-} from "@/lib/azureBlob.server";
+import { isAzureConfigured, mirrorPhotoToBlob } from "@/lib/azureBlob.server";
 
 /**
  * Server-side photo lookup proxy.
@@ -268,64 +262,9 @@ function isGenericAttractionName(name: string | null | undefined): boolean {
  *   - URL is already a thumb (we'd double-thumb otherwise)
  *   - Filename has no recognisable extension we can re-key around
  */
-/**
- * Mirror a resolved upstream photo URL into our Azure Blob container.
- *
- * Steps:
- *   1. Hash the upstream URL → stable blob name.
- *   2. HEAD the blob's public URL — if it already exists, return that.
- *   3. Otherwise GET the upstream bytes → PUT to blob → return the
- *      blob URL.
- *
- * Returns the blob URL on success, null on any failure (so the caller
- * keeps the upstream URL as a graceful fallback). 6 MB hard cap matches
- * Cloudflare Workers' request body limit and protects us from a
- * malicious upstream returning a giant file.
- */
-async function mirrorPhotoToBlob(url: string): Promise<string | null> {
-  if (url.startsWith("https://") === false) return null;
-  // Already a blob URL? Don't double-mirror.
-  if (url.includes(".blob.core.windows.net/")) return url;
-  // Probe upstream's content type with HEAD so we can name + tag the
-  // blob correctly without buffering bytes first.
-  let contentType = "image/jpeg";
-  try {
-    const head = await fetch(url, { method: "HEAD" });
-    if (head.ok) {
-      const ct = head.headers.get("Content-Type");
-      if (ct) contentType = ct.split(";")[0].trim();
-    }
-  } catch {
-    /* probe-only — fall back to default image/jpeg below */
-  }
-  const blobName = await blobNameForUrl(url, contentType);
-  // Already mirrored on a previous request? Skip the upload.
-  if (await blobExists(blobName)) {
-    const cached = getAzureBlobPublicUrl(blobName);
-    if (cached) return cached;
-  }
-  // Fetch bytes from upstream.
-  let bytes: Uint8Array;
-  try {
-    const res = await fetch(url, {
-      redirect: "follow",
-      headers: {
-        "User-Agent": "Lokali-PhotoMirror/1.0 (https://lokali.ge; lokaliapps@gmail.com)",
-        Accept: "image/*",
-      },
-    });
-    if (!res.ok) return null;
-    const buf = await res.arrayBuffer();
-    if (buf.byteLength > 6 * 1024 * 1024) return null; // 6 MB cap
-    bytes = new Uint8Array(buf);
-    // Refine contentType from the actual response if HEAD lied.
-    const respCt = res.headers.get("Content-Type");
-    if (respCt) contentType = respCt.split(";")[0].trim();
-  } catch {
-    return null;
-  }
-  return uploadToAzureBlob(blobName, bytes, contentType);
-}
+// `mirrorPhotoToBlob` moved to `src/lib/azureBlob.server.ts` (2026-06-08)
+// so /api/photo-gallery can share the same implementation. Import
+// added at the top of the file.
 
 function toWikimediaThumb(url: string | null): string | null {
   // REVERTED 2026-06-07 per Beka — the thumb transformation was

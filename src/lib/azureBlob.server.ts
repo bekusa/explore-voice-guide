@@ -185,6 +185,54 @@ async function sha1Hex(s: string): Promise<string> {
     .join("");
 }
 
+/**
+ * Fetch an upstream photo URL and mirror it into our Azure Blob
+ * container. Returns the blob URL on success, the upstream URL on
+ * any failure. Used by /api/photo AND /api/photo-gallery so each
+ * caller gets identical "mirror once, serve forever" behaviour.
+ *
+ * Idempotent: if a blob with the same content-addressed name already
+ * exists, the HEAD check short-circuits and we skip the upload.
+ */
+export async function mirrorPhotoToBlob(url: string): Promise<string | null> {
+  if (!url || url.startsWith("https://") === false) return null;
+  if (url.includes(".blob.core.windows.net/")) return url; // already a blob
+  let contentType = "image/jpeg";
+  try {
+    const head = await fetch(url, { method: "HEAD" });
+    if (head.ok) {
+      const ct = head.headers.get("Content-Type");
+      if (ct) contentType = ct.split(";")[0].trim();
+    }
+  } catch {
+    /* probe-only — fall back to default image/jpeg below */
+  }
+  const blobName = await blobNameForUrl(url, contentType);
+  if (await blobExists(blobName, "photo")) {
+    const cached = getAzureBlobPublicUrl(blobName, "photo");
+    if (cached) return cached;
+  }
+  let bytes: Uint8Array;
+  try {
+    const res = await fetch(url, {
+      redirect: "follow",
+      headers: {
+        "User-Agent": "Lokali-PhotoMirror/1.0 (https://lokali.ge; lokaliapps@gmail.com)",
+        Accept: "image/*",
+      },
+    });
+    if (!res.ok) return null;
+    const buf = await res.arrayBuffer();
+    if (buf.byteLength > 6 * 1024 * 1024) return null;
+    bytes = new Uint8Array(buf);
+    const respCt = res.headers.get("Content-Type");
+    if (respCt) contentType = respCt.split(";")[0].trim();
+  } catch {
+    return null;
+  }
+  return uploadToAzureBlob(blobName, bytes, contentType, "photo");
+}
+
 async function hmacSha256Base64(keyBytes: Uint8Array, message: string): Promise<string> {
   const cryptoKey = await crypto.subtle.importKey(
     "raw",

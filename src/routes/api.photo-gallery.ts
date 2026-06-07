@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
 import { getCachedPhoto, putCachedPhoto } from "@/lib/sharedCache.server";
+import { isAzureConfigured, mirrorPhotoToBlob } from "@/lib/azureBlob.server";
 import { sanitizeWikiLang } from "./api.photo";
 
 /**
@@ -471,7 +472,26 @@ export const Route = createFileRoute("/api/photo-gallery")({
           );
         }
 
-        const urls = await fetchMediaList(title.title, title.lang);
+        let urls = await fetchMediaList(title.title, title.lang);
+        // Azure Blob mirror — same as /api/photo. Each Wikipedia /
+        // Google Places URL gets fetched ONCE, uploaded to our blob
+        // container, and from then on we hand out the blob URL.
+        // No more rate limits, no thumbnail-width 400s, no
+        // disappearing Google-signed URLs. Fail-open: if a mirror
+        // returns null we keep the upstream URL so the user still
+        // sees an image rather than nothing.
+        if (urls.length > 0 && isAzureConfigured()) {
+          urls = await Promise.all(
+            urls.map(async (u) => {
+              try {
+                const mirrored = await mirrorPhotoToBlob(u);
+                return mirrored ?? u;
+              } catch {
+                return u;
+              }
+            }),
+          );
+        }
         if (urls.length > 0) {
           // Persistent cache (Supabase) — fire-and-await per the
           // /api/photo precedent. Pipe-style newline join keeps the
