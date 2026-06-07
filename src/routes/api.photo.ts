@@ -1,6 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
 import { getCachedPhoto, putCachedPhoto } from "@/lib/sharedCache.server";
+import {
+  blobExists,
+  blobNameForUrl,
+  getAzureBlobPublicUrl,
+  isAzureConfigured,
+  uploadToAzureBlob,
+} from "@/lib/azureBlob.server";
 
 /**
  * Server-side photo lookup proxy.
@@ -261,6 +268,65 @@ function isGenericAttractionName(name: string | null | undefined): boolean {
  *   - URL is already a thumb (we'd double-thumb otherwise)
  *   - Filename has no recognisable extension we can re-key around
  */
+/**
+ * Mirror a resolved upstream photo URL into our Azure Blob container.
+ *
+ * Steps:
+ *   1. Hash the upstream URL → stable blob name.
+ *   2. HEAD the blob's public URL — if it already exists, return that.
+ *   3. Otherwise GET the upstream bytes → PUT to blob → return the
+ *      blob URL.
+ *
+ * Returns the blob URL on success, null on any failure (so the caller
+ * keeps the upstream URL as a graceful fallback). 6 MB hard cap matches
+ * Cloudflare Workers' request body limit and protects us from a
+ * malicious upstream returning a giant file.
+ */
+async function mirrorPhotoToBlob(url: string): Promise<string | null> {
+  if (url.startsWith("https://") === false) return null;
+  // Already a blob URL? Don't double-mirror.
+  if (url.includes(".blob.core.windows.net/")) return url;
+  // Probe upstream's content type with HEAD so we can name + tag the
+  // blob correctly without buffering bytes first.
+  let contentType = "image/jpeg";
+  try {
+    const head = await fetch(url, { method: "HEAD" });
+    if (head.ok) {
+      const ct = head.headers.get("Content-Type");
+      if (ct) contentType = ct.split(";")[0].trim();
+    }
+  } catch {
+    /* probe-only — fall back to default image/jpeg below */
+  }
+  const blobName = await blobNameForUrl(url, contentType);
+  // Already mirrored on a previous request? Skip the upload.
+  if (await blobExists(blobName)) {
+    const cached = getAzureBlobPublicUrl(blobName);
+    if (cached) return cached;
+  }
+  // Fetch bytes from upstream.
+  let bytes: Uint8Array;
+  try {
+    const res = await fetch(url, {
+      redirect: "follow",
+      headers: {
+        "User-Agent": "Lokali-PhotoMirror/1.0 (https://lokali.ge; lokaliapps@gmail.com)",
+        Accept: "image/*",
+      },
+    });
+    if (!res.ok) return null;
+    const buf = await res.arrayBuffer();
+    if (buf.byteLength > 6 * 1024 * 1024) return null; // 6 MB cap
+    bytes = new Uint8Array(buf);
+    // Refine contentType from the actual response if HEAD lied.
+    const respCt = res.headers.get("Content-Type");
+    if (respCt) contentType = respCt.split(";")[0].trim();
+  } catch {
+    return null;
+  }
+  return uploadToAzureBlob(blobName, bytes, contentType);
+}
+
 function toWikimediaThumb(url: string | null): string | null {
   // REVERTED 2026-06-07 per Beka — the thumb transformation was
   // producing broken Wikipedia URLs on too many files. Wikimedia's
@@ -1342,6 +1408,21 @@ export const Route = createFileRoute("/api/photo")({
         // because those are already constrained to `s1600-w600`.
         if (photoUrl) {
           photoUrl = toWikimediaThumb(photoUrl);
+        }
+        // Azure Blob mirror — fetch the upstream bytes ONCE per photo
+        // ever, upload them to our own blob container, and from this
+        // point on hand out the blob URL instead of the upstream one.
+        // Subsequent users skip Wikipedia / Google Places entirely —
+        // no rate limits, no signed-URL expiry, no thumb-width
+        // restriction. Fail-open: if the upload errors, we still
+        // return the upstream URL so the user sees something.
+        if (photoUrl && isAzureConfigured()) {
+          try {
+            const mirrored = await mirrorPhotoToBlob(photoUrl);
+            if (mirrored) photoUrl = mirrored;
+          } catch (err) {
+            console.warn("[api.photo] Azure mirror failed", err);
+          }
         }
         if (photoUrl) {
           // Per-worker in-memory cache (fast, resets on cold start).
