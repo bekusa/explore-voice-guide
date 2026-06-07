@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLabelFits } from "@/hooks/useLabelFits";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import "leaflet/dist/leaflet.css";
 import {
@@ -1108,68 +1109,120 @@ function ActionRow({
           </span>
         </button>
 
-        {/* Save — secondary outline. The label is allowed to wrap to
-            two lines (whitespace-normal + leading-tight) and the font
-            is smaller (10 → 9 px) so longer non-Latin localisations
-            like "შენახულია" / "ჩამოტვირთვა" fit inside the 64-px
-            fixed-width slot Beka caught overflowing on Georgian. */}
-        <button
-          onClick={toggleSave}
-          aria-label={saved ? t("attr.removeFromSaved") : t("attr.saveForOffline")}
-          aria-pressed={saved}
-          className={`grid w-[64px] place-items-center rounded-2xl border px-1.5 py-2 transition-smooth ${
-            saved
-              ? "border-primary/60 bg-primary/15 text-primary"
-              : "border-border/70 bg-card text-foreground hover:border-primary/40"
-          }`}
-        >
-          <span className="flex flex-col items-center gap-1">
-            {saved ? (
-              <BookmarkCheck className="h-5 w-5 fill-current" />
-            ) : (
-              <Bookmark className="h-4 w-4" />
-            )}
-            {/* When saved, drop the label entirely — the filled
-                BookmarkCheck icon is unambiguous and many languages
-                (Georgian "შენახულია", German "gespeichert", Greek
-                "αποθηκευμένο") overflow the 64px tile. Beka caught
-                this on Georgian. When NOT saved the call-to-action
-                "Save" is still useful, so we keep the text only in
-                that state. Both icon sizes bump slightly so the
-                tile has a balanced height with or without text. */}
-            {!saved && (
-              <span className="text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] whitespace-normal break-words">
-                {t("card.save")}
-              </span>
-            )}
-          </span>
-        </button>
+        {/* Save — secondary outline. Label collapses to icon-only when
+            the translated string is too long for the 64-px tile
+            (Georgian, German, etc) via the useLabelFits hook. */}
+        <SaveActionTile
+          saved={saved}
+          onToggle={toggleSave}
+          label={t("card.save")}
+          ariaLabel={saved ? t("attr.removeFromSaved") : t("attr.saveForOffline")}
+        />
 
-        {/* Download — secondary outline (or filled when already cached).
-            Same wrap-friendly text styling as Save above. */}
-        <button
+        {/* Download — same auto-collapse behaviour. */}
+        <DownloadActionTile
+          cached={cached}
+          downloading={downloading}
           onClick={downloadOffline}
-          disabled={downloading}
-          aria-label={cached ? t("attr.alreadyDownloaded") : t("card.download")}
-          className={`grid w-[64px] place-items-center rounded-2xl border px-1.5 py-2 transition-smooth disabled:opacity-80 ${
-            cached
-              ? "border-emerald-400/50 bg-emerald-500/10 text-emerald-200"
-              : "border-border/70 bg-card text-foreground hover:border-primary/40"
-          }`}
-        >
-          <span className="flex flex-col items-center gap-1">
-            {downloading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Download className="h-4 w-4" />
-            )}
-            <span className="text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] whitespace-normal break-words">
-              {downloading ? t("card.saving") : cached ? t("card.offline") : t("attr.get")}
-            </span>
-          </span>
-        </button>
+          label={downloading ? t("card.saving") : cached ? t("card.offline") : t("attr.get")}
+          ariaLabel={cached ? t("attr.alreadyDownloaded") : t("card.download")}
+        />
       </div>
     </section>
+  );
+}
+
+/**
+ * 64-px square action tile with auto-collapsing label. The label is
+ * rendered only when `useLabelFits` decides it can fit inside the
+ * tile without overflowing — otherwise the icon stands alone. Beka's
+ * spec (2026-06-09, Option F): icon + label, collapse to icon-only
+ * on overflow.
+ */
+function SaveActionTile({
+  saved,
+  onToggle,
+  label,
+  ariaLabel,
+}: {
+  saved: boolean;
+  onToggle: () => void;
+  label: string;
+  ariaLabel: string;
+}) {
+  const tileRef = useRef<HTMLButtonElement>(null);
+  // When already saved we DON'T render a label (the filled BookmarkCheck
+  // is unambiguous); pass an empty string so the hook short-circuits
+  // and stays out of the way.
+  const labelFits = useLabelFits(tileRef, saved ? "" : label, { padding: 6 });
+  return (
+    <button
+      ref={tileRef}
+      onClick={onToggle}
+      aria-label={ariaLabel}
+      aria-pressed={saved}
+      className={`grid w-[64px] place-items-center rounded-2xl border px-1.5 py-2 transition-smooth ${
+        saved
+          ? "border-primary/60 bg-primary/15 text-primary"
+          : "border-border/70 bg-card text-foreground hover:border-primary/40"
+      }`}
+    >
+      <span className="flex flex-col items-center gap-1">
+        {saved ? (
+          <BookmarkCheck className="h-5 w-5 fill-current" />
+        ) : (
+          <Bookmark className="h-4 w-4" />
+        )}
+        {!saved && labelFits && (
+          <span className="text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] whitespace-nowrap">
+            {label}
+          </span>
+        )}
+      </span>
+    </button>
+  );
+}
+
+function DownloadActionTile({
+  cached,
+  downloading,
+  onClick,
+  label,
+  ariaLabel,
+}: {
+  cached: boolean;
+  downloading: boolean;
+  onClick: () => void;
+  label: string;
+  ariaLabel: string;
+}) {
+  const tileRef = useRef<HTMLButtonElement>(null);
+  const labelFits = useLabelFits(tileRef, label, { padding: 6 });
+  return (
+    <button
+      ref={tileRef}
+      onClick={onClick}
+      disabled={downloading}
+      aria-label={ariaLabel}
+      className={`grid w-[64px] place-items-center rounded-2xl border px-1.5 py-2 transition-smooth disabled:opacity-80 ${
+        cached
+          ? "border-emerald-400/50 bg-emerald-500/10 text-emerald-200"
+          : "border-border/70 bg-card text-foreground hover:border-primary/40"
+      }`}
+    >
+      <span className="flex flex-col items-center gap-1">
+        {downloading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Download className="h-4 w-4" />
+        )}
+        {labelFits && (
+          <span className="text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] whitespace-nowrap">
+            {label}
+          </span>
+        )}
+      </span>
+    </button>
   );
 }
 
