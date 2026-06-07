@@ -164,8 +164,37 @@ export async function uploadToAzureBlob(
  * caches that inspect filenames.
  */
 export async function blobNameForUrl(url: string, contentType: string): Promise<string> {
-  const hash = await sha1Hex(url);
+  // Normalise before hashing so different URL variants pointing at
+  // the SAME underlying photo collapse to the SAME blob:
+  //  - Wikipedia thumb URLs: strip the `/thumb/` segment + size
+  //    suffix → both `…/thumb/3/35/Louvre.jpg/800px-Louvre.jpg` and
+  //    `…/thumb/3/35/Louvre.jpg/1280px-Louvre.jpg` collapse to
+  //    `…/commons/3/35/Louvre.jpg`.
+  //  - Google Places signed URLs: strip the trailing `=…` size param
+  //    so re-signs of the same photo_reference dedupe.
+  // Falls through to the raw URL when nothing matches so non-Wikipedia
+  // / non-Google sources keep their existing behaviour.
+  const normalised = normaliseUrlForHash(url);
+  const hash = await sha1Hex(normalised);
   return `${hash}${extForContentType(contentType)}`;
+}
+
+function normaliseUrlForHash(url: string): string {
+  // Wikimedia Commons thumb collapse.
+  const wikiThumb = url.match(
+    /^(https?:\/\/upload\.wikimedia\.org\/wikipedia\/[^/]+)\/thumb\/([0-9a-f])\/([0-9a-f]{2})\/([^/?#]+)\/\d+px-[^/?#]+$/i,
+  );
+  if (wikiThumb) {
+    const [, prefix, h1, h2, filename] = wikiThumb;
+    return `${prefix}/${h1}/${h2}/${filename}`;
+  }
+  // Google Places lh3 photo: strip the trailing size selector
+  // (`=s1600-w600`, `=w800`, etc.) so different requested sizes
+  // collapse to the same blob.
+  if (url.includes("googleusercontent.com/")) {
+    return url.replace(/=[a-z0-9-]+$/i, "");
+  }
+  return url;
 }
 
 function extForContentType(ct: string): string {
