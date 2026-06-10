@@ -11,6 +11,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
 import { googleTranslateBatch } from "@/lib/googleTranslate.server";
+import { geminiTranslateBatch } from "@/lib/geminiTranslate.server";
 
 const LANG_NAMES: Record<string, string> = {
   en: "English",
@@ -83,23 +84,33 @@ export const Route = createFileRoute("/api/translate")({
           return corsJson({ translations: texts });
         }
 
-        // Migrated to Google Cloud Translation v2. Previously this
-        // called Anthropic Haiku with a JSON-output prompt (which
-        // had replaced an even worse Lovable Gateway / Gemini path
-        // that was leaking system prompts + foreign characters
-        // into the cache — Beka caught a Bengali "উ" prepended to
-        // "ნიუ იორკი" on the home page city card because the old
-        // Haiku-via-JSON path landed garbage in localStorage).
+        // Two-stage translation pipeline (Beka 2026-06-09):
+        //   1. Try Gemini Flash 2.0 — context-aware LLM, ~10× cheaper
+        //      than Google v2, and handles ambiguous cases like
+        //      "Georgia" (country vs US state) by understanding the
+        //      surrounding strings.
+        //   2. Fall back to Google v2 if Gemini didn't actually
+        //      translate (returns source unchanged on missing key,
+        //      network error, or malformed model output).
+        //   3. Final fallback: return source strings — same shape
+        //      the helper itself uses on internal failure.
         //
-        // Google Translate is a real translation service: no JSON
-        // parsing, no garbage characters, much faster. Same path
-        // the content translator now uses (translatePayload.server.ts).
+        // Anti-garbage filter runs on whichever path won so a stray
+        // system-prompt leak never lands in the localStorage cache
+        // (Beka caught a Bengali "উ" prefix on "ნიუ იორკი" from the
+        // old Haiku-via-JSON gateway — defence-in-depth here).
         try {
-          const translations = await googleTranslateBatch(texts, target);
-          // Anti-garbage filter still runs as a belt-and-braces gate —
-          // Google output is normally clean, but a network blip
-          // returns the source array unchanged via the helper's
-          // fallback, and the filter is fine with that.
+          let translations = await geminiTranslateBatch(texts, langName(target));
+          // Detect Gemini fall-through (returned source unchanged
+          // for every entry) and retry via Google v2. We compare
+          // by reference identity AND content because Gemini's
+          // graceful fallback uses the same array.
+          const everythingUnchanged =
+            translations === texts ||
+            translations.every((t, i) => t === texts[i]);
+          if (everythingUnchanged) {
+            translations = await googleTranslateBatch(texts, target);
+          }
           const sanitized = translations.map((t, i) =>
             looksLikeGatewayGarbage(t, texts[i], target) ? texts[i] : t,
           );
