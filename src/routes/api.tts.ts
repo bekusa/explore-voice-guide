@@ -95,8 +95,9 @@ export const Route = createFileRoute("/api/tts")({
           const ct = upstream.headers.get("Content-Type");
           if (ct) contentType = ct.split(";")[0].trim();
         } catch (err) {
+          console.warn("[api.tts] speech call failed", err);
           return corsJson(
-            { error: err instanceof Error ? err.message : "Speech call failed" },
+            { error: "Service temporarily unavailable" },
             { status: 502 },
           );
         }

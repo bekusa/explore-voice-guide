@@ -162,10 +162,9 @@ export const Route = createFileRoute("/api/time-machine")({
 
           return jsonResponse(parsed, 200, "MISS");
         } catch (err) {
+          console.warn("[api.time-machine] upstream error", err);
           return new Response(
-            JSON.stringify({
-              error: err instanceof Error ? err.message : "Upstream failed",
-            }),
+            JSON.stringify({ error: "Service temporarily unavailable" }),
             {
               status: 502,
               headers: { ...CORS_HEADERS, "Content-Type": "application/json" },

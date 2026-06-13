@@ -121,12 +121,13 @@ export const Route = createFileRoute("/api/guide")({
           return jsonResponse(parsed, 200, "MISS");
         } catch (err) {
           // Anthropic call failed (key missing, rate limit, network)
-          // — return an empty guide with an error string so the
-          // client renders gracefully instead of breaking.
+          // — return an empty guide with a generic error string so the
+          // client renders gracefully. Full error stays server-side.
+          console.warn("[api.guide] upstream error", err);
           return new Response(
             JSON.stringify({
               script: "",
-              error: err instanceof Error ? err.message : "Upstream failed",
+              error: "Service temporarily unavailable",
             }),
             {
               status: 502,

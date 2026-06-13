@@ -147,10 +147,11 @@ export const Route = createFileRoute("/api/museum-highlights")({
 
           return jsonResponse(parsed, 200, "MISS");
         } catch (err) {
+          console.warn("[api.museum-highlights] upstream error", err);
           return new Response(
             JSON.stringify({
               highlights: [],
-              error: err instanceof Error ? err.message : "Upstream failed",
+              error: "Service temporarily unavailable",
             }),
             {
               status: 502,

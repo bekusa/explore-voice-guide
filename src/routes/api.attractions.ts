@@ -153,13 +153,14 @@ export const Route = createFileRoute("/api/attractions")({
           return jsonResponse(parsed, 200, "MISS");
         } catch (err) {
           // Anthropic call failed (key missing, rate limit, network,
-          // …) — return an empty list with an `error` field so the
-          // client renders a graceful "nothing found" instead of a
-          // broken page.
+          // …) — return an empty list with a generic `error` field so
+          // the client renders a graceful "nothing found" instead of a
+          // broken page. Full error stays server-side.
+          console.warn("[api.attractions] upstream error", err);
           return new Response(
             JSON.stringify({
               attractions: [],
-              error: err instanceof Error ? err.message : "Upstream failed",
+              error: "Service temporarily unavailable",
             }),
             {
               status: 502,
@@ -340,10 +341,11 @@ async function handleExtensionRequest(
     });
     parsed = parseClaudeJson(text);
   } catch (err) {
+    console.warn("[api.attractions] upstream error", err);
     return new Response(
       JSON.stringify({
         attractions: [],
-        error: err instanceof Error ? err.message : "Upstream failed",
+        error: "Service temporarily unavailable",
       }),
       {
         status: 502,
