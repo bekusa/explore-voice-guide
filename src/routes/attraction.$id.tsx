@@ -2725,4 +2725,7 @@ function HeroPhotoCarousel({
             ))}
           </div>
         </>
-   
+      )}
+    </>
+  );
+}
