@@ -1023,6 +1023,14 @@ function ActionRow({
           });
           return;
         }
+        const script = await fetchGuideFresh(name, language, interest);
+        if (!script) {
+          updateItem(id, { audioReady: false });
+          toast.warning(t("attr.savedNoAudioTitle"), {
+            description: t("attr.savedNoAudioDesc"),
+          });
+          return;
+        }
         const ok = await fetchAndCacheTour({
           slug: id,
           language,
