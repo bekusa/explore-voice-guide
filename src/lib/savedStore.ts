@@ -299,12 +299,9 @@ async function mirrorSavedToPreferences(items: SavedItem[]): Promise<void> {
   const { Capacitor } = await import("@capacitor/core");
   if (!Capacitor.isNativePlatform()) return;
   const { Preferences } = await import("@capacitor/preferences");
-<<<<<<< HEAD
   // Lazy import of resolveAzureVoice so we get a sensible
   // language-default fallback for pre-fix saves that have no `voice`
-  // field on the row. New saves carry voice end-to-end (Beka
-  // 2026-06-11 audit fix) so this fallback only runs for the
-  // hand-me-down rows from before the migration.
+  // field on the row.
   const { resolveAzureVoice } = await import("@/lib/azureVoices");
   const slim: OfflineSavedItem[] = items.map((it) => {
     const stampedVoice =
@@ -316,23 +313,9 @@ async function mirrorSavedToPreferences(items: SavedItem[]): Promise<void> {
       name: it.name,
       language: it.language,
       voice: stampedVoice || resolveAzureVoice(it.language, null) || "ka-GE-EkaNeural",
-      city: it.attraction?.city ?? null,
+      city: (it.attraction as { city?: string | null } | null | undefined)?.city ?? null,
     };
   });
-=======
-  const slim: OfflineSavedItem[] = items.map((it) => ({
-    id: it.id,
-    name: it.name,
-    language: it.language,
-    // Voice is stamped onto the attraction at save time when the user
-    // tapped the "Save" button — it's how `audioId` reconstructs the
-    // Filesystem path. Falls back to the default Georgian voice the
-    // app uses on first launch (see Phase 3 spec).
-    voice:
-      (it.attraction as { voice?: string } | null | undefined)?.voice ?? "ka-GE-EkaNeural",
-    city: (it.attraction as { city?: string | null } | null | undefined)?.city ?? null,
-  }));
->>>>>>> 3c6a4473b283dc00eb14fcdd84855366d2bae72f
   await Preferences.set({
     key: "lokali.saved.v1",
     value: JSON.stringify(slim),
