@@ -277,21 +277,6 @@ function toWikimediaThumb(url: string | null): string | null {
   // photos but at least every URL is guaranteed to load. Performance
   // optimisation can come back as a per-file size probe later.
   return url;
-  if (!url) return null;
-  if (!url.includes("upload.wikimedia.org/wikipedia/")) return url;
-  if (url.includes("/thumb/")) return url; // already a thumb
-  const match = url.match(
-    /^(https?:\/\/upload\.wikimedia\.org\/wikipedia\/[^/]+)\/([0-9a-f])\/([0-9a-f]{2})\/(.+)$/i,
-  );
-  if (!match) return url;
-  const [, prefix, h1, h2, filename] = match;
-  // Wikipedia renders SVG → PNG at the requested width; non-SVG just
-  // carries the original extension. Vector files keep their `.svg`
-  // suffix on the source path but the rendered thumb has a `.png`
-  // tail (e.g. `…/Flag.svg/1024px-Flag.svg.png`).
-  const isSvg = /\.svg$/i.test(filename);
-  const thumbName = isSvg ? `${width}px-${filename}.png` : `${width}px-${filename}`;
-  return `${prefix}/thumb/${h1}/${h2}/${filename}/${thumbName}`;
 }
 
 type FindPlaceResponse = {
