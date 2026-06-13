@@ -495,42 +495,19 @@
         renderItems(parsed);
       }
 
-      // Auto-retry once per launch: when the user opens the app
-      // offline, the SW for lokali.ge often has the home shell
-      // cached from a prior online session. Capacitor's errorPath
-      // lands us here BEFORE the SW gets a chance, but navigating
-      // back to lokali.ge gives the SW a second swing — its
-      // fetch handler picks up the navigation request, returns the
-      // cached HTML, and the React app boots. If the SW genuinely
-      // doesn't have cache (truly first offline launch), the WebView
-      // bounces back here and the `tried` flag stops us from looping.
-      try {
-        // Allow up to 3 retry attempts per session — the SW for
-        // lokali.ge sometimes needs a moment to activate after a
-        // fresh deploy, and the first navigation lands here before
-        // it's ready. Each retry gives it another chance. After 3
-        // failures we stop looping (network is genuinely down) and
-        // leave the user on this page with the manual Retry button.
-        const k = "lokali.offline.tries";
-        const tries = parseInt(sessionStorage.getItem(k) || "0", 10) || 0;
-        if (tries < 3) {
-          sessionStorage.setItem(k, String(tries + 1));
-          // Tiny delay so the static page paints once first — gives
-          // the user feedback that something happened rather than a
-          // blank-then-instant-replace. We aim straight at `/saved`
-          // because that's the only route that's useful when offline
-          // — Home + Map both need live /api/* round-trips.
-          //
-          // Increasing delay on later attempts to give the SW more
-          // time to install/activate between bounces.
-          const delay = 400 + tries * 600;
-          setTimeout(() => {
-            window.location.href = "https://lokali.ge/saved";
-          }, delay);
-        }
-      } catch {
-        /* sessionStorage may be disabled — skip */
-      }
+      // Beka 2026-06-13 — auto-retry to /saved DISABLED.
+      //
+      // Why: when the SW had stale CSS hashes in its cache (deploy
+      // mismatch), the auto-redirect would land on /saved with the
+      // cached HTML but a missing CSS chunk → React rendered with
+      // zero styling (Beka's bad screenshot during device testing).
+      // The styled fallback on this page is friendlier than a broken
+      // React surface. Users still get a "Retry" button below if
+      // they want to attempt the SPA route manually.
+      //
+      // If you want the auto-jump back, re-enable the block below,
+      // but only AFTER the SW is fixed to keep CSS asset hashes
+      // valid across deploys (build-time precache manifest).
 
       // Defer the bridge call until next tick so the static page
       // paints first.

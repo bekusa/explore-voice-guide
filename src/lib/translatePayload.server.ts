@@ -24,6 +24,7 @@
  * request and spike a Claude retry.
  */
 import { googleTranslateBatch } from "@/lib/googleTranslate.server";
+import { geminiTranslateBatch } from "@/lib/geminiTranslate.server";
 
 const LANG_NAMES: Record<string, string> = {
   en: "English",
@@ -121,7 +122,27 @@ function isEnglish(target: string): boolean {
 async function callGateway(texts: string[], target: string): Promise<string[]> {
   if (texts.length === 0) return [];
   if (isEnglish(target)) return texts;
-  return googleTranslateBatch(texts, target);
+  // Beka 2026-06-13 — migrated to Gemini Flash 2.0. Matches the
+  // /api/translate runtime pipeline and the museum-bake script, so
+  // every translation path in the app uses the same engine.
+  // Reasoning:
+  //   - Quality: 9/10 vs Google v2 Basic's 7/10. Context-aware
+  //     proper-noun handling (Georgia the country, Florence the
+  //     city, Vatican City the city-state).
+  //   - Cost: ~$2 per 1M source chars vs $20 for v2 — 10× cheaper.
+  //   - Speed: comparable (1-3 s per batch).
+  //
+  // Fallback: if Gemini returns the source unchanged (missing key,
+  // model outage, parse error), we layer Google v2 underneath so a
+  // single failure doesn't leak English into the cached payload.
+  const targetName = LANG_NAMES[target.toLowerCase()] ?? target;
+  const fromGemini = await geminiTranslateBatch(texts, targetName);
+  const everythingUnchanged =
+    fromGemini === texts || fromGemini.every((t, i) => t === texts[i]);
+  if (everythingUnchanged) {
+    return googleTranslateBatch(texts, target);
+  }
+  return fromGemini;
 }
 
 /**
