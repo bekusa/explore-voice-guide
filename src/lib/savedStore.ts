@@ -269,7 +269,7 @@ async function mirrorSavedToPreferences(items: SavedItem[]): Promise<void> {
     // app uses on first launch (see Phase 3 spec).
     voice:
       (it.attraction as { voice?: string } | null | undefined)?.voice ?? "ka-GE-EkaNeural",
-    city: it.attraction?.city ?? null,
+    city: (it.attraction as { city?: string | null } | null | undefined)?.city ?? null,
   }));
   await Preferences.set({
     key: "lokali.saved.v1",

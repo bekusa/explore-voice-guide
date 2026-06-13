@@ -143,7 +143,7 @@ export async function uploadToAzureBlob(
       // Convert to Blob — fetch wants a BodyInit and a raw Uint8Array
       // works in Workers, but wrapping it as a Blob avoids edge cases
       // around streaming uploads on certain runtimes.
-      body: new Blob([bytes], { type: contentType }),
+      body: new Blob([new Uint8Array(bytes)], { type: contentType }),
     });
     if (!res.ok) {
       const body = await res.text().catch(() => "");
@@ -265,7 +265,7 @@ export async function mirrorPhotoToBlob(url: string): Promise<string | null> {
 async function hmacSha256Base64(keyBytes: Uint8Array, message: string): Promise<string> {
   const cryptoKey = await crypto.subtle.importKey(
     "raw",
-    keyBytes,
+    new Uint8Array(keyBytes),
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"],

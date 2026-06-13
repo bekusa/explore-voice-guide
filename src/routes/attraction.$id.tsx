@@ -957,8 +957,9 @@ function ActionRow({
     // Inline the current hero photo as a data URL so the /saved tab
     // can render it offline. Best-effort — fires after the save so a
     // slow network or CORS reject doesn't block the toast.
+    const heroPhotoUrl = attraction?.image_url ?? null;
     void import("@/lib/savedStore").then(({ attachPhotoToSavedItem }) => {
-      void attachPhotoToSavedItem(id, heroPhoto);
+      void attachPhotoToSavedItem(id, heroPhotoUrl);
     });
     // Beka 2026-06-08: Save → also pre-download the TTS audio + script
     // so the saved tour is fully playable on the plane. Same effect
@@ -982,16 +983,15 @@ function ActionRow({
         }
         const voice = resolveAzureVoice(language, voicePref) ?? "";
         if (!voice) return;
+        // Fetch the same script we'd play so the cached audio matches
+        // what the user will hear when they tap Play.
+        const script = await fetchGuideFresh(name, language, interest);
+        if (!script) return;
         await fetchAndCacheTour({
           slug: id,
-          name,
           language,
           voice,
-          // `fullScript` is the title-then-about-then-tour text we
-          // just built; downloading the same payload guarantees the
-          // cached audio matches what the user will hear when they
-          // tap Play.
-          script: fullScript || script,
+          script,
         });
       } catch (err) {
         console.warn("[attraction] auto-download on save failed", err);

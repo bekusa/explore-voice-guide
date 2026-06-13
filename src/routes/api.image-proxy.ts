@@ -85,7 +85,7 @@ export const Route = createFileRoute("/api/image-proxy")({
           }
           const body = mergeChunks(chunks, received);
           const contentType = upstream.headers.get("Content-Type") ?? "image/jpeg";
-          return new Response(body, {
+          return new Response(new Uint8Array(body), {
             status: 200,
             headers: {
               ...CORS_HEADERS,
