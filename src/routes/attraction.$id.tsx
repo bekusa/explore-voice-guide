@@ -1023,8 +1023,6 @@ function ActionRow({
           });
           return;
         }
-<<<<<<< HEAD
-=======
         const script = await fetchGuideFresh(name, language, interest);
         if (!script) {
           updateItem(id, { audioReady: false });
@@ -1033,16 +1031,11 @@ function ActionRow({
           });
           return;
         }
->>>>>>> 1e727276c8695dbf657895925a263f74a02dc5d1
         const ok = await fetchAndCacheTour({
           slug: id,
           language,
           voice,
-<<<<<<< HEAD
-          script: fullScript || script,
-=======
           script,
->>>>>>> 1e727276c8695dbf657895925a263f74a02dc5d1
         });
         if (ok) {
           updateItem(id, { audioReady: true });
