@@ -118,7 +118,7 @@ console.log(`[translate-museums] parsed ${entries.length} museums`);
 
 // ─── Gemini Flash 2.0 batch call ────────────────────────────────────
 const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
 
 async function geminiTranslateBatch(texts, targetLangName) {
   if (texts.length === 0) return [];
