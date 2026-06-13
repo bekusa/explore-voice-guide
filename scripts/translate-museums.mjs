@@ -6,11 +6,20 @@
  * museum data must be STATIC, never re-translated by the runtime
  * useTranslated() hook on the client.
  *
+ * 2026-06-11 UPDATE — engine swapped to Gemini Flash 2.0 to match the
+ * runtime translation pipeline (src/lib/geminiTranslate.server.ts).
+ * Why: Google v2 Basic mis-handled context-sensitive proper nouns
+ * (e.g. "Georgia" the US state vs. the country, "Florence" the city
+ * vs. the proper name "Florence"). Gemini understands the surrounding
+ * museum context and produces the right localised form. Same key
+ * Beka already added to Lovable Project Secrets — GEMINI_API_KEY.
+ *
  * Usage:
- *   1. Make sure GOOGLE_TRANSLATE_KEY is set in your shell:
- *        $env:GOOGLE_TRANSLATE_KEY="sk-..."  # PowerShell
+ *   1. Make sure GEMINI_API_KEY is set in your shell:
+ *        $env:GEMINI_API_KEY = "AIzaSy..."   # PowerShell
+ *        export GEMINI_API_KEY=AIzaSy...     # bash / zsh
  *      (Same key the production Worker uses; lift from Lovable
- *      Project Secrets or rotate a fresh one in Google Cloud Console.)
+ *      Project Secrets or rotate a fresh one in Google AI Studio.)
  *   2. node scripts/translate-museums.mjs
  *   3. git add src/lib/museumTranslations.generated.ts && commit + push.
  *
@@ -18,10 +27,11 @@
  * The script is idempotent — it rewrites the whole file each time.
  *
  * Why a build script rather than per-locale .ts files: 15 museums ×
- * 4 fields × 35 languages = 2,100 strings. Editing those by hand in
- * 35 separate files is brittle (typos, missed updates). Centralising
- * via Google Translate guarantees coverage and stays cheap (one
- * batch run = ~30K source chars × 35 langs = ~$21 total).
+ * 4 fields × 34 languages = 2,040 strings. Editing those by hand in
+ * 34 separate files is brittle (typos, missed updates). Centralising
+ * via Gemini guarantees coverage and stays cheap (Gemini Flash 2.0
+ * is ~$2 per million chars vs. $20 for Google v2 — one batch run is
+ * basically free).
  */
 
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -39,9 +49,53 @@ const LOCALES = [
   "uk", "ur", "vi", "zh-cn", "zh-tw",
 ];
 
-const KEY = process.env.GOOGLE_TRANSLATE_KEY;
+// BCP-47 → human language name. Gemini needs the full name in the
+// system instruction so it picks the right dialect / script (e.g.
+// "Brazilian Portuguese" vs. "European Portuguese", "Simplified
+// Chinese" vs. "Traditional Chinese"). Mirrors the LANG_NAMES table
+// in src/routes/api.translate.ts so the two paths stay consistent.
+const LANG_NAMES = {
+  ar: "Arabic",
+  bn: "Bengali",
+  cs: "Czech",
+  da: "Danish",
+  de: "German",
+  el: "Greek",
+  es: "Spanish",
+  fa: "Persian",
+  fi: "Finnish",
+  fr: "French",
+  he: "Hebrew",
+  hi: "Hindi",
+  hu: "Hungarian",
+  id: "Indonesian",
+  it: "Italian",
+  ja: "Japanese",
+  ka: "Georgian",
+  ko: "Korean",
+  ms: "Malay",
+  nb: "Norwegian",
+  nl: "Dutch",
+  pl: "Polish",
+  "pt-br": "Brazilian Portuguese",
+  "pt-pt": "European Portuguese",
+  ro: "Romanian",
+  ru: "Russian",
+  sv: "Swedish",
+  th: "Thai",
+  tr: "Turkish",
+  uk: "Ukrainian",
+  ur: "Urdu",
+  vi: "Vietnamese",
+  "zh-cn": "Simplified Chinese",
+  "zh-tw": "Traditional Chinese",
+};
+
+const KEY = process.env.GEMINI_API_KEY;
 if (!KEY) {
-  console.error("[translate-museums] GOOGLE_TRANSLATE_KEY env var is required");
+  console.error("[translate-museums] GEMINI_API_KEY env var is required");
+  console.error("  PowerShell:  $env:GEMINI_API_KEY = \"AIzaSy...\"");
+  console.error("  bash / zsh:  export GEMINI_API_KEY=AIzaSy...");
   process.exit(1);
 }
 
@@ -62,39 +116,65 @@ if (entries.length === 0) {
 }
 console.log(`[translate-museums] parsed ${entries.length} museums`);
 
-// ─── Google Translate v2 batch call ─────────────────────────────────
-function toGoogleLang(target) {
-  const t = target.trim().toLowerCase();
-  if (t === "zh-cn" || t === "zh") return "zh-CN";
-  if (t === "zh-tw") return "zh-TW";
-  if (t.startsWith("pt-") || t === "pt") return "pt";
-  if (t === "nb" || t === "no") return "no";
-  return t.split("-")[0];
-}
+// ─── Gemini Flash 2.0 batch call ────────────────────────────────────
+const GEMINI_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
-async function translateBatch(texts, targetLang) {
+async function geminiTranslateBatch(texts, targetLangName) {
   if (texts.length === 0) return [];
+
+  // Same system instruction as src/lib/geminiTranslate.server.ts so
+  // the runtime + bake produce identical results. Adds a museum-
+  // specific note: "Georgia" almost always means the country in this
+  // dataset (Tbilisi is one of the most translated city names in the
+  // app); the v2 path got this wrong because it never saw context.
+  const systemInstruction =
+    `You are a translation engine. Translate every input string into ${targetLangName}.\n\n` +
+    `Strict rules:\n` +
+    `  - Output ONLY a JSON array of translated strings, same length and same order as the input.\n` +
+    `  - Do not add comments, prefaces, or explanations.\n` +
+    `  - Preserve proper nouns (museum names, artist names, brand names) in their original form unless ${targetLangName} has a well-established conventional spelling.\n` +
+    `  - For country and city names, use the canonical ${targetLangName} form. "Georgia" in this context is the South Caucasus country, NOT the US state. "Florence" is the Italian city. "Vatican City" is the city-state.\n` +
+    `  - Museum names: render the museum in its canonical local form when one exists. "The Louvre" → Russian "Лувр", Georgian "ლუვრი", Japanese "ルーブル美術館". Otherwise keep the original.\n` +
+    `  - Never return the source text untranslated unless it is already in ${targetLangName} or has no conventional translation.\n`;
+
+  const userPayload = JSON.stringify({ inputs: texts });
+
   const body = {
-    q: texts,
-    target: toGoogleLang(targetLang),
-    source: "en",
-    format: "text",
-  };
-  const res = await fetch(
-    `https://translation.googleapis.com/language/translate/v2?key=${encodeURIComponent(KEY)}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+    systemInstruction: { parts: [{ text: systemInstruction }] },
+    contents: [{ role: "user", parts: [{ text: userPayload }] }],
+    generationConfig: {
+      temperature: 0,
+      responseMimeType: "application/json",
+      maxOutputTokens: 8192,
     },
-  );
+  };
+
+  const res = await fetch(`${GEMINI_URL}?key=${encodeURIComponent(KEY)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
   if (!res.ok) {
     const errTxt = await res.text();
     throw new Error(`HTTP ${res.status}: ${errTxt.slice(0, 300)}`);
   }
   const data = await res.json();
-  const translations = data?.data?.translations ?? [];
-  return translations.map((t) => t.translatedText ?? "");
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error("Empty Gemini response");
+
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch (err) {
+    throw new Error(`JSON parse failed: ${err.message}\nGot: ${text.slice(0, 200)}`);
+  }
+  // Accept both bare arrays and `{ translations: [...] }` shapes.
+  let arr;
+  if (Array.isArray(parsed)) arr = parsed;
+  else if (parsed && Array.isArray(parsed.translations)) arr = parsed.translations;
+  else throw new Error(`Unexpected response shape: ${JSON.stringify(parsed).slice(0, 200)}`);
+  return arr.map((v) => (typeof v === "string" ? v : ""));
 }
 
 // Build one flat array of strings per locale: [name1, blurb1, city1, country1, name2, ...]
@@ -105,16 +185,12 @@ for (const e of entries) {
 
 const out = {};
 for (const lang of LOCALES) {
-  process.stdout.write(`[translate-museums] ${lang}… `);
+  const langName = LANG_NAMES[lang] ?? lang;
+  process.stdout.write(`[translate-museums] ${lang.padEnd(5)} (${langName})… `);
   try {
-    // Google v2 caps payload size; chunk into 80-string sub-batches.
-    const SUB = 80;
-    const translated = [];
-    for (let i = 0; i < flat.length; i += SUB) {
-      const chunk = flat.slice(i, i + SUB);
-      const sub = await translateBatch(chunk, lang);
-      translated.push(...sub);
-    }
+    // Gemini handles 60 short strings comfortably in one round-trip.
+    // No chunking needed at this scale; keep it simple.
+    const translated = await geminiTranslateBatch(flat, langName);
     if (translated.length !== flat.length) {
       console.error(
         `\n  mismatch — expected ${flat.length} got ${translated.length}`,
@@ -153,8 +229,12 @@ const header = `/**
  *   node scripts/translate-museums.mjs
  *
  * The English baseline lives in topMuseums.ts; this file holds the
- * locale overlays. Consumer: see useStaticMuseum(museum, lang) in
+ * locale overlays. Consumer: getMuseumStrings(museum, lang) in
  * src/lib/museumTranslations.ts (hand-written wrapper).
+ *
+ * Engine: Gemini Flash 2.0 (see scripts/translate-museums.mjs for
+ * the system prompt that ensures Georgia/Florence/Vatican City are
+ * disambiguated correctly).
  */
 
 export type MuseumTranslation = {
@@ -170,3 +250,15 @@ const body = JSON.stringify(out, null, 2);
 
 await writeFile(outPath, header + body + ";\n", "utf8");
 console.log(`\n[translate-museums] wrote ${outPath}`);
+console.log(`[translate-museums] coverage:`);
+for (const lang of LOCALES) {
+  const status = out[lang] ? "✓" : "✗ FAILED";
+  console.log(`  ${lang.padEnd(6)} ${status}`);
+}
+
+const failed = LOCALES.filter((l) => !out[l]);
+if (failed.length > 0) {
+  console.error(`\n[translate-museums] ${failed.length} locale(s) failed: ${failed.join(", ")}`);
+  console.error(`  Re-run the script — Gemini sometimes rate-limits on first hit.`);
+  process.exit(1);
+}
