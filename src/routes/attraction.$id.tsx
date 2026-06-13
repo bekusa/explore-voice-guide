@@ -2169,6 +2169,14 @@ function HighlightCard({
   voice: string;
 }) {
   const t = useT();
+  // Auth gate for the mini player. Beka caught the leak during
+  // pre-launch device testing: must-see TTS was firing /api/tts for
+  // signed-out users, costing Azure quota and giving anonymous
+  // listeners a feature that's otherwise behind the sign-in wall.
+  // Mirror the same hook the page-level Begin/Listen + Save +
+  // Download buttons use.
+  const { user } = useAuth();
+  const requireSignIn = useRequireSignIn();
   const [photo, setPhoto] = useState<string | null>(null);
 
   // Beka 2026-06-11: cards used to render brief + story fully in the
@@ -2242,6 +2250,9 @@ function HighlightCard({
     }
   };
   const handlePlay = async () => {
+    // Auth gate first — signed-out users see the toast + Sign in
+    // action instead of a silent Azure TTS hit.
+    if (!audioUrl && !requireSignIn(user, "listen")) return;
     if (!audioUrl) {
       // Fetch + autoPlay via the <audio> mount below.
       await ensureAudio();
@@ -2714,7 +2725,4 @@ function HeroPhotoCarousel({
             ))}
           </div>
         </>
-      )}
-    </>
-  );
-}
+   

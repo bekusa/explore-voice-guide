@@ -27,10 +27,25 @@ import { useT } from "@/hooks/useT";
 export function useRequireSignIn() {
   const t = useT();
   const navigate = useNavigate();
-  return (user: User | null | undefined, intent: "save" | "download") => {
+  return (user: User | null | undefined, intent: "save" | "download" | "listen") => {
     if (user) return true;
-    const titleKey = intent === "save" ? "auth.saveSignInTitle" : "auth.downloadSignInTitle";
-    const descKey = intent === "save" ? "auth.saveSignInDesc" : "auth.downloadSignInDesc";
+    // Per-intent toast copy. "listen" is used by the must-see mini
+    // player (and any other surface that fires TTS without a heavier
+    // save / download motion) so signed-out users hit the same gate
+    // as Save / Download — Beka caught the leak during pre-launch
+    // device testing.
+    const titleKey =
+      intent === "save"
+        ? "auth.saveSignInTitle"
+        : intent === "download"
+          ? "auth.downloadSignInTitle"
+          : "auth.listenSignInTitle";
+    const descKey =
+      intent === "save"
+        ? "auth.saveSignInDesc"
+        : intent === "download"
+          ? "auth.downloadSignInDesc"
+          : "auth.listenSignInDesc";
     toast.error(t(titleKey), {
       description: t(descKey),
       action: {
