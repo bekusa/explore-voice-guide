@@ -1023,25 +1023,11 @@ function ActionRow({
           });
           return;
         }
-<<<<<<< HEAD
         const ok = await fetchAndCacheTour({
           slug: id,
           language,
           voice,
-          script: fullScript || script,
-=======
-        const voice = resolveAzureVoice(language, voicePref) ?? "";
-        if (!voice) return;
-        // Fetch the same script we'd play so the cached audio matches
-        // what the user will hear when they tap Play.
-        const script = await fetchGuideFresh(name, language, interest);
-        if (!script) return;
-        await fetchAndCacheTour({
-          slug: id,
-          language,
-          voice,
           script,
->>>>>>> 3c6a4473b283dc00eb14fcdd84855366d2bae72f
         });
         if (ok) {
           updateItem(id, { audioReady: true });
