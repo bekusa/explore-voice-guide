@@ -313,12 +313,7 @@ async function mirrorSavedToPreferences(items: SavedItem[]): Promise<void> {
       name: it.name,
       language: it.language,
       voice: stampedVoice || resolveAzureVoice(it.language, null) || "ka-GE-EkaNeural",
-<<<<<<< HEAD
-      city:
-        (it.attraction as { city?: string | null } | null | undefined)?.city ?? null,
-=======
       city: (it.attraction as { city?: string | null } | null | undefined)?.city ?? null,
->>>>>>> 1e727276c8695dbf657895925a263f74a02dc5d1
     };
   });
   await Preferences.set({
