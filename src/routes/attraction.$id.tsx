@@ -1023,6 +1023,11 @@ function ActionRow({
           });
           return;
         }
+        // Fresh guide fetch — don't trust the outer `fullScript` or
+        // `script` closure variables since they may be stale or
+        // undefined on a cold attraction page. If the fetch fails
+        // (network drop, Anthropic 5xx) we bail with audioReady=false
+        // so the user can retry from the Saved tab.
         const script = await fetchGuideFresh(name, language, interest);
         if (!script) {
           updateItem(id, { audioReady: false });
