@@ -30,6 +30,7 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { LoadingMessages } from "@/components/LoadingMessages";
@@ -1903,7 +1904,47 @@ function MuseumHighlightsSection({
   language: string;
 }) {
   const t = useT();
+  const { user } = useAuth();
   const [page, setPage] = useState(1);
+
+  // ─── Voice resolution for per-card mini players ─────────────
+  // Beka 2026-06-11: the must-see mini Play button was firing
+  // /api/tts WITHOUT a voice field, and the route rejects requests
+  // with missing voice (returns "missing voice" 400). Result: every
+  // card's Play tap silently no-op'd. We load the user's preferred
+  // voice ONCE here at the section level and pass it down to all
+  // visible HighlightCards instead of each card doing its own
+  // Supabase round-trip. Falls back to the language default via
+  // resolveAzureVoice when the user hasn't set a preference.
+  const [voice, setVoice] = useState<string>("");
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      let voicePref: string | null = null;
+      if (user) {
+        try {
+          const { data } = await supabase
+            .from("profiles")
+            .select("preferred_voice")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          if (
+            data?.preferred_voice &&
+            /-[A-Z][A-Za-z]+Neural$/.test(data.preferred_voice)
+          ) {
+            voicePref = data.preferred_voice;
+          }
+        } catch {
+          /* network/timeout — fall back to language default below */
+        }
+      }
+      if (cancelled) return;
+      setVoice(resolveAzureVoice(language, voicePref) ?? "");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, language]);
   // Ref on the section header so changePage() can scroll the
   // highlights heading back into view when the user taps 1-2-3.
   // Without this the user lands on the bottom of page N+1's last
@@ -1984,6 +2025,7 @@ function MuseumHighlightsSection({
               rank={rank}
               museum={museum}
               language={language}
+              voice={voice}
             />
           );
         })}
@@ -2048,14 +2090,28 @@ function HighlightCard({
   rank,
   museum,
   language,
+  voice,
 }: {
   h: MuseumHighlight;
   rank: number;
   museum: Museum;
   language: string;
+  /** Azure voice id (e.g. "ka-GE-EkaNeural") resolved at the section
+   *  level. Required by /api/tts — without it the route 400s.
+   *  Empty string short-circuits the mini player so we don't fire a
+   *  request we know will fail. */
+  voice: string;
 }) {
   const t = useT();
   const [photo, setPhoto] = useState<string | null>(null);
+
+  // Beka 2026-06-11: cards used to render brief + story fully in the
+  // collapsed state. The wall of text pushed the Play row way down
+  // and made the section feel heavy. Now the collapsed view shows
+  // only title + era + brief (matching the destinations card style),
+  // and the chevron next to Play/Pause/Stop reveals the longer
+  // `story` + `location_hint`. Default = collapsed.
+  const [expanded, setExpanded] = useState(false);
 
   // Per-card audio state — Beka asked for individual narrate buttons
   // on each highlight card, separate from the page-level Begin/Listen
@@ -2072,12 +2128,17 @@ function HighlightCard({
   const ensureAudio = async (): Promise<string | null> => {
     if (audioUrl) return audioUrl;
     if (!ttsText) return null;
+    if (!voice) return null; // section hasn't resolved a voice yet
     setGenerating(true);
     try {
       const res = await fetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ script: ttsText, language }),
+        // Beka 2026-06-11 fix: must-see voice didn't play because
+        // we omitted `voice`, which /api/tts requires (the route
+        // returns 400 "missing voice" otherwise). Now we send the
+        // voice resolved at section level.
+        body: JSON.stringify({ script: ttsText, language, voice }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const blob = await res.blob();
@@ -2299,75 +2360,116 @@ function HighlightCard({
             )}
           </div>
         )}
+        {/* Collapsed view always shows the short `brief` — that's the
+            one-line description Beka wants visible on first paint. The
+            longer `story` + `location_hint` move behind the chevron
+            toggle so the card height matches destinations.$slug. */}
         {h.brief && <p className="mt-2 text-[13px] leading-[1.55] text-foreground/85">{h.brief}</p>}
-        {h.story && (
-          <p className="mt-2 text-[12.5px] leading-[1.65] text-muted-foreground">{h.story}</p>
-        )}
-        {h.location_hint && (
-          <p className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/30 px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            <MapPin className="h-2.5 w-2.5" /> {h.location_hint}
-          </p>
-        )}
 
-        {/* Per-card mini player — narrate just this highlight's
-            brief + story. Beka's spec: tight Play / Pause / Stop
-            buttons inside the card, separate from the page-level
-            Begin/Listen which narrates the full guide. */}
-        {ttsText && (
-          <div className="mt-3 flex items-center gap-1.5">
-            {audioUrl && (
-              <audio
-                ref={audioRef}
-                src={audioUrl}
-                preload="auto"
-                autoPlay
-                onPlay={() => {
-                  setPlaying(true);
-                  setPaused(false);
-                }}
-                onPause={() => {
-                  const a = audioRef.current;
-                  if (a && a.currentTime >= a.duration - 0.05) return;
-                  setPaused(true);
-                }}
-                onEnded={() => {
-                  setPlaying(false);
-                  setPaused(false);
-                }}
-                style={{ display: "none" }}
-              />
+        {/* Expandable body — CSS-grid height animation (same trick as
+            AttractionCardShell), no JS measurement needed. Story +
+            location_hint slide in when the chevron opens the card. */}
+        <div
+          className={`grid transition-all duration-300 ease-out ${
+            expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          }`}
+        >
+          <div className="overflow-hidden">
+            {h.story && (
+              <p className="mt-2 text-[12.5px] leading-[1.65] text-muted-foreground">{h.story}</p>
             )}
-            <button
-              type="button"
-              onClick={handlePlay}
-              disabled={generating || (playing && !paused)}
-              aria-label={t("player.resume")}
-              className="grid h-7 w-7 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-soft transition-smooth hover:scale-[1.04] disabled:opacity-50"
-            >
-              {generating ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <Play className="h-3 w-3 translate-x-[0.5px] fill-current" />
+            {h.location_hint && (
+              <p className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/30 px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <MapPin className="h-2.5 w-2.5" /> {h.location_hint}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Per-card action row — Play / Pause / Stop on the left,
+            collapse/expand chevron on the right. Beka's spec:
+            chevron lives on the same line as the player buttons so
+            the card has a single control surface. The flex justify-
+            between pushes the chevron to the right edge. */}
+        {(ttsText || h.story || h.location_hint) && (
+          <div className="mt-3 flex items-center justify-between gap-1.5">
+            <div className="flex items-center gap-1.5">
+              {audioUrl && (
+                <audio
+                  ref={audioRef}
+                  src={audioUrl}
+                  preload="auto"
+                  autoPlay
+                  onPlay={() => {
+                    setPlaying(true);
+                    setPaused(false);
+                  }}
+                  onPause={() => {
+                    const a = audioRef.current;
+                    if (a && a.currentTime >= a.duration - 0.05) return;
+                    setPaused(true);
+                  }}
+                  onEnded={() => {
+                    setPlaying(false);
+                    setPaused(false);
+                  }}
+                  style={{ display: "none" }}
+                />
               )}
-            </button>
-            <button
-              type="button"
-              onClick={handlePause}
-              disabled={!playing || paused}
-              aria-label={t("player.pause")}
-              className="grid h-7 w-7 place-items-center rounded-full border border-primary/40 bg-card text-foreground transition-smooth hover:border-primary/70 disabled:opacity-50"
-            >
-              <Pause className="h-3 w-3 fill-current" />
-            </button>
-            <button
-              type="button"
-              onClick={handleStop}
-              disabled={!audioUrl}
-              aria-label={t("player.stop")}
-              className="grid h-7 w-7 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
-            >
-              <Square className="h-2.5 w-2.5 fill-current" />
-            </button>
+              {ttsText && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handlePlay}
+                    disabled={generating || (playing && !paused) || !voice}
+                    aria-label={t("player.resume")}
+                    className="grid h-7 w-7 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-soft transition-smooth hover:scale-[1.04] disabled:opacity-50"
+                  >
+                    {generating ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Play className="h-3 w-3 translate-x-[0.5px] fill-current" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handlePause}
+                    disabled={!playing || paused}
+                    aria-label={t("player.pause")}
+                    className="grid h-7 w-7 place-items-center rounded-full border border-primary/40 bg-card text-foreground transition-smooth hover:border-primary/70 disabled:opacity-50"
+                  >
+                    <Pause className="h-3 w-3 fill-current" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleStop}
+                    disabled={!audioUrl}
+                    aria-label={t("player.stop")}
+                    className="grid h-7 w-7 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
+                  >
+                    <Square className="h-2.5 w-2.5 fill-current" />
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Collapse / expand chevron — same dark-pill shape as
+                AttractionCardShell on /results and /saved, rotates
+                180° when the body is open. Only render when there's
+                actually something to expand (story or location_hint). */}
+            {(h.story || h.location_hint) && (
+              <button
+                type="button"
+                onClick={() => setExpanded((v) => !v)}
+                aria-expanded={expanded}
+                aria-label={expanded ? t("card.collapse") : t("card.expand")}
+                className={`grid h-7 w-7 shrink-0 place-items-center rounded-full bg-foreground text-background transition-smooth ${
+                  expanded ? "rotate-180" : ""
+                }`}
+              >
+                <ChevronDown className="h-3 w-3" />
+              </button>
+            )}
           </div>
         )}
       </div>
