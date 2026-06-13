@@ -301,9 +301,7 @@ async function mirrorSavedToPreferences(items: SavedItem[]): Promise<void> {
   const { Preferences } = await import("@capacitor/preferences");
   // Lazy import of resolveAzureVoice so we get a sensible
   // language-default fallback for pre-fix saves that have no `voice`
-  // field on the row. New saves carry voice end-to-end (Beka
-  // 2026-06-11 audit fix) so this fallback only runs for the
-  // hand-me-down rows from before the migration.
+  // field on the row.
   const { resolveAzureVoice } = await import("@/lib/azureVoices");
   const slim: OfflineSavedItem[] = items.map((it) => {
     const stampedVoice =
@@ -315,8 +313,12 @@ async function mirrorSavedToPreferences(items: SavedItem[]): Promise<void> {
       name: it.name,
       language: it.language,
       voice: stampedVoice || resolveAzureVoice(it.language, null) || "ka-GE-EkaNeural",
+<<<<<<< HEAD
       city:
         (it.attraction as { city?: string | null } | null | undefined)?.city ?? null,
+=======
+      city: (it.attraction as { city?: string | null } | null | undefined)?.city ?? null,
+>>>>>>> 1e727276c8695dbf657895925a263f74a02dc5d1
     };
   });
   await Preferences.set({

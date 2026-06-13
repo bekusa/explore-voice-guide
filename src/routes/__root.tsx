@@ -117,6 +117,14 @@ export const Route = createRootRoute({
       // served verbatim; theme_color and background_color in there
       // match StatusBar + Splash defaults (#0F0F0F charcoal).
       { rel: "manifest", href: "/manifest.webmanifest" },
+      // Web fonts — moved here from src/styles.css because Lightning CSS
+      // can't resolve URL @imports.
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Inter:wght@400;500;600;700&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,
