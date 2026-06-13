@@ -37,8 +37,31 @@ export function getMuseumStrings(museum: Museum, lang: string): MuseumStrings {
     country: museum.country,
   };
   if (!lang || lang.toLowerCase().startsWith("en")) return base;
+
+  // Two-step BCP-47 → translation-key lookup (Beka 2026-06-11 audit
+  // catch). The user's UI language code is full BCP-47 with region:
+  // "ka-GE", "fr-FR", "ru-RU". Our pre-baked translation dictionary
+  // keys are mostly bare language codes ("ka", "fr", "ru") with a
+  // handful of region-specific exceptions ("pt-br", "pt-pt", "zh-cn",
+  // "zh-tw") where dialect matters. Without this two-step lookup the
+  // bare-code locales never matched — every non-Portuguese / non-
+  // Chinese user saw museum strings in English even after Gemini
+  // baked all 34 languages.
+  //
+  // Order:
+  //   1. Exact lowercase match first — preserves pt-BR / pt-PT and
+  //      zh-CN / zh-TW dialect routing.
+  //   2. Fall back to the base language code stripped of region —
+  //      catches the common ka-GE / fr-FR / ru-RU / ar-SA case.
+  //   3. Fall back to English baseline (no overlay available).
   const normalised = lang.toLowerCase();
-  const localeMap = MUSEUM_TRANSLATIONS[normalised];
+  let localeMap = MUSEUM_TRANSLATIONS[normalised];
+  if (!localeMap) {
+    const baseLang = normalised.split("-")[0];
+    if (baseLang && baseLang !== normalised) {
+      localeMap = MUSEUM_TRANSLATIONS[baseLang];
+    }
+  }
   if (!localeMap) return base;
   const overlay = localeMap[museum.id];
   if (!overlay) return base;

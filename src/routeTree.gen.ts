@@ -675,8 +675,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAccountDeleteRoute: ApiAccountDeleteRoute,
   ApiAttractionsRoute: ApiAttractionsRoute,
   ApiGuideRoute: ApiGuideRoute,
-  ApiImageProxyRoute: ApiImageProxyRoute,
-  ApiMuseumHighlightsRoute: ApiMuseumHighlightsRoute,
+  ApiImageProxyRoute: ApiImageProxyRoute,  ApiMuseumHighlightsRoute: ApiMuseumHighlightsRoute,
   ApiPhotoRoute: ApiPhotoRoute,
   ApiPhotoGalleryRoute: ApiPhotoGalleryRoute,
   ApiTimeMachineRoute: ApiTimeMachineRoute,
@@ -688,3 +687,4 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+uteTypes>()
