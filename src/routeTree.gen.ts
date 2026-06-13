@@ -37,8 +37,8 @@ import { Route as ApiMuseumHighlightsRouteImport } from './routes/api.museum-hig
 import { Route as ApiImageProxyRouteImport } from './routes/api.image-proxy'
 import { Route as ApiGuideRouteImport } from './routes/api.guide'
 import { Route as ApiAttractionsRouteImport } from './routes/api.attractions'
-import { Route as ApiAccountDeleteRouteImport } from './routes/api.account.delete'
 import { Route as TmSimIdRoleRouteImport } from './routes/tm-sim.$id.$role'
+import { Route as ApiAccountDeleteRouteImport } from './routes/api.account.delete'
 
 const TimeMachineRoute = TimeMachineRouteImport.update({
   id: '/time-machine',
@@ -140,11 +140,6 @@ const ApiTtsRoute = ApiTtsRouteImport.update({
   path: '/api/tts',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAccountDeleteRoute = ApiAccountDeleteRouteImport.update({
-  id: '/api/account/delete',
-  path: '/api/account/delete',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiTranslateRoute = ApiTranslateRouteImport.update({
   id: '/api/translate',
   path: '/api/translate',
@@ -190,6 +185,11 @@ const TmSimIdRoleRoute = TmSimIdRoleRouteImport.update({
   path: '/tm-sim/$id/$role',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAccountDeleteRoute = ApiAccountDeleteRouteImport.update({
+  id: '/api/account/delete',
+  path: '/api/account/delete',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -207,7 +207,6 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/time-machine': typeof TimeMachineRoute
-  '/api/account/delete': typeof ApiAccountDeleteRoute
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/image-proxy': typeof ApiImageProxyRoute
@@ -221,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/upgrade': typeof AuthUpgradeRoute
   '/destinations/$slug': typeof DestinationsSlugRoute
+  '/api/account/delete': typeof ApiAccountDeleteRoute
   '/tm-sim/$id/$role': typeof TmSimIdRoleRoute
 }
 export interface FileRoutesByTo {
@@ -239,7 +239,6 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/time-machine': typeof TimeMachineRoute
-  '/api/account/delete': typeof ApiAccountDeleteRoute
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/image-proxy': typeof ApiImageProxyRoute
@@ -253,6 +252,7 @@ export interface FileRoutesByTo {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/upgrade': typeof AuthUpgradeRoute
   '/destinations/$slug': typeof DestinationsSlugRoute
+  '/api/account/delete': typeof ApiAccountDeleteRoute
   '/tm-sim/$id/$role': typeof TmSimIdRoleRoute
 }
 export interface FileRoutesById {
@@ -272,7 +272,6 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/time-machine': typeof TimeMachineRoute
-  '/api/account/delete': typeof ApiAccountDeleteRoute
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/image-proxy': typeof ApiImageProxyRoute
@@ -286,6 +285,7 @@ export interface FileRoutesById {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/upgrade': typeof AuthUpgradeRoute
   '/destinations/$slug': typeof DestinationsSlugRoute
+  '/api/account/delete': typeof ApiAccountDeleteRoute
   '/tm-sim/$id/$role': typeof TmSimIdRoleRoute
 }
 export interface FileRouteTypes {
@@ -306,7 +306,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/terms'
     | '/time-machine'
-    | '/api/account/delete'
     | '/api/attractions'
     | '/api/guide'
     | '/api/image-proxy'
@@ -320,6 +319,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/upgrade'
     | '/destinations/$slug'
+    | '/api/account/delete'
     | '/tm-sim/$id/$role'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -338,7 +338,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/terms'
     | '/time-machine'
-    | '/api/account/delete'
     | '/api/attractions'
     | '/api/guide'
     | '/api/image-proxy'
@@ -352,6 +351,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/upgrade'
     | '/destinations/$slug'
+    | '/api/account/delete'
     | '/tm-sim/$id/$role'
   id:
     | '__root__'
@@ -370,7 +370,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/terms'
     | '/time-machine'
-    | '/api/account/delete'
     | '/api/attractions'
     | '/api/guide'
     | '/api/image-proxy'
@@ -384,6 +383,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/upgrade'
     | '/destinations/$slug'
+    | '/api/account/delete'
     | '/tm-sim/$id/$role'
   fileRoutesById: FileRoutesById
 }
@@ -403,7 +403,6 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   TermsRoute: typeof TermsRoute
   TimeMachineRoute: typeof TimeMachineRoute
-  ApiAccountDeleteRoute: typeof ApiAccountDeleteRoute
   ApiAttractionsRoute: typeof ApiAttractionsRoute
   ApiGuideRoute: typeof ApiGuideRoute
   ApiImageProxyRoute: typeof ApiImageProxyRoute
@@ -414,6 +413,7 @@ export interface RootRouteChildren {
   ApiTranslateRoute: typeof ApiTranslateRoute
   ApiTtsRoute: typeof ApiTtsRoute
   AttractionIdRoute: typeof AttractionIdRoute
+  ApiAccountDeleteRoute: typeof ApiAccountDeleteRoute
   TmSimIdRoleRoute: typeof TmSimIdRoleRoute
 }
 
@@ -615,18 +615,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAttractionsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/account/delete': {
-      id: '/api/account/delete'
-      path: '/api/account/delete'
-      fullPath: '/api/account/delete'
-      preLoaderRoute: typeof ApiAccountDeleteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/tm-sim/$id/$role': {
       id: '/tm-sim/$id/$role'
       path: '/tm-sim/$id/$role'
       fullPath: '/tm-sim/$id/$role'
       preLoaderRoute: typeof TmSimIdRoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/account/delete': {
+      id: '/api/account/delete'
+      path: '/api/account/delete'
+      fullPath: '/api/account/delete'
+      preLoaderRoute: typeof ApiAccountDeleteRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -672,7 +672,6 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   TermsRoute: TermsRoute,
   TimeMachineRoute: TimeMachineRoute,
-  ApiAccountDeleteRoute: ApiAccountDeleteRoute,
   ApiAttractionsRoute: ApiAttractionsRoute,
   ApiGuideRoute: ApiGuideRoute,
   ApiImageProxyRoute: ApiImageProxyRoute,
@@ -683,6 +682,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTranslateRoute: ApiTranslateRoute,
   ApiTtsRoute: ApiTtsRoute,
   AttractionIdRoute: AttractionIdRoute,
+  ApiAccountDeleteRoute: ApiAccountDeleteRoute,
   TmSimIdRoleRoute: TmSimIdRoleRoute,
 }
 export const routeTree = rootRouteImport
