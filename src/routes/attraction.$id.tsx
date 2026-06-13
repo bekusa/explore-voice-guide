@@ -928,7 +928,7 @@ function ActionRow({
 
   const [downloading, setDownloading] = useState(false);
 
-  const toggleSave = () => {
+  const toggleSave = async () => {
     // Medium haptic on save state change — it's a meaningful action
     // (now in your library / now gone) but not as primary as
     // "Begin journey". Same intensity for save and unsave so the
@@ -947,12 +947,55 @@ function ActionRow({
     // data orphan-able when cloud sync eventually ships. Anonymous
     // sessions pass; only the fully-signed-out path is rejected.
     if (!requireSignIn(user, "save")) return;
+
+    // Beka 2026-06-11 audit fix — saving while offline used to
+    // silently miss the audio download (the IIFE fired /api/tts,
+    // got a network error, and swallowed it), leaving a saved row
+    // with no playable audio. Block the save instead and ask the
+    // user to retry online. The Saved tab still works offline;
+    // we just refuse to register NEW saves without the network.
+    if (!online) {
+      toast.error(t("toast.youreOffline"), {
+        description: t("toast.youreOfflineDesc"),
+      });
+      return;
+    }
+
+    // Resolve voice BEFORE saving so the row carries it. Without
+    // this stamp the Preferences mirror falls back to the language
+    // default voice, which won't match whatever Azure actually
+    // rendered, and offline.html's Filesystem lookup misses.
+    let voicePref: string | null = null;
+    if (user) {
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("preferred_voice")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (
+          data?.preferred_voice &&
+          /-[A-Z][A-Za-z]+Neural$/.test(data.preferred_voice)
+        ) {
+          voicePref = data.preferred_voice;
+        }
+      } catch {
+        /* fall back to language default */
+      }
+    }
+    const voice = resolveAzureVoice(language, voicePref) ?? "";
+
+    // Optimistic save with audioReady:false. The Saved tab paints
+    // immediately; the audio download below resolves audioReady to
+    // true on success or surfaces a retry toast on failure.
     saveItem({
       id,
       name,
       language,
       savedAt: Date.now(),
       attraction: attraction ?? { name },
+      voice: voice || undefined,
+      audioReady: false,
     });
     // Inline the current hero photo as a data URL so the /saved tab
     // can render it offline. Best-effort — fires after the save so a
@@ -964,37 +1007,46 @@ function ActionRow({
     // so the saved tour is fully playable on the plane. Same effect
     // the user used to get by hitting the separate Download button —
     // now bundled into Save so there's one action.
+    //
+    // 2026-06-11 atomicity fix: track success/failure and update the
+    // saved row's `audioReady` flag accordingly. On failure show a
+    // distinct toast so the user knows they need to retry from the
+    // Saved tab once online.
     void (async () => {
       try {
-        let voicePref: string | null = null;
-        if (user) {
-          const { data } = await supabase
-            .from("profiles")
-            .select("preferred_voice")
-            .eq("user_id", user.id)
-            .maybeSingle();
-          if (
-            data?.preferred_voice &&
-            /-[A-Z][A-Za-z]+Neural$/.test(data.preferred_voice)
-          ) {
-            voicePref = data.preferred_voice;
-          }
+        const { updateItem } = await import("@/lib/savedStore");
+        if (!voice) {
+          updateItem(id, { audioReady: false });
+          toast.warning(t("attr.savedNoAudioTitle"), {
+            description: t("attr.savedNoAudioDesc"),
+          });
+          return;
         }
-        const voice = resolveAzureVoice(language, voicePref) ?? "";
-        if (!voice) return;
-        await fetchAndCacheTour({
+        const ok = await fetchAndCacheTour({
           slug: id,
-          name,
           language,
           voice,
-          // `fullScript` is the title-then-about-then-tour text we
-          // just built; downloading the same payload guarantees the
-          // cached audio matches what the user will hear when they
-          // tap Play.
           script: fullScript || script,
         });
+        if (ok) {
+          updateItem(id, { audioReady: true });
+        } else {
+          updateItem(id, { audioReady: false });
+          toast.warning(t("attr.savedNoAudioTitle"), {
+            description: t("attr.savedNoAudioDesc"),
+          });
+        }
       } catch (err) {
         console.warn("[attraction] auto-download on save failed", err);
+        try {
+          const { updateItem } = await import("@/lib/savedStore");
+          updateItem(id, { audioReady: false });
+        } catch {
+          /* nothing to update */
+        }
+        toast.warning(t("attr.savedNoAudioTitle"), {
+          description: t("attr.savedNoAudioDesc"),
+        });
       }
     })();
     toast.success(t("attr.savedForOffline"), {
@@ -2130,6 +2182,13 @@ function HighlightCard({
     if (!ttsText) return null;
     if (!voice) return null; // section hasn't resolved a voice yet
     setGenerating(true);
+    // 20 s timeout for highlight mini-players. The text is short
+    // (~50-100 words = ~5 s of audio) so Azure normally returns
+    // in 1-3 s. Anything past 20 s is stuck — surface a toast
+    // instead of leaving the card spinning forever. Beka 2026-06-11
+    // audit fix.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20_000);
     try {
       const res = await fetch("/api/tts", {
         method: "POST",
@@ -2139,6 +2198,7 @@ function HighlightCard({
         // returns 400 "missing voice" otherwise). Now we send the
         // voice resolved at section level.
         body: JSON.stringify({ script: ttsText, language, voice }),
+        signal: controller.signal,
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const blob = await res.blob();
@@ -2146,11 +2206,24 @@ function HighlightCard({
         throw new Error("Invalid audio response");
       }
       const url = URL.createObjectURL(blob);
-      setAudioUrl(url);
+      // Revoke any stale URL before replacing (defensive — the card
+      // itself only ever calls this once per mount, but a future
+      // refactor that re-triggers playback shouldn't leak Blobs).
+      setAudioUrl((prev) => {
+        if (prev && prev !== url) URL.revokeObjectURL(prev);
+        return url;
+      });
       return url;
-    } catch {
+    } catch (err) {
+      const isAbort = err instanceof DOMException && err.name === "AbortError";
+      if (isAbort) {
+        toast.error(t("toast.couldNotLoadGuide"), {
+          description: t("toast.tryAgainPlease"),
+        });
+      }
       return null;
     } finally {
+      clearTimeout(timeout);
       setGenerating(false);
     }
   };
@@ -2412,6 +2485,18 @@ function HighlightCard({
                   onEnded={() => {
                     setPlaying(false);
                     setPaused(false);
+                  }}
+                  // Beka 2026-06-11 audit: a decode failure (truncated
+                  // mp3, wrong Content-Type) used to leave the mini
+                  // player stuck in "playing" with no toast. Mirror
+                  // the InlineAudioPanel handler so the user gets a
+                  // clear error + the card resets.
+                  onError={() => {
+                    setPlaying(false);
+                    setPaused(false);
+                    toast.error(t("toast.couldNotLoadGuide"), {
+                      description: t("toast.tryAgainPlease"),
+                    });
                   }}
                   style={{ display: "none" }}
                 />

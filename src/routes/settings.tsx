@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
+  AlertTriangle,
   ArrowLeft,
   Check,
   ChevronRight,
@@ -16,6 +17,7 @@ import {
   Sun,
   Trash2,
   User as UserIcon,
+  UserX,
   Volume2,
   Download,
   WifiOff,
@@ -26,7 +28,7 @@ import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, clearAllLocalUserData } from "@/hooks/useAuth";
 import {
   azureVoicesForLanguage,
   defaultVoiceFor,
@@ -167,8 +169,25 @@ function SettingsPage() {
   /* ─── Mutations ─── */
 
   const updateVoice = async (azureName: string) => {
+    // Snapshot the previous voice BEFORE overwriting state so we can
+    // purge orphan audio cached under the old (slug, lang, oldVoice)
+    // tuple. Without this, switching voices grows the offline cache
+    // forever — each save creates a new mp3 under the new voice key
+    // and the old file sits on disk unreachable (Beka 2026-06-11
+    // audit). The script doesn't change with voice so we keep that.
+    const previousVoice = voiceName;
     setVoiceName(azureName);
-    if (!user) return;
+
+    if (!user) {
+      // No profile to update; still wipe orphan audio for guest users
+      // who downloaded with a previous voice id this session.
+      if (previousVoice && previousVoice !== azureName) {
+        void clearOfflineStore().catch(() => {
+          /* best-effort — orphans are wasted space, not bugs */
+        });
+      }
+      return;
+    }
     // UPSERT so a missing profile row (trigger race on a fresh
     // project) doesn't silently fail — UPDATE with no matching row
     // resolves cleanly but writes nothing, leaving Settings to lie
@@ -185,6 +204,19 @@ function SettingsPage() {
       console.error("[settings] voice upsert failed", error);
       toast.error(t("toast.couldNotSave"), { description: detail });
       return;
+    }
+    // Voice change committed — wipe the offline audio cache so
+    // future plays render with the new voice. We do this AFTER the
+    // database write succeeds so a failed upsert doesn't strand the
+    // user with deleted downloads + an unchanged voice setting.
+    // Scripts stay (independent of voice), audio gets re-fetched on
+    // next play. Marking saved items audioReady:false would be
+    // ideal but is deferred — for v1.0 the "tap save again" hint
+    // (set.deleteAccountBlurb pattern) is good enough.
+    if (previousVoice && previousVoice !== azureName) {
+      void clearOfflineStore().catch(() => {
+        /* best-effort — orphans are wasted space, not bugs */
+      });
     }
     toast.success(t("toast.voiceUpdated"));
     setSection("main");
@@ -342,6 +374,86 @@ function SettingsPage() {
   const handleSignOut = async () => {
     await signOut();
     navigate({ to: "/auth" });
+  };
+
+  /* ─── Delete Account (Google Play 2024+ requirement) ─────────────
+   * Two-step flow: tap → confirmation modal → confirm → server call
+   * + local wipe + signOut. The confirmation is non-skippable for
+   * UX safety AND Play Store: a single-tap account deletion would
+   * fail the review (accidental taps).
+   *
+   * Server call: POST /api/account/delete with the user's access
+   * token. The route runs as a Cloudflare Worker, uses Supabase
+   * service-role to delete saved_tours + profiles + auth.users,
+   * and returns { ok: true } on success.
+   *
+   * After server success we:
+   *   1. Wipe every local user-data store (clearAllLocalUserData)
+   *   2. supabase.auth.signOut to clear the in-memory session
+   *   3. Navigate to /auth (delete flow takes the user back to a
+   *      signed-out start; they're free to create a new account
+   *      immediately if they wish).
+   *
+   * On server failure we leave the local state intact so the user
+   * can retry from the same screen.
+   */
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    setDeleting(true);
+    try {
+      // Pull the current access token from the live session — we
+      // do NOT trust an externally-passed token. Without a token
+      // the server refuses to act, which is by design.
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) {
+        toast.error(t("set.deleteFailedTitle"), {
+          description: t("set.deleteFailedSession"),
+        });
+        return;
+      }
+      const res = await fetch("/api/account/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        console.warn("[settings] delete account failed", res.status, errText);
+        toast.error(t("set.deleteFailedTitle"), {
+          description: t("set.deleteFailedDesc"),
+        });
+        return;
+      }
+      // Server is happy — wipe locally and sign out.
+      try {
+        await clearAllLocalUserData();
+      } catch (err) {
+        console.warn("[settings] local wipe after delete failed", err);
+      }
+      try {
+        await supabase.auth.signOut();
+      } catch {
+        /* session may already be invalid since we just deleted the user */
+      }
+      toast.success(t("set.deleteSuccessTitle"), {
+        description: t("set.deleteSuccessDesc"),
+      });
+      setDeleteConfirmOpen(false);
+      navigate({ to: "/auth" });
+    } catch (err) {
+      console.warn("[settings] delete account threw", err);
+      toast.error(t("set.deleteFailedTitle"), {
+        description: t("set.deleteFailedDesc"),
+      });
+    } finally {
+      setDeleting(false);
+    }
   };
 
   if (loading) {
@@ -604,6 +716,94 @@ function SettingsPage() {
               <LogOut className="h-4 w-4" />
               {t("set.signOut")}
             </button>
+          </div>
+        )}
+
+        {/* Delete Account — Google Play 2024+ requires every app
+            with account creation to provide an in-app deletion path.
+            Anonymous users get hidden — there's no auth row to
+            delete and their state is fully cleared by sign-out + new
+            session start. Real users (email / OAuth) see the button
+            with a strong-warning treatment. */}
+        {user && !user.is_anonymous && (
+          <div className="px-6 pt-3">
+            <button
+              onClick={() => setDeleteConfirmOpen(true)}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-destructive/30 bg-destructive/5 px-5 py-3.5 text-[13px] font-semibold text-destructive transition-smooth hover:border-destructive/60 hover:bg-destructive/10"
+            >
+              <UserX className="h-4 w-4" />
+              {t("set.deleteAccount")}
+            </button>
+            <p className="mt-2 px-2 text-center text-[11px] leading-snug text-muted-foreground">
+              {t("set.deleteAccountBlurb")}
+            </p>
+          </div>
+        )}
+
+        {/* Delete Account confirmation modal — separate from the
+            row so the strong warning has room to breathe. */}
+        {deleteConfirmOpen && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-account-title"
+            className="fixed inset-0 z-50 grid place-items-center bg-black/60 px-6 backdrop-blur-sm"
+            onClick={() => {
+              if (!deleting) setDeleteConfirmOpen(false);
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-[360px] rounded-3xl border border-destructive/40 bg-background p-6 shadow-elegant"
+            >
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-destructive/15 text-destructive">
+                <AlertTriangle className="h-6 w-6" />
+              </div>
+              <h2
+                id="delete-account-title"
+                className="mt-4 text-center font-display text-[20px] font-medium text-foreground"
+              >
+                {t("set.deleteConfirmTitle")}
+              </h2>
+              <p className="mt-3 text-center text-[13px] leading-[1.55] text-muted-foreground">
+                {t("set.deleteConfirmBody")}
+              </p>
+              <ul className="mt-3 space-y-1.5 px-1 text-[12px] leading-[1.5] text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 inline-block h-1 w-1 shrink-0 rounded-full bg-destructive" />
+                  <span>{t("set.deleteConfirmBullet1")}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 inline-block h-1 w-1 shrink-0 rounded-full bg-destructive" />
+                  <span>{t("set.deleteConfirmBullet2")}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 inline-block h-1 w-1 shrink-0 rounded-full bg-destructive" />
+                  <span>{t("set.deleteConfirmBullet3")}</span>
+                </li>
+              </ul>
+              <div className="mt-5 flex flex-col gap-2">
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={deleting}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-destructive px-5 py-3.5 text-[13px] font-semibold text-destructive-foreground transition-smooth hover:opacity-90 disabled:opacity-50"
+                >
+                  {deleting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <UserX className="h-4 w-4" />
+                  )}
+                  {deleting ? t("set.deletingAccount") : t("set.deleteConfirmYes")}
+                </button>
+                <button
+                  onClick={() => setDeleteConfirmOpen(false)}
+                  disabled={deleting}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card px-5 py-3.5 text-[13px] font-semibold text-foreground transition-smooth hover:bg-secondary/50 disabled:opacity-50"
+                >
+                  {t("set.deleteConfirmCancel")}
+                </button>
+              </div>
+            </div>
           </div>
         )}
 

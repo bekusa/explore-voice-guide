@@ -24,6 +24,31 @@ export type SavedItem = {
   attraction: Attraction;
   script?: string; // narrated guide text, cached for offline playback
   imageDataUrl?: string; // optional inlined hero image (base64)
+  /**
+   * Azure voice id (e.g. "ka-GE-EkaNeural", "en-US-JennyNeural") at
+   * save time. Stamped onto the saved row so offline.html and the
+   * Saved tab can rebuild the audio Filesystem path correctly even
+   * when the user later changes their voice preference. Falls back
+   * to the language-default voice in mirror code when missing.
+   *
+   * Beka 2026-06-11 — pre-launch audit caught the chain: voice was
+   * never stamped, mirror hard-coded "ka-GE-EkaNeural", so every
+   * non-Georgian save built the wrong audio path and offline.html
+   * showed "Audio not cached" even when the mp3 was on disk.
+   */
+  voice?: string;
+  /**
+   * Whether the audio mp3 has been successfully downloaded to disk
+   * for offline playback. Set to true after fetchAndCacheTour
+   * resolves OK; set to false when the save happens but the
+   * download fails (rate limit, network drop, Azure 5xx).
+   *
+   * The Saved tab uses this to surface a "Retry download" CTA on
+   * rows where audio is missing — without this flag we'd silently
+   * sell offline playback that doesn't work, and the user would
+   * find out mid-flight.
+   */
+  audioReady?: boolean;
 };
 
 const KEY = "tg.saved.v1";
@@ -222,29 +247,44 @@ function canvasInline(url: string, maxWidth: number): Promise<string | null> {
  * caller's optimistic save still stands.
  */
 export async function attachPhotoToSavedItem(id: string, photoUrl: string | null | undefined) {
-  console.log("[lokali] attachPhotoToSavedItem start", { id, photoUrl });
+  // Demoted to console.debug from console.log per audit — production
+  // builds shouldn't spam the console with start/finish lines on
+  // every Save tap. Debug stays visible in dev tools when needed.
+  console.debug("[lokali] attachPhotoToSavedItem start", { id, photoUrl });
   if (!photoUrl) {
-    console.warn("[lokali] attachPhotoToSavedItem: no photoUrl provided");
+    console.debug("[lokali] attachPhotoToSavedItem: no photoUrl provided");
     return;
   }
   const dataUrl = await inlineImageAsDataUrl(photoUrl);
   if (dataUrl) {
-    console.log("[lokali] attachPhotoToSavedItem: inlined OK", {
+    console.debug("[lokali] attachPhotoToSavedItem: inlined OK", {
       id,
-      dataUrlPrefix: dataUrl.slice(0, 40),
       dataUrlLength: dataUrl.length,
     });
     updateItem(id, { imageDataUrl: dataUrl });
   } else {
-    console.warn(
+    console.debug(
       "[lokali] attachPhotoToSavedItem: all 3 strategies returned null",
       { id, photoUrl },
     );
   }
 }
 
+const BACKFILL_FLAG = "tg.saved.backfill.done.v1";
+
 export async function backfillSavedToPreferences(): Promise<void> {
   if (!isBrowser()) return;
+  // Run at most once per session. The Preferences mirror is
+  // idempotent so a second run isn't harmful, but rewriting the
+  // entire saved list on every page mount thrashed the native
+  // Preferences plugin (Beka 2026-06-11 audit) and added unnecessary
+  // disk traffic during normal navigation.
+  try {
+    if (sessionStorage.getItem(BACKFILL_FLAG)) return;
+    sessionStorage.setItem(BACKFILL_FLAG, "1");
+  } catch {
+    /* sessionStorage may be disabled — still run, idempotency holds */
+  }
   try {
     await mirrorSavedToPreferences(getSaved());
   } catch (err) {
@@ -259,18 +299,25 @@ async function mirrorSavedToPreferences(items: SavedItem[]): Promise<void> {
   const { Capacitor } = await import("@capacitor/core");
   if (!Capacitor.isNativePlatform()) return;
   const { Preferences } = await import("@capacitor/preferences");
-  const slim: OfflineSavedItem[] = items.map((it) => ({
-    id: it.id,
-    name: it.name,
-    language: it.language,
-    // Voice is stamped onto the attraction at save time when the user
-    // tapped the "Save" button — it's how `audioId` reconstructs the
-    // Filesystem path. Falls back to the default Georgian voice the
-    // app uses on first launch (see Phase 3 spec).
-    voice:
-      (it.attraction as { voice?: string } | null | undefined)?.voice ?? "ka-GE-EkaNeural",
-    city: it.attraction?.city ?? null,
-  }));
+  // Lazy import of resolveAzureVoice so we get a sensible
+  // language-default fallback for pre-fix saves that have no `voice`
+  // field on the row. New saves carry voice end-to-end (Beka
+  // 2026-06-11 audit fix) so this fallback only runs for the
+  // hand-me-down rows from before the migration.
+  const { resolveAzureVoice } = await import("@/lib/azureVoices");
+  const slim: OfflineSavedItem[] = items.map((it) => {
+    const stampedVoice =
+      it.voice ??
+      (it.attraction as { voice?: string } | null | undefined)?.voice ??
+      "";
+    return {
+      id: it.id,
+      name: it.name,
+      language: it.language,
+      voice: stampedVoice || resolveAzureVoice(it.language, null) || "ka-GE-EkaNeural",
+      city: it.attraction?.city ?? null,
+    };
+  });
   await Preferences.set({
     key: "lokali.saved.v1",
     value: JSON.stringify(slim),

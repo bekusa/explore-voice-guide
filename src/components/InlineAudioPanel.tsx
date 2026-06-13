@@ -131,16 +131,35 @@ export function InlineAudioPanel({
         const slug = attractionSlug(name);
         const cachedUrl = await getAudioBlobUrl(audioId(slug, language, voice));
         if (cachedUrl) {
-          setAudioUrl(cachedUrl);
+          // Revoke any previous URL before replacing (Beka 2026-06-11
+          // blob leak fix) — every re-mount used to leak one Blob.
+          setAudioUrl((prev) => {
+            if (prev && prev !== cachedUrl) URL.revokeObjectURL(prev);
+            return cachedUrl;
+          });
           return cachedUrl;
         }
       }
 
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ script, language, voice }),
-      });
+      // 30 s AbortController timeout (Beka 2026-06-11 audit). Azure
+      // Speech occasionally hangs the connection without returning —
+      // without a hard timeout the panel sits in "generating" state
+      // forever, blocking the play button. 30 s is generous: the
+      // p99 for a 1500-word script is under 8 s, so anything past
+      // 30 s is genuinely stuck.
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30_000);
+      let res: Response;
+      try {
+        res = await fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ script, language, voice }),
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeout);
+      }
       if (!res.ok) {
         const errText = await res.text().catch(() => "");
         // Detect "voice not available for this language" upstream
@@ -163,7 +182,14 @@ export function InlineAudioPanel({
         throw new Error("Invalid audio response");
       }
       const url = URL.createObjectURL(blob);
-      setAudioUrl(url);
+      // Revoke any stale URL before replacing it. Each ensureAudio
+      // call used to leak a Blob URL when invoked after a previous
+      // failed attempt; the cleanup-on-unmount effect only fires
+      // when the component itself unmounts, not on in-place retry.
+      setAudioUrl((prev) => {
+        if (prev && prev !== url) URL.revokeObjectURL(prev);
+        return url;
+      });
 
       // Persist for next-time offline playback. Fire-and-forget so
       // playback isn't blocked on disk write; if it fails (quota,
@@ -184,7 +210,15 @@ export function InlineAudioPanel({
       return url;
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
-      if (message === "VOICE_UNAVAILABLE") {
+      const isAbort = err instanceof DOMException && err.name === "AbortError";
+      if (isAbort) {
+        // Timed out — Azure didn't return inside 30 s. Surface a
+        // distinct message so the user knows to retry rather than
+        // staring at the generic "couldn't load" toast indefinitely.
+        toast.error(t("toast.couldNotLoadGuide"), {
+          description: t("toast.tryAgainPlease"),
+        });
+      } else if (message === "VOICE_UNAVAILABLE") {
         toast.error(t("toast.voiceUnavailableTitle"), {
           description: t("toast.voiceUnavailableHint"),
         });

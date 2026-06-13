@@ -50,12 +50,26 @@ export function useCapacitorBridge(router: AnyRouter) {
       const backHandle = await App.addListener("backButton", () => {
         // Walk the router's history. If the user has somewhere to go
         // back to (anything other than the entry-point /), let them.
-        // history.canGoBack() is the most reliable signal across
-        // TanStack Router versions; window.history.length is a
-        // browser-y proxy that can mis-fire on a fresh launch.
+        //
+        // Beka 2026-06-11 audit refinement — three guards instead of
+        // one. window.history.length is a flaky signal: a cold
+        // OAuth deep-link leaves length=2 (the empty entry +
+        // /auth/callback) but the user clearly wants to exit, not
+        // "go back" into the now-defunct callback page. We add:
+        //   1. Bail-to-exit when we're on the home route, regardless
+        //      of history length. "/" is the de-facto launcher route.
+        //   2. Bail-to-exit when the current path matches the
+        //      OAuth callback (the user just came from auth and the
+        //      page redirected them somewhere; back shouldn't trap
+        //      them in the redirected-from page).
+        //   3. Otherwise use history.length > 1 as before.
+        const path =
+          typeof window !== "undefined" ? window.location.pathname : "/";
+        const isHome = path === "/" || path === "";
+        const isCallback = path.includes("/auth/callback");
         const canGoBack =
           typeof window !== "undefined" && window.history.length > 1;
-        if (canGoBack) {
+        if (!isHome && !isCallback && canGoBack) {
           router.history.back();
           return;
         }

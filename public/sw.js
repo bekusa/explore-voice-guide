@@ -30,8 +30,8 @@
  *     HTML is on disk for the next offline launch.
  */
 
-const CACHE_VERSION = "lokali-shell-v2";
-const RUNTIME_CACHE = "lokali-runtime-v2";
+const CACHE_VERSION = "lokali-shell-v3";
+const RUNTIME_CACHE = "lokali-runtime-v3";
 
 // Minimum set of routes we want to be reachable offline even if the
 // user has never visited them. Anything else gets cached lazily.
@@ -39,6 +39,7 @@ const PRECACHE_URLS = [
   "/",
   "/saved",
   "/settings",
+  "/offline.html",
   "/manifest.webmanifest",
   "/icon-192.png",
   "/icon-512.png",
@@ -87,19 +88,38 @@ self.addEventListener("fetch", (event) => {
   if (url.pathname.startsWith("/api/")) return;
 
   // 1) Navigation requests → NetworkFirst with HTML fallback.
+  //
+  // Beka 2026-06-11 audit fixes:
+  //   - GUARD cache.put behind response.ok so a Cloudflare 5xx
+  //     error page doesn't get cached and served forever on
+  //     subsequent offline boots until CACHE_VERSION bumps.
+  //   - TERMINAL FALLBACK to /offline.html when neither the
+  //     specific URL nor the home shell are cached. Previously
+  //     a true first-offline launch returned `undefined` from
+  //     respondWith and the WebView surfaced its own ugly
+  //     net::ERR page instead of routing to Lokali's offline
+  //     shell.
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const clone = response.clone();
-          caches.open(CACHE_VERSION).then((cache) => cache.put(request, clone));
+          if (response && response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_VERSION).then((cache) => cache.put(request, clone));
+          }
           return response;
         })
         .catch(() =>
           // Network down — return the requested page from cache, or
           // fall back to the home shell which contains the same JS
-          // bundle and can client-side-route to /saved itself.
-          caches.match(request).then((cached) => cached || caches.match("/")),
+          // bundle and can client-side-route to /saved itself, or
+          // finally to /offline.html so the user always lands on
+          // a meaningful page.
+          caches.match(request).then(
+            (cached) =>
+              cached ||
+              caches.match("/").then((home) => home || caches.match("/offline.html")),
+          ),
         ),
     );
     return;
@@ -115,10 +135,15 @@ self.addEventListener("fetch", (event) => {
         if (cached) return cached;
         return fetch(request)
           .then((response) => {
-            const clone = response.clone();
-            caches
-              .open(RUNTIME_CACHE)
-              .then((cache) => cache.put(request, clone));
+            // Guard against caching 4xx/5xx asset responses — Beka
+            // 2026-06-11 audit. A 404 on a renamed Vite chunk would
+            // otherwise lock-in the failure for everyone offline.
+            if (response && response.ok) {
+              const clone = response.clone();
+              caches
+                .open(RUNTIME_CACHE)
+                .then((cache) => cache.put(request, clone));
+            }
             return response;
           })
           .catch(() => cached); // graceful — let the browser show its own error
@@ -132,10 +157,12 @@ self.addEventListener("fetch", (event) => {
     caches.match(request).then((cached) => {
       const networkFetch = fetch(request)
         .then((response) => {
-          const clone = response.clone();
-          caches
-            .open(RUNTIME_CACHE)
-            .then((cache) => cache.put(request, clone));
+          if (response && response.ok) {
+            const clone = response.clone();
+            caches
+              .open(RUNTIME_CACHE)
+              .then((cache) => cache.put(request, clone));
+          }
           return response;
         })
         .catch(() => cached);
