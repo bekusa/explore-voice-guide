@@ -119,7 +119,26 @@
         border: 1px solid var(--card-border);
         background: var(--card);
         border-radius: 18px;
-        padding: 14px 14px 12px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .hero {
+        width: 100%;
+        aspect-ratio: 16/9;
+        background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+        background-size: cover;
+        background-position: center;
+        position: relative;
+      }
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(15,15,15,0.6) 0%, rgba(15,15,15,0) 60%);
+      }
+      .card-body {
+        padding: 14px 16px 14px;
         display: flex;
         flex-direction: column;
         gap: 10px;
@@ -131,20 +150,23 @@
         min-width: 0;
       }
       .title {
-        font-size: 15px;
-        font-weight: 600;
-        line-height: 1.25;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: 17px;
+        font-weight: 500;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
       }
       .meta {
         font-size: 11px;
         color: var(--muted);
-        margin-top: 2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        margin-top: 3px;
+        letter-spacing: 0.04em;
+      }
+      .description {
+        font-size: 12.5px;
+        line-height: 1.5;
+        color: rgba(244, 241, 234, 0.78);
+        margin: 0;
       }
       .text-col {
         min-width: 0;
@@ -290,7 +312,53 @@
       gives us the same Capacitor object the rest of the app uses,
       including `Capacitor.Plugins.Preferences` and `Capacitor.Plugins.Filesystem`.
     -->
-    <script src="/native-bridge.js"></script>
+    <!--
+      Capacitor 7 quirk: the bridge is NOT auto-injected on errorPath
+      pages. We load native-bridge.js manually here. Try multiple
+      paths because the WebView base URL differs between platforms /
+      Capacitor versions (root vs. relative).
+    -->
+    <script>
+      // Bridge loader. Beka 2026-06-13 — added an explicit success
+      // signal (`onload`) so we stop trying alternative paths once
+      // the bridge has actually attached, and a "done" flag so a
+      // late-firing onerror after success can't trigger a redundant
+      // second load. Tries paths sequentially because parallel loads
+      // would race and potentially double-attach.
+      (function () {
+        var paths = [
+          "/native-bridge.js",
+          "native-bridge.js",
+          "./native-bridge.js",
+          "../native-bridge.js",
+        ];
+        var i = 0;
+        var done = false;
+        function settle(success) {
+          if (done) return;
+          done = success;
+          if (!success) tryNext();
+        }
+        function tryNext() {
+          if (done || i >= paths.length) return;
+          var s = document.createElement("script");
+          s.src = paths[i++];
+          s.async = false;
+          s.onload = function () {
+            // Treat the load as successful if Capacitor actually
+            // attached. Some Android WebViews 200-OK an empty body
+            // when an asset is missing, which would otherwise loop
+            // through every path. Check the global before declaring
+            // victory.
+            if (window.Capacitor) settle(true);
+            else settle(false);
+          };
+          s.onerror = function () { settle(false); };
+          document.head.appendChild(s);
+        }
+        tryNext();
+      })();
+    </script>
     <script>
       /**
        * Bootstraps the offline saved-tour list. Steps:
@@ -307,6 +375,18 @@
        */
 
       const list = document.getElementById("savedList");
+
+      // Track every blob URL we hand to <audio src> so the page can
+      // revoke them on unload. Without this, base64-decoded mp3 bytes
+      // (potentially several MB each) stay pinned in memory for the
+      // life of the WebView. Cheap to track, ~free to revoke.
+      const liveBlobUrls = [];
+      window.addEventListener("pagehide", function () {
+        for (var i = 0; i < liveBlobUrls.length; i++) {
+          try { URL.revokeObjectURL(liveBlobUrls[i]); } catch (e) {}
+        }
+        liveBlobUrls.length = 0;
+      });
 
       function fmt(seconds) {
         if (!isFinite(seconds) || seconds < 0) return "0:00";
@@ -354,6 +434,18 @@
         for (const item of items) {
           const li = document.createElement("li");
 
+          // Hero photo — inlined data URL stored alongside the
+          // saved tour. Falls through cleanly when missing.
+          if (item.imageDataUrl) {
+            const hero = document.createElement("div");
+            hero.className = "hero";
+            hero.style.backgroundImage = "url('" + item.imageDataUrl + "')";
+            li.appendChild(hero);
+          }
+
+          const body = document.createElement("div");
+          body.className = "card-body";
+
           const topRow = document.createElement("div");
           topRow.className = "row-top";
 
@@ -378,13 +470,24 @@
           }
           topRow.appendChild(textCol);
 
-          li.appendChild(topRow);
+          body.appendChild(topRow);
 
-          // Hidden <audio> element + custom progress row.
+          // Description (outside_desc / insider_desc / description),
+          // already in the user's saved language.
+          if (item.description) {
+            const desc = document.createElement("p");
+            desc.className = "description";
+            desc.textContent = item.description;
+            body.appendChild(desc);
+          }
+
+          // Hidden <audio> element + custom progress row. All audio
+          // chrome lives inside the card body so spacing matches the
+          // text rows above. Audio element itself stays display:none.
           const audio = document.createElement("audio");
           audio.preload = "none";
           audio.style.display = "none";
-          li.appendChild(audio);
+          body.appendChild(audio);
 
           const progressRow = document.createElement("div");
           progressRow.className = "progress-row";
@@ -405,13 +508,15 @@
           total.textContent = "0:00";
           progressRow.appendChild(total);
 
-          li.appendChild(progressRow);
+          body.appendChild(progressRow);
 
           const errorRow = document.createElement("div");
           errorRow.className = "row-error";
           errorRow.style.display = "none";
           errorRow.textContent = "Audio not cached on this device.";
-          li.appendChild(errorRow);
+          body.appendChild(errorRow);
+
+          li.appendChild(body);
 
           let loaded = false;
 
@@ -510,7 +615,9 @@
         const bytes = new Uint8Array(len);
         for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
         const blob = new Blob([bytes], { type: "audio/mpeg" });
-        return URL.createObjectURL(blob);
+        const url = URL.createObjectURL(blob);
+        liveBlobUrls.push(url);
+        return url;
       }
 
       // Poll for Capacitor bridge — on some Android WebViews the
@@ -540,14 +647,13 @@
 
       async function loadSavedList() {
         setMessage("Loading your saved tours…");
-        const hasBridge = await waitForCapacitor(3000);
+        // 6 s timeout — longer than the 3 s default to give multi-path
+        // script loading + Capacitor plugin registration time on slower
+        // devices / cold starts.
+        const hasBridge = await waitForCapacitor(6000);
         if (!hasBridge) {
-          // Beka 2026-06-13 — friendly single line instead of the
-          // debug dump. The bridge failing is a real edge case
-          // (usually a fresh install before plugin registration);
-          // we tell the user to reopen rather than show JS errors.
           setMessage(
-            "Couldn't open the offline library. Reopen the app to retry.",
+            "Saved tours aren't ready yet. Tap “Try reconnecting” below, or reopen the app once you're back online.",
             "error",
           );
           return;

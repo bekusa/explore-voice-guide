@@ -100,10 +100,12 @@ function writeSaved(items: SavedItem[]) {
 }
 
 /** Slim shape we persist to Capacitor Preferences for offline.html.
- * We DON'T persist `attraction.image_url` blobs / Wikipedia URLs —
- * those re-fetch fine when online, and offline.html doesn't render
- * card thumbnails. The voice + audioId fields are what offline.html
- * needs to locate the cached mp3 on disk via @capacitor/filesystem.
+ *
+ * Beka 2026-06-13 — added imageDataUrl + description so the offline
+ * card matches the React /saved row: hero photo, full title in the
+ * user's language, and a short description. Photo is the same
+ * data URL `attachPhotoToSavedItem` inlined into SavedItem; mirror
+ * just copies it across.
  */
 type OfflineSavedItem = {
   id: string;
@@ -111,6 +113,8 @@ type OfflineSavedItem = {
   language: string;
   voice: string;
   city: string | null;
+  imageDataUrl: string | null;
+  description: string | null;
 };
 
 /**
@@ -303,18 +307,51 @@ async function mirrorSavedToPreferences(items: SavedItem[]): Promise<void> {
   // language-default fallback for pre-fix saves that have no `voice`
   // field on the row.
   const { resolveAzureVoice } = await import("@/lib/azureVoices");
+  // Beka 2026-06-13 — defensive size cap. Android SharedPreferences
+  // (the backend behind @capacitor/preferences) chokes on very large
+  // values; passing a 50-item × 1.2 MB list throws and the mirror
+  // silently fails, leaving the offline page empty. Cap each card's
+  // imageDataUrl individually and short-circuit the whole payload
+  // once we approach a 700 KB budget. Tours past the budget still
+  // show in the offline list — they just render without a hero
+  // photo (gradient placeholder).
+  const PER_ITEM_PHOTO_CAP = 250_000;   // ~250 KB raw — enough for an 800-px JPEG
+  const TOTAL_PHOTO_BUDGET = 700_000;   // ~700 KB across all cards
+  let photoBudgetUsed = 0;
   const slim: OfflineSavedItem[] = items.map((it) => {
     const stampedVoice =
       it.voice ??
       (it.attraction as { voice?: string } | null | undefined)?.voice ??
       "";
+    const a = it.attraction as {
+      city?: string | null;
+      outside_desc?: string | null;
+      insider_desc?: string | null;
+      description?: string | null;
+    } | null | undefined;
+    const description =
+      a?.outside_desc?.trim() ||
+      a?.insider_desc?.trim() ||
+      a?.description?.trim() ||
+      null;
+    // Photo budget: drop the data URL when this item's photo or the
+    // running total would breach the cap.
+    let photo: string | null = null;
+    const raw = it.imageDataUrl ?? null;
+    if (raw && raw.length <= PER_ITEM_PHOTO_CAP) {
+      if (photoBudgetUsed + raw.length <= TOTAL_PHOTO_BUDGET) {
+        photo = raw;
+        photoBudgetUsed += raw.length;
+      }
+    }
     return {
       id: it.id,
       name: it.name,
       language: it.language,
       voice: stampedVoice || resolveAzureVoice(it.language, null) || "ka-GE-EkaNeural",
-      city:
-        (it.attraction as { city?: string | null } | null | undefined)?.city ?? null,
+      city: a?.city ?? null,
+      imageDataUrl: photo,
+      description,
     };
   });
   await Preferences.set({
