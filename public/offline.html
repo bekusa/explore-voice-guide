@@ -314,51 +314,15 @@
     -->
     <!--
       Capacitor 7 quirk: the bridge is NOT auto-injected on errorPath
-      pages. We load native-bridge.js manually here. Try multiple
-      paths because the WebView base URL differs between platforms /
-      Capacitor versions (root vs. relative).
+      pages. Load native-bridge.js manually here. Simple static
+      <script src> tag — this is what Capacitor's own docs use and
+      what was working before. Beka 2026-06-13: the JS-built multi-
+      path loader I added previously broke this — the onload check
+      for `window.Capacitor` ran synchronously before the bridge
+      script had a chance to set the global, so we declared failure
+      and gave up. Reverted to the simple tag.
     -->
-    <script>
-      // Bridge loader. Beka 2026-06-13 — added an explicit success
-      // signal (`onload`) so we stop trying alternative paths once
-      // the bridge has actually attached, and a "done" flag so a
-      // late-firing onerror after success can't trigger a redundant
-      // second load. Tries paths sequentially because parallel loads
-      // would race and potentially double-attach.
-      (function () {
-        var paths = [
-          "/native-bridge.js",
-          "native-bridge.js",
-          "./native-bridge.js",
-          "../native-bridge.js",
-        ];
-        var i = 0;
-        var done = false;
-        function settle(success) {
-          if (done) return;
-          done = success;
-          if (!success) tryNext();
-        }
-        function tryNext() {
-          if (done || i >= paths.length) return;
-          var s = document.createElement("script");
-          s.src = paths[i++];
-          s.async = false;
-          s.onload = function () {
-            // Treat the load as successful if Capacitor actually
-            // attached. Some Android WebViews 200-OK an empty body
-            // when an asset is missing, which would otherwise loop
-            // through every path. Check the global before declaring
-            // victory.
-            if (window.Capacitor) settle(true);
-            else settle(false);
-          };
-          s.onerror = function () { settle(false); };
-          document.head.appendChild(s);
-        }
-        tryNext();
-      })();
-    </script>
+    <script src="/native-bridge.js"></script>
     <script>
       /**
        * Bootstraps the offline saved-tour list. Steps:
