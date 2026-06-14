@@ -9,20 +9,21 @@
         Capacitor server.errorPath fallback. The wrapped WebView lands
         here when https://lokali.ge fails to load.
 
-        WHY THIS IS NOT JUST A STATIC PAGE: it loads in the bundled
-        APK assets under capacitor://localhost (not lokali.ge), so any
-        localStorage / IndexedDB / Service Worker that lives on the
-        lokali.ge origin is invisible here. We CAN still talk to
-        @capacitor/preferences and @capacitor/filesystem — those
-        plugins talk to native storage that's shared across WebView
-        origins. So this page reads `lokali.saved.v1` from Preferences
-        (mirrored by `savedStore.writeSaved` whenever the user saves a
-        tour) and the cached mp3 from Filesystem (written by
-        `offlineStore.saveOfflineAudio`), and renders a working
-        offline player.
+        Self-contained styling — no external assets, no Tailwind,
+        no React. Reads saved tours from Capacitor Preferences and
+        cached mp3s from Filesystem, presents them in a polished
+        mini-player UI that matches the main app's gold-on-charcoal
+        aesthetic.
       */
       :root {
         color-scheme: dark;
+        --bg: #0f0f0f;
+        --fg: #f4f1ea;
+        --muted: rgba(244, 241, 234, 0.55);
+        --gold: #f4b400;
+        --gold-deep: #c98a00;
+        --card: rgba(244, 241, 234, 0.04);
+        --card-border: rgba(244, 241, 234, 0.1);
       }
       * {
         box-sizing: border-box;
@@ -32,8 +33,8 @@
         margin: 0;
         padding: 0;
         height: 100%;
-        background: #0f0f0f;
-        color: #f4f1ea;
+        background: var(--bg);
+        color: var(--fg);
         font-family:
           -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
           "Helvetica Neue", Arial, sans-serif;
@@ -43,53 +44,50 @@
         display: flex;
         flex-direction: column;
         align-items: stretch;
-        padding: 32px 20px;
-        padding-top: max(48px, env(safe-area-inset-top, 48px));
-        padding-bottom: max(48px, env(safe-area-inset-bottom, 48px));
-        gap: 20px;
+        padding: 28px 20px;
+        padding-top: max(40px, env(safe-area-inset-top, 40px));
+        padding-bottom: max(40px, env(safe-area-inset-bottom, 40px));
+        gap: 18px;
         min-height: 100%;
       }
       header {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 14px;
+        gap: 12px;
         text-align: center;
+        padding: 0 4px;
       }
       .badge {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 6px 14px;
+        padding: 5px 13px;
         border-radius: 999px;
         border: 1px solid rgba(244, 180, 0, 0.35);
         background: rgba(244, 180, 0, 0.08);
-        color: #f4b400;
-        font-size: 11px;
+        color: var(--gold);
+        font-size: 10.5px;
         font-weight: 700;
-        letter-spacing: 0.22em;
+        letter-spacing: 0.2em;
         text-transform: uppercase;
       }
       .dot {
-        width: 8px;
-        height: 8px;
+        width: 7px;
+        height: 7px;
         border-radius: 50%;
-        background: #f4b400;
-        box-shadow: 0 0 12px #f4b400;
+        background: var(--gold);
+        box-shadow: 0 0 10px var(--gold);
         animation: pulse 1.8s ease-in-out infinite;
       }
       @keyframes pulse {
-        0%, 100% {
-          opacity: 0.55;
-        }
-        50% {
-          opacity: 1;
-        }
+        0%, 100% { opacity: 0.55; }
+        50% { opacity: 1; }
       }
       h1 {
         font-family: "Playfair Display", Georgia, serif;
         font-weight: 500;
-        font-size: 28px;
+        font-size: 26px;
         line-height: 1.1;
         letter-spacing: -0.02em;
         margin: 0;
@@ -97,35 +95,17 @@
       .lede {
         margin: 0;
         max-width: 32ch;
-        color: rgba(244, 241, 234, 0.7);
-        font-size: 14px;
-        line-height: 1.5;
-        text-align: center;
-      }
-      .retry {
-        appearance: none;
-        border: 0;
-        margin-top: 4px;
-        padding: 12px 28px;
+        color: var(--muted);
         font-size: 13px;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        color: #0f0f0f;
-        background: linear-gradient(135deg, #f4b400 0%, #c98a00 100%);
-        border-radius: 999px;
-        cursor: pointer;
-        box-shadow: 0 10px 28px rgba(244, 180, 0, 0.18);
-      }
-      .retry:active {
-        transform: scale(0.97);
+        line-height: 1.5;
       }
       h2 {
-        margin: 12px 0 0;
-        font-size: 11px;
+        margin: 4px 0 0;
+        font-size: 10.5px;
         font-weight: 700;
         letter-spacing: 0.22em;
         text-transform: uppercase;
-        color: rgba(244, 241, 234, 0.55);
+        color: var(--muted);
       }
       ul.saved {
         list-style: none;
@@ -136,58 +116,132 @@
         gap: 10px;
       }
       ul.saved > li {
-        border: 1px solid rgba(244, 241, 234, 0.1);
-        background: rgba(244, 241, 234, 0.04);
-        border-radius: 16px;
-        padding: 14px 16px;
+        border: 1px solid var(--card-border);
+        background: var(--card);
+        border-radius: 18px;
+        padding: 14px 14px 12px;
         display: flex;
         flex-direction: column;
         gap: 10px;
+      }
+      .row-top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
       }
       .title {
         font-size: 15px;
         font-weight: 600;
         line-height: 1.25;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .meta {
         font-size: 11px;
-        color: rgba(244, 241, 234, 0.55);
+        color: var(--muted);
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
-      .play {
+      .text-col {
+        min-width: 0;
+        flex: 1;
+      }
+      .play-btn {
         appearance: none;
         border: 0;
-        padding: 10px 18px;
-        font-size: 13px;
-        font-weight: 700;
-        color: #0f0f0f;
-        background: #f4b400;
+        width: 44px;
+        height: 44px;
+        flex: 0 0 44px;
         border-radius: 999px;
+        color: #0f0f0f;
+        background: linear-gradient(135deg, #f4b400 0%, #c98a00 100%);
+        box-shadow: 0 6px 20px rgba(244, 180, 0, 0.22);
         cursor: pointer;
-        align-self: flex-start;
+        display: grid;
+        place-items: center;
+        transition: transform 120ms ease;
       }
-      .play.loading {
-        opacity: 0.6;
+      .play-btn:active {
+        transform: scale(0.94);
+      }
+      .play-btn[disabled] {
+        opacity: 0.55;
         cursor: wait;
       }
-      .play.error {
-        background: rgba(255, 80, 80, 0.2);
-        color: #ff9090;
-        border: 1px solid rgba(255, 80, 80, 0.4);
+      .play-btn svg {
+        width: 16px;
+        height: 16px;
+        fill: #0f0f0f;
       }
-      audio {
-        width: 100%;
-        margin-top: 6px;
+      .progress-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 10.5px;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      .progress-bar {
+        flex: 1;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(244, 241, 234, 0.1);
+        overflow: hidden;
+        position: relative;
+      }
+      .progress-fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 0%;
+        background: linear-gradient(90deg, #f4b400, #c98a00);
+        transition: width 150ms linear;
+      }
+      .row-error {
+        font-size: 11.5px;
+        color: #ff9090;
+        background: rgba(255, 80, 80, 0.08);
+        border: 1px solid rgba(255, 80, 80, 0.25);
+        border-radius: 10px;
+        padding: 8px 12px;
       }
       .empty {
-        margin: 24px 0;
-        padding: 20px;
+        margin: 8px 0 0;
+        padding: 22px 16px;
         text-align: center;
-        color: rgba(244, 241, 234, 0.5);
-        font-size: 14px;
-        border: 1px dashed rgba(244, 241, 234, 0.15);
+        color: var(--muted);
+        font-size: 13.5px;
+        line-height: 1.55;
+        border: 1px dashed rgba(244, 241, 234, 0.13);
         border-radius: 16px;
+        background: rgba(244, 241, 234, 0.02);
       }
-      .icon {
+      .footer {
+        margin-top: auto;
+        padding-top: 18px;
+        text-align: center;
+      }
+      .reconnect {
+        appearance: none;
+        background: transparent;
+        border: 0;
+        padding: 8px 16px;
+        color: var(--muted);
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        cursor: pointer;
+        border-radius: 999px;
+        transition: color 120ms ease, background 120ms ease;
+      }
+      .reconnect:hover {
+        color: var(--fg);
+        background: rgba(244, 241, 234, 0.04);
+      }
+      .icon-wifi {
         opacity: 0.85;
       }
     </style>
@@ -196,9 +250,9 @@
     <header>
       <span class="badge"><span class="dot"></span>Offline</span>
       <svg
-        class="icon"
-        width="44"
-        height="44"
+        class="icon-wifi"
+        width="38"
+        height="38"
         viewBox="0 0 24 24"
         fill="none"
         stroke="#f4b400"
@@ -217,14 +271,16 @@
       </svg>
       <h1>You're offline</h1>
       <p class="lede">
-        Lokali needs a connection to fetch fresh stories. Your saved tours are
-        below — tap Play to listen from the local cache.
+        Your saved tours are below — tap Play to listen from the local cache.
       </p>
-      <button class="retry" type="button" id="retryBtn">Retry connection</button>
     </header>
 
     <h2 id="savedHeading">Saved tours</h2>
     <ul id="savedList" class="saved"></ul>
+
+    <div class="footer">
+      <button class="reconnect" type="button" id="retryBtn">↻ Try reconnecting</button>
+    </div>
 
     <!--
       Capacitor injects `window.Capacitor` via WebViewClient JS evaluation
@@ -238,109 +294,179 @@
     <script>
       /**
        * Bootstraps the offline saved-tour list. Steps:
-       *   1. Read `lokali.saved.v1` from Capacitor Preferences. The
-       *      app's React savedStore mirrors writes here on every
-       *      save/remove on native — see `mirrorSavedToPreferences`.
-       *   2. For each entry, derive the audio filename used by the
-       *      offlineStore (`audioId = ${slug}-${language}-${voice}`),
-       *      and check Capacitor Filesystem for the mp3.
-       *   3. Wire a Play button that reads the base64 mp3 and feeds
-       *      it into an HTML5 <audio> element via blob URL.
+       *   1. Read `lokali.saved.v1` from Capacitor Preferences.
+       *   2. Render styled cards with custom Play/Pause + progress bar
+       *      (NOT the raw HTML5 <audio controls>).
+       *   3. On Play tap, load the cached mp3 from Filesystem as a
+       *      blob URL and feed it into a hidden <audio> element.
        *
-       * Everything here uses globals exposed by the Capacitor bridge
-       * (`window.Capacitor.Plugins.Preferences` etc.). The bridge is
-       * auto-injected into every page loaded inside the Capacitor
-       * WebView, including this local-asset offline.html.
-       *
-       * In a plain browser (lokali.ge tested in DevTools' offline
-       * mode), `window.Capacitor` is undefined → we show the lede
-       * + Retry button only. That matches the previous behaviour.
+       * Beka 2026-06-13 — removed the loud "Retry connection" gold
+       * button (now a quiet text link at the bottom) and the
+       * debug "Native bridge unavailable" dump (replaced with a
+       * single friendly line).
        */
 
-      const heading = document.getElementById("savedHeading");
       const list = document.getElementById("savedList");
 
-      function setEmpty(message) {
+      function fmt(seconds) {
+        if (!isFinite(seconds) || seconds < 0) return "0:00";
+        const m = Math.floor(seconds / 60);
+        const s = Math.floor(seconds % 60);
+        return m + ":" + (s < 10 ? "0" + s : s);
+      }
+
+      function setMessage(message, kind) {
         list.innerHTML = "";
         const li = document.createElement("li");
-        li.className = "empty";
-        li.style.border = "1px dashed rgba(244, 241, 234, 0.15)";
+        li.className = kind === "error" ? "empty" : "empty";
+        if (kind === "error") {
+          li.style.borderColor = "rgba(255, 80, 80, 0.25)";
+          li.style.color = "rgba(255, 120, 120, 0.85)";
+        }
         li.textContent = message;
         list.appendChild(li);
       }
 
-      // Don't hide the saved section any more — keep it visible with a
-      // diagnostic message so we can see what state we're in without
-      // DevTools. Previous version called `hideSavedUI()` which made
-      // the page look identical to the old static offline.html and
-      // hid the failure from the user.
-      function showStatus(message) {
-        setEmpty(message);
+      function playIconSvg() {
+        return (
+          '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+          '<path d="M8 5v14l11-7L8 5z"/>' +
+          "</svg>"
+        );
+      }
+      function pauseIconSvg() {
+        return (
+          '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+          '<rect x="6" y="5" width="4" height="14" rx="1"/>' +
+          '<rect x="14" y="5" width="4" height="14" rx="1"/>' +
+          "</svg>"
+        );
       }
 
       function renderItems(items) {
         list.innerHTML = "";
         if (!items.length) {
-          setEmpty("Nothing saved yet. Open a tour while online and tap Save.");
+          setMessage(
+            "Nothing saved yet. Open a tour while online and tap Save.",
+          );
           return;
         }
         for (const item of items) {
           const li = document.createElement("li");
 
+          const topRow = document.createElement("div");
+          topRow.className = "row-top";
+
+          const playBtn = document.createElement("button");
+          playBtn.className = "play-btn";
+          playBtn.type = "button";
+          playBtn.setAttribute("aria-label", "Play");
+          playBtn.innerHTML = playIconSvg();
+          topRow.appendChild(playBtn);
+
+          const textCol = document.createElement("div");
+          textCol.className = "text-col";
           const title = document.createElement("div");
           title.className = "title";
           title.textContent = item.name;
-          li.appendChild(title);
+          textCol.appendChild(title);
+          if (item.city) {
+            const meta = document.createElement("div");
+            meta.className = "meta";
+            meta.textContent = item.city;
+            textCol.appendChild(meta);
+          }
+          topRow.appendChild(textCol);
 
-          const meta = document.createElement("div");
-          meta.className = "meta";
-          const cityPart = item.city ? item.city + " · " : "";
-          meta.textContent = cityPart + (item.language || "");
-          li.appendChild(meta);
+          li.appendChild(topRow);
 
-          const playBtn = document.createElement("button");
-          playBtn.className = "play";
-          playBtn.type = "button";
-          playBtn.textContent = "Play";
-          li.appendChild(playBtn);
-
+          // Hidden <audio> element + custom progress row.
           const audio = document.createElement("audio");
-          audio.controls = true;
           audio.preload = "none";
           audio.style.display = "none";
           li.appendChild(audio);
 
-          playBtn.addEventListener(
-            "click",
-            async () => {
-              if (audio.src) {
-                audio.style.display = "";
-                void audio.play();
-                return;
-              }
-              playBtn.classList.add("loading");
-              playBtn.textContent = "Loading…";
+          const progressRow = document.createElement("div");
+          progressRow.className = "progress-row";
+          progressRow.style.display = "none";
+
+          const elapsed = document.createElement("span");
+          elapsed.textContent = "0:00";
+          progressRow.appendChild(elapsed);
+
+          const progressBar = document.createElement("div");
+          progressBar.className = "progress-bar";
+          const progressFill = document.createElement("div");
+          progressFill.className = "progress-fill";
+          progressBar.appendChild(progressFill);
+          progressRow.appendChild(progressBar);
+
+          const total = document.createElement("span");
+          total.textContent = "0:00";
+          progressRow.appendChild(total);
+
+          li.appendChild(progressRow);
+
+          const errorRow = document.createElement("div");
+          errorRow.className = "row-error";
+          errorRow.style.display = "none";
+          errorRow.textContent = "Audio not cached on this device.";
+          li.appendChild(errorRow);
+
+          let loaded = false;
+
+          audio.addEventListener("loadedmetadata", () => {
+            total.textContent = fmt(audio.duration);
+            progressRow.style.display = "flex";
+          });
+          audio.addEventListener("timeupdate", () => {
+            const pct =
+              audio.duration > 0 ? (audio.currentTime / audio.duration) * 100 : 0;
+            progressFill.style.width = pct + "%";
+            elapsed.textContent = fmt(audio.currentTime);
+          });
+          audio.addEventListener("ended", () => {
+            playBtn.innerHTML = playIconSvg();
+            playBtn.setAttribute("aria-label", "Play");
+          });
+          audio.addEventListener("error", () => {
+            errorRow.style.display = "block";
+            playBtn.disabled = true;
+          });
+
+          playBtn.addEventListener("click", async () => {
+            if (!loaded) {
+              playBtn.disabled = true;
               try {
                 const objectUrl = await loadOfflineAudio(item);
                 if (!objectUrl) {
-                  playBtn.classList.remove("loading");
-                  playBtn.classList.add("error");
-                  playBtn.textContent = "Audio not cached";
+                  errorRow.style.display = "block";
+                  playBtn.style.display = "none";
                   return;
                 }
                 audio.src = objectUrl;
-                audio.style.display = "";
-                playBtn.style.display = "none";
-                void audio.play();
+                loaded = true;
+                playBtn.disabled = false;
+                playBtn.innerHTML = pauseIconSvg();
+                playBtn.setAttribute("aria-label", "Pause");
+                await audio.play();
               } catch (err) {
                 console.warn("offline.html: load audio failed", err);
-                playBtn.classList.remove("loading");
-                playBtn.classList.add("error");
-                playBtn.textContent = "Audio not cached";
+                errorRow.style.display = "block";
+                playBtn.style.display = "none";
               }
-            },
-            { once: false },
-          );
+              return;
+            }
+            if (audio.paused) {
+              playBtn.innerHTML = pauseIconSvg();
+              playBtn.setAttribute("aria-label", "Pause");
+              await audio.play().catch(() => {});
+            } else {
+              audio.pause();
+              playBtn.innerHTML = playIconSvg();
+              playBtn.setAttribute("aria-label", "Play");
+            }
+          });
 
           list.appendChild(li);
         }
@@ -356,9 +482,9 @@
       async function loadOfflineAudio(item) {
         // Mirror of `offlineStore.audioId` — keep these in sync.
         const audioFileId = safeId(
-          `${item.id}-${item.language}-${item.voice}`,
+          item.id + "-" + item.language + "-" + item.voice,
         );
-        const path = `lokali/audio/${audioFileId}.mp3`;
+        const path = "lokali/audio/" + audioFileId + ".mp3";
         if (!window.Capacitor) return null;
         const Filesystem =
           (window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) ||
@@ -369,7 +495,7 @@
         let base64;
         try {
           const result = await Filesystem.readFile({
-            path,
+            path: path,
             directory: "DATA",
           });
           base64 = result.data;
@@ -377,9 +503,6 @@
           return null;
         }
         if (typeof base64 !== "string") return null;
-        // Strip data: prefix if it sneaks in (some Capacitor versions
-        // return it; offlineStore.ts strips it on write but defensive
-        // here in case of older saves).
         const comma = base64.indexOf(",");
         const raw = comma >= 0 ? base64.slice(comma + 1) : base64;
         const binary = atob(raw);
@@ -392,16 +515,12 @@
 
       // Poll for Capacitor bridge — on some Android WebViews the
       // bridge is injected slightly after DOMContentLoaded, so a
-      // single-shot check loses the race and we incorrectly conclude
-      // "no bridge". Try for up to ~3 s before giving up.
+      // single-shot check loses the race. Try for up to 3 s before
+      // giving up.
       function waitForCapacitor(maxMs) {
-        return new Promise((resolve) => {
+        return new Promise(function (resolve) {
           const start = Date.now();
           (function poll() {
-            // Either the auto-injected runtime (Plugins map present)
-            // or our manually-loaded native-bridge.js (which exposes
-            // registerPlugin) is enough — both routes give us a way
-            // to talk to native.
             if (
               window.Capacitor &&
               (window.Capacitor.Plugins ||
@@ -420,47 +539,28 @@
       }
 
       async function loadSavedList() {
-        showStatus("Loading saved tours…");
-        // Diagnostic: try fetching the bridge script directly so we
-        // can tell load failures (404, MIME error) apart from
-        // injection failures.
-        let bridgeFetchStatus = "unknown";
-        try {
-          const r = await fetch("/native-bridge.js", { cache: "no-store" });
-          bridgeFetchStatus = r.status + " " + (r.ok ? "ok" : "fail");
-        } catch (e) {
-          bridgeFetchStatus = "err: " + (e && e.message ? e.message : e);
-        }
+        setMessage("Loading your saved tours…");
         const hasBridge = await waitForCapacitor(3000);
         if (!hasBridge) {
-          showStatus(
-            "Native bridge unavailable. Debug — Capacitor: " +
-              (typeof window.Capacitor === "undefined" ? "undefined" : "present") +
-              ", registerPlugin: " +
-              (window.Capacitor && typeof window.Capacitor.registerPlugin === "function"
-                ? "yes"
-                : "no") +
-              ", Plugins: " +
-              (window.Capacitor && window.Capacitor.Plugins ? "yes" : "no") +
-              ", native-bridge.js fetch: " +
-              bridgeFetchStatus,
+          // Beka 2026-06-13 — friendly single line instead of the
+          // debug dump. The bridge failing is a real edge case
+          // (usually a fresh install before plugin registration);
+          // we tell the user to reopen rather than show JS errors.
+          setMessage(
+            "Couldn't open the offline library. Reopen the app to retry.",
+            "error",
           );
           return;
         }
-        // After native-bridge.js loads, the bridge exposes
-        // `registerPlugin()` which returns a thin proxy that forwards
-        // calls to native. Auto-registered `Plugins.X` exists only
-        // when the regular Capacitor runtime (with bundled plugin
-        // shims) is loaded — in errorPath context we manually
-        // register the two plugins we need.
         const Preferences =
           (window.Capacitor.Plugins && window.Capacitor.Plugins.Preferences) ||
           (typeof window.Capacitor.registerPlugin === "function"
             ? window.Capacitor.registerPlugin("Preferences")
             : null);
         if (!Preferences) {
-          showStatus(
-            "Preferences plugin not registered. App needs to be reinstalled with the latest build.",
+          setMessage(
+            "Saved tours need the latest app version. Reinstall and try again.",
+            "error",
           );
           return;
         }
@@ -470,24 +570,24 @@
           raw = result.value;
         } catch (err) {
           console.warn("offline.html: Preferences read failed", err);
-          showStatus("Couldn't open the saved cache. Try Retry above.");
+          setMessage("Couldn't read the offline library.", "error");
           return;
         }
         if (!raw) {
-          showStatus(
-            "Nothing in the offline cache yet. Open the app online once, save a tour, then come back.",
+          setMessage(
+            "Nothing saved yet. Open a tour while online and tap Save.",
           );
           return;
         }
         let parsed;
         try {
           parsed = JSON.parse(raw);
-        } catch {
-          showStatus("The saved cache looks corrupt. Try Retry above.");
+        } catch (e) {
+          setMessage("The offline library looks corrupt.", "error");
           return;
         }
         if (!Array.isArray(parsed) || parsed.length === 0) {
-          showStatus(
+          setMessage(
             "Nothing saved yet. Open a tour while online and tap Save.",
           );
           return;
@@ -495,37 +595,20 @@
         renderItems(parsed);
       }
 
-      // Beka 2026-06-13 — auto-retry to /saved DISABLED.
-      //
-      // Why: when the SW had stale CSS hashes in its cache (deploy
-      // mismatch), the auto-redirect would land on /saved with the
-      // cached HTML but a missing CSS chunk → React rendered with
-      // zero styling (Beka's bad screenshot during device testing).
-      // The styled fallback on this page is friendlier than a broken
-      // React surface. Users still get a "Retry" button below if
-      // they want to attempt the SPA route manually.
-      //
-      // If you want the auto-jump back, re-enable the block below,
-      // but only AFTER the SW is fixed to keep CSS asset hashes
-      // valid across deploys (build-time precache manifest).
-
       // Defer the bridge call until next tick so the static page
       // paints first.
-      window.addEventListener("load", () => {
+      window.addEventListener("load", function () {
         setTimeout(loadSavedList, 0);
       });
 
-      // Retry: stay inside the Capacitor WebView. `window.location.reload()`
-      // reloads the offline.html page itself (we're on capacitor://localhost),
-      // which doesn't re-attempt the lokali.ge navigation. Pointing the
-      // location at the absolute server URL forces the WebView to try
-      // loading lokali.ge again — if connectivity is back, the React app
-      // boots; if still offline, Capacitor falls back here.
-      document.getElementById("retryBtn").addEventListener("click", () => {
-        // Land on /saved — same rationale as the auto-retry above.
-        // If the network came back, the user can tap Home themselves.
-        window.location.href = "https://lokali.ge/saved";
-      });
+      // Quiet "Try reconnecting" link at the bottom — same idea as
+      // the old loud gold button, but visually demoted so it
+      // doesn't dominate the offline page.
+      document
+        .getElementById("retryBtn")
+        .addEventListener("click", function () {
+          window.location.href = "https://lokali.ge/saved";
+        });
     </script>
   </body>
 </html>
