@@ -1053,9 +1053,14 @@ function ActionRow({
     // Inline the current hero photo as a data URL so the /saved tab
     // can render it offline. Best-effort — fires after the save so a
     // slow network or CORS reject doesn't block the toast.
-    const heroPhotoUrl = attraction?.image_url ?? null;
+    //
+    // Beka 2026-06-13 — use the resolved `heroPhoto` prop (Wikipedia /
+    // Google Places fallback included) instead of `attraction.image_url`,
+    // which is the raw n8n field and almost always null. Without the
+    // fallback the photo never gets inlined and the Saved tab shows the
+    // MapPin placeholder offline.
     void import("@/lib/savedStore").then(({ attachPhotoToSavedItem }) => {
-      void attachPhotoToSavedItem(id, heroPhotoUrl);
+      void attachPhotoToSavedItem(id, heroPhoto);
     });
     // Beka 2026-06-08: Save → also pre-download the TTS audio + script
     // so the saved tour is fully playable on the plane. Same effect
@@ -1129,16 +1134,28 @@ function ActionRow({
     // letting the user redownload fresh later.
     if (cached) {
       removeCachedGuide(name, language, interest);
-      // Audio + script blobs in offlineStore — best-effort wipe.
-      // The audio is keyed per voice (we don't know which voices
-      // were stored for this slug), so we delete the default voice
-      // file plus the script file. If other voices were also
-      // downloaded they linger as orphans; the global "Clear
-      // offline library" in Settings handles those.
-      void deleteOfflineItem(
-        makeAudioId(id, language, ""),
-        makeScriptId(id, language),
-      );
+      // Audio + script blobs in offlineStore — wipe every voice the
+      // cached-state probe knows about. Beka 2026-06-13 — if we
+      // only wiped the default voice and the user had downloaded
+      // under a Settings-picked voice (Eka / Jenny), the probe at
+      // refresh() would still find that mp3 and bounce the button
+      // back to green within seconds. Mirror the probe candidates
+      // list so un-download fully clears the state.
+      const voicesToWipe = [
+        resolveAzureVoice(language, null) ?? "",
+        "ka-GE-EkaNeural",
+        "en-US-JennyNeural",
+        "",
+      ];
+      const seen = new Set<string>();
+      for (const v of voicesToWipe) {
+        if (seen.has(v)) continue;
+        seen.add(v);
+        void deleteOfflineItem(
+          makeAudioId(id, language, v),
+          makeScriptId(id, language),
+        );
+      }
       setCached(false);
       toast(t("toast.removedFromOffline"));
       return;

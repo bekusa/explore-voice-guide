@@ -30,8 +30,8 @@
  *     HTML is on disk for the next offline launch.
  */
 
-const CACHE_VERSION = "lokali-shell-v3";
-const RUNTIME_CACHE = "lokali-runtime-v3";
+const CACHE_VERSION = "lokali-shell-v4";
+const RUNTIME_CACHE = "lokali-runtime-v4";
 
 // Minimum set of routes we want to be reachable offline even if the
 // user has never visited them. Anything else gets cached lazily.
@@ -110,16 +110,27 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() =>
-          // Network down — return the requested page from cache, or
-          // fall back to the home shell which contains the same JS
-          // bundle and can client-side-route to /saved itself, or
-          // finally to /offline.html so the user always lands on
-          // a meaningful page.
-          caches.match(request).then(
-            (cached) =>
-              cached ||
-              caches.match("/").then((home) => home || caches.match("/offline.html")),
-          ),
+          // Beka 2026-06-13 — when offline, ALWAYS serve offline.html
+          // instead of stale cached React HTML. Reason: deploy
+          // changes the hashed CSS / JS chunk filenames, so the
+          // cached HTML from an older session references assets that
+          // are no longer in cache → React boots with zero styling
+          // (white page, plain underlined links). The standalone
+          // offline.html has its own inline CSS and reads saved
+          // tours from Capacitor Preferences directly — no asset
+          // dependency, no broken styling. Final fallback to the
+          // home shell is kept only for the unusual case where
+          // offline.html isn't in cache yet (true cold first launch
+          // before precache completed).
+          caches
+            .match("/offline.html")
+            .then(
+              (offline) =>
+                offline ||
+                caches
+                  .match(request)
+                  .then((cached) => cached || caches.match("/")),
+            ),
         ),
     );
     return;
