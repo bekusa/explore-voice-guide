@@ -64,6 +64,7 @@ import {
   audioId as makeAudioId,
   deleteOfflineItem,
   fetchAndCacheTour,
+  getAudioBlobUrl,
   scriptId as makeScriptId,
 } from "@/lib/offlineStore";
 import { resolveAzureVoice } from "@/lib/azureVoices";
@@ -919,12 +920,56 @@ function ActionRow({
   // Live cache state — re-renders when a download finishes / cache clears.
   // Re-runs on interest swap so a freshly-picked bias starts as
   // "Get" again until that bias is downloaded.
+  //
+  // Beka 2026-06-13 — the script alone is NOT enough to call the
+  // tour "offline-ready". `fetchGuideData` writes the script to
+  // guideCache as a side effect of normal browsing, so the button
+  // used to flip green the moment the user opened the page (no
+  // explicit Download). Tapping Play offline would then "failed to
+  // fetch" because the mp3 was never downloaded.
+  //
+  // Now we require BOTH the script AND the audio mp3 on disk
+  // (offlineStore Filesystem entry for any voice we resolved for
+  // this attraction).
   const [cached, setCached] = useState(false);
   useEffect(() => {
-    const refresh = () => setCached(!!getCachedGuide(name, language, interest));
-    refresh();
-    return onGuideCacheChange(refresh);
-  }, [name, language, interest]);
+    let cancelled = false;
+    const refresh = async () => {
+      const hasScript = !!getCachedGuide(name, language, interest);
+      if (!hasScript) {
+        if (!cancelled) setCached(false);
+        return;
+      }
+      // Probe for an mp3 under any voice id we'd render this
+      // attraction with. Two candidates cover the common cases:
+      // language-default voice (anonymous) and Beka's Eka voice
+      // (Georgian default). We don't need to know the user's
+      // preference precisely; ANY mp3 on disk for this slug means
+      // an explicit Download / auto-save actually completed.
+      const candidates = [
+        resolveAzureVoice(language, null) ?? "",
+        "ka-GE-EkaNeural",
+        "en-US-JennyNeural",
+      ].filter(Boolean);
+      const slug = id;
+      let hasAudio = false;
+      for (const v of candidates) {
+        const url = await getAudioBlobUrl(makeAudioId(slug, language, v));
+        if (url) {
+          URL.revokeObjectURL(url); // probe only, free the handle
+          hasAudio = true;
+          break;
+        }
+      }
+      if (!cancelled) setCached(hasScript && hasAudio);
+    };
+    void refresh();
+    const unsubscribe = onGuideCacheChange(() => void refresh());
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [name, language, interest, id]);
 
   const [downloading, setDownloading] = useState(false);
 
@@ -1136,10 +1181,24 @@ function ActionRow({
         voice,
       });
 
-      toast.success(t("toast.downloaded"), {
-        description: audioOk ? `${name} · ${t("toast.audioReadyHint")}` : name,
-      });
-      setCached(true);
+      // Beka 2026-06-13 — only green the button when audio actually
+      // landed on disk. Greening on script-only made the user tap
+      // Play offline and get "failed to fetch" because no mp3 was
+      // ever downloaded. If audio failed, drop the script from
+      // guideCache too so the next render's cache refresh doesn't
+      // re-green the button — partial state is worse than no state.
+      if (audioOk) {
+        toast.success(t("toast.downloaded"), {
+          description: `${name} · ${t("toast.audioReadyHint")}`,
+        });
+        setCached(true);
+      } else {
+        removeCachedGuide(name, language, interest);
+        setCached(false);
+        toast.error(t("toast.downloadFailed"), {
+          description: t("toast.tryAgain"),
+        });
+      }
     } catch (err) {
       toast.error(t("toast.downloadFailed"), {
         description: err instanceof Error ? err.message : t("toast.tryAgain"),

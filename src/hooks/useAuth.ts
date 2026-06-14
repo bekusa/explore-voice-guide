@@ -89,12 +89,31 @@ export function useAuth() {
       setUser(newSession?.user ?? null);
     });
 
-    // 2) Then read existing session
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      setLoading(false);
-    });
+    // 2) Then read existing session.
+    //
+    // Beka 2026-06-13 — guard with try/catch + the navigator.onLine
+    // check. supabase.auth.getSession() tries to refresh the token
+    // by hitting the Supabase REST endpoint; when offline this
+    // throws "TypeError: failed to fetch" and the error bubbles up
+    // as a visible toast on the Saved page (the offline shell users
+    // see). We still need to populate state from whatever cached
+    // session storage gives us, so swallow the rejection and let
+    // the loading flag flip without raising.
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        setSession(data.session);
+        setUser(data.session?.user ?? null);
+      })
+      .catch((err) => {
+        // Common offline path — log at debug level and keep the
+        // current state. The auth state listener above will pick
+        // up the real session as soon as the network comes back.
+        console.debug("[useAuth] getSession failed (likely offline)", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
 
     return () => sub.subscription.unsubscribe();
   }, []);
