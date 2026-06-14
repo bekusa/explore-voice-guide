@@ -30,8 +30,8 @@
  *     HTML is on disk for the next offline launch.
  */
 
-const CACHE_VERSION = "lokali-shell-v4";
-const RUNTIME_CACHE = "lokali-runtime-v4";
+const CACHE_VERSION = "lokali-shell-v5";
+const RUNTIME_CACHE = "lokali-runtime-v5";
 
 // Minimum set of routes we want to be reachable offline even if the
 // user has never visited them. Anything else gets cached lazily.
@@ -86,6 +86,23 @@ self.addEventListener("fetch", (event) => {
   // specific). The app already handles API failures via
   // `useOnlineStatus` + the offlineStore fallbacks.
   if (url.pathname.startsWith("/api/")) return;
+
+  // Beka 2026-06-13 — bypass the SW entirely for native-bridge.js
+  // and any Capacitor-local plugin assets. errorPath pages
+  // (offline.html) load these from the WebView's bundled assets,
+  // but the SW lives on the lokali.ge origin and would intercept
+  // the fetch → try to load from network → fail offline → return
+  // undefined → bridge script never executes → Capacitor.Plugins
+  // never attaches → "Saved tours aren't ready yet" loop. Skipping
+  // the SW lets Capacitor's WebView resolve the path locally.
+  if (
+    url.pathname === "/native-bridge.js" ||
+    url.pathname.startsWith("/capacitor/") ||
+    url.pathname.endsWith("/cordova.js") ||
+    url.pathname.endsWith("/cordova_plugins.js")
+  ) {
+    return;
+  }
 
   // 1) Navigation requests → NetworkFirst with HTML fallback.
   //
