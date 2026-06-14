@@ -53,7 +53,7 @@ import {
 } from "@/lib/api";
 import { findMuseumByName, type Museum } from "@/lib/topMuseums";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
-import { getSaved, isSaved, removeItem, saveItem } from "@/lib/savedStore";
+import { getSaved, isSaved, removeItem, saveItem, updateItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useAuth } from "@/hooks/useAuth";
@@ -439,12 +439,13 @@ function AttractionPage() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        // Suppress the error toast when the user is offline and we
-        // already have a cached guide rendering — the page is usable
-        // and the red toast just adds noise. We still toast on
-        // genuine online failures (5xx from /api/attractions, rate
-        // limit, etc.) so the user knows refresh might help.
-        if (!online && hadCachedGuide) return;
+        // Beka 2026-06-13 — when offline, NEVER show this toast.
+        // The top-bar offline banner already tells the user they're
+        // disconnected; a red "failed to fetch" toast on top adds
+        // noise without conveying anything new. We keep the toast
+        // for genuine online failures (5xx from /api/attractions,
+        // rate limit, etc.) so the user knows refresh might help.
+        if (!online) return;
         toast.error(t("attr.couldNotLoadPlace"), {
           description: err instanceof Error ? err.message : t("toast.tryAgainPlease"),
         });
@@ -780,6 +781,7 @@ function AttractionPage() {
         <ActionRow
           name={a?.name ?? fallbackName}
           attraction={a}
+          heroPhoto={heroPhoto}
           language={language}
           interest={interest}
           starting={starting}
@@ -885,6 +887,7 @@ function AttractionPage() {
 function ActionRow({
   name,
   attraction,
+  heroPhoto,
   language,
   interest,
   starting,
@@ -892,6 +895,11 @@ function ActionRow({
 }: {
   name: string;
   attraction: Attraction | null;
+  /** Resolved hero photo URL (Wikipedia / Azure Blob / Google Places).
+   *  Passed from the parent so Download can persist it as a data URL
+   *  for offline rendering — without this the attraction page shows a
+   *  broken image after airplane mode. */
+  heroPhoto: string | null;
   language: string;
   // Current interest bias — drives both the cache lookup (so the
   // "Offline" pill reflects whether THIS interest's guide is cached,
@@ -1188,6 +1196,35 @@ function ActionRow({
       // guideCache too so the next render's cache refresh doesn't
       // re-green the button — partial state is worse than no state.
       if (audioOk) {
+        // Beka 2026-06-13 — Download must also persist the hero
+        // photo for offline rendering. Without this, the user goes
+        // offline, opens the attraction, and sees a missing image
+        // because the Wikipedia / Azure Blob URL fails to fetch.
+        // We bookmark the item (so SavedItem exists) and inline the
+        // photo as a data URL via attachPhotoToSavedItem. Already
+        // saved? saveItem is idempotent on the id key. Photo
+        // unknown / null? attachPhotoToSavedItem no-ops cleanly.
+        try {
+          if (!isSaved(id)) {
+            saveItem({
+              id,
+              name,
+              language,
+              savedAt: Date.now(),
+              attraction: attraction ?? { name },
+              voice: voice || undefined,
+              audioReady: true,
+            });
+          } else {
+            updateItem(id, { audioReady: true });
+          }
+          if (heroPhoto) {
+            const { attachPhotoToSavedItem } = await import("@/lib/savedStore");
+            void attachPhotoToSavedItem(id, heroPhoto);
+          }
+        } catch (err) {
+          console.warn("[attraction] download photo cache failed", err);
+        }
         toast.success(t("toast.downloaded"), {
           description: `${name} · ${t("toast.audioReadyHint")}`,
         });
