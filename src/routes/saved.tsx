@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 import { MobileFrame } from "@/components/MobileFrame";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { clearAll, removeItem, type SavedItem } from "@/lib/savedStore";
-import { attractionSlug } from "@/lib/api";
+import { attractionSlug, setAttractionHint } from "@/lib/api";
 import { useT, useTranslated } from "@/hooks/useT";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
@@ -255,30 +255,23 @@ function SavedRow({ item }: { item: SavedItem }) {
           <Link
             to="/attraction/$id"
             params={{ id: slug }}
-            // Pass the city we captured at save time. Without it,
-            // the attraction page's photo lookup runs city-blind and
-            // can land on a same-named place in a different country
-            // (Beka caught Bangkok's Grand Palace flipping to
-            // Dadiani Palace in Georgia when opened from Saved tab).
-            //
-            // Forward the saved-card photo too — slide 1 of the
-            // attraction page's hero carousel will use it so the
-            // click-through visually continues from whatever the
-            // user saw on their Saved tab.
-            //
-            // We forward http(s) URLs only — base64 `data:` URLs
-            // (the saved hero snapshot blob captured at save time)
-            // are tens of KB each and would blow past the URL
-            // length limit. The attraction page does its own
-            // photo lookup anyway, so dropping the data URL just
-            // means slide 1 falls back to that lookup; cosmetic
-            // regression only, no broken navigation.
-            search={{
-              name: item.name,
-              ...(typeof item.attraction.city === "string" && item.attraction.city
-                ? { city: item.attraction.city }
-                : {}),
-              ...(photo && /^https?:\/\//i.test(photo) ? { photo } : {}),
+            // Stash the city + photo hint in sessionStorage so the
+            // attraction page renders the right photo / disambiguates
+            // the right city without dragging them through the URL.
+            // Without `city` the photo lookup runs city-blind and can
+            // land on a same-named place in a different country (Beka
+            // caught Bangkok's Grand Palace flipping to Dadiani Palace
+            // in Georgia when opened from Saved tab). Forward only
+            // http(s) URLs — base64 `data:` URLs are the saved hero
+            // snapshot blob and aren't useful as a remote photo hint.
+            onClick={() => {
+              setAttractionHint(slug, {
+                name: item.name,
+                ...(typeof item.attraction.city === "string" && item.attraction.city
+                  ? { city: item.attraction.city }
+                  : {}),
+                ...(photo && /^https?:\/\//i.test(photo) ? { photo } : {}),
+              });
             }}
             className="flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-gold px-2 py-2.5 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02] whitespace-normal break-words"
           >

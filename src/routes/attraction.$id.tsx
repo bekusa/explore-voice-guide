@@ -46,6 +46,8 @@ import {
   fetchGuideFresh,
   fetchMuseumHighlights,
   fetchPlacePhoto,
+  getAttractionHint,
+  setAttractionHint,
   unslugAttraction,
   type Attraction,
   type GuideData,
@@ -167,9 +169,19 @@ export const Route = createFileRoute("/attraction/$id")({
     return {
       meta: [
         { title: `${title} — Lokali` },
-        { name: "description", content: `A cinematic audio guide to ${title} in Tbilisi.` },
+        { name: "description", content: `A cinematic audio guide to ${title}.` },
         { property: "og:title", content: `${title} — Lokali` },
         { property: "og:description", content: `A cinematic audio guide to ${title}.` },
+      ],
+      // Canonical link tag — tells Google / social-card crawlers that
+      // the URL without query params is the one to index, even when the
+      // same page is reached via a legacy `?name=…&city=…&photo=…` link.
+      // Without this, search engines would dilute ranking signals
+      // across every search-param permutation. Domain is hard-coded so
+      // the canonical stays correct in SSR (where `window` isn't there)
+      // and matches the production hostname Beka ships on.
+      links: [
+        { rel: "canonical", href: `https://lokali.ge/attraction/${params.id}` },
       ],
     };
   },
@@ -178,11 +190,24 @@ export const Route = createFileRoute("/attraction/$id")({
 
 function AttractionPage() {
   const { id } = Route.useParams();
-  const {
-    name: searchName,
-    city: searchCity,
-    photo: searchPhoto,
-  } = Route.useSearch();
+  const search = Route.useSearch();
+  // Hand-off hint stashed by the linking page just before navigation
+  // (see setAttractionHint in lib/api.ts). Lets us render the right
+  // photo/city/name immediately without dragging them through the URL.
+  // We read once on mount via useState's initializer so the very first
+  // render has the data — no second-pass flicker. The hint stays in
+  // sessionStorage for as long as the tab lives, but the linker
+  // overwrites it on every new card click, so cross-city slug
+  // collisions (e.g. "Cathedral" in both Tbilisi and Rome) can't
+  // serve a stale photo. Server-side render (SSR for first visit)
+  // sees null and falls back to search params — those are still in
+  // validateSearch for backward compat with old shared bookmarks.
+  const [hint] = useState(() =>
+    typeof window === "undefined" ? null : getAttractionHint(id),
+  );
+  const searchName = hint?.name ?? search.name;
+  const searchCity = hint?.city ?? search.city;
+  const searchPhoto = hint?.photo ?? search.photo;
   const navigate = useNavigate();
   const preferredLanguage = usePreferredLanguage();
   const t = useT();
@@ -1894,11 +1919,12 @@ function MapSection({
         // covers desktop clicks and the mobile case where a tap
         // doesn't go through the popup's "Open" button.
         marker.on("click", () => {
-          navigate({
-            to: "/attraction/$id",
-            params: { id: attractionSlug(item.name) },
-            search: { name: item.name },
+          const targetSlug = attractionSlug(item.name);
+          setAttractionHint(targetSlug, {
+            name: item.name,
+            city: (item.attraction.city as string | undefined) ?? searchCity,
           });
+          navigate({ to: "/attraction/$id", params: { id: targetSlug } });
         });
 
         // Popup gives a clearer "you're about to leave this page"
@@ -1925,11 +1951,12 @@ function MapSection({
           );
           link?.addEventListener("click", (ev) => {
             ev.preventDefault();
-            navigate({
-              to: "/attraction/$id",
-              params: { id: attractionSlug(item.name) },
-              search: { name: item.name },
+            const targetSlug = attractionSlug(item.name);
+            setAttractionHint(targetSlug, {
+              name: item.name,
+              city: (item.attraction.city as string | undefined) ?? searchCity,
             });
+            navigate({ to: "/attraction/$id", params: { id: targetSlug } });
           });
         });
         markersRef.current.push(marker);

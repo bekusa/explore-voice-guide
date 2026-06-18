@@ -19,6 +19,7 @@ import {
   attractionSlug,
   fetchAttractions,
   fetchMoreAttractions,
+  setAttractionHint,
   type Attraction,
 } from "@/lib/api";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
@@ -687,13 +688,16 @@ function MuseumCard({ museum }: { museum: Museum }) {
     <Link
       to="/attraction/$id"
       params={{ id: attractionSlug(museum.name) }}
-      // Forward the card's photo so the attraction page lands on
-      // the same image as slide 1 of its carousel — no jarring
-      // swap to a different angle of the museum.
-      search={{
-        name: museum.name,
-        city: museum.city,
-        ...(heroPhoto ? { photo: heroPhoto } : {}),
+      // Stash the card's city + photo in sessionStorage so the
+      // attraction page lands on the same image as slide 1 of its
+      // carousel — no jarring swap to a different angle of the
+      // museum, no URL pollution.
+      onClick={() => {
+        setAttractionHint(attractionSlug(museum.name), {
+          name: museum.name,
+          city: museum.city,
+          ...(heroPhoto ? { photo: heroPhoto } : {}),
+        });
       }}
       className="relative h-44 w-60 shrink-0 snap-start overflow-hidden rounded-2xl border border-border bg-card text-left transition-smooth hover:scale-[1.01]"
     >

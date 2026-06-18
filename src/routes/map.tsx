@@ -4,7 +4,7 @@ import { ArrowLeft, MapPin, Navigation, Bookmark, Layers, Loader2 } from "lucide
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
 import { useSavedItems } from "@/hooks/useSavedItems";
-import { attractionSlug } from "@/lib/api";
+import { attractionSlug, setAttractionHint } from "@/lib/api";
 import {
   getCurrentLocation,
   getLocationPermissionState,
@@ -40,6 +40,12 @@ type Pin = {
   lat: number;
   lng: number;
   category?: string;
+  // City carried through to the attraction page so its photo lookup
+  // can disambiguate same-named places across countries. Without it,
+  // "Grand Palace" pinned in Bangkok would resolve to a Tbilisi
+  // restaurant on the attraction page (Beka caught this with the
+  // Google Places region-bias bug).
+  city?: string;
 };
 
 function MapPage() {
@@ -63,6 +69,10 @@ function MapPage() {
         lat: s.attraction.lat as number,
         lng: s.attraction.lng as number,
         category: s.attraction.category,
+        city:
+          typeof s.attraction.city === "string" && s.attraction.city
+            ? s.attraction.city
+            : undefined,
       }));
   }, [saved]);
 
@@ -207,11 +217,12 @@ function MapPage() {
           className: "tg-tooltip",
         });
         marker.on("click", () => {
-          navigate({
-            to: "/attraction/$id",
-            params: { id: attractionSlug(p.name) },
-            search: { name: p.name },
+          const targetSlug = attractionSlug(p.name);
+          setAttractionHint(targetSlug, {
+            name: p.name,
+            ...(p.city ? { city: p.city } : {}),
           });
+          navigate({ to: "/attraction/$id", params: { id: targetSlug } });
         });
         markersRef.current.push(marker);
       });

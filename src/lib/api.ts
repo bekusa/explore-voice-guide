@@ -725,6 +725,66 @@ export function unslugAttraction(slug: string): string {
 }
 
 /**
+ * Attraction-page hand-off hint.
+ *
+ * Background — until 2026-06-18 we passed `name`, `city`, and `photo`
+ * as URL search params to every `/attraction/$id` navigation so the
+ * landing page could render the right photo (carousel slide 1) and
+ * disambiguate the city for photo lookup without re-fetching. That
+ * worked, but produced URLs like:
+ *
+ *   /attraction/metekhi-church?name=Metekhi+Church&city=Tbilisi&photo=https%3A%2F%2F...
+ *
+ * which is ugly to share and bad for SEO — Google sees four URLs for
+ * the same content (clean, +name, +name+city, +name+city+photo) and
+ * has to canonicalise them itself.
+ *
+ * The fix: linkers stash the same data into sessionStorage under a
+ * slug-keyed entry just before navigating. The attraction page reads
+ * it on mount. URL stays clean (`/attraction/metekhi-church`) but the
+ * UX is identical — no photo flicker, right city disambiguation, right
+ * capitalised name in the header. The hint is overwritten on every new
+ * card click so we never serve a stale photo for the same slug across
+ * cities (e.g. clicking "Cathedral" first in Tbilisi then in Rome).
+ *
+ * Search-param fallback is kept inside the route: old shared bookmarks
+ * and Google-indexed URLs that still carry the params keep working.
+ * Canonical link tag on the route head tells Google the clean URL is
+ * the one to index, so SEO signals consolidate to one URL.
+ */
+export type AttractionHint = {
+  name?: string;
+  city?: string;
+  photo?: string;
+};
+
+const ATTRACTION_HINT_PREFIX = "tg.attractionHint.";
+
+export function setAttractionHint(slug: string, hint: AttractionHint): void {
+  if (typeof sessionStorage === "undefined") return;
+  try {
+    sessionStorage.setItem(
+      `${ATTRACTION_HINT_PREFIX}${slug}`,
+      JSON.stringify(hint),
+    );
+  } catch {
+    // quota exceeded or sessionStorage disabled (private mode in some
+    // browsers) — fall back to the search-param path silently.
+  }
+}
+
+export function getAttractionHint(slug: string): AttractionHint | null {
+  if (typeof sessionStorage === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(`${ATTRACTION_HINT_PREFIX}${slug}`);
+    if (!raw) return null;
+    return JSON.parse(raw) as AttractionHint;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Detect the language of a search query / place name from its script,
  * so the n8n workflow returns results in the same language the user
  * typed. Without this, anonymous users (no Supabase profile) always

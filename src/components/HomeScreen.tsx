@@ -27,7 +27,7 @@ import { LANGUAGES } from "@/lib/languages";
 import { HOME_CITIES } from "@/lib/cityList";
 import { CityCard } from "@/components/CityCard";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
-import { attractionSlug } from "@/lib/api";
+import { attractionSlug, setAttractionHint } from "@/lib/api";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
 import { getStaticMuseumHeroUrl } from "@/lib/museumHeroPhotos";
 import {
@@ -628,24 +628,20 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
     <Link
       to="/attraction/$id"
       params={{ id: slug }}
-      // Pass museum.city as the city hint so the attraction page's
-      // hero photo lookup falls into the right country (the Met
-      // straight to New York, the Louvre to Paris, …) instead of
-      // resolving to a Tbilisi-area lookalike.
-      //
-      // Forward the resolved card photo too — slide 1 of the
-      // attraction page's hero carousel will use it, so the
-      // click-through doesn't visually swap to a different angle
-      // of the same museum. Beka's spec, 2026-05-20.
-      search={{
-        name: museum.name,
-        city: museum.city,
-        // Only forward the resolved Wikipedia photo — NOT the
-        // LoremFlickr fallback (`museum.image`). Forwarding the
-        // LoremFlickr seed would land slide 1 of the attraction
-        // page on a random Flickr photo that isn't actually OF
-        // the museum.
-        ...(fetched && !imgFailed ? { photo: fetched } : {}),
+      // Stash museum.city + the resolved card photo as a
+      // sessionStorage hint so the attraction page's hero photo
+      // lookup falls into the right country (the Met → New York,
+      // the Louvre → Paris) and slide 1 of the carousel matches
+      // what the card just rendered. We deliberately do NOT
+      // forward the LoremFlickr fallback (`museum.image`) — that
+      // seed lands slide 1 on a random Flickr photo unrelated to
+      // the museum.
+      onClick={() => {
+        setAttractionHint(slug, {
+          name: museum.name,
+          city: museum.city,
+          ...(fetched && !imgFailed ? { photo: fetched } : {}),
+        });
       }}
       className="group relative h-[170px] w-[240px] flex-shrink-0 overflow-hidden rounded-2xl border border-border bg-card transition-smooth hover:border-primary/50 active:scale-[0.98]"
     >

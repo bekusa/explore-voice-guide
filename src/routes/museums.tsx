@@ -7,7 +7,7 @@ import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
 import { getMuseumStrings } from "@/lib/museumTranslations";
 import { getStaticMuseumHeroUrl } from "@/lib/museumHeroPhotos";
-import { attractionSlug } from "@/lib/api";
+import { attractionSlug, setAttractionHint } from "@/lib/api";
 
 /**
  * /museums — full grid of all 20 curated museums.
@@ -115,15 +115,18 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
     <Link
       to="/attraction/$id"
       params={{ id: slug }}
-      // Forward the resolved Wikipedia photo so the attraction
-      // page's hero carousel lands on the same image as slide 1.
-      // We forward `fetched` (Wikipedia) explicitly — NOT the
-      // bundled LoremFlickr seed (`museum.image`) — so a missing
-      // / failed lookup doesn't push a random Flickr shot into
-      // slide 1 of the carousel.
-      search={{
-        name: museum.name,
-        ...(fetched && !imgFailed ? { photo: fetched } : {}),
+      // Stash the resolved Wikipedia photo as a sessionStorage hint
+      // so the attraction page's hero carousel lands on the same
+      // image as slide 1 — no URL pollution. We forward `fetched`
+      // (Wikipedia) explicitly — NOT the bundled LoremFlickr seed
+      // (`museum.image`) — so a missing / failed lookup doesn't
+      // push a random Flickr shot into slide 1 of the carousel.
+      onClick={() => {
+        setAttractionHint(slug, {
+          name: museum.name,
+          city: museum.city,
+          ...(fetched && !imgFailed ? { photo: fetched } : {}),
+        });
       }}
       className="group relative h-[300px] overflow-hidden rounded-2xl border border-border bg-card transition-smooth hover:border-primary/50 active:scale-[0.98]"
     >

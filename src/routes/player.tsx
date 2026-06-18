@@ -4,8 +4,11 @@
  * "ცალკე ფეიჯი არ მინდა" feedback — we shouldn't teleport users away
  * from the place they were reading about). Anyone still landing on
  * /player?name=X — old bookmarks, shared links, search-engine results
- * — gets bounced to /attraction/<slug>?name=X so the journey
- * continues there.
+ * — gets bounced to /attraction/<slug> so the journey continues
+ * there. The `name` is preserved as a search-param fallback so the
+ * attraction page's capitalisation matches the original; the new
+ * sessionStorage-hint approach (2026-06-18) can't be used here
+ * because beforeLoad fires before any client component renders.
  */
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { attractionSlug } from "@/lib/api";
