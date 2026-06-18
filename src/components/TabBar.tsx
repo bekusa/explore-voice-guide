@@ -90,10 +90,14 @@ export function TabBar() {
         (user ? (
           // Profile hub — was a direct Sign-out button until 2026-06-18.
           // Beka asked to demote destructive actions out of the persistent
-          // nav, so this now lands on /profile which surfaces Settings
-          // and (one tap deeper) the Sign-out + Delete-Account controls.
+          // nav AND to land the user on a single profile-shaped page
+          // that already includes settings (no second tap to reach
+          // them). So this points at /settings — the renamed Profile
+          // page — which now starts with an identity card and unfolds
+          // into the full preferences list below. /profile is still a
+          // valid URL but it redirects to /settings server-side.
           <Link
-            to="/profile"
+            to="/settings"
             onClick={tapHaptic}
             className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
             activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}

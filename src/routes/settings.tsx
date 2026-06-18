@@ -524,6 +524,37 @@ function SettingsPage() {
           </p>
         </section>
 
+        {/* Identity card — moved up from a standalone /profile page
+            so the Profile tab lands the user on a single screen with
+            everything in one view. Beka 2026-06-18 spec: no second
+            tap to reach settings. The card is intentionally compact
+            so the rest of the page (voice, language, theme, library)
+            stays above the fold on a typical phone. Anonymous users
+            see no identity here — the dedicated "Save your account"
+            CTA in the Account section below handles their on-ramp. */}
+        {user && !user.is_anonymous && (
+          <section className="px-6 pt-6">
+            <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4">
+              <div className="grid h-12 w-12 place-items-center rounded-full bg-gradient-gold text-[18px] font-bold text-primary-foreground shadow-glow">
+                {(user.email ?? "?").charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  {t("profile.signedInAs")}
+                </div>
+                <div className="mt-0.5 truncate text-[14px] font-semibold">
+                  {user.email ? user.email.split("@")[0] : t("profile.guest")}
+                </div>
+                {user.email && user.email.includes("@") && (
+                  <div className="truncate text-[11px] text-muted-foreground">
+                    {user.email}
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Account — split into two visual paths.
             ▸ Anonymous (guest) users see a prominent "Save your
               account" CTA card that launches the /auth/upgrade flow.
