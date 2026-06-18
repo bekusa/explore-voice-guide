@@ -17,6 +17,12 @@ export const MS: Partial<Record<UiKey, string>> = {
   "nav.notifications": "Pemberitahuan",
   "nav.language": "Bahasa",
   "nav.back": "Kembali",
+  "nav.profile": "Profil",
+  "profile.title": "Profil",
+  "profile.account": "Akaun",
+  "profile.openSettings": "Tetapan",
+  "profile.signedInAs": "Log masuk sebagai",
+  "profile.guest": "Tetamu",
 
   // Home
   "home.whereNext": "Ke mana seterusnya?",

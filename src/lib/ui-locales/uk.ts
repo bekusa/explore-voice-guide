@@ -17,6 +17,12 @@ export const UK: Partial<Record<UiKey, string>> = {
   "nav.notifications": "Сповіщення",
   "nav.language": "Мова",
   "nav.back": "Назад",
+  "nav.profile": "Профіль",
+  "profile.title": "Профіль",
+  "profile.account": "Обліковий запис",
+  "profile.openSettings": "Налаштування",
+  "profile.signedInAs": "Увійшли як",
+  "profile.guest": "Гість",
 
   // Home
   "home.whereNext": "Куди далі?",

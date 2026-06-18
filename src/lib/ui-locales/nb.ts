@@ -17,6 +17,12 @@ export const NB: Partial<Record<UiKey, string>> = {
   "nav.notifications": "Varsler",
   "nav.language": "Språk",
   "nav.back": "Tilbake",
+  "nav.profile": "Profil",
+  "profile.title": "Profil",
+  "profile.account": "Konto",
+  "profile.openSettings": "Innstillinger",
+  "profile.signedInAs": "Logget inn som",
+  "profile.guest": "Gjest",
 
   // Home
   "home.whereNext": "Hvor går turen videre?",

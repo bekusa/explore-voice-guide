@@ -17,6 +17,12 @@ export const EL: Partial<Record<UiKey, string>> = {
   "nav.notifications": "Ειδοποιήσεις",
   "nav.language": "Γλώσσα",
   "nav.back": "Πίσω",
+  "nav.profile": "Προφίλ",
+  "profile.title": "Προφίλ",
+  "profile.account": "Λογαριασμός",
+  "profile.openSettings": "Ρυθμίσεις",
+  "profile.signedInAs": "Συνδεδεμένος ως",
+  "profile.guest": "Επισκέπτης",
 
   // Home
   "home.whereNext": "Πού πάμε μετά;",

@@ -17,6 +17,12 @@ export const AR: Partial<Record<UiKey, string>> = {
   "nav.notifications": "الإشعارات",
   "nav.language": "اللغة",
   "nav.back": "رجوع",
+  "nav.profile": "الملف الشخصي",
+  "profile.title": "الملف الشخصي",
+  "profile.account": "الحساب",
+  "profile.openSettings": "الإعدادات",
+  "profile.signedInAs": "تم تسجيل الدخول باسم",
+  "profile.guest": "زائر",
 
   // Home
   "home.whereNext": "إلى أين الآن؟",

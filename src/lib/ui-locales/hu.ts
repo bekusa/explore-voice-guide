@@ -17,6 +17,12 @@ export const HU: Partial<Record<UiKey, string>> = {
   "nav.notifications": "Értesítések",
   "nav.language": "Nyelv",
   "nav.back": "Vissza",
+  "nav.profile": "Profil",
+  "profile.title": "Profil",
+  "profile.account": "Fiók",
+  "profile.openSettings": "Beállítások",
+  "profile.signedInAs": "Bejelentkezve mint",
+  "profile.guest": "Vendég",
 
   // Home
   "home.whereNext": "Hová tovább?",

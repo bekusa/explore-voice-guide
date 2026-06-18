@@ -17,6 +17,12 @@ export const CS: Partial<Record<UiKey, string>> = {
   "nav.notifications": "Oznámení",
   "nav.language": "Jazyk",
   "nav.back": "Zpět",
+  "nav.profile": "Profil",
+  "profile.title": "Profil",
+  "profile.account": "Účet",
+  "profile.openSettings": "Nastavení",
+  "profile.signedInAs": "Přihlášen jako",
+  "profile.guest": "Host",
 
   // Home
   "home.whereNext": "Kam dál?",

@@ -17,6 +17,12 @@ export const TR: Partial<Record<UiKey, string>> = {
   "nav.notifications": "Bildirimler",
   "nav.language": "Dil",
   "nav.back": "Geri",
+  "nav.profile": "Profil",
+  "profile.title": "Profil",
+  "profile.account": "Hesap",
+  "profile.openSettings": "Ayarlar",
+  "profile.signedInAs": "Şu kullanıcıyla oturum açıldı",
+  "profile.guest": "Misafir",
 
   // Home
   "home.whereNext": "Sırada nereye?",

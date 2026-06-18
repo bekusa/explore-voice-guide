@@ -17,6 +17,12 @@ export const FI: Partial<Record<UiKey, string>> = {
   "nav.notifications": "Ilmoitukset",
   "nav.language": "Kieli",
   "nav.back": "Takaisin",
+  "nav.profile": "Profiili",
+  "profile.title": "Profiili",
+  "profile.account": "Tili",
+  "profile.openSettings": "Asetukset",
+  "profile.signedInAs": "Kirjautunut nimellä",
+  "profile.guest": "Vieras",
 
   // Home
   "home.whereNext": "Minne seuraavaksi?",

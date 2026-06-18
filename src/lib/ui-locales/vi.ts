@@ -17,6 +17,12 @@ export const VI: Partial<Record<UiKey, string>> = {
   "nav.notifications": "Thông báo",
   "nav.language": "Ngôn ngữ",
   "nav.back": "Quay lại",
+  "nav.profile": "Hồ sơ",
+  "profile.title": "Hồ sơ",
+  "profile.account": "Tài khoản",
+  "profile.openSettings": "Cài đặt",
+  "profile.signedInAs": "Đã đăng nhập với",
+  "profile.guest": "Khách",
 
   // Home
   "home.whereNext": "Đi đâu tiếp?",

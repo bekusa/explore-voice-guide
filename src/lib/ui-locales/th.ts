@@ -17,6 +17,12 @@ export const TH: Partial<Record<UiKey, string>> = {
   "nav.notifications": "การแจ้งเตือน",
   "nav.language": "ภาษา",
   "nav.back": "ย้อนกลับ",
+  "nav.profile": "โปรไฟล์",
+  "profile.title": "โปรไฟล์",
+  "profile.account": "บัญชี",
+  "profile.openSettings": "การตั้งค่า",
+  "profile.signedInAs": "เข้าสู่ระบบในชื่อ",
+  "profile.guest": "ผู้เยี่ยมชม",
 
   // Home
   "home.whereNext": "ไปที่ไหนต่อ?",

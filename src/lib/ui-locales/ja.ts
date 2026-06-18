@@ -17,6 +17,12 @@ export const JA: Partial<Record<UiKey, string>> = {
   "nav.notifications": "通知",
   "nav.language": "言語",
   "nav.back": "戻る",
+  "nav.profile": "プロフィール",
+  "profile.title": "プロフィール",
+  "profile.account": "アカウント",
+  "profile.openSettings": "設定",
+  "profile.signedInAs": "サインイン中:",
+  "profile.guest": "ゲスト",
 
   // Home
   "home.whereNext": "次はどこへ?",

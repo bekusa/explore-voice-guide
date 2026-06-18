@@ -17,6 +17,12 @@ export const HE: Partial<Record<UiKey, string>> = {
   "nav.notifications": "התראות",
   "nav.language": "שפה",
   "nav.back": "חזרה",
+  "nav.profile": "פרופיל",
+  "profile.title": "פרופיל",
+  "profile.account": "חשבון",
+  "profile.openSettings": "הגדרות",
+  "profile.signedInAs": "מחובר בתור",
+  "profile.guest": "אורח",
 
   // Home
   "home.whereNext": "לאן הלאה?",

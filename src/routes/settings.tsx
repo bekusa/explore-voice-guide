@@ -706,14 +706,23 @@ function SettingsPage() {
           </button>
         </Group>
 
-        {/* Danger / session */}
+        {/* Danger / session — Beka 2026-06-18 spec: both buttons
+            should be visually faint so casual scrolling doesn't draw
+            the eye to destructive actions. We lose the cardy border
+            and red-tinted backgrounds in favour of muted-foreground
+            text with a thin subtle border. The hover state still
+            previews the destructive intent (slight red tinge on
+            border + text) so the user knows what tapping does, but
+            the resting state recedes into the page. The confirmation
+            modal (for Delete Account) is unchanged — strong warning
+            still appears once the user taps through. */}
         {user && (
-          <div className="px-6 pt-8">
+          <div className="px-6 pt-10">
             <button
               onClick={handleSignOut}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card px-5 py-3.5 text-[13px] font-semibold text-foreground transition-smooth hover:border-destructive/50 hover:text-destructive"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border/60 bg-transparent px-5 py-3 text-[12px] font-medium text-muted-foreground transition-smooth hover:border-destructive/40 hover:text-destructive/80"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-3.5 w-3.5" />
               {t("set.signOut")}
             </button>
           </div>
@@ -721,20 +730,19 @@ function SettingsPage() {
 
         {/* Delete Account — Google Play 2024+ requires every app
             with account creation to provide an in-app deletion path.
-            Anonymous users get hidden — there's no auth row to
-            delete and their state is fully cleared by sign-out + new
-            session start. Real users (email / OAuth) see the button
-            with a strong-warning treatment. */}
+            Anonymous users get hidden — there's no auth row to delete
+            and their state is fully cleared by sign-out + new session
+            start. Real users (email / OAuth) see the button. */}
         {user && !user.is_anonymous && (
-          <div className="px-6 pt-3">
+          <div className="px-6 pt-2">
             <button
               onClick={() => setDeleteConfirmOpen(true)}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-destructive/30 bg-destructive/5 px-5 py-3.5 text-[13px] font-semibold text-destructive transition-smooth hover:border-destructive/60 hover:bg-destructive/10"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border/60 bg-transparent px-5 py-3 text-[12px] font-medium text-muted-foreground transition-smooth hover:border-destructive/40 hover:text-destructive/80"
             >
-              <UserX className="h-4 w-4" />
+              <UserX className="h-3.5 w-3.5" />
               {t("set.deleteAccount")}
             </button>
-            <p className="mt-2 px-2 text-center text-[11px] leading-snug text-muted-foreground">
+            <p className="mt-2 px-2 text-center text-[10.5px] leading-snug text-muted-foreground/70">
               {t("set.deleteAccountBlurb")}
             </p>
           </div>

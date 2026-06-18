@@ -17,6 +17,12 @@ export const ZH_TW: Partial<Record<UiKey, string>> = {
   "nav.notifications": "通知",
   "nav.language": "語言",
   "nav.back": "返回",
+  "nav.profile": "個人資料",
+  "profile.title": "個人資料",
+  "profile.account": "帳戶",
+  "profile.openSettings": "設定",
+  "profile.signedInAs": "已登入為",
+  "profile.guest": "訪客",
 
   // Home
   "home.whereNext": "下一站去哪裡？",

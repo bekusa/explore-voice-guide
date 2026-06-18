@@ -17,6 +17,12 @@ export const BN: Partial<Record<UiKey, string>> = {
   "nav.notifications": "বিজ্ঞপ্তি",
   "nav.language": "ভাষা",
   "nav.back": "ফিরুন",
+  "nav.profile": "প্রোফাইল",
+  "profile.title": "প্রোফাইল",
+  "profile.account": "অ্যাকাউন্ট",
+  "profile.openSettings": "সেটিংস",
+  "profile.signedInAs": "লগ ইন করেছেন",
+  "profile.guest": "অতিথি",
 
   // Home
   "home.whereNext": "এরপর কোথায়?",

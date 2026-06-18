@@ -17,6 +17,12 @@ export const SV: Partial<Record<UiKey, string>> = {
   "nav.notifications": "Aviseringar",
   "nav.language": "Språk",
   "nav.back": "Tillbaka",
+  "nav.profile": "Profil",
+  "profile.title": "Profil",
+  "profile.account": "Konto",
+  "profile.openSettings": "Inställningar",
+  "profile.signedInAs": "Inloggad som",
+  "profile.guest": "Gäst",
 
   // Home
   "home.whereNext": "Vart nu?",

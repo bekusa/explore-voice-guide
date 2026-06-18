@@ -17,6 +17,12 @@ export const ZH_CN: Partial<Record<UiKey, string>> = {
   "nav.notifications": "通知",
   "nav.language": "语言",
   "nav.back": "返回",
+  "nav.profile": "个人资料",
+  "profile.title": "个人资料",
+  "profile.account": "账户",
+  "profile.openSettings": "设置",
+  "profile.signedInAs": "已登录为",
+  "profile.guest": "访客",
 
   // Home
   "home.whereNext": "下一站去哪儿？",

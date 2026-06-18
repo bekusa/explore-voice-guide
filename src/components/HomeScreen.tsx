@@ -8,7 +8,6 @@ import {
   MapPin,
   Play,
   Search,
-  Settings as SettingsIcon,
   Sparkles,
   WifiOff,
 } from "lucide-react";
@@ -295,13 +294,24 @@ export function HomeScreen() {
                   <ChevronDown className="h-3 w-3 shrink-0 opacity-60" />
                 </Link>
               </div>
-              <div className="flex shrink-0 gap-2">
+              <div className="flex shrink-0 items-center gap-2">
+                {/* Language picker (moved from Row 2 to take the
+                    Settings cog's old slot — Beka 2026-06-18). The
+                    Settings cog itself was demoted into Profile → see
+                    src/routes/profile.tsx; cog reachable via Profile
+                    tab. Pill is taller than the bell so flag + native
+                    name fit, but `h-10` keeps the vertical centre line
+                    aligned with the bell. max-w cap prevents long
+                    natives ("Português (BR)") from squashing the bell. */}
                 <Link
-                  to="/settings"
-                  aria-label={t("nav.settings")}
-                  className="grid h-10 w-10 place-items-center rounded-full border border-foreground/15 bg-background/40 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
+                  to="/language"
+                  aria-label={t("nav.language")}
+                  className="inline-flex h-10 max-w-[150px] items-center gap-1.5 rounded-full border border-foreground/15 bg-background/40 px-3 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
                 >
-                  <SettingsIcon className="h-4 w-4" />
+                  <span className="text-[14px] leading-none">{activeLang.flag}</span>
+                  <span className="truncate text-[11px] font-semibold leading-none">
+                    {activeLang.native}
+                  </span>
                 </Link>
                 <Link
                   to="/notifications"
@@ -316,24 +326,6 @@ export function HomeScreen() {
                   )}
                 </Link>
               </div>
-            </div>
-
-            {/* Row 2 — language pill on its own line, right-aligned
-                so it visually sits under the icon row above. Wider
-                pill with flag + native name so the user sees at a
-                glance which language is active, with breathing room
-                for long natives like "Português (BR)". */}
-            <div className="flex justify-end">
-              <Link
-                to="/language"
-                aria-label={t("nav.language")}
-                className="inline-flex h-9 max-w-[180px] items-center gap-1.5 rounded-full border border-foreground/15 bg-background/40 px-3 text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
-              >
-                <span className="text-[14px] leading-none">{activeLang.flag}</span>
-                <span className="truncate text-[11px] font-semibold leading-none">
-                  {activeLang.native}
-                </span>
-              </Link>
             </div>
           </div>
 

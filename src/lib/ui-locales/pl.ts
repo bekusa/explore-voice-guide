@@ -17,6 +17,12 @@ export const PL: Partial<Record<UiKey, string>> = {
   "nav.notifications": "Powiadomienia",
   "nav.language": "Język",
   "nav.back": "Wstecz",
+  "nav.profile": "Profil",
+  "profile.title": "Profil",
+  "profile.account": "Konto",
+  "profile.openSettings": "Ustawienia",
+  "profile.signedInAs": "Zalogowano jako",
+  "profile.guest": "Gość",
 
   // Home
   "home.whereNext": "Dokąd teraz?",

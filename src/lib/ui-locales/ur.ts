@@ -17,6 +17,12 @@ export const UR: Partial<Record<UiKey, string>> = {
   "nav.notifications": "اطلاعات",
   "nav.language": "زبان",
   "nav.back": "واپس",
+  "nav.profile": "پروفائل",
+  "profile.title": "پروفائل",
+  "profile.account": "اکاؤنٹ",
+  "profile.openSettings": "ترتیبات",
+  "profile.signedInAs": "بطور لاگ ان",
+  "profile.guest": "مہمان",
 
   // Home
   "home.whereNext": "اب کہاں؟",

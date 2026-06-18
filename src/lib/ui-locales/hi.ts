@@ -17,6 +17,12 @@ export const HI: Partial<Record<UiKey, string>> = {
   "nav.notifications": "सूचनाएँ",
   "nav.language": "भाषा",
   "nav.back": "वापस",
+  "nav.profile": "प्रोफ़ाइल",
+  "profile.title": "प्रोफ़ाइल",
+  "profile.account": "खाता",
+  "profile.openSettings": "सेटिंग्स",
+  "profile.signedInAs": "के रूप में साइन इन",
+  "profile.guest": "अतिथि",
 
   // Home
   "home.whereNext": "अब कहाँ?",

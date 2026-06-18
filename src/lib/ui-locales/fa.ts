@@ -17,6 +17,12 @@ export const FA: Partial<Record<UiKey, string>> = {
   "nav.notifications": "اعلان‌ها",
   "nav.language": "زبان",
   "nav.back": "بازگشت",
+  "nav.profile": "نمایه",
+  "profile.title": "نمایه",
+  "profile.account": "حساب",
+  "profile.openSettings": "تنظیمات",
+  "profile.signedInAs": "وارد شده با نام",
+  "profile.guest": "مهمان",
 
   // Home
   "home.whereNext": "مقصد بعدی کجاست؟",

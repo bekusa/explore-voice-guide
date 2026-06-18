@@ -103,6 +103,12 @@ export const UI_STRINGS = {
   "nav.notifications": "Notifications",
   "nav.language": "Language",
   "nav.back": "Back",
+  "nav.profile": "Profile",
+  "profile.title": "Profile",
+  "profile.account": "Account",
+  "profile.openSettings": "Settings",
+  "profile.signedInAs": "Signed in as",
+  "profile.guest": "Guest",
 
   // Home
   "home.whereNext": "Where next?",

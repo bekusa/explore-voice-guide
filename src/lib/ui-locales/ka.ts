@@ -17,6 +17,12 @@ export const KA: Partial<Record<UiKey, string>> = {
   "nav.notifications": "შეტყობინებები",
   "nav.language": "ენა",
   "nav.back": "უკან",
+  "nav.profile": "პროფილი",
+  "profile.title": "პროფილი",
+  "profile.account": "ანგარიში",
+  "profile.openSettings": "პარამეტრები",
+  "profile.signedInAs": "შესული ხართ როგორც",
+  "profile.guest": "სტუმარი",
 
   // Home
   "home.whereNext": "სად წავიდეთ შემდეგ?",

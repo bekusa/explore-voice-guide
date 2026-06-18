@@ -14,6 +14,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as ResultsRouteImport } from './routes/results'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PlayerRouteImport } from './routes/player'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -63,6 +64,11 @@ const SavedRoute = SavedRouteImport.update({
 const ResultsRoute = ResultsRouteImport.update({
   id: '/results',
   path: '/results',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -202,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
   '/settings': typeof SettingsRoute
@@ -234,6 +241,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
   '/settings': typeof SettingsRoute
@@ -267,6 +275,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
   '/settings': typeof SettingsRoute
@@ -301,6 +310,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/player'
     | '/privacy'
+    | '/profile'
     | '/results'
     | '/saved'
     | '/settings'
@@ -333,6 +343,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/player'
     | '/privacy'
+    | '/profile'
     | '/results'
     | '/saved'
     | '/settings'
@@ -365,6 +376,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/player'
     | '/privacy'
+    | '/profile'
     | '/results'
     | '/saved'
     | '/settings'
@@ -398,6 +410,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PlayerRoute: typeof PlayerRoute
   PrivacyRoute: typeof PrivacyRoute
+  ProfileRoute: typeof ProfileRoute
   ResultsRoute: typeof ResultsRoute
   SavedRoute: typeof SavedRoute
   SettingsRoute: typeof SettingsRoute
@@ -459,6 +472,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/player': {
@@ -667,6 +687,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PlayerRoute: PlayerRoute,
   PrivacyRoute: PrivacyRoute,
+  ProfileRoute: ProfileRoute,
   ResultsRoute: ResultsRoute,
   SavedRoute: SavedRoute,
   SettingsRoute: SettingsRoute,

@@ -17,6 +17,12 @@ export const KO: Partial<Record<UiKey, string>> = {
   "nav.notifications": "알림",
   "nav.language": "언어",
   "nav.back": "뒤로",
+  "nav.profile": "프로필",
+  "profile.title": "프로필",
+  "profile.account": "계정",
+  "profile.openSettings": "설정",
+  "profile.signedInAs": "다음으로 로그인됨:",
+  "profile.guest": "게스트",
 
   // Home
   "home.whereNext": "다음은 어디로?",

@@ -17,6 +17,12 @@ export const RO: Partial<Record<UiKey, string>> = {
   "nav.notifications": "Notificări",
   "nav.language": "Limbă",
   "nav.back": "Înapoi",
+  "nav.profile": "Profil",
+  "profile.title": "Profil",
+  "profile.account": "Cont",
+  "profile.openSettings": "Setări",
+  "profile.signedInAs": "Conectat ca",
+  "profile.guest": "Invitat",
 
   // Home
   "home.whereNext": "Unde mergem?",
