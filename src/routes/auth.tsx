@@ -80,6 +80,7 @@ function AuthPage() {
         // token straight to Supabase via signInWithIdToken to
         // exchange it for a session. No deep links, no redirects.
         const { GoogleAuth } = await import("@codetrix-studio/capacitor-google-auth");
+        const { App } = await import("@capacitor/app");
         // Initialize is idempotent in the plugin — calling it on each
         // sign-in is fine and means we don't need a separate boot-time
         // wire-up in useCapacitorBridge.
@@ -89,7 +90,53 @@ function AuthPage() {
           scopes: ["profile", "email"],
           grantOfflineAccess: true,
         });
-        const result = await GoogleAuth.signIn();
+
+        // Beka 2026-06-21 — resilient sign-in.
+        //
+        // Symptom Beka caught via logcat: when the Google account
+        // picker opens, Android stops MainActivity. Capacitor 7 tries
+        // to persist the pending plugin call via saveInstanceState
+        // and fails with "Couldn't save last GoogleAuth's Plugin
+        // signIn call". When the activity resumes after the user
+        // picks an account, the plugin's success result has no
+        // saved callback ID to deliver to — the JS Promise from
+        // GoogleAuth.signIn() hangs forever, the user is stranded.
+        //
+        // Workaround: race GoogleAuth.signIn() against a 30 s
+        // timeout AND an appStateChange listener. If the app comes
+        // back to the foreground without resolving, we retry
+        // GoogleAuth.signIn() — the plugin caches the recent
+        // successful sign-in inside Google Play Services Credential
+        // Manager, so the second call returns the same idToken
+        // immediately (no second picker).
+        const signInWithFallback = async (): Promise<unknown> => {
+          let appResumeListener: { remove: () => void } | null = null;
+          let timeoutId: ReturnType<typeof setTimeout> | null = null;
+          try {
+            return await new Promise((resolve, reject) => {
+              GoogleAuth.signIn().then(resolve, reject);
+              // Hard 30 s ceiling so the spinner can't spin forever.
+              timeoutId = setTimeout(
+                () => reject(new Error("GoogleAuth.signIn timed out")),
+                30_000,
+              );
+              // Resume hook: when the app foregrounds, retry once.
+              // The plugin returns the cached recent sign-in.
+              App.addListener("appStateChange", ({ isActive }) => {
+                if (!isActive) return;
+                GoogleAuth.signIn().then(resolve, reject);
+              }).then((handle) => {
+                appResumeListener = handle;
+              });
+            });
+          } finally {
+            if (timeoutId) clearTimeout(timeoutId);
+            if (appResumeListener) appResumeListener.remove();
+          }
+        };
+
+        type GoogleAuthResult = { authentication?: { idToken?: string } };
+        const result = (await signInWithFallback()) as GoogleAuthResult;
         // Capacitor 7 + this plugin return the ID token under
         // authentication.idToken. If it's missing we bail — Supabase's
         // signInWithIdToken needs the token's `aud` claim to match the

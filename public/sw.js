@@ -82,6 +82,14 @@ self.addEventListener("fetch", (event) => {
   // own caching, and we'd just bloat our cache by mirroring them.
   if (url.origin !== self.location.origin) return;
 
+  // Never cache non-GET requests. The Cache API only supports GET;
+  // calling cache.put with a POST/PUT/DELETE request throws
+  // "Request method 'X' is unsupported" — which Beka caught in the
+  // Android logcat for an auth-flow POST that was hitting the
+  // StaleWhileRevalidate branch below. Letting non-GETs pass through
+  // is the right behaviour anyway (they're never the app shell).
+  if (request.method !== "GET") return;
+
   // Never cache API routes — these are dynamic (auth-gated, request-
   // specific). The app already handles API failures via
   // `useOnlineStatus` + the offlineStore fallbacks.
