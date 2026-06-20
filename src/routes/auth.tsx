@@ -69,88 +69,44 @@ function AuthPage() {
       const isNative = Capacitor.isNativePlatform();
 
       if (isNative && provider === "google") {
-        // Native Android/iOS Google Sign-In via the system Credential
-        // Manager (no in-app browser, no custom-scheme redirect).
-        // Background on why this matters: Google as of 2021 refuses to
-        // render OAuth pages inside Capacitor's wrapped WebView; the
-        // earlier Custom-Tab workaround hung on the redirect from
-        // Supabase back to `com.lokali.app://`. The native plugin
-        // skips the browser entirely — Google's SDK opens its own
-        // account picker, returns a signed ID token, and we hand that
-        // token straight to Supabase via signInWithIdToken to
-        // exchange it for a session. No deep links, no redirects.
-        const { GoogleAuth } = await import("@codetrix-studio/capacitor-google-auth");
-        const { App } = await import("@capacitor/app");
-        // Initialize is idempotent in the plugin — calling it on each
-        // sign-in is fine and means we don't need a separate boot-time
-        // wire-up in useCapacitorBridge.
-        await GoogleAuth.initialize({
-          clientId:
-            "859999970433-lh1ph628p83us5aoel81mefgt926n58i.apps.googleusercontent.com",
-          scopes: ["profile", "email"],
-          grantOfflineAccess: true,
-        });
-
-        // Beka 2026-06-21 — resilient sign-in.
+        // Browser-based Google OAuth (Chrome Custom Tab) — Beka
+        // 2026-06-21 switch from native @codetrix-studio plugin.
         //
-        // Symptom Beka caught via logcat: when the Google account
-        // picker opens, Android stops MainActivity. Capacitor 7 tries
-        // to persist the pending plugin call via saveInstanceState
-        // and fails with "Couldn't save last GoogleAuth's Plugin
-        // signIn call". When the activity resumes after the user
-        // picks an account, the plugin's success result has no
-        // saved callback ID to deliver to — the JS Promise from
-        // GoogleAuth.signIn() hangs forever, the user is stranded.
+        // Why we moved off the native plugin: Beka's Android device
+        // hit a reproducible Capacitor 7 lifecycle bug where the
+        // pending GoogleAuth.signIn() plugin call could not be saved
+        // across the activity stop that the picker triggers
+        // ("Couldn't save last GoogleAuth's Plugin signIn call" in
+        // logcat). The JS promise hung forever, no idToken returned.
+        // We tried a saveCall-aware retry on appStateChange — the
+        // second call also failed (no cached result surfaced).
         //
-        // Workaround: race GoogleAuth.signIn() against a 30 s
-        // timeout AND an appStateChange listener. If the app comes
-        // back to the foreground without resolving, we retry
-        // GoogleAuth.signIn() — the plugin caches the recent
-        // successful sign-in inside Google Play Services Credential
-        // Manager, so the second call returns the same idToken
-        // immediately (no second picker).
-        const signInWithFallback = async (): Promise<unknown> => {
-          let appResumeListener: { remove: () => void } | null = null;
-          let timeoutId: ReturnType<typeof setTimeout> | null = null;
-          try {
-            return await new Promise((resolve, reject) => {
-              GoogleAuth.signIn().then(resolve, reject);
-              // Hard 30 s ceiling so the spinner can't spin forever.
-              timeoutId = setTimeout(
-                () => reject(new Error("GoogleAuth.signIn timed out")),
-                30_000,
-              );
-              // Resume hook: when the app foregrounds, retry once.
-              // The plugin returns the cached recent sign-in.
-              App.addListener("appStateChange", ({ isActive }) => {
-                if (!isActive) return;
-                GoogleAuth.signIn().then(resolve, reject);
-              }).then((handle) => {
-                appResumeListener = handle;
-              });
-            });
-          } finally {
-            if (timeoutId) clearTimeout(timeoutId);
-            if (appResumeListener) appResumeListener.remove();
-          }
-        };
-
-        type GoogleAuthResult = { authentication?: { idToken?: string } };
-        const result = (await signInWithFallback()) as GoogleAuthResult;
-        // Capacitor 7 + this plugin return the ID token under
-        // authentication.idToken. If it's missing we bail — Supabase's
-        // signInWithIdToken needs the token's `aud` claim to match the
-        // serverClientId we configured, and an empty token gives a
-        // confusing "invalid token" error from Supabase.
-        const idToken = result?.authentication?.idToken;
-        if (!idToken) {
-          throw new Error("Google Sign-In returned no ID token");
-        }
-        const { error } = await supabase.auth.signInWithIdToken({
-          provider: "google",
-          token: idToken,
+        // Browser-based OAuth sidesteps the bridge call entirely:
+        // open Google's auth page in a Chrome Custom Tab, let the
+        // user sign in normally, and rely on Supabase to redirect
+        // back to `com.lokali.app://auth/callback?code=...`. The
+        // intent filter in AndroidManifest catches the scheme,
+        // useCapacitorBridge's appUrlOpen listener pulls the code,
+        // and supabase.auth.exchangeCodeForSession finishes the job.
+        // Identical pattern to the Apple branch below — proven to
+        // work, no plugin-call lifecycle dependency.
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider,
+          options: {
+            redirectTo: "com.lokali.app://auth/callback",
+            // skipBrowserRedirect prevents Supabase from trying to
+            // window.location-navigate the wrapped WebView (which
+            // Google rejects). We open the URL ourselves in a
+            // Custom Tab via @capacitor/browser.
+            skipBrowserRedirect: true,
+          },
         });
         if (error) throw error;
+        if (!data?.url) {
+          throw new Error("Google OAuth URL missing from Supabase response");
+        }
+        const { Browser } = await import("@capacitor/browser");
+        await Browser.open({ url: data.url, presentationStyle: "popover" });
         // The onAuthStateChange listener in this component handles the
         // navigation (onboarding vs home) — nothing else to do here.
       } else if (isNative && provider === "apple") {
