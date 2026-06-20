@@ -7,10 +7,12 @@ import { useT } from "@/hooks/useT";
 import { MobileFrame } from "@/components/MobileFrame";
 
 /**
- * Privacy Policy — externally-fetchable at `https://lokali.ge/privacy`
+ * Privacy Policy — externally-fetchable at `https://lokali.travel/privacy`
  * (or `https://lokali-app.lovable.app/privacy` for the Lovable preview
- * URL — kept for fallback even after Beka pointed lokali.ge at the same
+ * URL — kept for fallback even after Beka pointed lokali.travel at the same
  * Lovable site, in case the custom-domain DNS ever lapses).
+ * Historical: `lokali.ge` was the previous custom domain (retired
+ * 2026-06-18 in favour of the new `.travel` TLD).
  * This URL is what Beka pastes into the Google Play Console and into
  * the OAuth consent screen → "App privacy policy" field; if the URL
  * 404s, those reviews fail. Keep this route stable.

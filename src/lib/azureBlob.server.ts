@@ -246,7 +246,7 @@ export async function mirrorPhotoToBlob(url: string): Promise<string | null> {
     const res = await fetch(url, {
       redirect: "follow",
       headers: {
-        "User-Agent": "Lokali-PhotoMirror/1.0 (https://lokali.ge; lokaliapps@gmail.com)",
+        "User-Agent": "Lokali-PhotoMirror/1.0 (https://lokali.travel; lokaliapps@gmail.com)",
         Accept: "image/*",
       },
     });

@@ -181,7 +181,7 @@ export const Route = createFileRoute("/attraction/$id")({
       // the canonical stays correct in SSR (where `window` isn't there)
       // and matches the production hostname Beka ships on.
       links: [
-        { rel: "canonical", href: `https://lokali.ge/attraction/${params.id}` },
+        { rel: "canonical", href: `https://lokali.travel/attraction/${params.id}` },
       ],
     };
   },

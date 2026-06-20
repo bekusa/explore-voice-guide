@@ -220,7 +220,7 @@ function RootComponent() {
 
   // Register the offline app-shell Service Worker so the next cold
   // start works without internet. Capacitor's `errorPath: offline.html`
-  // fallback fires only when the WebView can't reach `lokali.ge` AT
+  // fallback fires only when the WebView can't reach `lokali.travel` AT
   // ALL; with a SW registered, fetch-event interception serves the
   // cached app shell instead, the React app boots, and the user can
   // reach `/saved` (rendered from @capacitor/preferences +

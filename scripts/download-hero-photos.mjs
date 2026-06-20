@@ -16,7 +16,7 @@
  *   node scripts/download-hero-photos.mjs
  *
  * Optional flags:
- *   --base=<URL>     The /api/photo origin (default: https://lokali.ge).
+ *   --base=<URL>     The /api/photo origin (default: https://lokali.travel).
  *                    Use http://localhost:5173 to test against the
  *                    dev server before pushing.
  *   --skip-existing  Don't re-download files that already exist.
@@ -38,7 +38,7 @@ const ROOT = join(__dirname, "..");
 // ─── CLI args ───────────────────────────────────────────────────────
 const args = process.argv.slice(2);
 const baseArg = args.find((a) => a.startsWith("--base="));
-const BASE = baseArg ? baseArg.slice("--base=".length) : "https://lokali.ge";
+const BASE = baseArg ? baseArg.slice("--base=".length) : "https://lokali.travel";
 const SKIP_EXISTING = args.includes("--skip-existing");
 const CITIES_ONLY = args.includes("--cities-only");
 const MUSEUMS_ONLY = args.includes("--museums-only");

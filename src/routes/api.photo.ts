@@ -374,7 +374,7 @@ async function googlePhoto(q: string, city: string | null): Promise<string | nul
 // (Cloudflare workers default to a generic UA that Wikipedia treats
 // as a misbehaving bot). Identifies the app + a contact email so
 // the foundation can reach us if we ever start hammering them.
-const WIKI_USER_AGENT = "LokaliApp/1.0 (https://lokali.ge; contact@lokali.ge)";
+const WIKI_USER_AGENT = "LokaliApp/1.0 (https://lokali.travel; contact@lokali.travel)";
 const WIKI_HEADERS: HeadersInit = { "User-Agent": WIKI_USER_AGENT, Accept: "application/json" };
 
 /**

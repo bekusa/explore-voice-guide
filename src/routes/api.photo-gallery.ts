@@ -44,7 +44,7 @@ import { sanitizeWikiLang } from "./api.photo";
  */
 
 const WIKI_USER_AGENT =
-  "LokaliApp/1.0 (https://lokali.ge; contact@lokali.ge)";
+  "LokaliApp/1.0 (https://lokali.travel; contact@lokali.travel)";
 const WIKI_HEADERS: HeadersInit = {
   "User-Agent": WIKI_USER_AGENT,
   Accept: "application/json",

@@ -56,7 +56,7 @@ export const Route = createFileRoute("/api/image-proxy")({
             redirect: "follow",
             headers: {
               "User-Agent":
-                "Lokali-ImageProxy/1.0 (https://lokali.ge; lokaliapps@gmail.com)",
+                "Lokali-ImageProxy/1.0 (https://lokali.travel; lokaliapps@gmail.com)",
               Accept: "image/*",
             },
           });

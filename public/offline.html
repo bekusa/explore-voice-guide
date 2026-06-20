@@ -7,7 +7,7 @@
     <style>
       /*
         Capacitor server.errorPath fallback. The wrapped WebView lands
-        here when https://lokali.ge fails to load.
+        here when https://lokali.travel fails to load.
 
         Self-contained styling — no external assets, no Tailwind,
         no React. Reads saved tours from Capacitor Preferences and
@@ -677,7 +677,10 @@
       document
         .getElementById("retryBtn")
         .addEventListener("click", function () {
-          window.location.href = "https://lokali.ge/saved";
+          // Use the current origin so this stays correct after the
+          // 2026-06-18 lokali.ge → lokali.travel migration regardless
+          // of which domain the user originally cold-launched on.
+          window.location.href = window.location.origin + "/saved";
         });
     </script>
   </body>

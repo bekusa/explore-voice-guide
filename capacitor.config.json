@@ -3,11 +3,13 @@
   "appName": "Lokali",
   "webDir": "dist/client",
   "server": {
-    "url": "https://lokali.ge",
+    "url": "https://lokali.travel",
     "cleartext": false,
     "androidScheme": "https",
     "errorPath": "offline.html",
     "allowNavigation": [
+      "lokali.travel",
+      "www.lokali.travel",
       "lokali.ge",
       "www.lokali.ge"
     ]

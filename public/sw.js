@@ -2,16 +2,16 @@
  * Lokali Service Worker — offline app-shell caching.
  *
  * Problem this solves:
- *   Lokali's Capacitor WebView loads `https://lokali.ge` on every cold
+ *   Lokali's Capacitor WebView loads `https://lokali.travel` on every cold
  *   start. When the user is offline, the WebView never reaches
- *   lokali.ge → Capacitor's `errorPath: offline.html` kicks in → that
+ *   lokali.travel → Capacitor's `errorPath: offline.html` kicks in → that
  *   static page has no access to the user's saved tours (stored
  *   locally via @capacitor/filesystem + @capacitor/preferences).
  *   Result: a user who saved a Tbilisi tour for the flight can't
  *   open it on the plane.
  *
  * What this SW does:
- *   Once the user has loaded lokali.ge online ONE time, this SW
+ *   Once the user has loaded lokali.travel online ONE time, this SW
  *   caches the app shell (HTML + Vite-bundled JS/CSS) and serves it
  *   from cache when network is down. The cached HTML boots the
  *   normal React app, which then renders `/saved` from local
@@ -30,8 +30,8 @@
  *     HTML is on disk for the next offline launch.
  */
 
-const CACHE_VERSION = "lokali-shell-v5";
-const RUNTIME_CACHE = "lokali-runtime-v5";
+const CACHE_VERSION = "lokali-shell-v6";
+const RUNTIME_CACHE = "lokali-runtime-v6";
 
 // Minimum set of routes we want to be reachable offline even if the
 // user has never visited them. Anything else gets cached lazily.
@@ -90,7 +90,7 @@ self.addEventListener("fetch", (event) => {
   // Beka 2026-06-13 — bypass the SW entirely for native-bridge.js
   // and any Capacitor-local plugin assets. errorPath pages
   // (offline.html) load these from the WebView's bundled assets,
-  // but the SW lives on the lokali.ge origin and would intercept
+  // but the SW lives on the lokali.travel origin and would intercept
   // the fetch → try to load from network → fail offline → return
   // undefined → bridge script never executes → Capacitor.Plugins
   // never attaches → "Saved tours aren't ready yet" loop. Skipping
