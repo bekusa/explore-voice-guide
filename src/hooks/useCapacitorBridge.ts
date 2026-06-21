@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import type { AnyRouter } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -87,6 +88,12 @@ export function useCapacitorBridge(router: AnyRouter) {
         // "com.lokali.app://auth/callback#access_token=...&refresh_token=..."
         // (implicit flow). We handle both because Supabase has been
         // known to switch defaults across versions.
+        // 2026-06-21 — toast diagnostics because release builds have
+        // webContentsDebuggingEnabled=false, which makes console.warn
+        // invisible in logcat. Toasts surface live on screen so Beka
+        // can see exactly what the deep-link handler observed. Remove
+        // these once the OAuth path is stable.
+        toast.info(`appUrlOpen: ${event.url.slice(0, 60)}…`, { duration: 8000 });
         console.warn("[OAuth] appUrlOpen received:", event.url);
         try {
           const url = new URL(event.url);
@@ -94,6 +101,7 @@ export function useCapacitorBridge(router: AnyRouter) {
           // links (future share-link openers, push-notification
           // payloads, etc. — they get routed differently).
           if (!url.pathname.includes("/auth/callback")) {
+            toast.warning(`Ignored deep link, pathname=${url.pathname}`, { duration: 6000 });
             console.warn("[OAuth] ignored — pathname=", url.pathname);
             return;
           }
@@ -116,11 +124,14 @@ export function useCapacitorBridge(router: AnyRouter) {
           // ── PATH 1 — PKCE flow (?code=... in query) ──
           const code = url.searchParams.get("code");
           if (code) {
+            toast.info("PKCE code received, exchanging…", { duration: 6000 });
             console.warn("[OAuth] PKCE code present, exchanging...");
             void supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
               if (error) {
+                toast.error(`Exchange failed: ${error.message}`, { duration: 12000 });
                 console.error("[OAuth] exchangeCodeForSession failed:", error.message ?? error);
               } else {
+                toast.success(`Signed in: ${data.session?.user?.email ?? "ok"}`, { duration: 4000 });
                 console.warn("[OAuth] exchangeCodeForSession success, user:", data.session?.user?.email);
                 router.navigate({ to: "/" });
               }
@@ -138,13 +149,16 @@ export function useCapacitorBridge(router: AnyRouter) {
             const accessToken = params.get("access_token");
             const refreshToken = params.get("refresh_token");
             if (accessToken && refreshToken) {
+              toast.info("Implicit tokens, setting session…", { duration: 6000 });
               console.warn("[OAuth] Implicit tokens present, setting session...");
               void supabase.auth
                 .setSession({ access_token: accessToken, refresh_token: refreshToken })
                 .then(({ data, error }) => {
                   if (error) {
+                    toast.error(`setSession failed: ${error.message}`, { duration: 12000 });
                     console.error("[OAuth] setSession failed:", error.message ?? error);
                   } else {
+                    toast.success(`Signed in: ${data.session?.user?.email ?? "ok"}`, { duration: 4000 });
                     console.warn("[OAuth] setSession success, user:", data.session?.user?.email);
                     router.navigate({ to: "/" });
                   }
@@ -155,7 +169,8 @@ export function useCapacitorBridge(router: AnyRouter) {
 
           // Neither code nor tokens — Supabase may have sent us an
           // error. Most common: redirect_uri mismatch.
-          const oauthError = url.searchParams.get("error") || url.hash;
+          const oauthError = url.searchParams.get("error") || url.hash || "(empty)";
+          toast.error(`No code/token. error=${oauthError.slice(0, 80)}`, { duration: 12000 });
           console.error("[OAuth] callback had no code or tokens. url=", event.url, "error=", oauthError);
         } catch (err) {
           console.error("[OAuth] appUrlOpen parse failed", err);
