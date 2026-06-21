@@ -83,14 +83,21 @@ export function useCapacitorBridge(router: AnyRouter) {
       const urlHandle = await App.addListener("appUrlOpen", (event) => {
         // event.url is the full deep link, e.g.
         // "com.lokali.app://auth/callback?code=abc123&state=xyz"
+        // (PKCE flow) or
+        // "com.lokali.app://auth/callback#access_token=...&refresh_token=..."
+        // (implicit flow). We handle both because Supabase has been
+        // known to switch defaults across versions.
+        console.warn("[OAuth] appUrlOpen received:", event.url);
         try {
           const url = new URL(event.url);
           // Only handle our own auth callbacks; ignore any other deep
           // links (future share-link openers, push-notification
           // payloads, etc. — they get routed differently).
-          if (!url.pathname.includes("/auth/callback")) return;
-          const code = url.searchParams.get("code");
-          if (!code) return;
+          if (!url.pathname.includes("/auth/callback")) {
+            console.warn("[OAuth] ignored — pathname=", url.pathname);
+            return;
+          }
+
           // Close the Chrome Custom Tab that auth.tsx opened for the
           // OAuth flow. Without this the tab stays floating over the
           // app after the deep link fires. Fire-and-forget — failures
@@ -105,25 +112,51 @@ export function useCapacitorBridge(router: AnyRouter) {
               // here, but be defensive).
             }
           })();
-          // exchangeCodeForSession is idempotent — if the session was
-          // already established by Supabase's own client (which can
-          // happen if the WebView captured the redirect through a
-          // different path), the call resolves cleanly without
-          // breaking the existing session.
-          void supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-            if (error) {
-              // Surfacing as console.error rather than a toast — the
-              // common path is success, and a toast on every cold
-              // OAuth landing would be noisy for the happy case.
-              // The /auth page already handles auth state changes.
-              console.error("[OAuth] exchangeCodeForSession failed", error);
-            } else {
-              // Navigate to / so the user lands on home post-auth
-              // rather than the empty deep-link path the WebView
-              // resolved to.
-              router.navigate({ to: "/" });
+
+          // ── PATH 1 — PKCE flow (?code=... in query) ──
+          const code = url.searchParams.get("code");
+          if (code) {
+            console.warn("[OAuth] PKCE code present, exchanging...");
+            void supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
+              if (error) {
+                console.error("[OAuth] exchangeCodeForSession failed:", error.message ?? error);
+              } else {
+                console.warn("[OAuth] exchangeCodeForSession success, user:", data.session?.user?.email);
+                router.navigate({ to: "/" });
+              }
+            });
+            return;
+          }
+
+          // ── PATH 2 — Implicit flow (#access_token=... in fragment) ──
+          // Supabase shipped some versions where mobile OAuth uses
+          // implicit instead of PKCE; URL.searchParams doesn't read
+          // the fragment, so we parse it manually.
+          const fragment = url.hash.startsWith("#") ? url.hash.slice(1) : url.hash;
+          if (fragment) {
+            const params = new URLSearchParams(fragment);
+            const accessToken = params.get("access_token");
+            const refreshToken = params.get("refresh_token");
+            if (accessToken && refreshToken) {
+              console.warn("[OAuth] Implicit tokens present, setting session...");
+              void supabase.auth
+                .setSession({ access_token: accessToken, refresh_token: refreshToken })
+                .then(({ data, error }) => {
+                  if (error) {
+                    console.error("[OAuth] setSession failed:", error.message ?? error);
+                  } else {
+                    console.warn("[OAuth] setSession success, user:", data.session?.user?.email);
+                    router.navigate({ to: "/" });
+                  }
+                });
+              return;
             }
-          });
+          }
+
+          // Neither code nor tokens — Supabase may have sent us an
+          // error. Most common: redirect_uri mismatch.
+          const oauthError = url.searchParams.get("error") || url.hash;
+          console.error("[OAuth] callback had no code or tokens. url=", event.url, "error=", oauthError);
         } catch (err) {
           console.error("[OAuth] appUrlOpen parse failed", err);
         }
