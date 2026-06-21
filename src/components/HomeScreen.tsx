@@ -26,7 +26,7 @@ import { LANGUAGES } from "@/lib/languages";
 import { HOME_CITIES } from "@/lib/cityList";
 import { CityCard } from "@/components/CityCard";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
-import { attractionSlug, setAttractionHint } from "@/lib/api";
+import { attractionSlug, classifySearchQuery, setAttractionHint } from "@/lib/api";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
 import { getStaticMuseumHeroUrl } from "@/lib/museumHeroPhotos";
 import {
@@ -152,12 +152,31 @@ export function HomeScreen() {
   const heroBlurb = t(`hero.${heroKey}.blurb` as UiKey);
   const heroCity = t(`hero.${heroKey}.city` as UiKey);
 
-  function submitSearch(e: React.FormEvent) {
+  async function submitSearch(e: React.FormEvent) {
     e.preventDefault();
     const q = query.trim();
     if (!q) return;
-    // Send the query straight to the n8n-backed /results page so any city,
-    // country or landmark resolves through the Lokali Attractions workflow.
+    // Stage-0 routing — Beka 2026-06-21 UX spec.
+    // Before: every submitted query went to /results (city list).
+    //   Search "Sagrada Familia" → list of 30 unrelated attractions.
+    // Now: classify with Haiku first.
+    //   "attraction" → land directly on /attraction/<slug>.
+    //   "place" / "other" → /results (existing behaviour).
+    // The classifier is fail-soft (returns "other" on any error), so
+    // a slow network or a Haiku 5xx just degrades to the old flow.
+    const result = await classifySearchQuery(q);
+    if (result.kind === "attraction" && result.slug && result.name) {
+      // Stash the resolved name + city so the attraction page's photo
+      // lookup can disambiguate without bouncing through /api/photo
+      // with a city-blind query (Beka's "Grand Palace → Tbilisi
+      // restaurant" bug). Same hint mechanism every other linker uses.
+      setAttractionHint(result.slug, {
+        name: result.name,
+        ...(result.city ? { city: result.city } : {}),
+      });
+      navigate({ to: "/attraction/$id", params: { id: result.slug } });
+      return;
+    }
     navigate({ to: "/results", search: { q } });
   }
 

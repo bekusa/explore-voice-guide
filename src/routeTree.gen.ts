@@ -37,6 +37,7 @@ import { Route as ApiPhotoRouteImport } from './routes/api.photo'
 import { Route as ApiMuseumHighlightsRouteImport } from './routes/api.museum-highlights'
 import { Route as ApiImageProxyRouteImport } from './routes/api.image-proxy'
 import { Route as ApiGuideRouteImport } from './routes/api.guide'
+import { Route as ApiClassifyQueryRouteImport } from './routes/api.classify-query'
 import { Route as ApiAttractionsRouteImport } from './routes/api.attractions'
 import { Route as TmSimIdRoleRouteImport } from './routes/tm-sim.$id.$role'
 import { Route as ApiAccountDeleteRouteImport } from './routes/api.account.delete'
@@ -181,6 +182,11 @@ const ApiGuideRoute = ApiGuideRouteImport.update({
   path: '/api/guide',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiClassifyQueryRoute = ApiClassifyQueryRouteImport.update({
+  id: '/api/classify-query',
+  path: '/api/classify-query',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAttractionsRoute = ApiAttractionsRouteImport.update({
   id: '/api/attractions',
   path: '/api/attractions',
@@ -215,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/time-machine': typeof TimeMachineRoute
   '/api/attractions': typeof ApiAttractionsRoute
+  '/api/classify-query': typeof ApiClassifyQueryRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/image-proxy': typeof ApiImageProxyRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
@@ -248,6 +255,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/time-machine': typeof TimeMachineRoute
   '/api/attractions': typeof ApiAttractionsRoute
+  '/api/classify-query': typeof ApiClassifyQueryRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/image-proxy': typeof ApiImageProxyRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
@@ -282,6 +290,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/time-machine': typeof TimeMachineRoute
   '/api/attractions': typeof ApiAttractionsRoute
+  '/api/classify-query': typeof ApiClassifyQueryRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/image-proxy': typeof ApiImageProxyRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
@@ -317,6 +326,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/time-machine'
     | '/api/attractions'
+    | '/api/classify-query'
     | '/api/guide'
     | '/api/image-proxy'
     | '/api/museum-highlights'
@@ -350,6 +360,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/time-machine'
     | '/api/attractions'
+    | '/api/classify-query'
     | '/api/guide'
     | '/api/image-proxy'
     | '/api/museum-highlights'
@@ -383,6 +394,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/time-machine'
     | '/api/attractions'
+    | '/api/classify-query'
     | '/api/guide'
     | '/api/image-proxy'
     | '/api/museum-highlights'
@@ -417,6 +429,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TimeMachineRoute: typeof TimeMachineRoute
   ApiAttractionsRoute: typeof ApiAttractionsRoute
+  ApiClassifyQueryRoute: typeof ApiClassifyQueryRoute
   ApiGuideRoute: typeof ApiGuideRoute
   ApiImageProxyRoute: typeof ApiImageProxyRoute
   ApiMuseumHighlightsRoute: typeof ApiMuseumHighlightsRoute
@@ -628,6 +641,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGuideRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/classify-query': {
+      id: '/api/classify-query'
+      path: '/api/classify-query'
+      fullPath: '/api/classify-query'
+      preLoaderRoute: typeof ApiClassifyQueryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/attractions': {
       id: '/api/attractions'
       path: '/api/attractions'
@@ -694,6 +714,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TimeMachineRoute: TimeMachineRoute,
   ApiAttractionsRoute: ApiAttractionsRoute,
+  ApiClassifyQueryRoute: ApiClassifyQueryRoute,
   ApiGuideRoute: ApiGuideRoute,
   ApiImageProxyRoute: ApiImageProxyRoute,
   ApiMuseumHighlightsRoute: ApiMuseumHighlightsRoute,

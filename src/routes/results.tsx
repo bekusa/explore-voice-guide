@@ -23,6 +23,7 @@ import { UnescoBadge } from "@/components/UnescoBadge";
 import { isUnescoSite } from "@/lib/unesco";
 import {
   attractionSlug,
+  classifySearchQuery,
   detectQueryLanguage,
   fetchAttractions,
   fetchGuideFresh,
@@ -262,10 +263,22 @@ function ResultsPage() {
     }
   };
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const next = query.trim();
     if (!next) return;
+    // Stage-0 classifier — same UX rule HomeScreen.submitSearch uses:
+    // a typed landmark name routes straight to /attraction/<slug>,
+    // and only city / region / country queries refresh /results.
+    const result = await classifySearchQuery(next);
+    if (result.kind === "attraction" && result.slug && result.name) {
+      setAttractionHint(result.slug, {
+        name: result.name,
+        ...(result.city ? { city: result.city } : {}),
+      });
+      navigate({ to: "/attraction/$id", params: { id: result.slug } });
+      return;
+    }
     // New search → reset to page 1.
     navigate({
       to: "/results",

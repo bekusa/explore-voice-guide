@@ -785,6 +785,53 @@ export function getAttractionHint(slug: string): AttractionHint | null {
 }
 
 /**
+ * Stage-0 search-bar routing classifier (client wrapper).
+ *
+ * Hits `/api/classify-query` to decide whether the user's typed query
+ * names a CITY/REGION/COUNTRY ("place" → list of attractions on
+ * /results) or a SPECIFIC ATTRACTION ("attraction" → straight to
+ * /attraction/<slug>). Server uses Claude Haiku for unknown queries
+ * and a Supabase cache for known ones — see api.classify-query.ts.
+ *
+ * Fail-soft: any network/server error returns `{kind:"other"}` so
+ * the caller falls back to /results, which is the original behaviour
+ * before this classifier existed. No throws from this function.
+ */
+export type SearchClassification = {
+  kind: "attraction" | "place" | "other";
+  name?: string;
+  city?: string;
+  country?: string;
+  slug?: string;
+};
+
+export async function classifySearchQuery(
+  query: string,
+): Promise<SearchClassification> {
+  const q = query.trim();
+  if (!q) return { kind: "other" };
+  try {
+    const res = await fetch(
+      `/api/classify-query?q=${encodeURIComponent(q)}`,
+      { headers: { Accept: "application/json" } },
+    );
+    if (!res.ok) return { kind: "other" };
+    const data = (await res.json()) as SearchClassification;
+    if (
+      data &&
+      (data.kind === "attraction" ||
+        data.kind === "place" ||
+        data.kind === "other")
+    ) {
+      return data;
+    }
+    return { kind: "other" };
+  } catch {
+    return { kind: "other" };
+  }
+}
+
+/**
  * Detect the language of a search query / place name from its script,
  * so the n8n workflow returns results in the same language the user
  * typed. Without this, anonymous users (no Supabase profile) always

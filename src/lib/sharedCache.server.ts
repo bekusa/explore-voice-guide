@@ -73,7 +73,8 @@ type DbWithCache = {
       | "cached_museum_highlights"
       | "cached_time_machine"
       | "cached_photos"
-      | "cached_audio",
+      | "cached_audio"
+      | "cached_classifications",
   ) => AnyTable;
 };
 
@@ -588,5 +589,76 @@ export async function putCachedAudio(
     if (error) console.warn("[sharedCache] putCachedAudio error", error.message);
   } catch (err) {
     console.warn("[sharedCache] putCachedAudio threw", err);
+  }
+}
+
+/* ─── Classifications (Stage-0 search routing) ─── */
+
+/**
+ * Stored shape of one classification cache row. The classifier
+ * endpoint normalises raw Haiku output into this strict shape before
+ * writing, so callers can rely on the field set.
+ */
+export type Classification = {
+  kind: "attraction" | "place" | "other";
+  name?: string;
+  city?: string;
+  country?: string;
+  slug?: string;
+};
+
+export async function getCachedClassification(
+  query: string,
+): Promise<Classification | null> {
+  const db = getDb();
+  if (!db) return null;
+  try {
+    const { data, error } = await db
+      .from("cached_classifications")
+      .select("kind,name,city,country,slug")
+      .eq("query_normalized", normalizeName(query))
+      .maybeSingle();
+    if (error) {
+      console.warn("[sharedCache] getCachedClassification error", error.message);
+      return null;
+    }
+    if (!data) return null;
+    const kind = data.kind;
+    if (kind !== "attraction" && kind !== "place" && kind !== "other") return null;
+    return {
+      kind,
+      name: typeof data.name === "string" ? data.name : undefined,
+      city: typeof data.city === "string" ? data.city : undefined,
+      country: typeof data.country === "string" ? data.country : undefined,
+      slug: typeof data.slug === "string" ? data.slug : undefined,
+    };
+  } catch (err) {
+    console.warn("[sharedCache] getCachedClassification threw", err);
+    return null;
+  }
+}
+
+export async function putCachedClassification(
+  query: string,
+  classification: Classification,
+): Promise<void> {
+  const db = getDb();
+  if (!db) return;
+  try {
+    const { error } = await db.from("cached_classifications").upsert(
+      {
+        query_normalized: normalizeName(query),
+        kind: classification.kind,
+        ...(classification.name ? { name: classification.name } : {}),
+        ...(classification.city ? { city: classification.city } : {}),
+        ...(classification.country ? { country: classification.country } : {}),
+        ...(classification.slug ? { slug: classification.slug } : {}),
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "query_normalized" },
+    );
+    if (error) console.warn("[sharedCache] putCachedClassification error", error.message);
+  } catch (err) {
+    console.warn("[sharedCache] putCachedClassification threw", err);
   }
 }

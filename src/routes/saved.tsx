@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 import { MobileFrame } from "@/components/MobileFrame";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { clearAll, removeItem, type SavedItem } from "@/lib/savedStore";
-import { attractionSlug, setAttractionHint } from "@/lib/api";
+import { attractionSlug, classifySearchQuery, setAttractionHint } from "@/lib/api";
 import { useT, useTranslated } from "@/hooks/useT";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
@@ -47,13 +47,24 @@ function SavedPage() {
   const [online, setOnline] = useState(true);
   const [query, setQuery] = useState("");
 
-  // Same search-bar shape Home uses: any city / landmark / vibe →
-  // /results with the typed query. Beka asked for parity so the user
-  // never has to bounce back to Home just to look something up.
-  function submitSearch(e: React.FormEvent) {
+  // Same search-bar shape Home uses (Stage-0 classifier → either
+  // /attraction/<slug> for a named landmark or /results for a city /
+  // region / country). See HomeScreen.submitSearch + classifySearchQuery
+  // in lib/api.ts. Fail-soft to /results on any classifier error so a
+  // slow network never blocks the user.
+  async function submitSearch(e: React.FormEvent) {
     e.preventDefault();
     const q = query.trim();
     if (!q) return;
+    const result = await classifySearchQuery(q);
+    if (result.kind === "attraction" && result.slug && result.name) {
+      setAttractionHint(result.slug, {
+        name: result.name,
+        ...(result.city ? { city: result.city } : {}),
+      });
+      void navigate({ to: "/attraction/$id", params: { id: result.slug } });
+      return;
+    }
     void navigate({ to: "/results", search: { q } });
   }
 
