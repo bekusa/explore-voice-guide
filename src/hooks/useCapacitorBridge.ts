@@ -86,15 +86,9 @@ export function useCapacitorBridge(router: AnyRouter) {
         // "com.lokali.app://auth/callback?code=abc123&state=xyz"
         // (PKCE flow) or
         // "com.lokali.app://auth/callback#access_token=...&refresh_token=..."
-        // (implicit flow). We handle both because Supabase has been
-        // known to switch defaults across versions.
-        // 2026-06-21 — toast diagnostics because release builds have
-        // webContentsDebuggingEnabled=false, which makes console.warn
-        // invisible in logcat. Toasts surface live on screen so Beka
-        // can see exactly what the deep-link handler observed. Remove
-        // these once the OAuth path is stable.
-        toast.info(`appUrlOpen: ${event.url.slice(0, 60)}…`, { duration: 8000 });
-        console.warn("[OAuth] appUrlOpen received:", event.url);
+        // (implicit flow). Supabase's mobile OAuth currently uses
+        // implicit (tokens in fragment); we handle both because the
+        // default has flipped between versions.
         try {
           const url = new URL(event.url);
           // Only handle our own auth callbacks; ignore any other deep
@@ -108,11 +102,7 @@ export function useCapacitorBridge(router: AnyRouter) {
           // get from a normal https URL. So we check the raw URL
           // string for "auth/callback" instead of relying on
           // url.pathname; that's tolerant of both quirks.
-          if (!event.url.includes("auth/callback")) {
-            toast.warning(`Ignored deep link, host=${url.host} pathname=${url.pathname}`, { duration: 6000 });
-            console.warn("[OAuth] ignored — host=", url.host, "pathname=", url.pathname);
-            return;
-          }
+          if (!event.url.includes("auth/callback")) return;
 
           // Close the Chrome Custom Tab that auth.tsx opened for the
           // OAuth flow. Without this the tab stays floating over the
@@ -132,15 +122,11 @@ export function useCapacitorBridge(router: AnyRouter) {
           // ── PATH 1 — PKCE flow (?code=... in query) ──
           const code = url.searchParams.get("code");
           if (code) {
-            toast.info("PKCE code received, exchanging…", { duration: 6000 });
-            console.warn("[OAuth] PKCE code present, exchanging...");
-            void supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
+            void supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
               if (error) {
-                toast.error(`Exchange failed: ${error.message}`, { duration: 12000 });
+                toast.error(`Sign-in failed: ${error.message}`);
                 console.error("[OAuth] exchangeCodeForSession failed:", error.message ?? error);
               } else {
-                toast.success(`Signed in: ${data.session?.user?.email ?? "ok"}`, { duration: 4000 });
-                console.warn("[OAuth] exchangeCodeForSession success, user:", data.session?.user?.email);
                 router.navigate({ to: "/" });
               }
             });
@@ -157,17 +143,13 @@ export function useCapacitorBridge(router: AnyRouter) {
             const accessToken = params.get("access_token");
             const refreshToken = params.get("refresh_token");
             if (accessToken && refreshToken) {
-              toast.info("Implicit tokens, setting session…", { duration: 6000 });
-              console.warn("[OAuth] Implicit tokens present, setting session...");
               void supabase.auth
                 .setSession({ access_token: accessToken, refresh_token: refreshToken })
-                .then(({ data, error }) => {
+                .then(({ error }) => {
                   if (error) {
-                    toast.error(`setSession failed: ${error.message}`, { duration: 12000 });
+                    toast.error(`Sign-in failed: ${error.message}`);
                     console.error("[OAuth] setSession failed:", error.message ?? error);
                   } else {
-                    toast.success(`Signed in: ${data.session?.user?.email ?? "ok"}`, { duration: 4000 });
-                    console.warn("[OAuth] setSession success, user:", data.session?.user?.email);
                     router.navigate({ to: "/" });
                   }
                 });
@@ -176,9 +158,11 @@ export function useCapacitorBridge(router: AnyRouter) {
           }
 
           // Neither code nor tokens — Supabase may have sent us an
-          // error. Most common: redirect_uri mismatch.
+          // error. Most common: redirect_uri mismatch. Surface a
+          // single short error toast so the user knows the click
+          // didn't silently fail; details go to console for support.
           const oauthError = url.searchParams.get("error") || url.hash || "(empty)";
-          toast.error(`No code/token. error=${oauthError.slice(0, 80)}`, { duration: 12000 });
+          toast.error("Sign-in failed. Please try again.");
           console.error("[OAuth] callback had no code or tokens. url=", event.url, "error=", oauthError);
         } catch (err) {
           console.error("[OAuth] appUrlOpen parse failed", err);

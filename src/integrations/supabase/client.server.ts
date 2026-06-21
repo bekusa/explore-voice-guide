@@ -6,12 +6,32 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 
 function createSupabaseAdminClient() {
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // Prefer the EXTERNAL_* env vars over SUPABASE_*. Background
+  // (Beka 2026-06-21 — same root cause we hit on the client side):
+  // Lovable's Supabase integration auto-rewrites SUPABASE_URL +
+  // SUPABASE_SERVICE_ROLE_KEY on every Publish, pointing them at
+  // Lovable's own provisioned project (pymoatqlaochyruyytbj). The
+  // client.ts is hardcoded against Beka's project
+  // (dwyajguhgyjbgkpzjaln), so tokens issued client-side cannot be
+  // verified by an admin client built from the auto-managed env vars
+  // — every /api/account/delete attempt 401'd with "Invalid token"
+  // because the two projects have different JWT signing keys.
+  // Lovable explicitly leaves non-SUPABASE_-prefixed secrets alone,
+  // so we use the same EXTERNAL_* names sharedCache.server.ts uses
+  // and fall back to the auto-managed vars only when the EXTERNAL
+  // pair isn't set (keeps legacy deployments working).
+  const SUPABASE_URL =
+    process.env.EXTERNAL_SUPABASE_URL ?? process.env.SUPABASE_URL;
+  const SUPABASE_SERVICE_ROLE_KEY =
+    process.env.EXTERNAL_SUPABASE_SERVICE_ROLE_KEY ??
+    process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     throw new Error(
-      "Missing Supabase server environment variables. Ensure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set.",
+      "Missing Supabase server environment variables. Set either " +
+        "EXTERNAL_SUPABASE_URL + EXTERNAL_SUPABASE_SERVICE_ROLE_KEY " +
+        "(preferred, Lovable won't auto-manage them) or the legacy " +
+        "SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY pair.",
     );
   }
 
