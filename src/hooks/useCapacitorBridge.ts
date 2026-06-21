@@ -100,9 +100,17 @@ export function useCapacitorBridge(router: AnyRouter) {
           // Only handle our own auth callbacks; ignore any other deep
           // links (future share-link openers, push-notification
           // payloads, etc. — they get routed differently).
-          if (!url.pathname.includes("/auth/callback")) {
-            toast.warning(`Ignored deep link, pathname=${url.pathname}`, { duration: 6000 });
-            console.warn("[OAuth] ignored — pathname=", url.pathname);
+          //
+          // Custom-scheme URLs parse weirdly: for
+          //   com.lokali.app://auth/callback#access_token=...
+          // the URL parser treats "auth" as the HOST and "/callback"
+          // as the pathname — NOT the joined "/auth/callback" we'd
+          // get from a normal https URL. So we check the raw URL
+          // string for "auth/callback" instead of relying on
+          // url.pathname; that's tolerant of both quirks.
+          if (!event.url.includes("auth/callback")) {
+            toast.warning(`Ignored deep link, host=${url.host} pathname=${url.pathname}`, { duration: 6000 });
+            console.warn("[OAuth] ignored — host=", url.host, "pathname=", url.pathname);
             return;
           }
 
