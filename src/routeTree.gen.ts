@@ -16,6 +16,7 @@ import { Route as SavedRouteImport } from './routes/saved'
 import { Route as ResultsRouteImport } from './routes/results'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as DeleteAccountRouteImport } from './routes/delete-account'
 import { Route as PlayerRouteImport } from './routes/player'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
@@ -70,6 +71,11 @@ const ResultsRoute = ResultsRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeleteAccountRoute = DeleteAccountRouteImport.update({
+  id: '/delete-account',
+  path: '/delete-account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
   '/privacy': typeof PrivacyRoute
+  '/delete-account': typeof DeleteAccountRoute
   '/profile': typeof ProfileRoute
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
@@ -248,6 +255,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
   '/privacy': typeof PrivacyRoute
+  '/delete-account': typeof DeleteAccountRoute
   '/profile': typeof ProfileRoute
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
@@ -283,6 +291,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
   '/privacy': typeof PrivacyRoute
+  '/delete-account': typeof DeleteAccountRoute
   '/profile': typeof ProfileRoute
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
@@ -319,6 +328,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/player'
     | '/privacy'
+    | '/delete-account'
     | '/profile'
     | '/results'
     | '/saved'
@@ -353,6 +363,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/player'
     | '/privacy'
+    | '/delete-account'
     | '/profile'
     | '/results'
     | '/saved'
@@ -387,6 +398,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/player'
     | '/privacy'
+    | '/delete-account'
     | '/profile'
     | '/results'
     | '/saved'
@@ -422,6 +434,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PlayerRoute: typeof PlayerRoute
   PrivacyRoute: typeof PrivacyRoute
+  DeleteAccountRoute: typeof DeleteAccountRoute
   ProfileRoute: typeof ProfileRoute
   ResultsRoute: typeof ResultsRoute
   SavedRoute: typeof SavedRoute
@@ -492,6 +505,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/delete-account': {
+      id: '/delete-account'
+      path: '/delete-account'
+      fullPath: '/delete-account'
+      preLoaderRoute: typeof DeleteAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/player': {
@@ -707,6 +727,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PlayerRoute: PlayerRoute,
   PrivacyRoute: PrivacyRoute,
+  DeleteAccountRoute: DeleteAccountRoute,
   ProfileRoute: ProfileRoute,
   ResultsRoute: ResultsRoute,
   SavedRoute: SavedRoute,
