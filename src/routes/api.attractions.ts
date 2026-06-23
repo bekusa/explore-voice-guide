@@ -80,7 +80,7 @@ export const Route = createFileRoute("/api/attractions")({
         if (key) {
           const cached = await getCachedAttractions(key);
           if (cached !== null && hasAttractions(cached)) {
-            return jsonResponse(cached, 200, "HIT");
+            return jsonResponse(withCanonical(cached, key.query), 200, "HIT");
           }
         }
 
@@ -94,7 +94,7 @@ export const Route = createFileRoute("/api/attractions")({
               userLang,
             );
             if (ok) await putCachedAttractions(key, translated);
-            return jsonResponse(translated, 200, ok ? "TRANSLATED" : "TRANSLATE-FAILED");
+            return jsonResponse(withCanonical(translated, key.query), 200, ok ? "TRANSLATED" : "TRANSLATE-FAILED");
           }
         }
 
@@ -137,7 +137,7 @@ export const Route = createFileRoute("/api/attractions")({
 
           // Empty / unparseable Claude output → friendly empty list (NOT cached).
           if (parsed === undefined || !hasAttractions(parsed)) {
-            return jsonResponse({ attractions: [] }, 200, "MISS", "upstream-empty");
+            return jsonResponse(withCanonical({ attractions: [] }, key.query), 200, "MISS", "upstream-empty");
           }
 
           // Translate now if the user wanted a non-English response.
@@ -147,10 +147,10 @@ export const Route = createFileRoute("/api/attractions")({
               userLang,
             );
             if (ok) await putCachedAttractions(key, translated);
-            return jsonResponse(translated, 200, ok ? "MISS-TRANSLATED" : "MISS-NO-TRANS");
+            return jsonResponse(withCanonical(translated, key.query), 200, ok ? "MISS-TRANSLATED" : "MISS-NO-TRANS");
           }
 
-          return jsonResponse(parsed, 200, "MISS");
+          return jsonResponse(withCanonical(parsed, key.query), 200, "MISS");
         } catch (err) {
           // Anthropic call failed (key missing, rate limit, network,
           // …) — return an empty list with a generic `error` field so
@@ -223,6 +223,19 @@ function hasAttractions(payload: unknown): boolean {
   if (typeof payload !== "object") return false;
   const arr = (payload as { attractions?: unknown }).attractions;
   return Array.isArray(arr) && arr.length > 0;
+}
+
+/**
+ * Attach the canonical-English query to a JSON payload so the client can
+ * rewrite the URL to one shareable address per place ("თბილისი" and "Tbilisi"
+ * both collapse to ?q=Tbilisi). No-op for string/array payloads or when
+ * no canonical form was resolved.
+ */
+function withCanonical(payload: unknown, canonical: string | undefined): unknown {
+  if (canonical && payload && typeof payload === "object" && !Array.isArray(payload)) {
+    return { ...(payload as Record<string, unknown>), canonicalQuery: canonical };
+  }
+  return payload;
 }
 
 function jsonResponse(

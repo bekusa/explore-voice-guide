@@ -50,6 +50,20 @@ const LANGUAGES_RAW: Language[] = [
   { code: "ko-KR", name: "Korean", native: "한국어", flag: "🇰🇷" },
   { code: "zh-CN", name: "Chinese (Simplified)", native: "简体中文", flag: "🇨🇳" },
   { code: "zh-TW", name: "Chinese (Traditional)", native: "繁體中文", flag: "🇹🇼" },
+  // ── 2026-06-22: market expansion batch (Tbilisi tourism + S.Asia +
+  // E.Europe + Africa). UI strings auto-translate on demand via
+  // /api/translate; each just needs an Azure neural voice (azureVoices.ts)
+  // and a Wikipedia-photo locale (api.photo.ts ALLOWED_WIKI_LANGS).
+  { code: "hy-AM", name: "Armenian", native: "Հայերեն", flag: "🇦🇲" },
+  { code: "az-AZ", name: "Azerbaijani", native: "Azərbaycanca", flag: "🇦🇿" },
+  { code: "bg-BG", name: "Bulgarian", native: "Български", flag: "🇧🇬" },
+  { code: "hr-HR", name: "Croatian", native: "Hrvatski", flag: "🇭🇷" },
+  { code: "sr-RS", name: "Serbian", native: "Српски", flag: "🇷🇸" },
+  { code: "ta-IN", name: "Tamil", native: "தமிழ்", flag: "🇮🇳" },
+  { code: "te-IN", name: "Telugu", native: "తెలుగు", flag: "🇮🇳" },
+  { code: "mr-IN", name: "Marathi", native: "मराठी", flag: "🇮🇳" },
+  { code: "sw-KE", name: "Swahili", native: "Kiswahili", flag: "🇰🇪" },
+  { code: "af-ZA", name: "Afrikaans", native: "Afrikaans", flag: "🇿🇦" },
 ];
 
 /**
@@ -102,6 +116,16 @@ export const PREVIEW_PHRASES: Record<string, string> = {
   "ko-KR": "안녕하세요! 오늘 가이드를 맡겠습니다.",
   "zh-CN": "你好！今天由我为您导览。",
   "zh-TW": "你好！今天由我為您導覽。",
+  "hy-AM": "Բարև՜ Այսօր ես կլինեմ ձեր ուղեկցորդը։",
+  "az-AZ": "Salam! Bu gün sizin bələdçiniz olacağam.",
+  "bg-BG": "Здравейте! Днес аз ще бъда вашият водач.",
+  "hr-HR": "Bok! Danas ću biti vaš vodič.",
+  "sr-RS": "Здраво! Данас ћу бити ваш водич.",
+  "ta-IN": "வணக்கம்! இன்று நான் உங்கள் வழிகாட்டியாக இருப்பேன்.",
+  "te-IN": "నమస్తే! ఈ రోజు నేను మీ గైడ్‌గా ఉంటాను.",
+  "mr-IN": "नमस्कार! आज मी तुमचा मार्गदर्शक असेन.",
+  "sw-KE": "Habari! Leo nitakuwa mwongozo wako.",
+  "af-ZA": "Hallo! Ek sal vandag jou gids wees.",
 };
 
 export function getPreviewPhrase(code: string): string {

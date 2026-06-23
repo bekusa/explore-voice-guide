@@ -187,6 +187,48 @@ export const AZURE_VOICES: Record<string, AzureVoice[]> = {
     { name: "zh-TW-HsiaoChenNeural", display: "曉臻", gender: "female" },
     { name: "zh-TW-YunJheNeural", display: "雲哲", gender: "male" },
   ],
+  // ── 2026-06-22 market expansion. Verified against Azure's neural
+  // voice catalogue. Female first per the file convention.
+  "hy-AM": [
+    { name: "hy-AM-AnahitNeural", display: "Anahit", gender: "female" },
+    { name: "hy-AM-HaykNeural", display: "Hayk", gender: "male" },
+  ],
+  "az-AZ": [
+    { name: "az-AZ-BanuNeural", display: "Banu", gender: "female" },
+    { name: "az-AZ-BabekNeural", display: "Babek", gender: "male" },
+  ],
+  "bg-BG": [
+    { name: "bg-BG-KalinaNeural", display: "Kalina", gender: "female" },
+    { name: "bg-BG-BorislavNeural", display: "Borislav", gender: "male" },
+  ],
+  "hr-HR": [
+    { name: "hr-HR-GabrijelaNeural", display: "Gabrijela", gender: "female" },
+    { name: "hr-HR-SreckoNeural", display: "Srećko", gender: "male" },
+  ],
+  "sr-RS": [
+    { name: "sr-RS-SophieNeural", display: "Sophie", gender: "female" },
+    { name: "sr-RS-NicholasNeural", display: "Nikola", gender: "male" },
+  ],
+  "ta-IN": [
+    { name: "ta-IN-PallaviNeural", display: "Pallavi", gender: "female" },
+    { name: "ta-IN-ValluvarNeural", display: "Valluvar", gender: "male" },
+  ],
+  "te-IN": [
+    { name: "te-IN-ShrutiNeural", display: "Shruti", gender: "female" },
+    { name: "te-IN-MohanNeural", display: "Mohan", gender: "male" },
+  ],
+  "mr-IN": [
+    { name: "mr-IN-AarohiNeural", display: "Aarohi", gender: "female" },
+    { name: "mr-IN-ManoharNeural", display: "Manohar", gender: "male" },
+  ],
+  "sw-KE": [
+    { name: "sw-KE-ZuriNeural", display: "Zuri", gender: "female" },
+    { name: "sw-KE-RafikiNeural", display: "Rafiki", gender: "male" },
+  ],
+  "af-ZA": [
+    { name: "af-ZA-AdriNeural", display: "Adri", gender: "female" },
+    { name: "af-ZA-WillemNeural", display: "Willem", gender: "male" },
+  ],
 };
 
 /**

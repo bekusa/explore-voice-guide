@@ -34,6 +34,8 @@ const ALLOWED_WIKI_LANGS = new Set([
   "en","ka","es","fr","de","it","pt","nl","pl","sv","nb","da","fi","cs","el",
   "hu","ro","ru","uk","tr","ar","he","fa","hi","bn","ur","id","ms","th","vi",
   "ja","ko","zh",
+  // 2026-06-22 market expansion locales (localised Wikipedia photo lookup).
+  "hy","az","bg","hr","sr","ta","te","mr","sw","af",
 ]);
 export function sanitizeWikiLang(raw: string | null | undefined, fallback: string): string {
   if (!raw) return fallback;

@@ -180,9 +180,24 @@ export async function inlineImageAsDataUrl(
     );
     if (proxied.ok) {
       const blob = await proxied.blob();
-      if (blob.size <= 1_200_000) {
+      // Small originals: inline directly, no re-encode needed.
+      if (blob.size <= 600_000) {
         const dataUrl = await blobToDataUrl(blob);
         if (dataUrl) return dataUrl;
+      }
+      // Larger originals (our Azure Blob hero mirror routinely exceeds
+      // the old 1.2 MB inline cap, which silently dropped the thumbnail):
+      // downscale via a same-origin object URL so the canvas stays
+      // untainted regardless of the source host's CORS, yielding a small
+      // ~800 px JPEG that fits the localStorage budget.
+      const objectUrl = URL.createObjectURL(blob);
+      try {
+        const resized = await canvasInline(objectUrl, 800);
+        if (resized) return resized;
+        const dataUrl = await blobToDataUrl(blob);
+        if (dataUrl) return dataUrl;
+      } finally {
+        URL.revokeObjectURL(objectUrl);
       }
     }
   } catch {

@@ -100,6 +100,17 @@ const LOCALE_LOADERS: Record<string, () => Promise<LocaleDict>> = {
   vi: () => import("./ui-locales/vi").then((m) => m.VI),
   "zh-cn": () => import("./ui-locales/zh-cn").then((m) => m.ZH_CN),
   "zh-tw": () => import("./ui-locales/zh-tw").then((m) => m.ZH_TW),
+  // 2026-06-22 market expansion (+10 locales).
+  hy: () => import("./ui-locales/hy").then((m) => m.HY),
+  az: () => import("./ui-locales/az").then((m) => m.AZ),
+  bg: () => import("./ui-locales/bg").then((m) => m.BG),
+  hr: () => import("./ui-locales/hr").then((m) => m.HR),
+  sr: () => import("./ui-locales/sr").then((m) => m.SR),
+  ta: () => import("./ui-locales/ta").then((m) => m.TA),
+  te: () => import("./ui-locales/te").then((m) => m.TE),
+  mr: () => import("./ui-locales/mr").then((m) => m.MR),
+  sw: () => import("./ui-locales/sw").then((m) => m.SW),
+  af: () => import("./ui-locales/af").then((m) => m.AF),
 };
 
 /**

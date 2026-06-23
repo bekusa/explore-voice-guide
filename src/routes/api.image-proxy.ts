@@ -23,12 +23,29 @@ import { CORS_HEADERS, corsPreflight } from "@/lib/cors.server";
  *     content-addressed (Wikimedia file hash or Google Places sig)
  *     and don't rotate.
  */
-const ALLOWED_HOSTS = new Set([
-  "upload.wikimedia.org",
-  "lh3.googleusercontent.com",
-  "maps.googleapis.com",
-  "commons.wikimedia.org",
-]);
+// Our own Azure Blob photo mirror. /api/photo mirrors every resolved
+// Wikipedia / Google Places image into this container and hands the
+// browser the blob URL, so the offline-save path MUST be able to proxy
+// it. The blob host sends no CORS headers, so a direct browser fetch and
+// the <img>+canvas fallback both fail; without this allow-list entry the
+// proxy 403'd too, which is why all three save-time strategies failed and
+// /saved fell back to the MapPin placeholder offline. Derived from the
+// storage-account env so it tracks renames; the literal is a cold-start
+// fallback for when the env isn't visible at module-eval time.
+const BLOB_ACCOUNT =
+  typeof process !== "undefined"
+    ? (process.env?.AZURE_STORAGE_ACCOUNT ?? "")
+    : "";
+const ALLOWED_HOSTS = new Set(
+  [
+    "upload.wikimedia.org",
+    "lh3.googleusercontent.com",
+    "maps.googleapis.com",
+    "commons.wikimedia.org",
+    BLOB_ACCOUNT ? `${BLOB_ACCOUNT}.blob.core.windows.net` : "",
+    "lokaliphotos.blob.core.windows.net",
+  ].filter(Boolean),
+);
 
 const MAX_BYTES = 2_000_000;
 

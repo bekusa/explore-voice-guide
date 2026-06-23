@@ -22,6 +22,46 @@ import {
 
 const TTS_OUTPUT_FORMAT = "audio-24khz-48kbitrate-mono-mp3";
 
+/**
+ * Base languages whose Azure neural voices read a bare 4-digit year
+ * digit-by-digit ("1990" -> "one nine nine zero") instead of as a
+ * number. For these we wrap years in <say-as interpret-as="cardinal">
+ * so the year is spoken as a whole cardinal number, which is the
+ * natural spoken form in every language listed here.
+ *
+ * We deliberately DON'T touch English / German / Romance voices: they
+ * already read years idiomatically ("nineteen ninety") and forcing
+ * cardinal would regress the largest audiences. CJK (zh/ja/ko) is also
+ * excluded for now -- Chinese reads years digit-by-digit by convention,
+ * so the current behaviour may already be correct there.
+ *
+ * Keyed by the base language (the part before the region). Add a code
+ * here once the digit-by-digit bug is confirmed on-device.
+ */
+const YEAR_CARDINAL_LANGS = new Set<string>([
+  "ka", // Georgian (confirmed)
+  "hy", // Armenian
+  "az", // Azerbaijani
+  "ar", // Arabic
+  "fa", // Persian
+  "he", // Hebrew
+  "tr", // Turkish
+  "ru", // Russian
+  "uk", // Ukrainian
+  "el", // Greek
+  "hi", // Hindi
+  "bn", // Bengali
+  "ur", // Urdu
+  "ta", // Tamil
+  "te", // Telugu
+  "mr", // Marathi
+  "th", // Thai
+  "bg", // Bulgarian
+  "hr", // Croatian
+  "sr", // Serbian
+  "sw", // Swahili
+]);
+
 export const Route = createFileRoute("/api/tts")({
   server: {
     handlers: {
@@ -171,10 +211,35 @@ function buildSsml(meta: {
   // available — that lets a user pick a Georgian voice while listening
   // to an English script for a multilingual mode later.
   const locale = inferLocaleFromVoice(meta.voice, meta.language);
+  const baseLang = locale.split("-")[0].toLowerCase();
+  // XML-escape FIRST (so an apostrophe like `it's` or an ampersand
+  // can't break the markup), THEN inject <say-as> tags. Years are pure
+  // digits, so escaping never alters them and the post-escape regex
+  // stays valid.
+  let inner = escapeXml(meta.text);
+  if (YEAR_CARDINAL_LANGS.has(baseLang)) {
+    inner = wrapYearsAsCardinal(inner);
+  }
   return (
     `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="${escapeXml(locale)}">` +
-    `<voice name="${escapeXml(meta.voice)}">${escapeXml(meta.text)}</voice>` +
+    `<voice name="${escapeXml(meta.voice)}">${inner}</voice>` +
     `</speak>`
+  );
+}
+
+/**
+ * Wrap standalone 4-digit years (1000-2099) in
+ * <say-as interpret-as="cardinal"> so affected neural voices read them
+ * as a whole number instead of digit-by-digit. Operates on the ALREADY
+ * XML-escaped script. The look-behind/look-ahead keep us from matching
+ * inside longer digit runs, decimals or thousands-separated numbers
+ * ("24000", "1990.5", "1,990") -- only a clean 4-digit token bounded by
+ * non-digit / non-dot / non-comma characters is treated as a year.
+ */
+function wrapYearsAsCardinal(escapedText: string): string {
+  return escapedText.replace(
+    /(?<![\d.,])(1\d{3}|20\d{2})(?![\d.,])/g,
+    '<say-as interpret-as="cardinal">$1</say-as>',
   );
 }
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -26,6 +26,7 @@ import {
   classifySearchQuery,
   detectQueryLanguage,
   fetchAttractions,
+  fetchAttractionsWithMeta,
   fetchGuideFresh,
   fetchMoreAttractions,
   setAttractionHint,
@@ -126,9 +127,14 @@ function ResultsPage() {
   // pagination dots so the user knows pages 2-3 are warming up.
   const [prefetching, setPrefetching] = useState(false);
   const [query, setQuery] = useState(q);
+  // Tracks a canonical query WE wrote into the URL, so the search box
+  // keeps the user's typed text and the fetch effect doesn't loop.
+  const canonicalizedRef = useRef<string | null>(null);
 
   useEffect(() => {
-    setQuery(q);
+    // Keep the box showing what the user typed — skip when WE rewrote q
+    // to its canonical English form below.
+    if (q !== canonicalizedRef.current) setQuery(q);
     let cancelled = false;
     setLoading(true);
     setResults(null);
@@ -140,10 +146,27 @@ function ResultsPage() {
     // and merges 20 more into state + cache so the user's first
     // search stays fast (~5-10s) while pages 2-3 still feel instant
     // by the time they tap Next.
-    fetchAttractions(q, language)
-      .then((data) => {
+    fetchAttractionsWithMeta(q, language)
+      .then(({ attractions, canonicalQuery }) => {
         if (cancelled) return;
-        setResults(data);
+        setResults(attractions);
+        // Canonicalise the URL so "თბილისი" and "Tbilisi" share one
+        // shareable ?q=Tbilisi address. The server already resolved the
+        // canonical English name; we mirror it into the URL via replace
+        // (no new history entry). The re-run with the canonical q gets
+        // canonicalQuery === q back, so it never loops.
+        if (
+          canonicalQuery &&
+          canonicalQuery !== q &&
+          canonicalQuery !== canonicalizedRef.current
+        ) {
+          canonicalizedRef.current = canonicalQuery;
+          navigate({
+            to: "/results",
+            search: { q: canonicalQuery, page },
+            replace: true,
+          });
+        }
       })
       .catch((err: unknown) => {
         if (cancelled) return;

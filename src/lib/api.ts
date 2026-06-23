@@ -37,6 +37,15 @@ export type Attraction = {
 
 export type AttractionsResponse = {
   attractions: Attraction[];
+  // Canonical English form of the query, resolved server-side
+  // ("თბილისი" -> "Tbilisi"). The results page mirrors it into the URL
+  // so every language collapses to one shareable ?q= address.
+  canonicalQuery?: string;
+};
+
+export type AttractionsResult = {
+  attractions: Attraction[];
+  canonicalQuery?: string;
 };
 
 export type GuideResponse = {
@@ -366,6 +375,27 @@ function cleanAttractionNames<T extends { name?: string; name_en?: string }>(
     if (typeof next.name_en === "string") next.name_en = stripParenSuffix(next.name_en);
     return next;
   });
+}
+
+export async function fetchAttractionsWithMeta(
+  query: string,
+  language = "ka",
+  filters: AttractionFilters = {},
+): Promise<AttractionsResult> {
+  const interests = (filters.interests ?? []).filter(Boolean);
+  const data = await postJSON<AttractionsResponse | Attraction[]>(ATTRACTIONS_URL, {
+    query,
+    city: query,
+    country: "",
+    language,
+    interests,
+  });
+  const list = Array.isArray(data) ? data : (data.attractions ?? []);
+  const canonicalQuery =
+    !Array.isArray(data) && typeof data.canonicalQuery === "string"
+      ? data.canonicalQuery
+      : undefined;
+  return { attractions: cleanAttractionNames(list), canonicalQuery };
 }
 
 export async function fetchAttractions(

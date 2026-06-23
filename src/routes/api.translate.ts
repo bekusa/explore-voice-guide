@@ -50,6 +50,18 @@ const LANG_NAMES: Record<string, string> = {
   ko: "Korean",
   "zh-cn": "Simplified Chinese",
   "zh-tw": "Traditional Chinese",
+  // 2026-06-22 market expansion (base codes — target is normalised to
+  // base before it reaches here, e.g. "hy-AM" -> "hy").
+  hy: "Armenian",
+  az: "Azerbaijani",
+  bg: "Bulgarian",
+  hr: "Croatian",
+  sr: "Serbian",
+  ta: "Tamil",
+  te: "Telugu",
+  mr: "Marathi",
+  sw: "Swahili",
+  af: "Afrikaans",
 };
 
 function langName(code: string): string {
@@ -161,6 +173,12 @@ function hasWrongScript(text: string, target: string): boolean {
     ["ja", /[\u3040-\u30FF\u4E00-\u9FFF]/],
     ["ko", /[\uAC00-\uD7AF]/],
     ["zh", /[\u4E00-\u9FFF]/],
+    ["hy", /[\u0530-\u058F]/],
+    ["ta", /[\u0B80-\u0BFF]/],
+    ["te", /[\u0C00-\u0C7F]/],
+    ["mr", /[\u0900-\u097F]/],
+    ["bg", /[\u0400-\u04FF]/],
+    ["sr", /[\u0400-\u04FF]/],
   ];
   for (const [prefix, rx] of scriptOf) {
     if (lc.startsWith(prefix)) return !rx.test(text);
