@@ -25,6 +25,7 @@ export function MobileFrame({
   children,
   hideTabBar = false,
   hideAiFooter = false,
+  showAiFooter = false,
   floatingPanel,
 }: {
   children: ReactNode;
@@ -35,6 +36,9 @@ export function MobileFrame({
    *  in those cases either sits below the fold or breaks the
    *  page's intended layout. */
   hideAiFooter?: boolean;
+  /** Opt IN to the "AI Generated Content" fineprint. Off by default —
+   *  it now lives only on the Profile (Settings) page. */
+  showAiFooter?: boolean;
   floatingPanel?: ReactNode;
 }) {
   // Reserve room at the bottom of the scroll area so the last item
@@ -79,14 +83,11 @@ export function MobileFrame({
               via checkEmailVerified(). */}
           <EmailVerificationBanner />
           {children}
-          {/* AI Generated Content fineprint — sits at the very end of
-              the scrollable area on every page (Beka asked for it
-              everywhere, but ABOVE the menu / floating panel — the
-              bottomPad above already reserves room for both, so
-              this strip lives just above that reserved space).
-              Pages with absolute-positioned content (the map canvas)
-              opt out via hideAiFooter so the layout stays simple. */}
-          {!hideAiFooter && <AiGeneratedFooter />}
+          {/* AI Generated Content fineprint — opt-in via showAiFooter.
+              Beka 2026-06-23: removed from every page; now shown ONLY on
+              the Profile (Settings) page as a single transparency note.
+              hideAiFooter kept as a suppression override for safety. */}
+          {showAiFooter && !hideAiFooter && <AiGeneratedFooter />}
         </div>
         {floatingPanel && (
           <div

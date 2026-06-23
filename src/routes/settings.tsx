@@ -458,7 +458,7 @@ function SettingsPage() {
 
   if (loading) {
     return (
-      <MobileFrame>
+      <MobileFrame showAiFooter>
         <div className="grid h-full place-items-center bg-background text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
         </div>
@@ -494,7 +494,7 @@ function SettingsPage() {
   /* ─── Main settings list ─── */
 
   return (
-    <MobileFrame>
+    <MobileFrame showAiFooter>
       <div className="relative min-h-full bg-background pb-32 text-foreground">
         <header className="relative z-10 flex items-center justify-between px-6 pt-safe">
           <Link
@@ -962,7 +962,7 @@ function SubScreen({
 }) {
   const t = useT();
   return (
-    <MobileFrame>
+    <MobileFrame showAiFooter>
       <div className="relative min-h-full bg-background pb-32 text-foreground">
         <header className="flex items-center gap-3 px-6 pt-safe">
           <button
