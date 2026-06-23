@@ -25,6 +25,7 @@ import { DESTINATIONS, type Destination } from "@/lib/destinations";
 import { LANGUAGES } from "@/lib/languages";
 import { HOME_CITIES } from "@/lib/cityList";
 import { CityCard } from "@/components/CityCard";
+import { LanguageFlagsPill } from "@/components/LanguageFlagsPill";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
 import { attractionSlug, classifySearchQuery, setAttractionHint } from "@/lib/api";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
@@ -487,6 +488,11 @@ export function HomeScreen() {
                 {t("home.everyLang.sub")}
               </p>
             </div>
+          </div>
+          {/* Rotating-flags pill — Lovable-style badge, flags instead of
+              connector icons. Opens the language picker. */}
+          <div className="mt-3 flex justify-center">
+            <LanguageFlagsPill />
           </div>
         </section>
 

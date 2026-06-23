@@ -79,6 +79,7 @@ export const KA: Partial<Record<UiKey, string>> = {
 
   // "Available in every language" badge under the search bar.
   "home.everyLang.title": "ხელმისაწვდომია ყველა ენაზე",
+  "home.everyLang.cta": "აირჩიე შენი ენა",
   "home.everyLang.sub":
     "AI-ზე დაფუძნებული აუდიოგიდი ქუჩებისთვის, ღირსშესანიშნაობებისთვის, მუზეუმებისთვის და შენ ირგვლივ დამალული ისტორიებისთვის.",
 

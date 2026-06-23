@@ -217,6 +217,7 @@ export const UI_STRINGS = {
   // multi-language story right above the fold. Static so we don't
   // round-trip through the translator for tagline copy.
   "home.everyLang.title": "Available in every language",
+  "home.everyLang.cta": "Choose your language",
   "home.everyLang.sub":
     "AI audio guide for streets, landmarks, museums, and hidden stories around you.",
 
