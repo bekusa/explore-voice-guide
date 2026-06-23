@@ -31,6 +31,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  Flag,
 } from "lucide-react";
 import { toast } from "sonner";
 import { LoadingMessages } from "@/components/LoadingMessages";
@@ -49,6 +50,7 @@ import {
   getAttractionHint,
   setAttractionHint,
   unslugAttraction,
+  reportGuide,
   type Attraction,
   type GuideData,
   type MuseumHighlight,
@@ -861,6 +863,20 @@ function AttractionPage() {
 
         {/* Tips — list with rotating icons */}
         <TipsSection items={guide?.tips} />
+
+        {/* Report incorrect info — one-tap, only when a guide is loaded. */}
+        {!!script && (
+          <ReportInaccuracyButton
+            slug={id}
+            name={a?.name ?? fallbackName}
+            nameEn={(a as { name_en?: string } | null)?.name_en ?? null}
+            city={typeof a?.city === "string" ? a.city : null}
+            language={language}
+            interest={interest}
+            script={script}
+            userId={user?.id ?? null}
+          />
+        )}
 
         {/* Nearby section retired per Beka's request — felt redundant
             next to the Map below it, and the LLM-suggested neighbours
@@ -2867,5 +2883,60 @@ function HeroPhotoCarousel({
         </>
       )}
     </>
+  );
+}
+
+/**
+ * One-tap "report incorrect info" link under the narrated guide. Fires a
+ * single best-effort /api/report POST and flips to a muted "thanks"
+ * state. Low-key by design — a transparency affordance, not a CTA. On
+ * failure it stays clickable so the user can retry.
+ */
+function ReportInaccuracyButton(props: {
+  slug: string;
+  name: string;
+  nameEn: string | null;
+  city: string | null;
+  language: string;
+  interest: string;
+  script: string;
+  userId: string | null;
+}) {
+  const t = useT();
+  const [state, setState] = useState<"idle" | "sending" | "done">("idle");
+  const onReport = async () => {
+    if (state !== "idle") return;
+    setState("sending");
+    haptic("light");
+    const ok = await reportGuide({
+      slug: props.slug,
+      name: props.name,
+      nameEn: props.nameEn,
+      city: props.city,
+      language: props.language,
+      interest: props.interest,
+      script: props.script,
+      userId: props.userId,
+    });
+    if (ok) {
+      setState("done");
+      toast.success(t("report.done"));
+    } else {
+      setState("idle");
+      toast.error(t("report.failed"));
+    }
+  };
+  return (
+    <div className="mt-4 mb-2 flex justify-center">
+      <button
+        type="button"
+        onClick={onReport}
+        disabled={state !== "idle"}
+        className="inline-flex items-center gap-1.5 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground/60 transition-colors hover:text-foreground disabled:opacity-50"
+      >
+        <Flag className="h-2.5 w-2.5" />
+        {state === "done" ? t("report.done") : t("report.cta")}
+      </button>
+    </div>
   );
 }

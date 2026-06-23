@@ -872,6 +872,27 @@ export async function classifySearchQuery(
  * Falls back to the supplied default (usually the user's preferred
  * UI language) when the input is empty or all whitespace/punctuation.
  */
+export async function reportGuide(payload: {
+  slug: string;
+  name: string;
+  nameEn?: string | null;
+  city?: string | null;
+  language?: string | null;
+  interest?: string | null;
+  script?: string | null;
+  reason?: string | null;
+  userId?: string | null;
+}): Promise<boolean> {
+  // One-tap, best-effort. /api/report records it in Supabase
+  // `guide_reports` via the service-role key. Returns true on a 2xx ok.
+  try {
+    const res = await postJSON<{ ok?: boolean }>("/api/report", payload);
+    return !!res?.ok;
+  } catch {
+    return false;
+  }
+}
+
 export function detectQueryLanguage(text: string, fallback = "en"): string {
   if (!text) return fallback;
   const counts: Record<string, number> = { ka: 0, ru: 0, ar: 0, zh: 0, ja: 0, ko: 0, latin: 0 };

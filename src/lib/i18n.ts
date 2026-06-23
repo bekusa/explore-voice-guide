@@ -144,6 +144,10 @@ export const UI_STRINGS = {
   // place blurbs, narrated scripts, museum highlights, and Time
   // Machine simulations.
   "ai.generated": "AI Generated Content",
+  // Report-incorrect-info (one-tap) on the attraction page.
+  "report.cta": "Report incorrect info",
+  "report.done": "Thanks — reported",
+  "report.failed": "Couldn't send report",
   "home.openCity": "Open {city}",
   "home.tours.one": "{n} tour",
   "home.tours.many": "{n} tours",
