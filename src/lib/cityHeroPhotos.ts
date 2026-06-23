@@ -26,10 +26,10 @@
 const CITY_HERO_PHOTOS: Record<string, string> = {
   tbilisi: "/images/cities/tbilisi.jpg",
   rome: "/images/cities/rome.jpg",
-  istanbul: "/images/cities/Istanbul.jpg",
+  istanbul: "/images/cities/istanbul.jpg",
   bangkok: "/images/cities/bangkok.jpg",
   paris: "/images/cities/paris.jpg",
-  london: "/images/cities/London.jpg",
+  london: "/images/cities/london.jpg",
   dubai: "/images/cities/dubai.jpg",
   singapore: "/images/cities/singapore.jpg",
   "new-york": "/images/cities/new-york.jpg",
