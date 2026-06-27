@@ -496,4 +496,10 @@ export const AZ: Partial<Record<UiKey, string>> = {
   "player.restart": "Yenidən başlat",
   "player.back10": "10 saniyə geri",
   "player.forward10": "10 saniyə irəli",
+  "report.cta": "Yanlış məlumatı bildir",
+  "report.done": "Təşəkkürlər — qəbul edildi",
+  "report.failed": "Göndərilə bilmədi",
+  "home.everyLang.cta": "Dilinizi seçin",
+  "toast.aiBusy": "AI müvəqqəti olaraq məşğuldur",
+  "toast.aiBusyDesc": "Bir azdan yenidən cəhd edin.",
 };

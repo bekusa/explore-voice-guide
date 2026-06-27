@@ -496,4 +496,10 @@ export const HR: Partial<Record<UiKey, string>> = {
   "player.restart": "Počni ispočetka",
   "player.back10": "Premotaj 10 sekundi unatrag",
   "player.forward10": "Premotaj 10 sekundi naprijed",
+  "report.cta": "Prijavi netočne informacije",
+  "report.done": "Hvala — zaprimljeno",
+  "report.failed": "Slanje nije uspjelo",
+  "home.everyLang.cta": "Odaberite svoj jezik",
+  "toast.aiBusy": "AI je privremeno zauzet",
+  "toast.aiBusyDesc": "Pokušajte ponovno za trenutak.",
 };

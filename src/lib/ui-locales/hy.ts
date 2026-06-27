@@ -496,4 +496,10 @@ export const HY: Partial<Record<UiKey, string>> = {
   "player.restart": "Սկսել նորից",
   "player.back10": "Հետ 10 վայրկյան",
   "player.forward10": "Առաջ 10 վայրկյան",
+  "report.cta": "Հաղորդել սխալ տեղեկության մասին",
+  "report.done": "Շնորհակալություն — ստացվեց",
+  "report.failed": "Չհաջողվեց ուղարկել",
+  "home.everyLang.cta": "Ընտրեք ձեր լեզուն",
+  "toast.aiBusy": "AI-ը ժամանակավորապես զբաղված է",
+  "toast.aiBusyDesc": "Խնդրում ենք փորձել մի փոքր անց։",
 };

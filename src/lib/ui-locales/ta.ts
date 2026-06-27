@@ -496,4 +496,10 @@ export const TA: Partial<Record<UiKey, string>> = {
   "player.restart": "மீண்டும் தொடங்கு",
   "player.back10": "10 வினாடிகள் பின்னோக்கி",
   "player.forward10": "10 வினாடிகள் முன்னோக்கி",
+  "report.cta": "தவறான தகவலைப் புகாரளி",
+  "report.done": "நன்றி — பெறப்பட்டது",
+  "report.failed": "அனுப்ப முடியவில்லை",
+  "home.everyLang.cta": "உங்கள் மொழியைத் தேர்ந்தெடுக்கவும்",
+  "toast.aiBusy": "AI தற்காலிகமாகப் பணிமிகுதியில் உள்ளது",
+  "toast.aiBusyDesc": "சிறிது நேரத்தில் மீண்டும் முயற்சிக்கவும்.",
 };

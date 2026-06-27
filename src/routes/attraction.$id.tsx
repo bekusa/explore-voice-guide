@@ -474,7 +474,7 @@ function AttractionPage() {
         // rate limit, etc.) so the user knows refresh might help.
         if (!online) return;
         toast.error(t("attr.couldNotLoadPlace"), {
-          description: err instanceof Error ? err.message : t("toast.tryAgainPlease"),
+          description: t("toast.tryAgainPlease"),
         });
       })
       .finally(() => {
@@ -1296,7 +1296,7 @@ function ActionRow({
       }
     } catch (err) {
       toast.error(t("toast.downloadFailed"), {
-        description: err instanceof Error ? err.message : t("toast.tryAgain"),
+        description: t("toast.tryAgain"),
       });
     } finally {
       setDownloading(false);

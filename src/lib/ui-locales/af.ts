@@ -496,4 +496,10 @@ export const AF: Partial<Record<UiKey, string>> = {
   "player.restart": "Begin oor",
   "player.back10": "Spring 10 sekondes terug",
   "player.forward10": "Spring 10 sekondes vorentoe",
+  "report.cta": "Rapporteer verkeerde inligting",
+  "report.done": "Dankie — ontvang",
+  "report.failed": "Kon nie stuur nie",
+  "home.everyLang.cta": "Kies jou taal",
+  "toast.aiBusy": "KI is tydelik besig",
+  "toast.aiBusyDesc": "Probeer asseblief oor 'n oomblik weer.",
 };

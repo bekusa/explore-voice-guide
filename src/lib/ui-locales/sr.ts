@@ -496,4 +496,10 @@ export const SR: Partial<Record<UiKey, string>> = {
   "player.restart": "Почни испочетка",
   "player.back10": "Премотај 10 секунди уназад",
   "player.forward10": "Премотај 10 секунди унапред",
+  "report.cta": "Пријави нетачне информације",
+  "report.done": "Хвала — примљено",
+  "report.failed": "Слање није успело",
+  "home.everyLang.cta": "Изаберите свој језик",
+  "toast.aiBusy": "AI је привремено заузет",
+  "toast.aiBusyDesc": "Покушајте поново за тренутак.",
 };

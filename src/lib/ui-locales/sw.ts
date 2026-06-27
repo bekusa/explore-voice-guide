@@ -496,4 +496,10 @@ export const SW: Partial<Record<UiKey, string>> = {
   "player.restart": "Anza upya",
   "player.back10": "Rudi sekunde 10",
   "player.forward10": "Songa mbele sekunde 10",
+  "report.cta": "Ripoti taarifa isiyo sahihi",
+  "report.done": "Asante — imepokelewa",
+  "report.failed": "Imeshindwa kutuma",
+  "home.everyLang.cta": "Chagua lugha yako",
+  "toast.aiBusy": "AI ina shughuli kwa muda",
+  "toast.aiBusyDesc": "Tafadhali jaribu tena baada ya muda.",
 };

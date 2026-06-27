@@ -496,4 +496,10 @@ export const MR: Partial<Record<UiKey, string>> = {
   "player.restart": "पुन्हा सुरू करा",
   "player.back10": "10 सेकंद मागे",
   "player.forward10": "10 सेकंद पुढे",
+  "report.cta": "चुकीची माहिती नोंदवा",
+  "report.done": "धन्यवाद — प्राप्त झाले",
+  "report.failed": "पाठवणे अयशस्वी",
+  "home.everyLang.cta": "तुमची भाषा निवडा",
+  "toast.aiBusy": "AI तात्पुरते व्यस्त आहे",
+  "toast.aiBusyDesc": "कृपया थोड्या वेळाने पुन्हा प्रयत्न करा.",
 };

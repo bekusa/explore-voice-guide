@@ -317,6 +317,10 @@ export const UI_STRINGS = {
   "toast.voiceUnavailableHint": "Try switching to English or another supported language.",
   "toast.guideOfflineDesc": "This guide isn't downloaded yet. Connect once to cache it.",
   "toast.couldNotLoadAttractions": "Couldn't load attractions",
+  // Shown when a search/guide call fails because the AI provider is
+  // overloaded or down (e.g. Anthropic 429/5xx -> our 502).
+  "toast.aiBusy": "AI is temporarily busy",
+  "toast.aiBusyDesc": "Please try again in a moment.",
   "toast.allSet": "All set",
   "toast.allSetDesc": "Welcome to Voices.",
   "toast.setupFailed": "Setup failed",

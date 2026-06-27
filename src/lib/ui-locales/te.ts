@@ -496,4 +496,10 @@ export const TE: Partial<Record<UiKey, string>> = {
   "player.restart": "మళ్లీ ప్రారంభించు",
   "player.back10": "10 సెకన్లు వెనుకకు",
   "player.forward10": "10 సెకన్లు ముందుకు",
+  "report.cta": "తప్పు సమాచారాన్ని నివేదించండి",
+  "report.done": "ధన్యవాదాలు — స్వీకరించబడింది",
+  "report.failed": "పంపడం విఫలమైంది",
+  "home.everyLang.cta": "మీ భాషను ఎంచుకోండి",
+  "toast.aiBusy": "AI తాత్కాలికంగా బిజీగా ఉంది",
+  "toast.aiBusyDesc": "దయచేసి కొద్దిసేపటిలో మళ్లీ ప్రయత్నించండి.",
 };

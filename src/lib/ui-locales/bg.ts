@@ -496,4 +496,10 @@ export const BG: Partial<Record<UiKey, string>> = {
   "player.restart": "Започни отначало",
   "player.back10": "Назад с 10 секунди",
   "player.forward10": "Напред с 10 секунди",
+  "report.cta": "Подайте сигнал за грешна информация",
+  "report.done": "Благодаря — получено",
+  "report.failed": "Изпращането е неуспешно",
+  "home.everyLang.cta": "Изберете своя език",
+  "toast.aiBusy": "AI е временно зает",
+  "toast.aiBusyDesc": "Моля, опитайте отново след малко.",
 };

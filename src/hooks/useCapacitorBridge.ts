@@ -124,7 +124,7 @@ export function useCapacitorBridge(router: AnyRouter) {
           if (code) {
             void supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
               if (error) {
-                toast.error(`Sign-in failed: ${error.message}`);
+                toast.error("Sign-in failed — please try again.");
                 console.error("[OAuth] exchangeCodeForSession failed:", error.message ?? error);
               } else {
                 router.navigate({ to: "/" });
@@ -147,7 +147,7 @@ export function useCapacitorBridge(router: AnyRouter) {
                 .setSession({ access_token: accessToken, refresh_token: refreshToken })
                 .then(({ error }) => {
                   if (error) {
-                    toast.error(`Sign-in failed: ${error.message}`);
+                    toast.error("Sign-in failed — please try again.");
                     console.error("[OAuth] setSession failed:", error.message ?? error);
                   } else {
                     router.navigate({ to: "/" });

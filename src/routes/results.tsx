@@ -168,10 +168,12 @@ function ResultsPage() {
           });
         }
       })
-      .catch((err: unknown) => {
+      .catch(() => {
         if (cancelled) return;
-        toast.error(t("toast.couldNotLoadAttractions"), {
-          description: err instanceof Error ? err.message : t("toast.tryAgainPlease"),
+        // Friendly message instead of the raw "Request failed (502)".
+        // The usual cause is the AI provider being overloaded / down.
+        toast.error(t("toast.aiBusy"), {
+          description: t("toast.aiBusyDesc"),
         });
         setResults([]);
       })
@@ -644,9 +646,9 @@ export function ResultCard({
       } else {
         toast.error(t("toast.noGuide"));
       }
-    } catch (err) {
+    } catch {
       toast.error(t("toast.downloadFailed"), {
-        description: err instanceof Error ? err.message : t("toast.tryAgain"),
+        description: t("toast.tryAgain"),
       });
     } finally {
       setDownloading(false);

@@ -129,7 +129,7 @@ function LanguagePage() {
       setTimeout(() => navigate({ to: "/" }), 350);
     } catch (err) {
       toast.error(t("toast.langFailed"), {
-        description: err instanceof Error ? err.message : t("toast.tryAgain"),
+        description: t("toast.tryAgain"),
       });
     } finally {
       setPending(null);
