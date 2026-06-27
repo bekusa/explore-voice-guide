@@ -25,7 +25,7 @@ import { DESTINATIONS, type Destination } from "@/lib/destinations";
 import { LANGUAGES } from "@/lib/languages";
 import { HOME_CITIES } from "@/lib/cityList";
 import { CityCard } from "@/components/CityCard";
-import { LanguageFlagsPill } from "@/components/LanguageFlagsPill";
+import { LanguageFlagsCluster } from "@/components/LanguageFlagsPill";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
 import { attractionSlug, classifySearchQuery, setAttractionHint } from "@/lib/api";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
@@ -468,18 +468,19 @@ export function HomeScreen() {
             )}
           </form>
 
-          {/* "Available in every language" benefit card — redesigned
-              from the original primary-tinted alert (Beka caught it
-              reading as a warning instead of a feature). New visual:
-              gold gradient sparkle chip on the left + warm prose on
-              the right, no uppercase / no border so it feels like a
-              positive sticker rather than a notice. Same i18n keys
-              (home.everyLang.title / sub) so all 34 locales still
-              cover it without re-translating. */}
-          <div className="mt-3.5 flex items-start gap-3 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent px-4 py-3.5">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow">
-              <Sparkles className="h-4 w-4" />
-            </span>
+          {/* "Available in every language" benefit card — merged with
+              the old standalone flags pill into ONE tappable unit (Beka
+              2026-06-28). The moving flag cluster is now the card's
+              "image" on the left (replacing the gold Sparkles chip), the
+              title + sub stay on the right, and the whole card links to
+              the language picker. Same i18n keys (home.everyLang.title /
+              sub / cta) so all 44 locales cover it without re-translating. */}
+          <Link
+            to="/language"
+            aria-label={t("home.everyLang.cta")}
+            className="group mt-3.5 flex items-center gap-3 rounded-2xl border border-foreground/10 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent px-4 py-3.5 transition-smooth hover:border-primary/30 hover:from-primary/15 active:scale-[0.99]"
+          >
+            <LanguageFlagsCluster />
             <div className="min-w-0 flex-1">
               <p className="text-[13.5px] font-semibold leading-tight text-foreground">
                 {t("home.everyLang.title")}
@@ -488,12 +489,8 @@ export function HomeScreen() {
                 {t("home.everyLang.sub")}
               </p>
             </div>
-          </div>
-          {/* Rotating-flags pill — Lovable-style badge, flags instead of
-              connector icons. Opens the language picker. */}
-          <div className="mt-3 flex justify-center">
-            <LanguageFlagsPill />
-          </div>
+            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-300 group-hover:translate-x-0.5" />
+          </Link>
         </section>
 
         {/* ─── TOP MUSEUMS STRIP ─── */}

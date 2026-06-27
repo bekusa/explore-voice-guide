@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { MapPin } from "lucide-react";
 import { useT, useTranslatedString, useUiLang } from "@/hooks/useT";
 import type { UiKey } from "@/lib/i18n";
 import { getCityProfile } from "@/lib/cityProfiles";
@@ -215,13 +214,13 @@ export function CityCard({ city }: { city: string }) {
           ★ Lokali Guide
         </div>
       )}
+      {/* Just the city name. The old pin + location sub-line was dropped
+          (Beka 2026-06-28) — it repeated the exact same {label} as the
+          title, so it read as a redundant duplicate. */}
       <div className="absolute inset-x-4 bottom-4">
         <h3 className="font-display text-[26px] font-medium leading-[1.05] text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.45)]">
           {label}
         </h3>
-        <div className="mt-2 inline-flex items-center gap-1 text-[10px] text-white/80 drop-shadow-[0_1px_3px_rgba(0,0,0,0.45)]">
-          <MapPin className="h-2.5 w-2.5" /> {label}
-        </div>
       </div>
     </Link>
   );
