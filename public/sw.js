@@ -30,8 +30,8 @@
  *     HTML is on disk for the next offline launch.
  */
 
-const CACHE_VERSION = "lokali-shell-v6";
-const RUNTIME_CACHE = "lokali-runtime-v6";
+const CACHE_VERSION = "lokali-shell-v7";
+const RUNTIME_CACHE = "lokali-runtime-v7";
 
 // Minimum set of routes we want to be reachable offline even if the
 // user has never visited them. Anything else gets cached lazily.
@@ -40,6 +40,16 @@ const PRECACHE_URLS = [
   "/saved",
   "/settings",
   "/offline.html",
+  // Beka 2026-07-05 — the Capacitor bridge MUST be precached. When the
+  // SW serves the cached offline.html on the lokali.travel origin
+  // (warm offline start), that page's <script src="/native-bridge.js">
+  // is answerable only from this cache — the network is down and
+  // Capacitor's native injection doesn't run for SW-served documents.
+  // Without this entry the bridge never loads → window.Capacitor never
+  // appears → "Saved tours aren't ready yet". NOTE: after upgrading
+  // @capacitor/android, bump CACHE_VERSION so the fresh bridge is
+  // re-precached (native-bridge.js only changes on Capacitor updates).
+  "/native-bridge.js",
   "/manifest.webmanifest",
   "/icon-192.png",
   "/icon-512.png",
@@ -95,16 +105,24 @@ self.addEventListener("fetch", (event) => {
   // `useOnlineStatus` + the offlineStore fallbacks.
   if (url.pathname.startsWith("/api/")) return;
 
-  // Beka 2026-06-13 — bypass the SW entirely for native-bridge.js
-  // and any Capacitor-local plugin assets. errorPath pages
-  // (offline.html) load these from the WebView's bundled assets,
-  // but the SW lives on the lokali.travel origin and would intercept
-  // the fetch → try to load from network → fail offline → return
-  // undefined → bridge script never executes → Capacitor.Plugins
-  // never attaches → "Saved tours aren't ready yet" loop. Skipping
-  // the SW lets Capacitor's WebView resolve the path locally.
+  // Bypass the SW for Capacitor-local plugin assets — those resolve
+  // from the WebView's bundled files, never from lokali.travel.
+  //
+  // Beka 2026-07-05 — /native-bridge.js REMOVED from this bypass.
+  // History: the 2026-06-13 change skipped the SW for it because the
+  // old CacheFirst branch returned undefined offline (the file was
+  // never precached, so cache-miss + network-fail = dead script).
+  // But skipping only helped the errorPath (local-origin) case, where
+  // the SW isn't involved anyway. In the OTHER offline case — SW
+  // serving the cached offline.html on the lokali.travel origin — the
+  // bypass sent the bridge request straight to the dead network and
+  // offline.html showed "Saved tours aren't ready yet" forever.
+  // Root fix: /native-bridge.js is now in PRECACHE_URLS, and the
+  // asset branch below serves it cache-first. Online it's fetched
+  // fresh into the precache on every SW install; offline it's always
+  // servable. The errorPath (localhost) case is untouched — this SW
+  // never sees those requests (different origin).
   if (
-    url.pathname === "/native-bridge.js" ||
     url.pathname.startsWith("/capacitor/") ||
     url.pathname.endsWith("/cordova.js") ||
     url.pathname.endsWith("/cordova_plugins.js")
