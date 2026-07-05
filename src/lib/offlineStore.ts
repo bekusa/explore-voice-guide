@@ -312,6 +312,119 @@ export async function getScript(id: string): Promise<string | null> {
   }
 }
 
+/* ─── Gallery images (Beka 2026-07-05) ──────────────────────────────
+ * The attraction page's hero carousel holds up to 5 photo URLs
+ * (`heroSlides`). On Save / Download we persist each one to disk so
+ * the offline card carries the FULL photo set — not just the single
+ * inlined hero data-URL that lives in localStorage/Preferences.
+ * Files: lokali/images/<safeId(slug)>-<index>.jpg (native) or
+ * IDB key image/<safeId(slug)>-<index> (web). Indices are contiguous
+ * 0..n-1 so readers can loop `galleryCount` times without a manifest.
+ */
+
+const GALLERY_MAX_IMAGES = 5;
+const GALLERY_MAX_BYTES = 2_500_000;
+
+export function galleryImageId(slug: string, index: number): string {
+  return `${safeId(slug)}-${index}`;
+}
+
+/**
+ * Fetch one image with the same fallback idea as savedStore's inline
+ * pipeline: direct fetch first (Wikipedia + our Azure Blob mirror are
+ * usually readable), then the same-origin /api/image-proxy which the
+ * Cloudflare Worker fetches server-side (no CORS rules apply there).
+ */
+async function fetchImageBlob(url: string): Promise<Blob | null> {
+  try {
+    const res = await fetch(url);
+    if (res.ok) {
+      const b = await res.blob();
+      if (b.size > 0 && b.size <= GALLERY_MAX_BYTES && b.type.toLowerCase().startsWith("image/")) {
+        return b;
+      }
+    }
+  } catch {
+    /* fall through to proxy */
+  }
+  try {
+    const res = await fetch("/api/image-proxy?url=" + encodeURIComponent(url));
+    if (res.ok) {
+      const b = await res.blob();
+      if (b.size > 0 && b.size <= GALLERY_MAX_BYTES) return b;
+    }
+  } catch {
+    /* unreachable image — caller skips it */
+  }
+  return null;
+}
+
+/**
+ * Download and persist up to GALLERY_MAX_IMAGES gallery photos for a
+ * saved tour. Returns how many actually landed on disk — the caller
+ * stamps that onto the SavedItem as `galleryCount` so offline.html
+ * knows how many files to read back. Best-effort per image: a single
+ * dead URL doesn't abort the rest, and indices stay contiguous.
+ */
+export async function fetchAndCacheGallery(slug: string, urls: string[]): Promise<number> {
+  const unique: string[] = [];
+  for (const u of urls) {
+    if (typeof u === "string" && u && !unique.includes(u)) unique.push(u);
+    if (unique.length >= GALLERY_MAX_IMAGES) break;
+  }
+  let saved = 0;
+  for (const url of unique) {
+    const blob = await fetchImageBlob(url);
+    if (!blob) continue;
+    try {
+      const id = galleryImageId(slug, saved);
+      if (await isNative()) {
+        await nativeWriteBlob(`${NATIVE_DIR}/images/${id}.jpg`, blob);
+      } else {
+        await idbPut(`image/${id}`, blob);
+      }
+      saved++;
+    } catch {
+      /* disk write failed — skip this one */
+    }
+  }
+  return saved;
+}
+
+/**
+ * Blob URLs for a tour's cached gallery, in save order. Stops at the
+ * first missing index. Callers should revokeObjectURL when done.
+ */
+export async function getGalleryBlobUrls(slug: string, count = GALLERY_MAX_IMAGES): Promise<string[]> {
+  const out: string[] = [];
+  const native = await isNative();
+  for (let i = 0; i < Math.min(count, GALLERY_MAX_IMAGES); i++) {
+    const id = galleryImageId(slug, i);
+    let blob: Blob | null = null;
+    if (native) {
+      blob = await nativeReadBlob(`${NATIVE_DIR}/images/${id}.jpg`, "image/jpeg");
+    } else {
+      blob = await idbGet<Blob>(`image/${id}`);
+    }
+    if (!blob) break;
+    out.push(URL.createObjectURL(blob));
+  }
+  return out;
+}
+
+/** Remove every cached gallery image for a tour. Idempotent. */
+export async function deleteGalleryImages(slug: string): Promise<void> {
+  const native = await isNative();
+  for (let i = 0; i < GALLERY_MAX_IMAGES; i++) {
+    const id = galleryImageId(slug, i);
+    if (native) {
+      await nativeDelete(`${NATIVE_DIR}/images/${id}.jpg`);
+    } else {
+      await idbDelete(`image/${id}`);
+    }
+  }
+}
+
 /**
  * Remove audio + script for an id. Tolerant of missing files — safe
  * to call when the user hasn't downloaded anything yet for this id.
@@ -334,6 +447,7 @@ export async function clearOfflineStore(): Promise<void> {
   if (await isNative()) {
     await nativeRmDir(`${NATIVE_DIR}/audio`);
     await nativeRmDir(`${NATIVE_DIR}/scripts`);
+    await nativeRmDir(`${NATIVE_DIR}/images`);
   } else {
     await idbClear();
   }

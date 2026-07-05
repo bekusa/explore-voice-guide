@@ -203,6 +203,25 @@
       .guide-full p:last-child {
         margin-bottom: 0;
       }
+      .gallery {
+        display: none;
+        gap: 8px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 2px 0;
+      }
+      .gallery::-webkit-scrollbar {
+        display: none;
+      }
+      .gallery img {
+        height: 108px;
+        width: auto;
+        flex: 0 0 auto;
+        border-radius: 12px;
+        border: 1px solid var(--card-border);
+        object-fit: cover;
+      }
       .text-col {
         min-width: 0;
         flex: 1;
@@ -1521,6 +1540,15 @@ var nativeBridge = (function (exports) {
             body.appendChild(desc);
           }
 
+          // Photo gallery strip — up to 5 images persisted at save time
+          // by offlineStore.fetchAndCacheGallery into
+          // lokali/images/<id>-0..n-1.jpg. Hidden until at least one
+          // image is actually readable from disk.
+          const gallery = document.createElement("div");
+          gallery.className = "gallery";
+          body.appendChild(gallery);
+          void loadGalleryStrip(item, gallery);
+
           // Full narrated guide text. The complete script is already on
           // disk — offlineStore.fetchAndCacheTour writes it to
           // lokali/scripts/<id>-<lang>.txt at download time, right
@@ -1705,6 +1733,60 @@ var nativeBridge = (function (exports) {
         return url;
       }
 
+      function getFilesystemPlugin() {
+        if (!window.Capacitor) return null;
+        return (
+          (window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) ||
+          (typeof window.Capacitor.registerPlugin === "function"
+            ? window.Capacitor.registerPlugin("Filesystem")
+            : null)
+        );
+      }
+
+      function base64ToBlobUrl(base64, mime) {
+        const comma = base64.indexOf(",");
+        const raw = comma >= 0 ? base64.slice(comma + 1) : base64;
+        const binary = atob(raw);
+        const len = binary.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+        const blob = new Blob([bytes], { type: mime });
+        const url = URL.createObjectURL(blob);
+        liveBlobUrls.push(url);
+        return url;
+      }
+
+      // Photo strip: read lokali/images/<id>-0..galleryCount-1.jpg from
+      // Filesystem and append <img> tags. The strip stays hidden unless
+      // at least one image decodes — so pre-gallery saves render exactly
+      // as before.
+      async function loadGalleryStrip(item, container) {
+        const count =
+          typeof item.galleryCount === "number" ? Math.min(item.galleryCount, 5) : 0;
+        if (!count) return;
+        const Filesystem = getFilesystemPlugin();
+        if (!Filesystem) return;
+        let shown = 0;
+        for (let i = 0; i < count; i++) {
+          const path = "lokali/images/" + safeId(item.id) + "-" + i + ".jpg";
+          try {
+            const result = await Filesystem.readFile({
+              path: path,
+              directory: "DATA",
+            });
+            if (typeof result.data !== "string") continue;
+            const img = document.createElement("img");
+            img.alt = item.name;
+            img.src = base64ToBlobUrl(result.data, "image/jpeg");
+            container.appendChild(img);
+            shown++;
+          } catch (err) {
+            /* missing index — keep trying the rest */
+          }
+        }
+        if (shown > 0) container.style.display = "flex";
+      }
+
       async function loadOfflineScript(item) {
         // Mirror of offlineStore.scriptId(slug, language):
         // safeId(`${slug}-${language}`). The script was written as UTF-8
@@ -1766,21 +1848,70 @@ var nativeBridge = (function (exports) {
 
       let renderedOnce = false;
 
+      // ── One-shot auto-reload guard ──────────────────────────────
+      // On-device finding (Beka 2026-07-05): on a COLD offline launch
+      // the Capacitor bridge sometimes never attaches to this errorPath
+      // page at all — no amount of polling helps — but it reliably
+      // attaches on the page's SECOND load (which is why tapping "Try
+      // reconnecting" made the list appear: the failed navigation
+      // bounced back to a fresh offline.html). So when polling can't
+      // find the bridge, we reload the page ONCE automatically —
+      // exactly what the manual tap did, minus the tap. The guard
+      // (sessionStorage + URL hash fallback) makes it one-shot so a
+      // genuinely bridge-less context can't reload-loop.
+      const RELOAD_GUARD = "lokali.offline.autoreload.v1";
+      function hasReloadGuard() {
+        try {
+          if (sessionStorage.getItem(RELOAD_GUARD)) return true;
+        } catch (e) {
+          /* sessionStorage unavailable — fall through to hash */
+        }
+        return window.location.hash.indexOf("auto-reloaded") !== -1;
+      }
+      function armReloadGuardAndReload() {
+        try {
+          sessionStorage.setItem(RELOAD_GUARD, "1");
+        } catch (e) {
+          /* ignore */
+        }
+        // Hash fallback survives the reload even when sessionStorage
+        // is disabled in the WebView.
+        try {
+          window.location.hash = "auto-reloaded";
+        } catch (e) {
+          /* ignore */
+        }
+        window.location.reload();
+      }
+      function clearReloadGuard() {
+        try {
+          sessionStorage.removeItem(RELOAD_GUARD);
+        } catch (e) {
+          /* ignore */
+        }
+        try {
+          if (window.location.hash.indexOf("auto-reloaded") !== -1) {
+            history.replaceState(null, "", window.location.pathname);
+          }
+        } catch (e) {
+          /* ignore */
+        }
+      }
+
       async function loadSavedList() {
         if (!renderedOnce) setMessage("Loading your saved tours…");
-        // Retry loop. On a cold OFFLINE launch the native bridge and the
-        // Preferences plugin attach to this errorPath page a moment
-        // after load — a single-shot read lost that race, which is why
-        // the list only appeared AFTER a manual "Try reconnecting" tap.
-        // We now poll for up to ~9 s and render the instant the bridge
-        // answers, so saved tours show up on the FIRST offline open with
-        // zero taps. Only after the deadline do we surface a message.
-        const DEADLINE = Date.now() + 9000;
+        // Poll for the bridge. First load: give it ~3 s, then fall back
+        // to the one-shot auto-reload above. Post-reload (guard set):
+        // poll longer (~9 s) before surfacing a message, because the
+        // reload is our last lever.
+        const firstLoad = !hasReloadGuard();
+        const DEADLINE = Date.now() + (firstLoad ? 3000 : 9000);
         let sawBridge = false;
         for (;;) {
           const state = await readSavedRaw();
           if (state.ready) {
             sawBridge = true;
+            clearReloadGuard();
             if (!state.raw) {
               if (!renderedOnce)
                 setMessage("Nothing saved yet. Open a tour while online and tap Save.");
@@ -1804,11 +1935,16 @@ var nativeBridge = (function (exports) {
           }
           if (Date.now() > DEADLINE) break;
           await new Promise(function (r) {
-            setTimeout(r, 350);
+            setTimeout(r, 300);
           });
         }
-        // Don't clobber an already-rendered list with an error if a
-        // later refresh (e.g. visibilitychange) races and times out.
+        // Bridge never answered. First load → reload once (this is the
+        // automated "Try reconnecting"). Second load → show a message,
+        // but never clobber an already-rendered list.
+        if (firstLoad) {
+          armReloadGuardAndReload();
+          return;
+        }
         if (!renderedOnce) {
           setMessage(
             sawBridge

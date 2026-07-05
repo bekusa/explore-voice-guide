@@ -49,6 +49,14 @@ export type SavedItem = {
    * find out mid-flight.
    */
   audioReady?: boolean;
+  /**
+   * How many hero-carousel gallery photos were persisted to disk by
+   * offlineStore.fetchAndCacheGallery (files
+   * lokali/images/<slug>-0..n-1.jpg). offline.html loops this count
+   * to render the photo strip. 0 / undefined = no gallery cached.
+   * Beka 2026-07-05.
+   */
+  galleryCount?: number;
 };
 
 const KEY = "tg.saved.v1";
@@ -115,6 +123,8 @@ type OfflineSavedItem = {
   city: string | null;
   imageDataUrl: string | null;
   description: string | null;
+  /** Count of gallery photos on disk (lokali/images/<id>-0..n-1.jpg). */
+  galleryCount: number;
 };
 
 /**
@@ -367,6 +377,9 @@ async function mirrorSavedToPreferences(items: SavedItem[]): Promise<void> {
       city: a?.city ?? null,
       imageDataUrl: photo,
       description,
+      // Tiny number — no impact on the Preferences size budget. The
+      // photos themselves live in Filesystem, not in this payload.
+      galleryCount: typeof it.galleryCount === "number" ? it.galleryCount : 0,
     };
   });
   await Preferences.set({

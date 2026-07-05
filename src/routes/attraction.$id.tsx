@@ -66,7 +66,9 @@ import { useRequireSignIn } from "@/hooks/useRequireSignIn";
 import { haptic } from "@/lib/haptics";
 import {
   audioId as makeAudioId,
+  deleteGalleryImages,
   deleteOfflineItem,
+  fetchAndCacheGallery,
   fetchAndCacheTour,
   getAudioBlobUrl,
   scriptId as makeScriptId,
@@ -1103,6 +1105,17 @@ function ActionRow({
     void import("@/lib/savedStore").then(({ attachPhotoToSavedItem }) => {
       void attachPhotoToSavedItem(id, heroPhoto);
     });
+    // Beka 2026-07-05 — persist the whole hero-carousel gallery (up
+    // to 5 photos) to disk so the offline card carries the full
+    // photo set, not just the single inlined hero. Runs in parallel
+    // with the audio download below; best-effort — a failed image
+    // never blocks the save, and galleryCount only gets stamped for
+    // what actually landed on disk.
+    void fetchAndCacheGallery(id, heroSlides)
+      .then((n) => {
+        if (n > 0) updateItem(id, { galleryCount: n });
+      })
+      .catch(() => {});
     // Beka 2026-06-08: Save → also pre-download the TTS audio + script
     // so the saved tour is fully playable on the plane. Same effect
     // the user used to get by hitting the separate Download button —
@@ -1197,6 +1210,10 @@ function ActionRow({
           makeScriptId(id, language),
         );
       }
+      // Beka 2026-07-05 — un-download also frees the cached gallery
+      // photos and zeroes the count on the saved row (if any).
+      void deleteGalleryImages(id);
+      updateItem(id, { galleryCount: 0 });
       setCached(false);
       toast(t("toast.removedFromOffline"));
       return;
@@ -1280,6 +1297,13 @@ function ActionRow({
             const { attachPhotoToSavedItem } = await import("@/lib/savedStore");
             void attachPhotoToSavedItem(id, heroPhoto);
           }
+          // Beka 2026-07-05 — Download also persists the full gallery
+          // (same as Save). See fetchAndCacheGallery in offlineStore.
+          void fetchAndCacheGallery(id, heroSlides)
+            .then((n) => {
+              if (n > 0) updateItem(id, { galleryCount: n });
+            })
+            .catch(() => {});
         } catch (err) {
           console.warn("[attraction] download photo cache failed", err);
         }
