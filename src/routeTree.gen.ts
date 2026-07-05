@@ -16,7 +16,6 @@ import { Route as SavedRouteImport } from './routes/saved'
 import { Route as ResultsRouteImport } from './routes/results'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as DeleteAccountRouteImport } from './routes/delete-account'
 import { Route as PlayerRouteImport } from './routes/player'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
@@ -24,6 +23,7 @@ import { Route as MuseumsRouteImport } from './routes/museums'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as LanguageRouteImport } from './routes/language'
 import { Route as DestinationsRouteImport } from './routes/destinations'
+import { Route as DeleteAccountRouteImport } from './routes/delete-account'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DestinationsSlugRouteImport } from './routes/destinations.$slug'
@@ -33,6 +33,7 @@ import { Route as AttractionIdRouteImport } from './routes/attraction.$id'
 import { Route as ApiTtsRouteImport } from './routes/api.tts'
 import { Route as ApiTranslateRouteImport } from './routes/api.translate'
 import { Route as ApiTimeMachineRouteImport } from './routes/api.time-machine'
+import { Route as ApiReportRouteImport } from './routes/api.report'
 import { Route as ApiPhotoGalleryRouteImport } from './routes/api.photo-gallery'
 import { Route as ApiPhotoRouteImport } from './routes/api.photo'
 import { Route as ApiMuseumHighlightsRouteImport } from './routes/api.museum-highlights'
@@ -73,11 +74,6 @@ const ProfileRoute = ProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DeleteAccountRoute = DeleteAccountRouteImport.update({
-  id: '/delete-account',
-  path: '/delete-account',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -116,6 +112,11 @@ const LanguageRoute = LanguageRouteImport.update({
 const DestinationsRoute = DestinationsRouteImport.update({
   id: '/destinations',
   path: '/destinations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeleteAccountRoute = DeleteAccountRouteImport.update({
+  id: '/delete-account',
+  path: '/delete-account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -161,6 +162,11 @@ const ApiTranslateRoute = ApiTranslateRouteImport.update({
 const ApiTimeMachineRoute = ApiTimeMachineRouteImport.update({
   id: '/api/time-machine',
   path: '/api/time-machine',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiReportRoute = ApiReportRouteImport.update({
+  id: '/api/report',
+  path: '/api/report',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPhotoGalleryRoute = ApiPhotoGalleryRouteImport.update({
@@ -212,6 +218,7 @@ const ApiAccountDeleteRoute = ApiAccountDeleteRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/delete-account': typeof DeleteAccountRoute
   '/destinations': typeof DestinationsRouteWithChildren
   '/language': typeof LanguageRoute
   '/map': typeof MapRoute
@@ -220,7 +227,6 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
   '/privacy': typeof PrivacyRoute
-  '/delete-account': typeof DeleteAccountRoute
   '/profile': typeof ProfileRoute
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
@@ -234,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/photo': typeof ApiPhotoRoute
   '/api/photo-gallery': typeof ApiPhotoGalleryRoute
+  '/api/report': typeof ApiReportRoute
   '/api/time-machine': typeof ApiTimeMachineRoute
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
@@ -247,6 +254,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/delete-account': typeof DeleteAccountRoute
   '/destinations': typeof DestinationsRouteWithChildren
   '/language': typeof LanguageRoute
   '/map': typeof MapRoute
@@ -255,7 +263,6 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
   '/privacy': typeof PrivacyRoute
-  '/delete-account': typeof DeleteAccountRoute
   '/profile': typeof ProfileRoute
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
@@ -269,6 +276,7 @@ export interface FileRoutesByTo {
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/photo': typeof ApiPhotoRoute
   '/api/photo-gallery': typeof ApiPhotoGalleryRoute
+  '/api/report': typeof ApiReportRoute
   '/api/time-machine': typeof ApiTimeMachineRoute
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
@@ -283,6 +291,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/delete-account': typeof DeleteAccountRoute
   '/destinations': typeof DestinationsRouteWithChildren
   '/language': typeof LanguageRoute
   '/map': typeof MapRoute
@@ -291,7 +300,6 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/player': typeof PlayerRoute
   '/privacy': typeof PrivacyRoute
-  '/delete-account': typeof DeleteAccountRoute
   '/profile': typeof ProfileRoute
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
@@ -305,6 +313,7 @@ export interface FileRoutesById {
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/photo': typeof ApiPhotoRoute
   '/api/photo-gallery': typeof ApiPhotoGalleryRoute
+  '/api/report': typeof ApiReportRoute
   '/api/time-machine': typeof ApiTimeMachineRoute
   '/api/translate': typeof ApiTranslateRoute
   '/api/tts': typeof ApiTtsRoute
@@ -320,6 +329,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/delete-account'
     | '/destinations'
     | '/language'
     | '/map'
@@ -328,7 +338,6 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/player'
     | '/privacy'
-    | '/delete-account'
     | '/profile'
     | '/results'
     | '/saved'
@@ -342,6 +351,7 @@ export interface FileRouteTypes {
     | '/api/museum-highlights'
     | '/api/photo'
     | '/api/photo-gallery'
+    | '/api/report'
     | '/api/time-machine'
     | '/api/translate'
     | '/api/tts'
@@ -355,6 +365,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/delete-account'
     | '/destinations'
     | '/language'
     | '/map'
@@ -363,7 +374,6 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/player'
     | '/privacy'
-    | '/delete-account'
     | '/profile'
     | '/results'
     | '/saved'
@@ -377,6 +387,7 @@ export interface FileRouteTypes {
     | '/api/museum-highlights'
     | '/api/photo'
     | '/api/photo-gallery'
+    | '/api/report'
     | '/api/time-machine'
     | '/api/translate'
     | '/api/tts'
@@ -390,6 +401,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/delete-account'
     | '/destinations'
     | '/language'
     | '/map'
@@ -398,7 +410,6 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/player'
     | '/privacy'
-    | '/delete-account'
     | '/profile'
     | '/results'
     | '/saved'
@@ -412,6 +423,7 @@ export interface FileRouteTypes {
     | '/api/museum-highlights'
     | '/api/photo'
     | '/api/photo-gallery'
+    | '/api/report'
     | '/api/time-machine'
     | '/api/translate'
     | '/api/tts'
@@ -426,6 +438,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRouteWithChildren
+  DeleteAccountRoute: typeof DeleteAccountRoute
   DestinationsRoute: typeof DestinationsRouteWithChildren
   LanguageRoute: typeof LanguageRoute
   MapRoute: typeof MapRoute
@@ -434,7 +447,6 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PlayerRoute: typeof PlayerRoute
   PrivacyRoute: typeof PrivacyRoute
-  DeleteAccountRoute: typeof DeleteAccountRoute
   ProfileRoute: typeof ProfileRoute
   ResultsRoute: typeof ResultsRoute
   SavedRoute: typeof SavedRoute
@@ -448,6 +460,7 @@ export interface RootRouteChildren {
   ApiMuseumHighlightsRoute: typeof ApiMuseumHighlightsRoute
   ApiPhotoRoute: typeof ApiPhotoRoute
   ApiPhotoGalleryRoute: typeof ApiPhotoGalleryRoute
+  ApiReportRoute: typeof ApiReportRoute
   ApiTimeMachineRoute: typeof ApiTimeMachineRoute
   ApiTranslateRoute: typeof ApiTranslateRoute
   ApiTtsRoute: typeof ApiTtsRoute
@@ -507,13 +520,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/delete-account': {
-      id: '/delete-account'
-      path: '/delete-account'
-      fullPath: '/delete-account'
-      preLoaderRoute: typeof DeleteAccountRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/player': {
       id: '/player'
       path: '/player'
@@ -561,6 +567,13 @@ declare module '@tanstack/react-router' {
       path: '/destinations'
       fullPath: '/destinations'
       preLoaderRoute: typeof DestinationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/delete-account': {
+      id: '/delete-account'
+      path: '/delete-account'
+      fullPath: '/delete-account'
+      preLoaderRoute: typeof DeleteAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -624,6 +637,13 @@ declare module '@tanstack/react-router' {
       path: '/api/time-machine'
       fullPath: '/api/time-machine'
       preLoaderRoute: typeof ApiTimeMachineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/report': {
+      id: '/api/report'
+      path: '/api/report'
+      fullPath: '/api/report'
+      preLoaderRoute: typeof ApiReportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/photo-gallery': {
@@ -719,6 +739,7 @@ const DestinationsRouteWithChildren = DestinationsRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
+  DeleteAccountRoute: DeleteAccountRoute,
   DestinationsRoute: DestinationsRouteWithChildren,
   LanguageRoute: LanguageRoute,
   MapRoute: MapRoute,
@@ -727,7 +748,6 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PlayerRoute: PlayerRoute,
   PrivacyRoute: PrivacyRoute,
-  DeleteAccountRoute: DeleteAccountRoute,
   ProfileRoute: ProfileRoute,
   ResultsRoute: ResultsRoute,
   SavedRoute: SavedRoute,
@@ -741,6 +761,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMuseumHighlightsRoute: ApiMuseumHighlightsRoute,
   ApiPhotoRoute: ApiPhotoRoute,
   ApiPhotoGalleryRoute: ApiPhotoGalleryRoute,
+  ApiReportRoute: ApiReportRoute,
   ApiTimeMachineRoute: ApiTimeMachineRoute,
   ApiTranslateRoute: ApiTranslateRoute,
   ApiTtsRoute: ApiTtsRoute,
