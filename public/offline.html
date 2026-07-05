@@ -1847,74 +1847,40 @@ var nativeBridge = (function (exports) {
       }
 
       let renderedOnce = false;
-
-      // ── One-shot auto-reload guard ──────────────────────────────
-      // On-device finding (Beka 2026-07-05): on a COLD offline launch
-      // the Capacitor bridge sometimes never attaches to this errorPath
-      // page at all — no amount of polling helps — but it reliably
-      // attaches on the page's SECOND load (which is why tapping "Try
-      // reconnecting" made the list appear: the failed navigation
-      // bounced back to a fresh offline.html). So when polling can't
-      // find the bridge, we reload the page ONCE automatically —
-      // exactly what the manual tap did, minus the tap. The guard
-      // (sessionStorage + URL hash fallback) makes it one-shot so a
-      // genuinely bridge-less context can't reload-loop.
-      const RELOAD_GUARD = "lokali.offline.autoreload.v1";
-      function hasReloadGuard() {
-        try {
-          if (sessionStorage.getItem(RELOAD_GUARD)) return true;
-        } catch (e) {
-          /* sessionStorage unavailable — fall through to hash */
-        }
-        return window.location.hash.indexOf("auto-reloaded") !== -1;
-      }
-      function armReloadGuardAndReload() {
-        try {
-          sessionStorage.setItem(RELOAD_GUARD, "1");
-        } catch (e) {
-          /* ignore */
-        }
-        // Hash fallback survives the reload even when sessionStorage
-        // is disabled in the WebView.
-        try {
-          window.location.hash = "auto-reloaded";
-        } catch (e) {
-          /* ignore */
-        }
-        window.location.reload();
-      }
-      function clearReloadGuard() {
-        try {
-          sessionStorage.removeItem(RELOAD_GUARD);
-        } catch (e) {
-          /* ignore */
-        }
-        try {
-          if (window.location.hash.indexOf("auto-reloaded") !== -1) {
-            history.replaceState(null, "", window.location.pathname);
-          }
-        } catch (e) {
-          /* ignore */
-        }
-      }
+      let pollRunning = false;
 
       async function loadSavedList() {
-        if (!renderedOnce) setMessage("Loading your saved tours…");
-        // Poll for the bridge. First load: give it ~3 s, then fall back
-        // to the one-shot auto-reload above. Post-reload (guard set):
-        // poll longer (~9 s) before surfacing a message, because the
-        // reload is our last lever.
-        const firstLoad = !hasReloadGuard();
-        const DEADLINE = Date.now() + (firstLoad ? 3000 : 9000);
-        let sawBridge = false;
+        // Single active loop — visibility/focus re-triggers just fold
+        // into the run that's already polling.
+        if (pollRunning || renderedOnce) return;
+        pollRunning = true;
+        setMessage("Loading your saved tours…");
+        // On-device findings (Beka 2026-07-05, two rounds of testing):
+        //   1. On a cold OFFLINE launch the native side of the bridge
+        //      attaches to this errorPath page LATE — sometimes many
+        //      seconds after load, typically around an app pause/
+        //      resume. It DOES attach to the same page instance
+        //      eventually, so waiting works.
+        //   2. Reloading the page does NOT help and actively harms:
+        //      location.reload() re-drives the WebView at the dead
+        //      remote URL and can strand it on Chrome's own
+        //      net::ERR / "site can't be reached" page with no
+        //      errorPath re-entry. (That was the auto-reload
+        //      regression — removed the same day.)
+        // So: poll IN PLACE, patiently, and never navigate/reload
+        // while offline. 300 ms cadence for the first 15 s, then 1 s
+        // up to 2 min. The visibilitychange/focus listeners below
+        // re-arm the loop on resume — the exact moment late bridge
+        // attaches tend to happen.
+        const start = Date.now();
+        const MAX_MS = 120000;
+        let slowNoteShown = false;
         for (;;) {
           const state = await readSavedRaw();
           if (state.ready) {
-            sawBridge = true;
-            clearReloadGuard();
+            pollRunning = false;
             if (!state.raw) {
-              if (!renderedOnce)
-                setMessage("Nothing saved yet. Open a tour while online and tap Save.");
+              setMessage("Nothing saved yet. Open a tour while online and tap Save.");
               return;
             }
             let parsed;
@@ -1925,47 +1891,46 @@ var nativeBridge = (function (exports) {
               return;
             }
             if (!Array.isArray(parsed) || parsed.length === 0) {
-              if (!renderedOnce)
-                setMessage("Nothing saved yet. Open a tour while online and tap Save.");
+              setMessage("Nothing saved yet. Open a tour while online and tap Save.");
               return;
             }
             renderItems(parsed);
             renderedOnce = true;
             return;
           }
-          if (Date.now() > DEADLINE) break;
+          const elapsed = Date.now() - start;
+          if (elapsed > MAX_MS) break;
+          if (elapsed > 10000 && !slowNoteShown) {
+            slowNoteShown = true;
+            setMessage(
+              "Still preparing your offline library… keep the app open for a moment.",
+            );
+          }
           await new Promise(function (r) {
-            setTimeout(r, 300);
+            setTimeout(r, elapsed < 15000 ? 300 : 1000);
           });
         }
-        // Bridge never answered. First load → reload once (this is the
-        // automated "Try reconnecting"). Second load → show a message,
-        // but never clobber an already-rendered list.
-        if (firstLoad) {
-          armReloadGuardAndReload();
-          return;
-        }
-        if (!renderedOnce) {
-          setMessage(
-            sawBridge
-              ? "Couldn't read your offline library. Reopen the app once you're back online."
-              : "Saved tours aren't ready yet. Reopen the app once you're back online.",
-            "error",
-          );
-        }
+        pollRunning = false;
+        setMessage(
+          "Couldn't open the offline library. Close the app fully and reopen it.",
+          "error",
+        );
       }
 
       // Defer the first call until next tick so the static page paints
-      // first. Also re-run when the page regains visibility — on some
-      // devices the bridge only fully attaches after the first resume,
-      // and this makes the list fill in without any user action.
+      // first. visibilitychange + focus re-arm the polling loop on app
+      // resume — on-device, late bridge attaches cluster exactly around
+      // resume, so these two listeners are what turn "stuck loading"
+      // into a list without any user action. pollRunning/renderedOnce
+      // guards inside loadSavedList make duplicate triggers harmless.
       window.addEventListener("load", function () {
         setTimeout(loadSavedList, 0);
       });
       document.addEventListener("visibilitychange", function () {
-        if (!document.hidden && !renderedOnce) {
-          void loadSavedList();
-        }
+        if (!document.hidden) void loadSavedList();
+      });
+      window.addEventListener("focus", function () {
+        void loadSavedList();
       });
 
       // Quiet "Try reconnecting" link at the bottom — same idea as
@@ -1974,17 +1939,22 @@ var nativeBridge = (function (exports) {
       document
         .getElementById("retryBtn")
         .addEventListener("click", function () {
-          // Beka 2026-07-05 — ALWAYS go to the production origin.
-          // The previous window.location.origin form broke in the
-          // Capacitor errorPath context: there the page lives on
-          // https://localhost, so origin + "/saved" navigated to
-          // localhost/saved — a host that's NOT in allowNavigation,
-          // which Capacitor kicks out to the external browser →
-          // "This site can't be reached" dead end (Beka hit this
-          // on-device). Hardcoding the production URL keeps the
-          // navigation inside the WebView in every context; if the
-          // device is still offline the WebView just lands back on
-          // this offline page.
+          // Beka 2026-07-05 (round 3) — NEVER navigate while offline.
+          // Two dead ends discovered on-device:
+          //   a) location.origin + "/saved" → localhost/saved → not in
+          //      allowNavigation → external browser → "site can't be
+          //      reached" (round 1).
+          //   b) Even same-page hash/reload navigations on the
+          //      localhost origin can get kicked to the external
+          //      browser the same way (round 2, the #auto-reloaded
+          //      regression).
+          // So: offline → just re-arm the in-place polling loop.
+          // Online → go to the production origin, which IS in
+          // allowNavigation and stays inside the WebView.
+          if (typeof navigator !== "undefined" && navigator.onLine === false) {
+            void loadSavedList();
+            return;
+          }
           window.location.href = "https://lokali.travel/saved";
         });
     </script>
