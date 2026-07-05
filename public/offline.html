@@ -314,15 +314,20 @@
     -->
     <!--
       Capacitor 7 quirk: the bridge is NOT auto-injected on errorPath
-      pages. Load native-bridge.js manually here. Simple static
-      <script src> tag — this is what Capacitor's own docs use and
-      what was working before. Beka 2026-06-13: the JS-built multi-
-      path loader I added previously broke this — the onload check
-      for `window.Capacitor` ran synchronously before the bridge
-      script had a chance to set the global, so we declared failure
-      and gave up. Reverted to the simple tag.
+      pages. Beka 2026-07-05 — the <script src="/native-bridge.js">
+      subresource approach failed on-device in the errorPath context
+      (page renders at https://localhost, but the bridge request never
+      resolves → window.Capacitor never appears → "Saved tours aren't
+      ready yet"). Root fix: scripts/copy-native-bridge.mjs now INLINES
+      the entire bridge between the markers below on every cap:sync,
+      so this page is fully self-contained — no subresource fetch, no
+      dependency on which origin (localhost / lokali.travel) or which
+      server (WebViewLocalServer / Service Worker cache) delivered it.
+      Do NOT edit between the markers; the build regenerates that block.
     -->
+    <!-- NATIVE-BRIDGE:BEGIN -->
     <script src="/native-bridge.js"></script>
+    <!-- NATIVE-BRIDGE:END -->
     <script>
       /**
        * Bootstraps the offline saved-tour list. Steps:
@@ -677,10 +682,18 @@
       document
         .getElementById("retryBtn")
         .addEventListener("click", function () {
-          // Use the current origin so this stays correct after the
-          // 2026-06-18 lokali.ge → lokali.travel migration regardless
-          // of which domain the user originally cold-launched on.
-          window.location.href = window.location.origin + "/saved";
+          // Beka 2026-07-05 — ALWAYS go to the production origin.
+          // The previous window.location.origin form broke in the
+          // Capacitor errorPath context: there the page lives on
+          // https://localhost, so origin + "/saved" navigated to
+          // localhost/saved — a host that's NOT in allowNavigation,
+          // which Capacitor kicks out to the external browser →
+          // "This site can't be reached" dead end (Beka hit this
+          // on-device). Hardcoding the production URL keeps the
+          // navigation inside the WebView in every context; if the
+          // device is still offline the WebView just lands back on
+          // this offline page.
+          window.location.href = "https://lokali.travel/saved";
         });
     </script>
   </body>
