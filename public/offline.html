@@ -1849,43 +1849,59 @@ var nativeBridge = (function (exports) {
       let renderedOnce = false;
       let pollRunning = false;
 
-      // ── Final on-device truth (Beka 2026-07-05, four test rounds) ──
-      // The FIRST errorPath page load NEVER gets a working native
-      // bridge — the androidBridge interface isn't bound to that page
-      // instance, so no amount of in-place polling helps (round 4:
-      // 2-minute poll, retry taps, nothing). A SECOND load of the page
-      // always has the bridge (round 1/2: the list appeared right
-      // after any second load).
+      // ── Final on-device truth (Beka 2026-07-05, five test rounds) ──
+      // The errorPath page gets a working bridge ONLY when Capacitor's
+      // own native error handler loads it. Concretely:
+      //   - 1st cold-offline load: no bridge, ever (rounds 1/2/4).
+      //   - In-place polling / retry taps: never recovers (round 4).
+      //   - JS location.reload(): reloaded page STILL has no bridge
+      //     (round 5 — likely served from HTTP cache, skipping
+      //     Capacitor's injection path).
+      //   - Navigating to the PRODUCTION origin and letting it fail,
+      //     so Capacitor's errorPath re-loads this page natively:
+      //     bridge works every time (round 2 — that's exactly what
+      //     the old manual "Try reconnecting" tap did).
+      // So the automation is that last flow: one self-bounce via
+      // https://lokali.travel. Offline it fails in ~a second and
+      // Capacitor brings us straight back here with a live bridge;
+      // if the network actually recovered, the user simply lands on
+      // the real /saved page — even better.
       //
-      // So the page must reload itself once. The round-3 attempt at
-      // this failed for a reason that's now understood AND fixed:
-      // every navigation on the https://localhost origin — even a
-      // hash change — was being kicked to the external browser
-      // because "localhost" wasn't in capacitor.config.json's
-      // allowNavigation list. It is now (added 2026-07-05), so a
-      // plain location.reload() stays inside the WebView.
-      //
-      // Guard: sessionStorage only (NO hash — the hash change itself
-      // was a navigation and caused the round-3 browser fling). If
-      // sessionStorage is unavailable we skip the auto-reload rather
-      // than risk a loop, and fall back to long polling + the
-      // resume listeners.
-      const RELOAD_GUARD = "lokali.offline.autoreload.v2";
-      function reloadGuardSet() {
+      // Guard: timestamped localStorage (sessionStorage may not
+      // survive the cross-origin excursion). Bounce at most once per
+      // 30 s — loop-proof even if the guard can't be cleared, and
+      // self-healing (stale guards expire on their own). If storage
+      // is unwritable we skip the bounce entirely rather than risk a
+      // loop; the retry button still offers the same bounce manually.
+      const BOUNCE_TS_KEY = "lokali.offline.bounce.ts.v3";
+      const BOUNCE_MIN_INTERVAL_MS = 30000;
+      const BOUNCE_URL = "https://lokali.travel/saved";
+      function canAutoBounce() {
         try {
-          return sessionStorage.getItem(RELOAD_GUARD) === "1";
+          const ts = parseInt(localStorage.getItem(BOUNCE_TS_KEY) || "0", 10) || 0;
+          return Date.now() - ts > BOUNCE_MIN_INTERVAL_MS;
         } catch (e) {
-          return true; // can't guard a reload → don't reload
+          return false; // unreadable storage → never auto-bounce
         }
       }
-      function armGuardAndReloadOnce() {
+      function armGuardAndBounceOnce() {
         try {
-          sessionStorage.setItem(RELOAD_GUARD, "1");
+          localStorage.setItem(BOUNCE_TS_KEY, String(Date.now()));
         } catch (e) {
-          return false; // guard unwritable → skip reload, keep polling
+          return false; // unwritable guard → skip, keep polling
         }
-        window.location.reload();
+        // Cache-buster so this navigation can never be satisfied from
+        // HTTP cache — it must hit the network, fail, and re-enter
+        // through Capacitor's errorPath.
+        window.location.replace(BOUNCE_URL + "?ob=" + Date.now());
         return true;
+      }
+      function clearBounceGuard() {
+        try {
+          localStorage.removeItem(BOUNCE_TS_KEY);
+        } catch (e) {
+          /* ignore */
+        }
       }
 
       async function loadSavedList() {
@@ -1894,10 +1910,11 @@ var nativeBridge = (function (exports) {
         if (pollRunning || renderedOnce) return;
         pollRunning = true;
         setMessage("Loading your saved tours…");
-        // First load: short 4 s poll (in case some devices DO bind the
-        // bridge immediately), then the one-shot self-reload above.
-        // Post-reload: patient polling up to 2 min + resume listeners.
-        const firstLoad = !reloadGuardSet();
+        // Fresh load (no recent bounce): short 4 s poll in case this
+        // device DOES bind the bridge immediately, then the one-shot
+        // self-bounce above. Post-bounce: patient polling up to 2 min
+        // + resume listeners.
+        const firstLoad = canAutoBounce();
         const start = Date.now();
         const MAX_MS = firstLoad ? 4000 : 120000;
         let slowNoteShown = false;
@@ -1905,11 +1922,7 @@ var nativeBridge = (function (exports) {
           const state = await readSavedRaw();
           if (state.ready) {
             pollRunning = false;
-            try {
-              sessionStorage.removeItem(RELOAD_GUARD);
-            } catch (e) {
-              /* ignore */
-            }
+            clearBounceGuard();
             if (!state.raw) {
               setMessage("Nothing saved yet. Open a tour while online and tap Save.");
               return;
@@ -1942,11 +1955,11 @@ var nativeBridge = (function (exports) {
           });
         }
         pollRunning = false;
-        if (firstLoad && armGuardAndReloadOnce()) {
-          return; // page is reloading — the next load renders the list
+        if (firstLoad && armGuardAndBounceOnce()) {
+          return; // bouncing — Capacitor re-loads this page with a live bridge
         }
         setMessage(
-          "Couldn't open the offline library. Close the app fully and reopen it.",
+          "Couldn't open the offline library. Tap “Try reconnecting” below, or close the app fully and reopen it.",
           "error",
         );
       }
@@ -1973,23 +1986,18 @@ var nativeBridge = (function (exports) {
       document
         .getElementById("retryBtn")
         .addEventListener("click", function () {
-          // Beka 2026-07-05 (round 3) — NEVER navigate while offline.
-          // Two dead ends discovered on-device:
-          //   a) location.origin + "/saved" → localhost/saved → not in
-          //      allowNavigation → external browser → "site can't be
-          //      reached" (round 1).
-          //   b) Even same-page hash/reload navigations on the
-          //      localhost origin can get kicked to the external
-          //      browser the same way (round 2, the #auto-reloaded
-          //      regression).
-          // So: offline → just re-arm the in-place polling loop.
-          // Online → go to the production origin, which IS in
-          // allowNavigation and stays inside the WebView.
-          if (typeof navigator !== "undefined" && navigator.onLine === false) {
-            void loadSavedList();
-            return;
+          // Same bounce as the automatic one — this is the flow that
+          // works on-device in BOTH states: offline it fails fast and
+          // Capacitor re-enters this page with a live bridge; online
+          // it lands on the real /saved page. Manual taps bypass the
+          // 30 s auto-bounce guard on purpose (the user asked), but we
+          // still stamp the timestamp so the auto path stays quiet.
+          try {
+            localStorage.setItem(BOUNCE_TS_KEY, String(Date.now()));
+          } catch (e) {
+            /* ignore */
           }
-          window.location.href = "https://lokali.travel/saved";
+          window.location.replace(BOUNCE_URL + "?ob=" + Date.now());
         });
     </script>
   </body>
