@@ -714,9 +714,23 @@ async function tryWikiSummary(
       // the description "1562-1563 painting by Veronese", which
       // isNonPlaceTopic blocklisted on "painting" — so the lookup
       // fell through to the biblical Cana village.
-    } else if (summaryData.description && isNonPlaceTopic(summaryData.description)) {
+    } else if (
+      summaryData.description &&
+      (isNonPlaceTopic(summaryData.description) ||
+        // Person-biography filter for PLACE lookups (Beka 2026-07-05):
+        // "Sarpi" — the Georgian border village near Batumi — fell
+        // through to the intitle:/full-text stages, which ranked the
+        // biography of Paolo Sarpi (16th-century Venetian friar) first.
+        // titleMatchesQuery passed it ("sarpi" overlaps), and the
+        // result card showed a Renaissance engraving of a monk instead
+        // of the seaside village. isPersonBiography already guards the
+        // artwork path; places can never be people, so applying it
+        // here is strictly safe.
+        isPersonBiography(summaryData.description))
+    ) {
       // Standard (non-artwork) path — skip novel/film/song/painting/
-      // sculpture topics that happen to share the name of a landmark.
+      // sculpture topics AND person biographies that happen to share
+      // the name of a landmark.
       return null;
     }
     // Prefer the full-resolution `originalimage` over Wikipedia's

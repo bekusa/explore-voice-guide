@@ -147,7 +147,11 @@ export function HomeScreen() {
   // the same hand-authored copy. The literal "Lokali" tagline prefix
   // stays English everywhere (brand name).
   const heroKey = heroDest.slug as "tbilisi" | "rome" | "istanbul";
-  const heroCountry = t(`hero.${heroKey}.country` as UiKey);
+  // heroCountry (t(`hero.${heroKey}.country`)) was read here until
+  // 2026-07-05 — it fed the "FEATURED · {country}" hero badge that
+  // Beka removed. The `hero.*.country` locale keys remain in the
+  // ui-locales files, so restoring the country label later is a
+  // one-line change.
   const heroPart1 = "Lokali";
   const heroPart2 = t(`hero.${heroKey}.tagline2` as UiKey);
   const heroBlurb = t(`hero.${heroKey}.blurb` as UiKey);
@@ -349,15 +353,15 @@ export function HomeScreen() {
             </div>
           </div>
 
-          {/* hero copy */}
-          <div className="absolute bottom-9 left-5 right-5 z-[5]">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-primary backdrop-blur-md">
-              <Sparkles className="h-2.5 w-2.5" />
-              {t("home.featuredBadge")} · {heroCountry}
-            </span>
+          {/* hero copy. Beka 2026-07-05 — removed the "FEATURED · {country}"
+              badge pill (visual noise on all three hero slides) and lifted
+              the copy block higher (bottom-9 → bottom-16) to spend the
+              freed space, per his spec. heroCountry stays available if a
+              future design wants the country back in another form. */}
+          <div className="absolute bottom-16 left-5 right-5 z-[5]">
             {/* Dark text on light theme with white glow for readability
                 over the photo middle (no longer darkened). */}
-            <h1 className="font-display mt-4 text-[44px] font-medium leading-[0.98] tracking-[-0.025em] text-foreground [.light_&]:drop-shadow-[0_2px_12px_rgba(255,255,255,0.85)]">
+            <h1 className="font-display text-[44px] font-medium leading-[0.98] tracking-[-0.025em] text-foreground [.light_&]:drop-shadow-[0_2px_12px_rgba(255,255,255,0.85)]">
               {heroPart1} <span className="italic text-primary">{heroPart2}</span>
             </h1>
             <p className="mt-4 max-w-[320px] text-[14px] leading-[1.55] text-foreground/85 [.light_&]:drop-shadow-[0_1px_6px_rgba(255,255,255,0.9)]">

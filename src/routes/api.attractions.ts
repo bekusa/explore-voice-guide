@@ -113,14 +113,20 @@ export const Route = createFileRoute("/api/attractions")({
             count: 10,
             interests: key.filters.interests,
           });
-          // Haiku, not Sonnet — Beka observed first-page loads taking
-          // ~45 s with Sonnet's slower throughput (50 tok/s × 4096 max
-          // tokens). Haiku at ~150 tok/s cuts the same 10-item list
-          // to ~10-15 s and the structured-list quality is identical
-          // to the eye. Sonnet stays on the guide route where the
-          // long narrative actually benefits from the bigger model.
+          // Opus 4.8 — Beka's call (2026-07-05). History: Sonnet was
+          // moved to Haiku for speed (~45 s → ~10-15 s cold loads),
+          // but Haiku started attributing attractions to the wrong
+          // city (Beka caught Metekhi Church — a Tbilisi landmark —
+          // returned on a "batumi" query despite the prompt's explicit
+          // city-discipline rules). List accuracy is trust-critical:
+          // users navigate to these places. Opus is the strongest
+          // model available; the shared cache means each query pays
+          // the latency/cost exactly once, then every visitor in
+          // every language reads the cached row. If cold-load latency
+          // becomes a complaint, drop to "claude-sonnet-4-5" here —
+          // do NOT go back to Haiku for this route.
           const text = await callClaude({
-            model: "claude-haiku-4-5",
+            model: "claude-opus-4-8",
             system,
             user,
             maxTokens: 3072,
@@ -343,11 +349,12 @@ async function handleExtensionRequest(
       exclude: extras.exclude,
       interests: key.filters.interests,
     });
-    // Haiku here too — same reasoning as the first-page call. Bigger
-    // maxTokens because extension calls can ask for up to 30 more
-    // attractions — each row averages ~120-180 tokens.
+    // Opus 4.8 here too — same reasoning as the first-page call (see
+    // the comment there; wrong-city items were slipping into results
+    // on Haiku). Bigger maxTokens because extension calls can ask for
+    // up to 30 more attractions — each row averages ~120-180 tokens.
     const text = await callClaude({
-      model: "claude-haiku-4-5",
+      model: "claude-opus-4-8",
       system,
       user,
       maxTokens: 6144,

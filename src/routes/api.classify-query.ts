@@ -23,7 +23,7 @@
  * Client wrapper: see `classifySearchQuery` in src/lib/api.ts.
  */
 import { createFileRoute } from "@tanstack/react-router";
-import { callClaude } from "@/lib/anthropic.server";
+import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
 import {
   getCachedClassification,
@@ -90,12 +90,15 @@ Query: "asdfgh"
  * ever stores valid shapes.
  */
 function parseClassification(raw: string): Classification | null {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    return null;
-  }
+  // Beka 2026-07-05 live-debug: this used STRICT JSON.parse while every
+  // other Claude-backed route uses the tolerant parseClaudeJson (which
+  // strips markdown fences, leading prose, and repairs control chars).
+  // Haiku wraps short JSON answers in ```json fences often enough that
+  // the strict parse made the classifier fail and fall back to
+  // {kind:"other"} — live check: /api/classify-query?q=Colosseum
+  // returned "other", so EVERY search routed to /results and the
+  // direct-to-attraction UX never fired. Tolerant parse fixes it.
+  const parsed: unknown = parseClaudeJson(raw);
   if (!parsed || typeof parsed !== "object") return null;
   const obj = parsed as Record<string, unknown>;
   const kind = obj.kind;
@@ -138,27 +141,50 @@ export const Route = createFileRoute("/api/classify-query")({
             model: "claude-haiku-4-5",
             system: SYSTEM_PROMPT,
             user: q,
-            // The JSON shape we ask for is tiny — 100 tokens is roomy
-            // headroom and a hard ceiling against runaway prose.
-            maxTokens: 128,
+            // Roomy headroom: the JSON is ~45 tokens, but a markdown
+            // fence + a stray preamble line must never truncate the
+            // object mid-string (truncated JSON is unparseable even
+            // for the tolerant parser). 256 is still tiny/cheap.
+            maxTokens: 256,
             // Tight: we want consistent routing, not creative reads.
             temperature: 0,
           });
           classification = parseClassification(text);
+          if (!classification) {
+            // Surface WHAT Haiku actually said so the next debugging
+            // session reads the failure from logs instead of guessing.
+            console.warn(
+              "[api.classify-query] unparseable Haiku output:",
+              text.slice(0, 200),
+            );
+          }
         } catch (err) {
           console.warn("[api.classify-query] Haiku call failed", err);
         }
 
-        // Haiku failed or returned garbage → fall back to "other" so
-        // the client routes to /results (safe default, same as before
-        // this endpoint existed).
         if (!classification) {
-          classification = { kind: "other" };
+          // Haiku failed or returned garbage → fall back to "other" so
+          // the client routes to /results (safe default, same as
+          // before this endpoint existed). Beka 2026-07-05: do NOT
+          // cache this fallback — the old code cached it, which would
+          // have permanently pinned a transient Haiku failure as the
+          // routing decision for that query. Failures stay uncached so
+          // the next search retries.
+          return corsJson({ kind: "other" } satisfies Classification);
         }
 
-        // Fire-and-forget cache write. A failed write logs but doesn't
-        // block the user — they already paid the Haiku latency.
-        void putCachedClassification(q, classification);
+        // Cache write — AWAITED, not fire-and-forget. Beka 2026-07-05
+        // live-debug: on Cloudflare Workers a floating promise is
+        // killed as soon as the Response returns, so the old
+        // `void putCachedClassification(...)` never completed and
+        // cached_classifications sat at 0 rows since launch. The write
+        // is one small upsert (~30 ms) — awaiting it is imperceptible
+        // next to the Haiku latency the user already paid.
+        try {
+          await putCachedClassification(q, classification);
+        } catch (err) {
+          console.warn("[api.classify-query] cache write failed", err);
+        }
 
         return corsJson(classification);
       },
