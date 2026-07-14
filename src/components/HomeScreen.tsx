@@ -25,7 +25,6 @@ import { DESTINATIONS, type Destination } from "@/lib/destinations";
 import { LANGUAGES } from "@/lib/languages";
 import { HOME_CITIES } from "@/lib/cityList";
 import { CityCard } from "@/components/CityCard";
-import { LanguageFlagsCluster } from "@/components/LanguageFlagsPill";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
 import { attractionSlug, classifySearchQuery, setAttractionHint } from "@/lib/api";
 import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
@@ -51,6 +50,21 @@ import {
 const TIME_MACHINE_TOP_10 = [...TIME_MACHINE_ATTRACTIONS]
   .sort((a, b) => b.score - a.score)
   .slice(0, 10);
+
+// Chips for the "Available in every language" marquee — fixed set +
+// order per the option-1a design handoff (Beka 2026-07-05). `cc` is
+// the flagcdn country code (language ≠ country: ja→jp, ko→kr, ar→sa).
+// Native names are intentionally hardcoded — they're display copy
+// pinned by the design, not data. The "+N" chip next to them derives
+// N from LANGUAGES.length so it tracks future language expansion
+// automatically.
+const MARQUEE_LANGS: Array<{ code: string; cc: string; native: string }> = [
+  { code: "it", cc: "it", native: "Italiano" },
+  { code: "ja", cc: "jp", native: "日本語" },
+  { code: "ko", cc: "kr", native: "한국어" },
+  { code: "fr", cc: "fr", native: "Français" },
+  { code: "ar", cc: "sa", native: "العربية" },
+];
 
 // The 3 cities Beka wants surfaced as the brand carousel:
 // Tbilisi (Lokali's home base), Rome (the canonical European audio-
@@ -472,28 +486,72 @@ export function HomeScreen() {
             )}
           </form>
 
-          {/* "Available in every language" benefit card — merged with
-              the old standalone flags pill into ONE tappable unit (Beka
-              2026-06-28). The moving flag cluster is now the card's
-              "image" on the left (replacing the gold Sparkles chip), the
-              title + sub stay on the right, and the whole card links to
-              the language picker. Same i18n keys (home.everyLang.title /
-              sub / cta) so all 44 locales cover it without re-translating. */}
+          {/* "Available in every language" card — option 1a from the
+              Claude-Design handoff (Beka 2026-07-05): header row (title
+              + one-line sub + circular arrow) above an auto-scrolling
+              marquee of native-script language chips with circular
+              IMAGE flags. Image flags, not emoji — emoji flags render
+              as plain "IT/JP/KR" letters on Windows and many Android
+              builds, which is the exact problem this redesign fixes
+              (that's also why the old <LanguageFlagsCluster /> went).
+              Flags come from flagcdn.com (the handoff prefers bundled
+              assets; the app has no flag asset set yet, so the CDN is
+              the pragmatic v1 — onError hides the img and the chip
+              degrades to text-only). Same i18n keys as before, so all
+              locales stay covered; the "+N" chip is intentionally
+              numeral-only to avoid a new key across 44 locales. */}
           <Link
             to="/language"
             aria-label={t("home.everyLang.cta")}
-            className="group mt-3.5 flex items-center gap-3 rounded-2xl border border-foreground/10 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent px-4 py-3.5 transition-smooth hover:border-primary/30 hover:from-primary/15 active:scale-[0.99]"
+            className="group mt-3.5 block rounded-[18px] border border-foreground/[0.09] bg-gradient-to-b from-[#4E3E2C8C] to-[#30261C59] px-3.5 py-3 transition-smooth hover:border-primary/30 active:scale-[0.99]"
           >
-            <LanguageFlagsCluster />
-            <div className="min-w-0 flex-1">
-              <p className="text-[13.5px] font-semibold leading-tight text-foreground">
-                {t("home.everyLang.title")}
-              </p>
-              <p className="mt-1 text-[11.5px] leading-[1.5] text-muted-foreground">
-                {t("home.everyLang.sub")}
-              </p>
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[15px] font-bold leading-[1.2] text-foreground">
+                  {t("home.everyLang.title")}
+                </p>
+                <p className="mt-0.5 truncate text-[12.5px] leading-[1.3] text-muted-foreground">
+                  {t("home.everyLang.sub")}
+                </p>
+              </div>
+              <span className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full border border-foreground/20 text-foreground transition-transform duration-300 group-hover:translate-x-0.5">
+                <ArrowRight className="h-3.5 w-3.5" />
+              </span>
             </div>
-            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-300 group-hover:translate-x-0.5" />
+            <div className="lang-marquee mt-2.5 overflow-hidden">
+              <div className="lang-marquee-track flex w-max items-center">
+                {[0, 1].map((dup) => (
+                  <div
+                    key={dup}
+                    aria-hidden={dup === 1}
+                    className="flex items-center gap-2 pr-2"
+                  >
+                    {MARQUEE_LANGS.map((l) => (
+                      <span
+                        key={`${dup}-${l.code}`}
+                        className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-foreground/[0.12] py-1 pl-1.5 pr-2.5 text-[13px] leading-none text-foreground/85"
+                      >
+                        <img
+                          src={`https://flagcdn.com/w40/${l.cc}.png`}
+                          alt=""
+                          width={16}
+                          height={16}
+                          loading="lazy"
+                          className="h-4 w-4 rounded-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                        {l.native}
+                      </span>
+                    ))}
+                    <span className="inline-flex items-center whitespace-nowrap rounded-full border border-[#F4D03F59] px-[11px] py-1 text-[13px] leading-none text-[#F4D03F]">
+                      +{LANGUAGES.length - MARQUEE_LANGS.length}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </Link>
         </section>
 

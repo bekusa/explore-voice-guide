@@ -811,6 +811,7 @@ function AttractionPage() {
           name={a?.name ?? fallbackName}
           attraction={a}
           heroPhoto={heroPhoto}
+          heroSlides={heroSlides}
           language={language}
           interest={interest}
           starting={starting}
@@ -909,6 +910,7 @@ function AttractionPage() {
           lng={typeof a?.lng === "number" ? a.lng : geocoded?.lng}
           name={a?.name ?? fallbackName}
           currentSlug={id}
+          cityHint={(typeof a?.city === "string" ? a.city : null) || searchCity || undefined}
         />
 
         {/* The audio player itself lives in MobileFrame's floatingPanel
@@ -931,6 +933,7 @@ function ActionRow({
   name,
   attraction,
   heroPhoto,
+  heroSlides,
   language,
   interest,
   starting,
@@ -943,6 +946,13 @@ function ActionRow({
    *  for offline rendering — without this the attraction page shows a
    *  broken image after airplane mode. */
   heroPhoto: string | null;
+  /** Full hero-carousel photo URLs (≤5, dedup'd) from the parent's
+   *  heroSlides memo. Save/Download feed these to fetchAndCacheGallery
+   *  so the offline card carries the whole photo set (Beka 2026-07-05).
+   *  Caught by tsc: the first version referenced the parent's memo
+   *  directly from inside this child component, where it isn't in
+   *  scope — it must arrive as a prop, like heroPhoto does. */
+  heroSlides: string[];
   language: string;
   // Current interest bias — drives both the cache lookup (so the
   // "Offline" pill reflects whether THIS interest's guide is cached,
@@ -1824,11 +1834,20 @@ function MapSection({
   lng,
   name,
   currentSlug,
+  cityHint,
 }: {
   lat?: number;
   lng?: number;
   name: string;
   currentSlug: string;
+  /** City fallback for the nearby-pin attraction hints. Beka/tsc
+   *  2026-07-05: the pin click handlers referenced the PARENT
+   *  component's `searchCity` — an identifier that does not exist in
+   *  this component's scope. Vite/esbuild ships that without
+   *  type-checking, so it was a latent runtime ReferenceError the
+   *  first time a user tapped a nearby pin whose saved attraction had
+   *  no `city` of its own. Passed explicitly now. */
+  cityHint?: string;
 }) {
   const navigate = useNavigate();
   const saved = useSavedItems();
@@ -1962,7 +1981,7 @@ function MapSection({
           const targetSlug = attractionSlug(item.name);
           setAttractionHint(targetSlug, {
             name: item.name,
-            city: (item.attraction.city as string | undefined) ?? searchCity,
+            city: (item.attraction.city as string | undefined) ?? cityHint,
           });
           navigate({ to: "/attraction/$id", params: { id: targetSlug } });
         });
@@ -1994,7 +2013,7 @@ function MapSection({
             const targetSlug = attractionSlug(item.name);
             setAttractionHint(targetSlug, {
               name: item.name,
-              city: (item.attraction.city as string | undefined) ?? searchCity,
+              city: (item.attraction.city as string | undefined) ?? cityHint,
             });
             navigate({ to: "/attraction/$id", params: { id: targetSlug } });
           });

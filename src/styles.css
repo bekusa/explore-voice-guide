@@ -408,3 +408,29 @@
 .leaflet-control-attribution a {
   color: var(--primary) !important;
 }
+
+/* ─── "Available in every language" marquee (Home, option 1a) ───────
+   Beka 2026-07-05, from the Claude-Design handoff README. The chip
+   strip translates 0 → -50% over 22 s and loops; the chip set is
+   rendered TWICE in the DOM and each set carries the inter-chip gap
+   as its own padding-right, so the -50% wrap lands exactly on the
+   start of the second set (seamless, no jump). Edge fade via mask so
+   chips dissolve at both card edges. Reduced-motion users get a
+   static strip (first chips visible) per the handoff's a11y note. */
+@keyframes lokali-lang-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.lang-marquee {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+}
+.lang-marquee-track {
+  animation: lokali-lang-marquee 22s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lang-marquee-track {
+    animation: none;
+  }
+}
