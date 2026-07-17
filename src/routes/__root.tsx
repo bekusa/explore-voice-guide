@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { useT } from "@/hooks/useT";
 import { useCapacitorBridge } from "@/hooks/useCapacitorBridge";
+import { capturePageview, identifyUser, resetAnalytics } from "@/lib/analytics";
 
 import appCss from "../styles.css?url";
 
@@ -20,6 +21,29 @@ import appCss from "../styles.css?url";
 // (the SSR shell ships lang="en" because we don't know the user's
 // preference at SSR time; the script overrides it client-side).
 const themeBootScript = `(function(){try{var t=localStorage.getItem('tg.theme');if(t==='light'){document.documentElement.classList.add('light');}var l=localStorage.getItem('tg.lang');if(l){document.documentElement.setAttribute('lang',l);}}catch(e){}})();`;
+
+// PostHog loader snippet — the official queuing stub. It installs
+// `window.posthog` synchronously (so calls made before the real
+// library downloads are queued, not lost), then async-loads
+// array.js from the US-cloud assets host and calls init().
+//
+// Config notes:
+//   - api_host us.i.posthog.com — project region is US Cloud.
+//   - capture_pageview:false — we drive $pageview ourselves from the
+//     router's onResolved event (see RootComponent); this is a SPA,
+//     so the automatic load-time pageview would under-count.
+//   - capture_pageleave:true — gives us session duration + bounce.
+//   - person_profiles:'identified_only' — anonymous visitors are
+//     still counted as events (DAU works), but no person profile is
+//     created until identify() runs at sign-in. Keeps us well inside
+//     the 1M-events/month free tier.
+//   - respect_dnt:true — honour Do-Not-Track; GDPR-friendly for EU
+//     travellers even though the project lives in US Cloud.
+//
+// The project API key below is a PUBLIC, write-only key: it can send
+// events but cannot read data, so shipping it in the client bundle is
+// expected and safe.
+const posthogBootScript = `!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug getPageViewId captureTraceFeedback captureTraceMetric".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_o65XCRaZi3tqYsxd3ETsdN47guGRXL8AhmS9x53NZ3Gp',{api_host:'https://us.i.posthog.com',person_profiles:'identified_only',capture_pageview:false,capture_pageleave:true,autocapture:true,respect_dnt:true});`;
 
 function NotFoundComponent() {
   const t = useT();
@@ -137,6 +161,10 @@ function RootShell({ children }: { children: React.ReactNode }) {
     <html lang="en">
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+        {/* PostHog loader — installs window.posthog + init() before
+            hydration so pageview/identify calls from React are queued
+            and replayed once array.js loads. See posthogBootScript. */}
+        <script dangerouslySetInnerHTML={{ __html: posthogBootScript }} />
         <HeadContent />
       </head>
       <body>
@@ -169,6 +197,19 @@ function RootComponent() {
     window.addEventListener("tg:lang-changed", syncLang);
     return () => window.removeEventListener("tg:lang-changed", syncLang);
   }, []);
+
+  // Analytics pageviews — this is a SPA, so a route change doesn't
+  // reload the page and PostHog's automatic pageview (disabled in the
+  // snippet) never fires again after the initial load. Capture one
+  // $pageview now for the entry page, then one on every resolved
+  // navigation. router.subscribe returns its own unsubscribe fn.
+  useEffect(() => {
+    capturePageview();
+    const unsubscribe = router.subscribe("onResolved", () => {
+      capturePageview();
+    });
+    return unsubscribe;
+  }, [router]);
 
   // Backfill Capacitor Preferences with the current Saved list, so
   // the bundled `public/offline.html` can render saved tours when the
@@ -256,6 +297,11 @@ function RootComponent() {
   // than just running on mount: cold sign-in flows finish AFTER the
   // root mounts (OAuth redirects, exchangeCodeForSession), so the
   // SIGNED_IN event is what we need to wait for.
+  //
+  // This effect also drives analytics identity: we tag PostHog with the
+  // Supabase user UUID (pseudonymous — no email/PII) whenever a session
+  // is present, and reset() on sign-out so the next person on the same
+  // device isn't merged into the previous user's profile.
   useEffect(() => {
     const cleanupRef: { current: (() => void) | null } = { current: null };
     let cancelled = false;
@@ -266,7 +312,15 @@ function RootComponent() {
       // Run once now in case we mounted with an existing session.
       await hydrateFromCloud();
       if (cancelled) return;
-      const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+        // Analytics identity — supabase-js emits INITIAL_SESSION on
+        // subscribe with the current session, so this also covers
+        // warm starts where the user is already signed in.
+        if (session?.user) {
+          identifyUser(session.user.id);
+        } else if (event === "SIGNED_OUT") {
+          resetAnalytics();
+        }
         if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
           void hydrateFromCloud();
         }

@@ -30,8 +30,8 @@
  *     HTML is on disk for the next offline launch.
  */
 
-const CACHE_VERSION = "lokali-shell-v7";
-const RUNTIME_CACHE = "lokali-runtime-v7";
+const CACHE_VERSION = "lokali-shell-v8";
+const RUNTIME_CACHE = "lokali-runtime-v8";
 
 // Minimum set of routes we want to be reachable offline even if the
 // user has never visited them. Anything else gets cached lazily.
