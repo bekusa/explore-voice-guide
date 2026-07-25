@@ -51,7 +51,36 @@ export type ClaudeCallOpts = {
  * an empty/non-text response. Caller is responsible for parsing the
  * returned text as JSON (most prompts ask Claude to emit JSON).
  */
+/**
+ * Known-good fallback. Live incident 2026-07-25: with this account's
+ * API key, claude-haiku-4-5 and claude-sonnet-4-5 work, but BOTH
+ * claude-opus-4-8 and claude-sonnet-5 fail terminally (every
+ * /api/attractions and /api/guide generation 502'd while photo /
+ * classify routes were healthy). Until the account-side cause is
+ * confirmed in the Anthropic Console, callClaude retries a failed
+ * call ONCE on this proven model so users never see "AI is
+ * temporarily busy" because of a model-availability problem. The
+ * console.warn below records the primary model's real error for
+ * diagnosis.
+ */
+const FALLBACK_MODEL = "claude-sonnet-4-5";
+
 export async function callClaude(opts: ClaudeCallOpts): Promise<string> {
+  try {
+    return await callClaudeOnce(opts);
+  } catch (err) {
+    const model = opts.model ?? DEFAULT_MODEL;
+    if (model === FALLBACK_MODEL) throw err;
+    console.warn(
+      `[anthropic] model ${model} failed — falling back to ${FALLBACK_MODEL}. Primary error: ${
+        err instanceof Error ? err.message.slice(0, 300) : String(err)
+      }`,
+    );
+    return callClaudeOnce({ ...opts, model: FALLBACK_MODEL });
+  }
+}
+
+async function callClaudeOnce(opts: ClaudeCallOpts): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     throw new Error("[anthropic] ANTHROPIC_API_KEY missing — set it in Lovable Project Secrets");

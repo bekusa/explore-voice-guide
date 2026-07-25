@@ -374,6 +374,12 @@ async function handleExtensionRequest(
       JSON.stringify({
         attractions: [],
         error: "Service temporarily unavailable",
+        // Diagnostic detail (2026-07-25 model-availability incident):
+        // callClaude error messages carry the upstream HTTP status +
+        // the head of Anthropic's error body — no secrets. Lets us
+        // read the real failure from the browser instead of needing
+        // Cloudflare logs (which Lovable doesn't expose).
+        detail: err instanceof Error ? err.message.slice(0, 300) : String(err),
       }),
       {
         status: 502,
