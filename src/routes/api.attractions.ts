@@ -127,8 +127,12 @@ export const Route = createFileRoute("/api/attractions")({
           //     quality Beka remembers as good — ~40-50 s cold,
           //     fits the worker budget. Cache still means each query
           //     pays this once, globally.
+          //   Sonnet 5 (Beka 2026-07-25, final): Opus-class accuracy
+          //     at Sonnet-class speed, and CHEAPER than 4.5 until
+          //     2026-08-31 ($2/$10 intro vs $3/$15). Best of both
+          //     rungs of the ladder above — no worker-budget risk.
           const text = await callClaude({
-            model: "claude-sonnet-4-5",
+            model: "claude-sonnet-5",
             system,
             user,
             maxTokens: 3072,
@@ -358,7 +362,7 @@ async function handleExtensionRequest(
     // used 6144 budget would flirt with the worker's ~100 s limit
     // the same way Opus did. 4096 still fits ~25 rows.
     const text = await callClaude({
-      model: "claude-sonnet-4-5",
+      model: "claude-sonnet-5",
       system,
       user,
       maxTokens: 4096,

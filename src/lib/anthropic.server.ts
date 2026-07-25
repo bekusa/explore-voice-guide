@@ -20,12 +20,17 @@
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 
 /**
- * Default model. Sonnet for both attractions and guide because Beka
- * reverted from Haiku — Haiku's terse style was hurting the narrated
- * guide quality. If we need to dial cost down later, override per-
- * caller via `model:` in callClaude().
+ * Default model. Sonnet-class for the narrated guide (and any caller
+ * that doesn't override `model:`) because Beka reverted from Haiku —
+ * Haiku's terse style was hurting the narrated guide quality.
+ *
+ * Upgraded 4.5 → 5 on 2026-07-25 (Beka's call): Sonnet 5 delivers
+ * Opus-class accuracy at Sonnet-class speed and costs LESS than 4.5
+ * until 2026-08-31 ($2/$10 intro, then the same $3/$15). Same worker-
+ * budget profile as 4.5 — the Opus 4.8 timeout incident (see
+ * api.attractions.ts) does not apply to Sonnet-class models.
  */
-export const DEFAULT_MODEL = "claude-sonnet-4-5";
+export const DEFAULT_MODEL = "claude-sonnet-5";
 
 export type ClaudeCallOpts = {
   /** Optional model override; defaults to DEFAULT_MODEL. */
