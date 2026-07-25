@@ -113,20 +113,22 @@ export const Route = createFileRoute("/api/attractions")({
             count: 10,
             interests: key.filters.interests,
           });
-          // Opus 4.8 — Beka's call (2026-07-05). History: Sonnet was
-          // moved to Haiku for speed (~45 s → ~10-15 s cold loads),
-          // but Haiku started attributing attractions to the wrong
-          // city (Beka caught Metekhi Church — a Tbilisi landmark —
-          // returned on a "batumi" query despite the prompt's explicit
-          // city-discipline rules). List accuracy is trust-critical:
-          // users navigate to these places. Opus is the strongest
-          // model available; the shared cache means each query pays
-          // the latency/cost exactly once, then every visitor in
-          // every language reads the cached row. If cold-load latency
-          // becomes a complaint, drop to "claude-sonnet-4-5" here —
-          // do NOT go back to Haiku for this route.
+          // Sonnet — settled 2026-07-25 after testing the full ladder:
+          //   Haiku (fast, ~10-15 s): wrong-city errors (Metekhi
+          //     Church on a "batumi" query) — quality unacceptable,
+          //     do NOT come back to Haiku on this route.
+          //   Opus 4.8 (Beka's pick 2026-07-05): valid model id, but
+          //     a reasoning-class model generating a 10-item list
+          //     blows past the Cloudflare Worker's ~100 s budget —
+          //     LIVE fresh generations failed ("washington",
+          //     2026-07-25 09:05: classified fine, no cache row
+          //     written, user saw "AI is temporarily busy").
+          //   Sonnet: the original pre-Haiku model — the era whose
+          //     quality Beka remembers as good — ~40-50 s cold,
+          //     fits the worker budget. Cache still means each query
+          //     pays this once, globally.
           const text = await callClaude({
-            model: "claude-opus-4-8",
+            model: "claude-sonnet-4-5",
             system,
             user,
             maxTokens: 3072,
@@ -349,15 +351,17 @@ async function handleExtensionRequest(
       exclude: extras.exclude,
       interests: key.filters.interests,
     });
-    // Opus 4.8 here too — same reasoning as the first-page call (see
-    // the comment there; wrong-city items were slipping into results
-    // on Haiku). Bigger maxTokens because extension calls can ask for
-    // up to 30 more attractions — each row averages ~120-180 tokens.
+    // Sonnet here too — same reasoning as the first-page call (see
+    // the ladder comment there). maxTokens back to 4096 (the value
+    // this call ran on in the original Sonnet era): 6144 was sized
+    // for Haiku's ~150 tok/s throughput; at Sonnet speed a fully
+    // used 6144 budget would flirt with the worker's ~100 s limit
+    // the same way Opus did. 4096 still fits ~25 rows.
     const text = await callClaude({
-      model: "claude-opus-4-8",
+      model: "claude-sonnet-4-5",
       system,
       user,
-      maxTokens: 6144,
+      maxTokens: 4096,
     });
     parsed = parseClaudeJson(text);
   } catch (err) {
