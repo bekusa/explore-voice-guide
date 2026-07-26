@@ -1,46 +1,60 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 // Leaflet's stylesheet MUST come with the component — without it the
 // tile panes render unpositioned and the map looks frozen/blank.
-// (Beka 2026-07-26: the trip map was "stuck" — attraction.$id.tsx and
-// map.tsx each import this css themselves, TripMap didn't.)
 import "leaflet/dist/leaflet.css";
 import type { TripItem } from "@/lib/tripsStore";
 
 /**
- * Trip overview map (Trips Phase 2) — all of a trip's places as pins
- * on one Leaflet map, auto-fitted. Sibling of MapSection
- * (attraction.$id.tsx) and reuses its conventions: dynamic leaflet
- * import (keeps the chunk out of the main bundle), divIcon pins in
- * the app's gold styling, dark CartoDB tiles.
+ * Trip overview map — all of a trip's places as pins on one Leaflet
+ * map, auto-fitted. Sibling of MapSection (attraction.$id.tsx).
  *
- * Items without coordinates are simply skipped — same rule MapSection
- * applies to saved pins. When NO item has coords the component
- * renders nothing (the caller doesn't reserve space for it).
+ * Beka 2026-07-26 (round 2): the first version rendered a blank box —
+ * on-device AND on the live Cloudflare preview the map made ZERO tile
+ * requests. Root cause: TripMap sits in MobileFrame's `overflow-y-auto`
+ * flow, and Leaflet measured the container while it was still 0-sized,
+ * computed "no tiles needed", and the single delayed invalidateSize
+ * wasn't enough to recover. The full /map page works because it stamps
+ * an explicit pixel height and fires a CASCADE of invalidateSize calls
+ * (rAF + several timers + a ResizeObserver). This rewrite copies that
+ * proven approach and drops the opacity gate (which hid the map when
+ * `ready` never flipped).
+ *
+ * Items without coordinates are skipped; when none have coords the
+ * component renders nothing.
  */
 export function TripMap({ items }: { items: TripItem[] }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<unknown>(null);
-  const [ready, setReady] = useState(false);
 
   const pins = items.filter(
     (i) => typeof i.lat === "number" && typeof i.lng === "number",
   );
+  const pinKey = pins.map((p) => `${p.id}:${p.lat},${p.lng}`).join("|");
 
   useEffect(() => {
     if (pins.length === 0) return;
     let cancelled = false;
+    const timers: number[] = [];
+    let ro: ResizeObserver | null = null;
+
     (async () => {
       const L = (await import("leaflet")).default;
-      if (cancelled || !containerRef.current) return;
+      const el = containerRef.current;
+      if (cancelled || !el) return;
 
-      // Tear down a previous instance on item changes — cheaper than
-      // diffing markers for a list this small (≤ trip size).
+      // Guarantee a concrete size BEFORE Leaflet measures. The div
+      // carries h-56 (224px) via class, but during the mount pass the
+      // parent width can still be 0 inside the scroll wrapper — stamp
+      // an explicit height and read the parent width so the first tile
+      // computation isn't done against a 0×0 box.
+      if (el.clientHeight === 0) el.style.height = "224px";
+
       if (mapRef.current) {
         (mapRef.current as { remove: () => void }).remove();
         mapRef.current = null;
       }
 
-      const map = L.map(containerRef.current, {
+      const map = L.map(el, {
         zoomControl: false,
         attributionControl: true,
       });
@@ -48,10 +62,7 @@ export function TripMap({ items }: { items: TripItem[] }) {
 
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-        {
-          attribution: "&copy; OpenStreetMap &copy; CARTO",
-          maxZoom: 19,
-        },
+        { attribution: "&copy; OpenStreetMap &copy; CARTO", maxZoom: 19 },
       ).addTo(map);
 
       const icon = L.divIcon({
@@ -79,41 +90,58 @@ export function TripMap({ items }: { items: TripItem[] }) {
           });
       }
 
-      if (latLngs.length === 1) {
-        map.setView(latLngs[0], 14);
-      } else {
-        map.fitBounds(L.latLngBounds(latLngs), { padding: [36, 36], maxZoom: 15 });
-      }
-      // The container mounts inside MobileFrame's scroll area, which
-      // can still be settling when Leaflet measures itself — re-check
-      // the size a beat later, same trick map.tsx uses.
-      setTimeout(() => {
+      const fit = () => {
+        if (latLngs.length === 1) {
+          map.setView(latLngs[0], 14);
+        } else {
+          map.fitBounds(L.latLngBounds(latLngs), { padding: [36, 36], maxZoom: 15 });
+        }
+      };
+      fit();
+
+      // Cascade of size re-checks — catches the container settling as
+      // MobileFrame's scroll layout, transitions, and mobile
+      // address-bar collapse resolve. Each invalidateSize re-fits so
+      // the pins stay framed. Mirrors map.tsx.
+      const bump = () => {
         try {
           map.invalidateSize();
+          fit();
         } catch {
-          /* map already torn down */
+          /* torn down */
         }
-      }, 250);
-      setReady(true);
+      };
+      requestAnimationFrame(bump);
+      for (const ms of [100, 300, 600, 1000]) {
+        timers.push(window.setTimeout(bump, ms));
+      }
+      // Keep it correct through later layout changes (images loading
+      // above the map, keyboard, orientation).
+      if (typeof ResizeObserver !== "undefined") {
+        ro = new ResizeObserver(() => bump());
+        ro.observe(el);
+      }
     })();
+
     return () => {
       cancelled = true;
+      timers.forEach((t) => clearTimeout(t));
+      ro?.disconnect();
       if (mapRef.current) {
         (mapRef.current as { remove: () => void }).remove();
         mapRef.current = null;
       }
     };
-    // Re-init when the pin set actually changes (ids joined), not on
-    // every parent render with an identical list.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pins.map((p) => p.id).join(",")]);
+  }, [pinKey]);
 
   if (pins.length === 0) return null;
 
   return (
     <div
-      className={`mt-6 h-56 w-full overflow-hidden rounded-2xl border border-border transition-opacity ${ready ? "opacity-100" : "opacity-0"}`}
       ref={containerRef}
+      style={{ height: 224 }}
+      className="mt-6 w-full overflow-hidden rounded-2xl border border-border bg-secondary"
     />
   );
 }
