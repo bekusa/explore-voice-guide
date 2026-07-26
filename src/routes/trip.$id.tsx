@@ -76,6 +76,21 @@ export const Route = createFileRoute("/trip/$id")({
 const AUDIO_MIN_PER_PLACE = 8;
 const MAX_DAYS = 30;
 
+/** Tidy a free-form city string for display: "batumi" → "Batumi",
+ *  "new york" → "New York". Hyphenated parts handled too. */
+function titleCaseCity(s: string): string {
+  return s
+    .trim()
+    .split(/\s+/)
+    .map((w) =>
+      w
+        .split("-")
+        .map((p) => (p ? p[0].toUpperCase() + p.slice(1).toLowerCase() : p))
+        .join("-"),
+    )
+    .join(" ");
+}
+
 function dateDiffDays(start: string, end: string): number {
   const a = new Date(`${start}T00:00:00`).getTime();
   const b = new Date(`${end}T00:00:00`).getTime();
@@ -356,16 +371,21 @@ function TripPage() {
   const anytime = (items ?? []).filter((i) => i.day_index === 0).sort(sortByPos);
 
   // City view groups (Phase 2 behaviour, kept as a secondary lens).
+  // Beka 2026-07-26: grouped CASE-INSENSITIVELY — "Batumi" (backfill)
+  // and "batumi" (added when searchCity was the raw lowercase query)
+  // were showing as two separate city groups. Key on the lowercased
+  // city; display a tidy title-cased label.
   const cityGroups: Array<{ city: string; items: TripItem[] }> = [];
   if (items) {
     const index = new Map<string, number>();
     for (const item of items) {
-      const key = item.city?.trim() || "—";
+      const raw = item.city?.trim() || "";
+      const key = raw ? raw.toLowerCase() : "—";
       let gi = index.get(key);
       if (gi === undefined) {
         gi = cityGroups.length;
         index.set(key, gi);
-        cityGroups.push({ city: key, items: [] });
+        cityGroups.push({ city: raw ? titleCaseCity(raw) : "—", items: [] });
       }
       cityGroups[gi].items.push(item);
     }

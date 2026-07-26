@@ -140,6 +140,22 @@ export async function deleteTrip(id: string): Promise<void> {
 
 /* ─── Trip items (Phase 2) ─────────────────────────────────────── */
 
+/** Title-case a free-form city so casing variants collapse to one
+ *  group ("batumi" / "BATUMI" → "Batumi"). Returns null for empties. */
+function normalizeCity(raw: string | null | undefined): string | null {
+  const s = (raw ?? "").trim();
+  if (!s) return null;
+  return s
+    .split(/\s+/)
+    .map((w) =>
+      w
+        .split("-")
+        .map((p) => (p ? p[0].toUpperCase() + p.slice(1).toLowerCase() : p))
+        .join("-"),
+    )
+    .join(" ");
+}
+
 export type TripItem = {
   id: string;
   trip_id: string;
@@ -191,7 +207,9 @@ export async function addPlaceToTrip(
     trip_id: tripId,
     attraction_slug: place.slug,
     name: place.name.slice(0, 300),
-    city: place.city ?? null,
+    // Normalise city casing so grouping never splits "batumi" (raw
+    // search query) from "Batumi" (attraction row). Beka 2026-07-26.
+    city: normalizeCity(place.city),
     image_url: place.imageUrl ?? null,
     lat: typeof place.lat === "number" ? place.lat : null,
     lng: typeof place.lng === "number" ? place.lng : null,
