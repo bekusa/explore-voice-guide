@@ -157,6 +157,8 @@ export const UI_STRINGS = {
   "trips.openInLokali": "Plan your own trip with Lokali",
   "trips.shareGone": "This trip link is no longer active",
   "trips.shareGoneDesc": "The owner stopped sharing it, or the link is incorrect.",
+  // Map trip filter (Phase 5 follow-up)
+  "map.allSaved": "All saved",
   "profile.title": "Profile",
   "profile.account": "Account",
   "profile.openSettings": "Settings",

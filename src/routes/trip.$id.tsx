@@ -3,7 +3,8 @@ import {
   DndContext,
   PointerSensor,
   TouchSensor,
-  closestCenter,
+  closestCorners,
+  useDroppable,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -250,29 +251,91 @@ function TripPage() {
     }
   }
 
-  /** Reorder inside one day after a drag ends. */
-  function onDayDragEnd(day: number, event: DragEndEvent) {
+  /**
+   * Unified drag handler — ONE DndContext spans every day section
+   * (Beka 2026-07-26: the per-day contexts meant items could only be
+   * reordered inside a day; dragging BETWEEN days is the whole
+   * point). `over` can be an item (drop between rows) or a day
+   * container (drop on the day header / an empty day, ids "day-N").
+   */
+  function onItemsDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-    if (!over || active.id === over.id || !items) return;
-    const dayItems = items.filter((i) => i.day_index === day);
-    const from = dayItems.findIndex((i) => i.id === active.id);
-    const to = dayItems.findIndex((i) => i.id === over.id);
-    if (from === -1 || to === -1) return;
+    if (!over || !items) return;
+    const activeItem = items.find((i) => i.id === active.id);
+    if (!activeItem) return;
+    const overId = String(over.id);
+
+    let targetDay: number;
+    let targetIndex: number | null = null;
+    if (overId.startsWith("day-")) {
+      targetDay = parseInt(overId.slice(4), 10);
+      if (Number.isNaN(targetDay)) return;
+    } else {
+      const overItem = items.find((i) => i.id === overId);
+      if (!overItem) return;
+      targetDay = overItem.day_index;
+      targetIndex = items
+        .filter((i) => i.day_index === targetDay)
+        .sort(sortByPos)
+        .findIndex((i) => i.id === overId);
+    }
+
+    // Same-day → plain reorder.
+    if (targetDay === activeItem.day_index) {
+      if (targetIndex === null || overId === String(active.id)) return;
+      const dayItems = items.filter((i) => i.day_index === targetDay).sort(sortByPos);
+      const from = dayItems.findIndex((i) => i.id === active.id);
+      if (from === -1 || from === targetIndex) return;
+      void haptic("light");
+      const orderedIds = arrayMove(dayItems, from, targetIndex).map((i) => i.id);
+      setItems((prev) =>
+        prev
+          ? prev.map((i) =>
+              i.day_index === targetDay
+                ? { ...i, position: orderedIds.indexOf(i.id) }
+                : i,
+            )
+          : prev,
+      );
+      void persistDayOrder(orderedIds).catch((err) => {
+        console.warn("[trip] order persist failed", err);
+        void refresh();
+      });
+      return;
+    }
+
+    // Cross-day → move into the target day at the drop position
+    // (end of day when dropped on the container itself).
     void haptic("light");
-    const reordered = arrayMove(dayItems, from, to);
-    const orderedIds = reordered.map((i) => i.id);
-    // Optimistic: rewrite positions locally in one pass.
+    const targetItems = items
+      .filter((i) => i.day_index === targetDay && i.id !== activeItem.id)
+      .sort(sortByPos);
+    const insertAt =
+      targetIndex === null
+        ? targetItems.length
+        : Math.min(targetIndex, targetItems.length);
+    const newOrderIds = [
+      ...targetItems.slice(0, insertAt).map((i) => i.id),
+      activeItem.id,
+      ...targetItems.slice(insertAt).map((i) => i.id),
+    ];
     setItems((prev) =>
       prev
-        ? prev.map((i) =>
-            i.day_index === day ? { ...i, position: orderedIds.indexOf(i.id) } : i,
-          )
+        ? prev.map((i) => {
+            if (i.id === activeItem.id)
+              return { ...i, day_index: targetDay, position: insertAt };
+            if (i.day_index === targetDay)
+              return { ...i, position: newOrderIds.indexOf(i.id) };
+            return i;
+          })
         : prev,
     );
-    void persistDayOrder(orderedIds).catch((err) => {
-      console.warn("[trip] order persist failed", err);
-      void refresh();
-    });
+    void moveTripItemToDay(activeItem.id, targetDay, insertAt)
+      .then(() => persistDayOrder(newOrderIds))
+      .catch((err) => {
+        console.warn("[trip] cross-day move failed", err);
+        void refresh();
+      });
   }
 
   const count = items?.length ?? trip?.itemCount ?? 0;
@@ -444,12 +507,19 @@ function TripPage() {
     );
   }
 
-  /** One day section with its own sortable context. */
+  /**
+   * One day section — a DROPPABLE zone (id "day-N") inside the single
+   * shared DndContext, with its own SortableContext for in-day order.
+   * The droppable ref wraps the whole body INCLUDING the empty-day
+   * placeholder, so a card can be dragged into a day that has nothing
+   * in it yet. isOver lights the zone up as a drop hint.
+   */
   function DaySection({ day }: { day: number }) {
     const dayItems = (items ?? [])
       .filter((i) => i.day_index === day)
       .sort(sortByPos);
     const dateLabel = day > 0 ? dayDateLabel(trip?.start_date ?? null, day) : null;
+    const { setNodeRef, isOver } = useDroppable({ id: `day-${day}` });
     return (
       <div className="mt-6">
         <div className="mb-2.5 flex items-baseline gap-2.5">
@@ -462,16 +532,17 @@ function TripPage() {
             <span className="text-[11px] text-muted-foreground/60">{dateLabel}</span>
           )}
         </div>
-        {dayItems.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-border/60 px-4 py-3 text-[12px] text-muted-foreground/60">
-            {t("trips.dayEmpty")}
-          </p>
-        ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={(e) => onDayDragEnd(day, e)}
-          >
+        <div
+          ref={setNodeRef}
+          className={`rounded-2xl transition-colors ${
+            isOver ? "bg-primary/10 ring-1 ring-primary/40" : ""
+          }`}
+        >
+          {dayItems.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-border/60 px-4 py-3 text-[12px] text-muted-foreground/60">
+              {t("trips.dayEmpty")}
+            </p>
+          ) : (
             <SortableContext
               items={dayItems.map((i) => i.id)}
               strategy={verticalListSortingStrategy}
@@ -485,8 +556,8 @@ function TripPage() {
                 ))}
               </ul>
             </SortableContext>
-          </DndContext>
-        )}
+          )}
+        </div>
       </div>
     );
   }
@@ -678,7 +749,11 @@ function TripPage() {
                   </div>
 
                   {view === "days" && (
-                    <>
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCorners}
+                      onDragEnd={onItemsDragEnd}
+                    >
                       {anytime.length > 0 && <DaySection day={0} />}
                       {Array.from({ length: dayCount }, (_, d) => d + 1).map((d) => (
                         <DaySection key={d} day={d} />
@@ -694,7 +769,7 @@ function TripPage() {
                           <Plus className="h-3.5 w-3.5" /> {t("trips.addDay")}
                         </button>
                       )}
-                    </>
+                    </DndContext>
                   )}
 
                   {view === "cities" &&

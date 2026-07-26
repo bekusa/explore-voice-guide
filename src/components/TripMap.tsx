@@ -1,4 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+// Leaflet's stylesheet MUST come with the component — without it the
+// tile panes render unpositioned and the map looks frozen/blank.
+// (Beka 2026-07-26: the trip map was "stuck" — attraction.$id.tsx and
+// map.tsx each import this css themselves, TripMap didn't.)
+import "leaflet/dist/leaflet.css";
 import type { TripItem } from "@/lib/tripsStore";
 
 /**
@@ -79,6 +84,16 @@ export function TripMap({ items }: { items: TripItem[] }) {
       } else {
         map.fitBounds(L.latLngBounds(latLngs), { padding: [36, 36], maxZoom: 15 });
       }
+      // The container mounts inside MobileFrame's scroll area, which
+      // can still be settling when Leaflet measures itself — re-check
+      // the size a beat later, same trick map.tsx uses.
+      setTimeout(() => {
+        try {
+          map.invalidateSize();
+        } catch {
+          /* map already torn down */
+        }
+      }, 250);
       setReady(true);
     })();
     return () => {

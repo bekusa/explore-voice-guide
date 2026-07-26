@@ -1,9 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, MapPin, Navigation, Bookmark, Layers, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, Navigation, Bookmark, Layers, Loader2, Luggage } from "lucide-react";
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
 import { useSavedItems } from "@/hooks/useSavedItems";
+import { useAuth } from "@/hooks/useAuth";
+import { listTrips, listTripItems, type Trip } from "@/lib/tripsStore";
 import { attractionSlug, setAttractionHint } from "@/lib/api";
 import {
   getCurrentLocation,
@@ -50,6 +52,7 @@ type Pin = {
 
 function MapPage() {
   const saved = useSavedItems();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const t = useT();
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -60,7 +63,54 @@ function MapPage() {
   const [locating, setLocating] = useState(false);
   const [style, setStyle] = useState<"streets" | "dark">("dark");
 
-  const pins = useMemo<Pin[]>(() => {
+  // Trip filter (Beka 2026-07-26): signed-in users can narrow the map
+  // to a single trip's places. `null` = show everything saved (default,
+  // and the only mode for guests). Trip pins come from trip_items, so
+  // they show even for places the user hasn't separately Saved.
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+  const [tripPins, setTripPins] = useState<Pin[]>([]);
+
+  useEffect(() => {
+    if (!user) {
+      setTrips([]);
+      return;
+    }
+    void listTrips()
+      .then(setTrips)
+      .catch(() => setTrips([]));
+  }, [user]);
+
+  useEffect(() => {
+    if (!selectedTripId) {
+      setTripPins([]);
+      return;
+    }
+    let cancelled = false;
+    void listTripItems(selectedTripId)
+      .then((items) => {
+        if (cancelled) return;
+        setTripPins(
+          items
+            .filter((i) => typeof i.lat === "number" && typeof i.lng === "number")
+            .map((i) => ({
+              id: i.id,
+              name: i.name,
+              lat: i.lat as number,
+              lng: i.lng as number,
+              city: i.city ?? undefined,
+            })),
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setTripPins([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedTripId]);
+
+  const savedPins = useMemo<Pin[]>(() => {
     return saved
       .filter((s) => typeof s.attraction.lat === "number" && typeof s.attraction.lng === "number")
       .map((s) => ({
@@ -75,6 +125,10 @@ function MapPage() {
             : undefined,
       }));
   }, [saved]);
+
+  // Active pin set: a selected trip narrows the map to that trip;
+  // otherwise show everything the user has saved.
+  const pins = selectedTripId ? tripPins : savedPins;
 
   // Initialize Leaflet map (dynamic import keeps SSR happy)
   useEffect(() => {
@@ -369,6 +423,44 @@ function MapPage() {
             <Layers className="h-4 w-4" />
           </button>
         </header>
+
+        {/* Trip filter chips (signed-in + has trips). "All" resets to
+            the full saved set; each trip narrows the map to its
+            places. Horizontal scroll keeps long trip lists usable.
+            Sits just under the header, above the locate button. */}
+        {user && trips.length > 0 && (
+          <div
+            style={{ top: "max(5.5rem, calc(env(safe-area-inset-top) + 4rem))" }}
+            className="pointer-events-none absolute inset-x-0 z-20 px-5"
+          >
+            <div className="pointer-events-auto flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              <button
+                onClick={() => setSelectedTripId(null)}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-[12px] font-semibold backdrop-blur-md transition-smooth ${
+                  selectedTripId === null
+                    ? "border-primary bg-primary/20 text-primary"
+                    : "border-border bg-background/80 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t("map.allSaved")}
+              </button>
+              {trips.map((trip) => (
+                <button
+                  key={trip.id}
+                  onClick={() => setSelectedTripId(trip.id)}
+                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-[12px] font-semibold backdrop-blur-md transition-smooth ${
+                    selectedTripId === trip.id
+                      ? "border-primary bg-primary/20 text-primary"
+                      : "border-border bg-background/80 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Luggage className="h-3 w-3" />
+                  {trip.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Locate me */}
         <button

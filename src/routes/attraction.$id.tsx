@@ -813,6 +813,9 @@ function AttractionPage() {
           attraction={a}
           heroPhoto={heroPhoto}
           heroSlides={heroSlides}
+          cityHint={(typeof a?.city === "string" ? a.city : null) || searchCity || null}
+          latHint={typeof a?.lat === "number" ? a.lat : geocoded?.lat ?? null}
+          lngHint={typeof a?.lng === "number" ? a.lng : geocoded?.lng ?? null}
           language={language}
           interest={interest}
           starting={starting}
@@ -935,6 +938,9 @@ function ActionRow({
   attraction,
   heroPhoto,
   heroSlides,
+  cityHint,
+  latHint,
+  lngHint,
   language,
   interest,
   starting,
@@ -954,6 +960,19 @@ function ActionRow({
    *  directly from inside this child component, where it isn't in
    *  scope — it must arrive as a prop, like heroPhoto does. */
   heroSlides: string[];
+  /** Page-resolved host city (attraction.city || searchCity). Beka
+   *  2026-07-26: trip items were all landing in one "—" city group
+   *  because the raw attraction rows almost never carry a `city`
+   *  field — the resolved city lives in the PARENT's scope. Passed
+   *  down so AddToTripSheet stamps a real city onto trip items. */
+  cityHint: string | null;
+  /** Page-resolved coordinates (attraction row, else the Nominatim
+   *  geocode the page already did for MapSection). Beka 2026-07-26:
+   *  trip items were saved with null lat/lng — the AI often returns
+   *  null coords — so the trip map had nothing to plot. Stamping the
+   *  resolved coords at add-time fixes the trip map. */
+  latHint: number | null;
+  lngHint: number | null;
   language: string;
   // Current interest bias — drives both the cache lookup (so the
   // "Offline" pill reflects whether THIS interest's guide is cached,
@@ -1402,12 +1421,13 @@ function ActionRow({
           place={{
             slug: id,
             name,
-            city: typeof attraction?.city === "string" ? attraction.city : null,
+            city:
+              (typeof attraction?.city === "string" && attraction.city) || cityHint,
             imageUrl:
               heroPhoto ??
               (typeof attraction?.image_url === "string" ? attraction.image_url : null),
-            lat: typeof attraction?.lat === "number" ? attraction.lat : null,
-            lng: typeof attraction?.lng === "number" ? attraction.lng : null,
+            lat: typeof attraction?.lat === "number" ? attraction.lat : latHint,
+            lng: typeof attraction?.lng === "number" ? attraction.lng : lngHint,
           }}
           onClose={() => setShowTripSheet(false)}
         />
