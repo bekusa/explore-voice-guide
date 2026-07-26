@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Bookmark, Home as HomeIcon, MapPin, User as UserIcon } from "lucide-react";
+import { Bookmark, Home as HomeIcon, Luggage, MapPin, User as UserIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useT } from "@/hooks/useT";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
@@ -75,6 +75,21 @@ export function TabBar() {
         >
           <MapPin className="h-[19px] w-[19px]" />
           <span className="text-[10px] font-medium">{t("nav.map")}</span>
+        </Link>
+      )}
+      {/* Trips — Beka's spec 2026-07-25: separate tab, signed-in-only
+          feature, ONLINE-only by explicit decision (Supabase-backed,
+          no offline tier), hence the double gate. Saved keeps serving
+          guests + offline exactly as before. */}
+      {online && user && (
+        <Link
+          to="/trips"
+          onClick={tapHaptic}
+          className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
+          activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
+        >
+          <Luggage className="h-[19px] w-[19px]" />
+          <span className="text-[10px] font-medium">{t("nav.trips")}</span>
         </Link>
       )}
       <Link

@@ -74,6 +74,7 @@ import {
   scriptId as makeScriptId,
 } from "@/lib/offlineStore";
 import { resolveAzureVoice } from "@/lib/azureVoices";
+import { AddToTripSheet } from "@/components/AddToTripSheet";
 import { supabase } from "@/integrations/supabase/client";
 import {
   getCachedGuide,
@@ -993,6 +994,9 @@ function ActionRow({
   // (offlineStore Filesystem entry for any voice we resolved for
   // this attraction).
   const [cached, setCached] = useState(false);
+  // "Add to trip?" sheet visibility — armed by a successful save /
+  // download (Trips Phase 2). Never shown to guests.
+  const [showTripSheet, setShowTripSheet] = useState(false);
   useEffect(() => {
     let cancelled = false;
     const refresh = async () => {
@@ -1188,6 +1192,10 @@ function ActionRow({
     toast.success(t("attr.savedForOffline"), {
       description: t("attr.findInSaved"),
     });
+    // Offer to file the fresh save into a trip (signed-in only —
+    // guests can't have trips, and this path is auth-gated above
+    // anyway via requireSignIn).
+    if (user) setShowTripSheet(true);
   };
 
   const downloadOffline = async () => {
@@ -1321,6 +1329,8 @@ function ActionRow({
           description: `${name} · ${t("toast.audioReadyHint")}`,
         });
         setCached(true);
+        // Same trip offer as toggleSave — a download implies a save.
+        if (user) setShowTripSheet(true);
       } else {
         removeCachedGuide(name, language, interest);
         setCached(false);
@@ -1383,6 +1393,25 @@ function ActionRow({
           ariaLabel={cached ? t("attr.alreadyDownloaded") : t("card.download")}
         />
       </div>
+      {/* Post-save "add to trip?" sheet (Trips Phase 2). Signed-in
+          only — Trips is account-gated by spec, and the sheet is
+          purely additive: the save/download it follows has already
+          completed by the time it appears. */}
+      {showTripSheet && user && (
+        <AddToTripSheet
+          place={{
+            slug: id,
+            name,
+            city: typeof attraction?.city === "string" ? attraction.city : null,
+            imageUrl:
+              heroPhoto ??
+              (typeof attraction?.image_url === "string" ? attraction.image_url : null),
+            lat: typeof attraction?.lat === "number" ? attraction.lat : null,
+            lng: typeof attraction?.lng === "number" ? attraction.lng : null,
+          }}
+          onClose={() => setShowTripSheet(false)}
+        />
+      )}
     </section>
   );
 }
