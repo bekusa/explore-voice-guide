@@ -36,7 +36,6 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
-import { TripMap } from "@/components/TripMap";
 import { useAuth } from "@/hooks/useAuth";
 import { useT } from "@/hooks/useT";
 import { setAttractionHint } from "@/lib/api";
@@ -713,8 +712,6 @@ function TripPage() {
                   {t("trips.shareHint")}
                 </p>
               )}
-
-              {items && items.length > 0 && <TripMap items={items} />}
 
               {items && items.length === 0 && (
                 <div className="mt-8 rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center">
