@@ -8,6 +8,8 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragOverEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -31,7 +33,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
 import { TripMap } from "@/components/TripMap";
@@ -251,91 +253,92 @@ function TripPage() {
     }
   }
 
-  /**
-   * Unified drag handler — ONE DndContext spans every day section
-   * (Beka 2026-07-26: the per-day contexts meant items could only be
-   * reordered inside a day; dragging BETWEEN days is the whole
-   * point). `over` can be an item (drop between rows) or a day
-   * container (drop on the day header / an empty day, ids "day-N").
-   */
-  function onItemsDragEnd(event: DragEndEvent) {
+  // ── Drag & drop across days (dnd-kit multi-container pattern) ──
+  // Beka 2026-07-26 (round 2): a single DndContext + onDragEnd wasn't
+  // enough — dragging a card out of its day's SortableContext never
+  // registered a cross-day drop. The reliable pattern re-parents the
+  // dragged item into the hovered day LIVE via onDragOver, so it joins
+  // that day's SortableContext mid-drag; onDragEnd then just persists.
+  const dragStartDay = useRef<number | null>(null);
+
+  /** Resolve which day a droppable/draggable id belongs to. */
+  function dayOfOver(overId: string): number | null {
+    if (overId.startsWith("day-")) {
+      const d = parseInt(overId.slice(4), 10);
+      return Number.isNaN(d) ? null : d;
+    }
+    const it = items?.find((i) => i.id === overId);
+    return it ? it.day_index : null;
+  }
+
+  function onItemsDragStart(event: DragStartEvent) {
+    const it = items?.find((i) => i.id === event.active.id);
+    dragStartDay.current = it ? it.day_index : null;
+  }
+
+  function onItemsDragOver(event: DragOverEvent) {
     const { active, over } = event;
     if (!over || !items) return;
     const activeItem = items.find((i) => i.id === active.id);
     if (!activeItem) return;
-    const overId = String(over.id);
-
-    let targetDay: number;
-    let targetIndex: number | null = null;
-    if (overId.startsWith("day-")) {
-      targetDay = parseInt(overId.slice(4), 10);
-      if (Number.isNaN(targetDay)) return;
-    } else {
-      const overItem = items.find((i) => i.id === overId);
-      if (!overItem) return;
-      targetDay = overItem.day_index;
-      targetIndex = items
-        .filter((i) => i.day_index === targetDay)
-        .sort(sortByPos)
-        .findIndex((i) => i.id === overId);
-    }
-
-    // Same-day → plain reorder.
-    if (targetDay === activeItem.day_index) {
-      if (targetIndex === null || overId === String(active.id)) return;
-      const dayItems = items.filter((i) => i.day_index === targetDay).sort(sortByPos);
-      const from = dayItems.findIndex((i) => i.id === active.id);
-      if (from === -1 || from === targetIndex) return;
-      void haptic("light");
-      const orderedIds = arrayMove(dayItems, from, targetIndex).map((i) => i.id);
-      setItems((prev) =>
-        prev
-          ? prev.map((i) =>
-              i.day_index === targetDay
-                ? { ...i, position: orderedIds.indexOf(i.id) }
-                : i,
-            )
-          : prev,
+    const overDay = dayOfOver(String(over.id));
+    if (overDay === null || overDay === activeItem.day_index) return;
+    // Live re-parent into the hovered day (append to its end). This is
+    // what makes the card visibly hop into the new day while dragging.
+    setItems((prev) => {
+      if (!prev) return prev;
+      const tail = prev.filter(
+        (i) => i.day_index === overDay && i.id !== activeItem.id,
+      ).length;
+      return prev.map((i) =>
+        i.id === activeItem.id ? { ...i, day_index: overDay, position: tail } : i,
       );
-      void persistDayOrder(orderedIds).catch((err) => {
-        console.warn("[trip] order persist failed", err);
-        void refresh();
-      });
-      return;
-    }
+    });
+  }
 
-    // Cross-day → move into the target day at the drop position
-    // (end of day when dropped on the container itself).
+  function onItemsDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    const startDay = dragStartDay.current;
+    dragStartDay.current = null;
+    if (!items) return;
+    const activeItem = items.find((i) => i.id === active.id);
+    if (!activeItem) return;
+    const finalDay = activeItem.day_index; // onDragOver may have changed it
+
+    // Compute final in-day order using the drop target position.
+    const dayItems = items.filter((i) => i.day_index === finalDay).sort(sortByPos);
+    let orderedIds = dayItems.map((i) => i.id);
+    if (over) {
+      const overId = String(over.id);
+      if (!overId.startsWith("day-") && overId !== String(active.id)) {
+        const from = orderedIds.indexOf(String(active.id));
+        const to = orderedIds.indexOf(overId);
+        if (from !== -1 && to !== -1 && from !== to) {
+          orderedIds = arrayMove(orderedIds, from, to);
+        }
+      }
+    }
     void haptic("light");
-    const targetItems = items
-      .filter((i) => i.day_index === targetDay && i.id !== activeItem.id)
-      .sort(sortByPos);
-    const insertAt =
-      targetIndex === null
-        ? targetItems.length
-        : Math.min(targetIndex, targetItems.length);
-    const newOrderIds = [
-      ...targetItems.slice(0, insertAt).map((i) => i.id),
-      activeItem.id,
-      ...targetItems.slice(insertAt).map((i) => i.id),
-    ];
+    // Reflect the final order locally.
     setItems((prev) =>
       prev
-        ? prev.map((i) => {
-            if (i.id === activeItem.id)
-              return { ...i, day_index: targetDay, position: insertAt };
-            if (i.day_index === targetDay)
-              return { ...i, position: newOrderIds.indexOf(i.id) };
-            return i;
-          })
+        ? prev.map((i) =>
+            i.day_index === finalDay ? { ...i, position: orderedIds.indexOf(i.id) } : i,
+          )
         : prev,
     );
-    void moveTripItemToDay(activeItem.id, targetDay, insertAt)
-      .then(() => persistDayOrder(newOrderIds))
-      .catch((err) => {
-        console.warn("[trip] cross-day move failed", err);
-        void refresh();
-      });
+
+    const finalIndex = orderedIds.indexOf(String(active.id));
+    const crossedDays = startDay !== null && startDay !== finalDay;
+    const persist = crossedDays
+      ? moveTripItemToDay(activeItem.id, finalDay, Math.max(0, finalIndex)).then(() =>
+          persistDayOrder(orderedIds),
+        )
+      : persistDayOrder(orderedIds);
+    void persist.catch((err) => {
+      console.warn("[trip] drag persist failed", err);
+      void refresh();
+    });
   }
 
   const count = items?.length ?? trip?.itemCount ?? 0;
@@ -752,6 +755,8 @@ function TripPage() {
                     <DndContext
                       sensors={sensors}
                       collisionDetection={closestCorners}
+                      onDragStart={onItemsDragStart}
+                      onDragOver={onItemsDragOver}
                       onDragEnd={onItemsDragEnd}
                     >
                       {anytime.length > 0 && <DaySection day={0} />}

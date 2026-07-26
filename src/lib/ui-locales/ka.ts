@@ -72,7 +72,7 @@ export const KA: Partial<Record<UiKey, string>> = {
   "trips.shareGone": "ეს ლინკი აღარ მოქმედებს",
   "trips.shareGoneDesc": "პატრონმა გაზიარება შეწყვიტა, ან ლინკი მცდარია.",
   // Map trip filter
-  "map.allSaved": "ყველა შენახული",
+  "map.allSaved": "ყველა",
   "profile.title": "პროფილი",
   "profile.account": "ანგარიში",
   "profile.openSettings": "პარამეტრები",

@@ -64,51 +64,60 @@ function MapPage() {
   const [style, setStyle] = useState<"streets" | "dark">("dark");
 
   // Trip filter (Beka 2026-07-26): signed-in users can narrow the map
-  // to a single trip's places. `null` = show everything saved (default,
-  // and the only mode for guests). Trip pins come from trip_items, so
-  // they show even for places the user hasn't separately Saved.
+  // to a single trip. `null` = the "All" view, which shows EVERYTHING
+  // the user has collected — Saved items AND every trip's places,
+  // deduped. Beka's report: "All saved" looked empty while trips had
+  // pins, because it only read the localStorage Saved list. Folding
+  // in trip places fixes that and matches the mental model of "All".
   const [trips, setTrips] = useState<Trip[]>([]);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
-  const [tripPins, setTripPins] = useState<Pin[]>([]);
+  // pins per trip id, loaded once the trip list is known.
+  const [tripPinsById, setTripPinsById] = useState<Record<string, Pin[]>>({});
 
   useEffect(() => {
     if (!user) {
       setTrips([]);
-      return;
-    }
-    void listTrips()
-      .then(setTrips)
-      .catch(() => setTrips([]));
-  }, [user]);
-
-  useEffect(() => {
-    if (!selectedTripId) {
-      setTripPins([]);
+      setTripPinsById({});
       return;
     }
     let cancelled = false;
-    void listTripItems(selectedTripId)
-      .then((items) => {
+    void listTrips()
+      .then(async (list) => {
         if (cancelled) return;
-        setTripPins(
-          items
-            .filter((i) => typeof i.lat === "number" && typeof i.lng === "number")
-            .map((i) => ({
-              id: i.id,
-              name: i.name,
-              lat: i.lat as number,
-              lng: i.lng as number,
-              city: i.city ?? undefined,
-            })),
+        setTrips(list);
+        // Fetch every trip's items in parallel so both the "All" union
+        // and each trip filter have their pins ready without a click.
+        const entries = await Promise.all(
+          list.map(async (trip) => {
+            try {
+              const its = await listTripItems(trip.id);
+              const p: Pin[] = its
+                .filter((i) => typeof i.lat === "number" && typeof i.lng === "number")
+                .map((i) => ({
+                  id: `${trip.id}:${i.id}`,
+                  name: i.name,
+                  lat: i.lat as number,
+                  lng: i.lng as number,
+                  city: i.city ?? undefined,
+                }));
+              return [trip.id, p] as const;
+            } catch {
+              return [trip.id, [] as Pin[]] as const;
+            }
+          }),
         );
+        if (!cancelled) setTripPinsById(Object.fromEntries(entries));
       })
       .catch(() => {
-        if (!cancelled) setTripPins([]);
+        if (!cancelled) {
+          setTrips([]);
+          setTripPinsById({});
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [selectedTripId]);
+  }, [user]);
 
   const savedPins = useMemo<Pin[]>(() => {
     return saved
@@ -126,9 +135,22 @@ function MapPage() {
       }));
   }, [saved]);
 
-  // Active pin set: a selected trip narrows the map to that trip;
-  // otherwise show everything the user has saved.
-  const pins = selectedTripId ? tripPins : savedPins;
+  // Active pin set. A selected trip → just that trip. "All" → union of
+  // Saved items + every trip's places, deduped by name+coords so a
+  // place that's both saved and in a trip only pins once.
+  const pins = useMemo<Pin[]>(() => {
+    if (selectedTripId) return tripPinsById[selectedTripId] ?? [];
+    const all = [...savedPins, ...Object.values(tripPinsById).flat()];
+    const seen = new Set<string>();
+    const out: Pin[] = [];
+    for (const p of all) {
+      const key = `${p.name.toLowerCase()}|${p.lat.toFixed(4)},${p.lng.toFixed(4)}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(p);
+    }
+    return out;
+  }, [selectedTripId, tripPinsById, savedPins]);
 
   // Initialize Leaflet map (dynamic import keeps SSR happy)
   useEffect(() => {

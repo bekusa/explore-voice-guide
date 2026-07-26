@@ -158,7 +158,7 @@ export const UI_STRINGS = {
   "trips.shareGone": "This trip link is no longer active",
   "trips.shareGoneDesc": "The owner stopped sharing it, or the link is incorrect.",
   // Map trip filter (Phase 5 follow-up)
-  "map.allSaved": "All saved",
+  "map.allSaved": "All",
   "profile.title": "Profile",
   "profile.account": "Account",
   "profile.openSettings": "Settings",
