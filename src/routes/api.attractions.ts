@@ -127,15 +127,19 @@ export const Route = createFileRoute("/api/attractions")({
           //     quality Beka remembers as good — ~40-50 s cold,
           //     fits the worker budget. Cache still means each query
           //     pays this once, globally.
-          //   Sonnet 5 (Beka 2026-07-25, final): Opus-class accuracy
-          //     at Sonnet-class speed, and CHEAPER than 4.5 until
-          //     2026-08-31 ($2/$10 intro vs $3/$15). Best of both
-          //     rungs of the ladder above — no worker-budget risk.
+          //   Sonnet 5 (tried 2026-07-25): NOT enabled on this account
+          //     — Console logs show zero sonnet-5 requests, so the
+          //     callClaude fallback wasted a failed sonnet-5 attempt +
+          //     retries before every real sonnet-4-5 call, blowing the
+          //     worker's ~100 s budget → 502 "AI temporarily busy"
+          //     (Beka hit it repeatedly). Reverted 2026-07-30 to
+          //     sonnet-4-5 DIRECT: single call, ~45 s, fits the budget.
           const text = await callClaude({
-            model: "claude-sonnet-5",
+            model: "claude-sonnet-4-5",
             system,
             user,
             maxTokens: 3072,
+            label: "attractions",
           });
           const parsed = parseClaudeJson(text);
 
@@ -362,10 +366,11 @@ async function handleExtensionRequest(
     // used 6144 budget would flirt with the worker's ~100 s limit
     // the same way Opus did. 4096 still fits ~25 rows.
     const text = await callClaude({
-      model: "claude-sonnet-5",
+      model: "claude-sonnet-4-5",
       system,
       user,
       maxTokens: 4096,
+      label: "attractions",
     });
     parsed = parseClaudeJson(text);
   } catch (err) {

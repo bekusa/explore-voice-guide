@@ -17,6 +17,8 @@
  * clearly instead of silently returning empty results.
  */
 
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 
 /**
@@ -24,13 +26,17 @@ const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
  * that doesn't override `model:`) because Beka reverted from Haiku —
  * Haiku's terse style was hurting the narrated guide quality.
  *
- * Upgraded 4.5 → 5 on 2026-07-25 (Beka's call): Sonnet 5 delivers
- * Opus-class accuracy at Sonnet-class speed and costs LESS than 4.5
- * until 2026-08-31 ($2/$10 intro, then the same $3/$15). Same worker-
- * budget profile as 4.5 — the Opus 4.8 timeout incident (see
- * api.attractions.ts) does not apply to Sonnet-class models.
+ * 2026-07-25: tried "claude-sonnet-5" as default. 2026-07-30 REVERTED
+ * to "claude-sonnet-4-5" — the Anthropic Console logs show ZERO
+ * sonnet-5 requests ever reached the account (it isn't enabled here
+ * yet), so every call wasted a failed sonnet-5 attempt (+ its retry
+ * backoff) BEFORE falling back to sonnet-4-5, and the two-call total
+ * pushed /api/attractions past the Cloudflare Worker's ~100 s limit →
+ * intermittent 502 "AI temporarily busy". sonnet-4-5 direct is the
+ * proven single-call path. Flip back to sonnet-5 only once the
+ * Console shows sonnet-5 requests succeeding on this account.
  */
-export const DEFAULT_MODEL = "claude-sonnet-5";
+export const DEFAULT_MODEL = "claude-sonnet-4-5";
 
 export type ClaudeCallOpts = {
   /** Optional model override; defaults to DEFAULT_MODEL. */
@@ -43,6 +49,8 @@ export type ClaudeCallOpts = {
   maxTokens?: number;
   /** Sampling temperature. Defaults to 0.7 — we want some warmth, not boilerplate. */
   temperature?: number;
+  /** Optional call label (e.g. "attractions", "guide") recorded in api_logs telemetry. */
+  label?: string;
 };
 
 /**
@@ -66,6 +74,69 @@ export type ClaudeCallOpts = {
 const FALLBACK_MODEL = "claude-sonnet-4-5";
 
 export async function callClaude(opts: ClaudeCallOpts): Promise<string> {
+  // Telemetry wrapper (2026-07-17): time every Anthropic call end-to-end
+  // (including retries + the model fallback below) and record the
+  // outcome to public.api_logs. Powers the "API health" panel on the
+  // Lokali analytics dashboard — error rate + avg/p95 latency — data the
+  // Anthropic Console shows but does NOT expose over any API. The insert
+  // is awaited (a few ms next to a multi-second generation) so a
+  // Cloudflare Worker doesn't drop it as unfinished background work, and
+  // it never throws: a logging failure must not break a real call.
+  const started = Date.now();
+  const model = opts.model ?? DEFAULT_MODEL;
+  try {
+    const text = await callClaudeWithFallback(opts);
+    await logApiCall({
+      label: opts.label ?? null,
+      model,
+      duration_ms: Date.now() - started,
+      ok: true,
+      status: 200,
+      error: null,
+    });
+    return text;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    await logApiCall({
+      label: opts.label ?? null,
+      model,
+      duration_ms: Date.now() - started,
+      ok: false,
+      status: extractStatus(message),
+      error: message.slice(0, 500),
+    });
+    throw err;
+  }
+}
+
+type ApiLogRow = {
+  label: string | null;
+  model: string;
+  duration_ms: number;
+  ok: boolean;
+  status: number | null;
+  error: string | null;
+};
+
+// Best-effort telemetry insert. Any Supabase/env problem is swallowed —
+// logging must never surface to callers or break a generation.
+async function logApiCall(row: ApiLogRow): Promise<void> {
+  try {
+    await supabaseAdmin.from("api_logs").insert(row);
+  } catch (e) {
+    console.warn("[anthropic] api_logs insert failed", e);
+  }
+}
+
+// Pull an HTTP-ish status out of a callClaude error message. Those are
+// formatted like "[anthropic] 429 Too Many Requests …", so the first
+// 4xx/5xx token is the upstream status. null when none is present.
+function extractStatus(message: string): number | null {
+  const m = message.match(/\b([45]\d\d)\b/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+async function callClaudeWithFallback(opts: ClaudeCallOpts): Promise<string> {
   try {
     return await callClaudeOnce(opts);
   } catch (err) {

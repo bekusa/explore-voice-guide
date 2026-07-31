@@ -93,7 +93,7 @@ export const Route = createFileRoute("/api/guide")({
           // audible on a 1500-3000 word script. The attractions list
           // stays on Haiku where the structured-list output reads the
           // same either way and the latency win is worth keeping.
-          const text = await callClaude({ system, user, maxTokens: 8192 });
+          const text = await callClaude({ system, user, maxTokens: 8192, label: "guide" });
           const parsed = parseClaudeJson(text);
 
           // Cache the English baseline only when there's actual
