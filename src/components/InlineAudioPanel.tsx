@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { resolveAzureVoice } from "@/lib/azureVoices";
 import { attractionSlug } from "@/lib/api";
 import { audioId, getAudioBlobUrl, saveAudioBlob, saveScript, scriptId } from "@/lib/offlineStore";
+import { trackEvent } from "@/lib/analytics";
 
 /**
  * Sticky-bottom inline audio panel — full transport row + scrubber.
@@ -50,6 +51,10 @@ export function InlineAudioPanel({
   const t = useT();
   const { user, loading: authLoading } = useAuth();
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // North Star telemetry: remembers the last audioUrl we already counted
+  // as an "audio_played" so resumes/seeks don't inflate the metric — one
+  // play event per generated guide, not per press of the play button.
+  const playReportedRef = useRef<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [playing, setPlaying] = useState(false);
@@ -310,6 +315,14 @@ export function InlineAudioPanel({
           onPlay={() => {
             setPlaying(true);
             setPaused(false);
+            // Fire the North Star event once per guide (first play only).
+            // This is THE value moment — a listener actually hearing a
+            // guide — so it drives "active listeners" + activation. web
+            // only, no mobile bump; failures never touch playback.
+            if (audioUrl && playReportedRef.current !== audioUrl) {
+              playReportedRef.current = audioUrl;
+              trackEvent("audio_played", { name, language }, user?.id ?? null);
+            }
           }}
           onPause={() => {
             const a = audioRef.current;

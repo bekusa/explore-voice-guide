@@ -17,6 +17,7 @@
  * and in the unlikely case the snippet failed to run, they simply no-op so a
  * broken analytics load can never take the app down with it.
  */
+import { supabase } from "@/integrations/supabase/client";
 
 type PostHogClient = {
   capture: (event: string, properties?: Record<string, unknown>) => void;
@@ -46,6 +47,54 @@ export function capturePageview(): void {
  */
 export function captureEvent(event: string, properties?: Record<string, unknown>): void {
   ph()?.capture(event, properties);
+}
+
+// Stable per-device anonymous id, so unique-user metrics (e.g. the North
+// Star "active listeners") work for signed-out visitors too. Lives in
+// localStorage; regenerated only if cleared. Mirrors what PostHog does
+// internally, but we keep our own so the Supabase-side dashboard can count
+// uniques without depending on PostHog being loaded.
+const ANON_ID_KEY = "lokali_anon_id";
+function anonId(): string {
+  if (typeof window === "undefined") return "server";
+  try {
+    let id = localStorage.getItem(ANON_ID_KEY);
+    if (!id) {
+      id =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : "a_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem(ANON_ID_KEY, id);
+    }
+    return id;
+  } catch {
+    return "anon";
+  }
+}
+
+/**
+ * Track a product event to BOTH sinks:
+ *   1. PostHog — for funnels, retention, and cross-event analysis.
+ *   2. public.usage_events (Supabase) — powers the North Star / activation
+ *      cards on the Lokali dashboard, counting uniques via the anon id.
+ * The Supabase insert is fire-and-forget and swallows every error — a
+ * telemetry failure must never disrupt playback or any real user action.
+ */
+export function trackEvent(
+  event: string,
+  properties?: Record<string, unknown>,
+  userId?: string | null,
+): void {
+  captureEvent(event, properties);
+  if (typeof window === "undefined") return;
+  try {
+    void supabase
+      .from("usage_events")
+      .insert({ event, anon_id: anonId(), user_id: userId ?? null, props: properties ?? {} })
+      .then(undefined, () => {});
+  } catch {
+    /* never throw from telemetry */
+  }
 }
 
 /**
