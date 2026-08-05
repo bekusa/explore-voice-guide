@@ -53,19 +53,20 @@ export function PlayStoreBanner() {
           rel="noopener noreferrer"
           className="flex items-center gap-3 rounded-full px-2.5 py-1.5"
         >
-          {/* Google Play glyph — the accurate Play-triangle outline
-              (Bootstrap Icons "google-play" geometry), monochrome in
-              the app's foreground color. Beka 2026-07-31: the earlier
-              hand-drawn 4-color version had wrong proportions; the
-              exact monochrome mark also sits better on Lokali's
-              dark/gold surface than off-brand color guesses. */}
-          <svg
-            viewBox="0 0 16 16"
-            className="h-6 w-6 shrink-0 text-foreground"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path d="M14.222 9.374c1.037-.61 1.037-2.137 0-2.748L11.528 5.04 8.32 8l3.207 2.96 2.694-1.586Zm-3.595 2.116L7.583 8.68 1.03 14.73c.201 1.029 1.36 1.61 2.303 1.055l7.294-4.295ZM1 13.396V2.603L6.846 8 1 13.396ZM1.03 1.27l6.553 6.05 3.044-2.81L3.333.215C2.39-.341 1.231.24 1.03 1.27Z" />
+          {/* Google Play glyph — accurate Play-triangle geometry
+              (Bootstrap Icons "google-play" outline), split into its
+              four facets with the official prism colors: blue back,
+              green top, yellow tip, red bottom. Beka 2026-07-31:
+              "იყოს ფერადი რომ კარგად გამოჩნდეს". */}
+          <svg viewBox="0 0 16 16" className="h-6 w-6 shrink-0" aria-hidden="true">
+            {/* left/back facet — blue */}
+            <path fill="#00B0FF" d="M1 13.396V2.603L6.846 8 1 13.396Z" />
+            {/* top facet — green */}
+            <path fill="#00E676" d="M1.03 1.27l6.553 6.05 3.044-2.81L3.333.215C2.39-.341 1.231.24 1.03 1.27Z" />
+            {/* right tip — yellow */}
+            <path fill="#FFC400" d="M14.222 9.374c1.037-.61 1.037-2.137 0-2.748L11.528 5.04 8.32 8l3.207 2.96 2.694-1.586Z" />
+            {/* bottom facet — red */}
+            <path fill="#FF3D57" d="M10.627 11.49 7.583 8.68 1.03 14.73c.201 1.029 1.36 1.61 2.303 1.055l7.294-4.295Z" />
           </svg>
           <span className="text-left leading-tight">
             <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
