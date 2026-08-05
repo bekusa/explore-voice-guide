@@ -9,123 +9,48 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as DeleteAccountRouteImport } from './routes/delete-account'
-import { Route as DestinationsRouteImport } from './routes/destinations'
-import { Route as LanguageRouteImport } from './routes/language'
-import { Route as MapRouteImport } from './routes/map'
-import { Route as MuseumsRouteImport } from './routes/museums'
-import { Route as NotificationsRouteImport } from './routes/notifications'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as PlayerRouteImport } from './routes/player'
-import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as ResultsRouteImport } from './routes/results'
-import { Route as SavedRouteImport } from './routes/saved'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as TermsRouteImport } from './routes/terms'
-import { Route as TimeMachineRouteImport } from './routes/time-machine'
 import { Route as TripsRouteImport } from './routes/trips'
-import { Route as ApiAttractionsRouteImport } from './routes/api.attractions'
-import { Route as ApiClassifyQueryRouteImport } from './routes/api.classify-query'
-import { Route as ApiGuideRouteImport } from './routes/api.guide'
-import { Route as ApiImageProxyRouteImport } from './routes/api.image-proxy'
-import { Route as ApiMuseumHighlightsRouteImport } from './routes/api.museum-highlights'
-import { Route as ApiPhotoRouteImport } from './routes/api.photo'
-import { Route as ApiPhotoGalleryRouteImport } from './routes/api.photo-gallery'
-import { Route as ApiReportRouteImport } from './routes/api.report'
-import { Route as ApiTimeMachineRouteImport } from './routes/api.time-machine'
-import { Route as ApiTranslateRouteImport } from './routes/api.translate'
-import { Route as ApiTripShareRouteImport } from './routes/api.trip-share'
-import { Route as ApiTtsRouteImport } from './routes/api.tts'
-import { Route as AttractionIdRouteImport } from './routes/attraction.$id'
-import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
-import { Route as AuthUpgradeRouteImport } from './routes/auth.upgrade'
-import { Route as DestinationsSlugRouteImport } from './routes/destinations.$slug'
-import { Route as TShareIdRouteImport } from './routes/t.$shareId'
+import { Route as TimeMachineRouteImport } from './routes/time-machine'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SavedRouteImport } from './routes/saved'
+import { Route as ResultsRouteImport } from './routes/results'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as PlayerRouteImport } from './routes/player'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as MuseumsRouteImport } from './routes/museums'
+import { Route as MapRouteImport } from './routes/map'
+import { Route as LanguageRouteImport } from './routes/language'
+import { Route as DestinationsRouteImport } from './routes/destinations'
+import { Route as DeleteAccountRouteImport } from './routes/delete-account'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as TripIdRouteImport } from './routes/trip.$id'
-import { Route as ApiAccountDeleteRouteImport } from './routes/api.account.delete'
+import { Route as TShareIdRouteImport } from './routes/t.$shareId'
+import { Route as DestinationsSlugRouteImport } from './routes/destinations.$slug'
+import { Route as AuthUpgradeRouteImport } from './routes/auth.upgrade'
+import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
+import { Route as AttractionIdRouteImport } from './routes/attraction.$id'
+import { Route as ApiTtsRouteImport } from './routes/api.tts'
+import { Route as ApiTripShareRouteImport } from './routes/api.trip-share'
+import { Route as ApiTranslateRouteImport } from './routes/api.translate'
+import { Route as ApiTimeMachineRouteImport } from './routes/api.time-machine'
+import { Route as ApiReportRouteImport } from './routes/api.report'
+import { Route as ApiPhotoGalleryRouteImport } from './routes/api.photo-gallery'
+import { Route as ApiPhotoRouteImport } from './routes/api.photo'
+import { Route as ApiMuseumHighlightsRouteImport } from './routes/api.museum-highlights'
+import { Route as ApiImageProxyRouteImport } from './routes/api.image-proxy'
+import { Route as ApiGuideRouteImport } from './routes/api.guide'
+import { Route as ApiClassifyQueryRouteImport } from './routes/api.classify-query'
+import { Route as ApiAttractionsRouteImport } from './routes/api.attractions'
 import { Route as TmSimIdRoleRouteImport } from './routes/tm-sim.$id.$role'
+import { Route as ApiAccountDeleteRouteImport } from './routes/api.account.delete'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DeleteAccountRoute = DeleteAccountRouteImport.update({
-  id: '/delete-account',
-  path: '/delete-account',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DestinationsRoute = DestinationsRouteImport.update({
-  id: '/destinations',
-  path: '/destinations',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LanguageRoute = LanguageRouteImport.update({
-  id: '/language',
-  path: '/language',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MapRoute = MapRouteImport.update({
-  id: '/map',
-  path: '/map',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MuseumsRoute = MuseumsRouteImport.update({
-  id: '/museums',
-  path: '/museums',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NotificationsRoute = NotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlayerRoute = PlayerRouteImport.update({
-  id: '/player',
-  path: '/player',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResultsRoute = ResultsRouteImport.update({
-  id: '/results',
-  path: '/results',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SavedRoute = SavedRouteImport.update({
-  id: '/saved',
-  path: '/saved',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
+const TripsRoute = TripsRouteImport.update({
+  id: '/trips',
+  path: '/trips',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TimeMachineRoute = TimeMachineRouteImport.update({
@@ -133,94 +58,84 @@ const TimeMachineRoute = TimeMachineRouteImport.update({
   path: '/time-machine',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TripsRoute = TripsRouteImport.update({
-  id: '/trips',
-  path: '/trips',
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAttractionsRoute = ApiAttractionsRouteImport.update({
-  id: '/api/attractions',
-  path: '/api/attractions',
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiClassifyQueryRoute = ApiClassifyQueryRouteImport.update({
-  id: '/api/classify-query',
-  path: '/api/classify-query',
+const SavedRoute = SavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiGuideRoute = ApiGuideRouteImport.update({
-  id: '/api/guide',
-  path: '/api/guide',
+const ResultsRoute = ResultsRouteImport.update({
+  id: '/results',
+  path: '/results',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiImageProxyRoute = ApiImageProxyRouteImport.update({
-  id: '/api/image-proxy',
-  path: '/api/image-proxy',
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiMuseumHighlightsRoute = ApiMuseumHighlightsRouteImport.update({
-  id: '/api/museum-highlights',
-  path: '/api/museum-highlights',
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPhotoRoute = ApiPhotoRouteImport.update({
-  id: '/api/photo',
-  path: '/api/photo',
+const PlayerRoute = PlayerRouteImport.update({
+  id: '/player',
+  path: '/player',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPhotoGalleryRoute = ApiPhotoGalleryRouteImport.update({
-  id: '/api/photo-gallery',
-  path: '/api/photo-gallery',
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiReportRoute = ApiReportRouteImport.update({
-  id: '/api/report',
-  path: '/api/report',
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiTimeMachineRoute = ApiTimeMachineRouteImport.update({
-  id: '/api/time-machine',
-  path: '/api/time-machine',
+const MuseumsRoute = MuseumsRouteImport.update({
+  id: '/museums',
+  path: '/museums',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiTranslateRoute = ApiTranslateRouteImport.update({
-  id: '/api/translate',
-  path: '/api/translate',
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiTripShareRoute = ApiTripShareRouteImport.update({
-  id: '/api/trip-share',
-  path: '/api/trip-share',
+const LanguageRoute = LanguageRouteImport.update({
+  id: '/language',
+  path: '/language',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiTtsRoute = ApiTtsRouteImport.update({
-  id: '/api/tts',
-  path: '/api/tts',
+const DestinationsRoute = DestinationsRouteImport.update({
+  id: '/destinations',
+  path: '/destinations',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AttractionIdRoute = AttractionIdRouteImport.update({
-  id: '/attraction/$id',
-  path: '/attraction/$id',
+const DeleteAccountRoute = DeleteAccountRouteImport.update({
+  id: '/delete-account',
+  path: '/delete-account',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => AuthRoute,
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthUpgradeRoute = AuthUpgradeRouteImport.update({
-  id: '/upgrade',
-  path: '/upgrade',
-  getParentRoute: () => AuthRoute,
-} as any)
-const DestinationsSlugRoute = DestinationsSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => DestinationsRoute,
-} as any)
-const TShareIdRoute = TShareIdRouteImport.update({
-  id: '/t/$shareId',
-  path: '/t/$shareId',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TripIdRoute = TripIdRouteImport.update({
@@ -228,14 +143,99 @@ const TripIdRoute = TripIdRouteImport.update({
   path: '/trip/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAccountDeleteRoute = ApiAccountDeleteRouteImport.update({
-  id: '/api/account/delete',
-  path: '/api/account/delete',
+const TShareIdRoute = TShareIdRouteImport.update({
+  id: '/t/$shareId',
+  path: '/t/$shareId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DestinationsSlugRoute = DestinationsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => DestinationsRoute,
+} as any)
+const AuthUpgradeRoute = AuthUpgradeRouteImport.update({
+  id: '/upgrade',
+  path: '/upgrade',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AttractionIdRoute = AttractionIdRouteImport.update({
+  id: '/attraction/$id',
+  path: '/attraction/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTtsRoute = ApiTtsRouteImport.update({
+  id: '/api/tts',
+  path: '/api/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTripShareRoute = ApiTripShareRouteImport.update({
+  id: '/api/trip-share',
+  path: '/api/trip-share',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTranslateRoute = ApiTranslateRouteImport.update({
+  id: '/api/translate',
+  path: '/api/translate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTimeMachineRoute = ApiTimeMachineRouteImport.update({
+  id: '/api/time-machine',
+  path: '/api/time-machine',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiReportRoute = ApiReportRouteImport.update({
+  id: '/api/report',
+  path: '/api/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPhotoGalleryRoute = ApiPhotoGalleryRouteImport.update({
+  id: '/api/photo-gallery',
+  path: '/api/photo-gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPhotoRoute = ApiPhotoRouteImport.update({
+  id: '/api/photo',
+  path: '/api/photo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMuseumHighlightsRoute = ApiMuseumHighlightsRouteImport.update({
+  id: '/api/museum-highlights',
+  path: '/api/museum-highlights',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiImageProxyRoute = ApiImageProxyRouteImport.update({
+  id: '/api/image-proxy',
+  path: '/api/image-proxy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGuideRoute = ApiGuideRouteImport.update({
+  id: '/api/guide',
+  path: '/api/guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiClassifyQueryRoute = ApiClassifyQueryRouteImport.update({
+  id: '/api/classify-query',
+  path: '/api/classify-query',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAttractionsRoute = ApiAttractionsRouteImport.update({
+  id: '/api/attractions',
+  path: '/api/attractions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TmSimIdRoleRoute = TmSimIdRoleRouteImport.update({
   id: '/tm-sim/$id/$role',
   path: '/tm-sim/$id/$role',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAccountDeleteRoute = ApiAccountDeleteRouteImport.update({
+  id: '/api/account/delete',
+  path: '/api/account/delete',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -523,116 +523,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/delete-account': {
-      id: '/delete-account'
-      path: '/delete-account'
-      fullPath: '/delete-account'
-      preLoaderRoute: typeof DeleteAccountRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/destinations': {
-      id: '/destinations'
-      path: '/destinations'
-      fullPath: '/destinations'
-      preLoaderRoute: typeof DestinationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/language': {
-      id: '/language'
-      path: '/language'
-      fullPath: '/language'
-      preLoaderRoute: typeof LanguageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/map': {
-      id: '/map'
-      path: '/map'
-      fullPath: '/map'
-      preLoaderRoute: typeof MapRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/museums': {
-      id: '/museums'
-      path: '/museums'
-      fullPath: '/museums'
-      preLoaderRoute: typeof MuseumsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/notifications': {
-      id: '/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof NotificationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/player': {
-      id: '/player'
-      path: '/player'
-      fullPath: '/player'
-      preLoaderRoute: typeof PlayerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/results': {
-      id: '/results'
-      path: '/results'
-      fullPath: '/results'
-      preLoaderRoute: typeof ResultsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/saved': {
-      id: '/saved'
-      path: '/saved'
-      fullPath: '/saved'
-      preLoaderRoute: typeof SavedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
+    '/trips': {
+      id: '/trips'
+      path: '/trips'
+      fullPath: '/trips'
+      preLoaderRoute: typeof TripsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/time-machine': {
@@ -642,130 +537,116 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TimeMachineRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/trips': {
-      id: '/trips'
-      path: '/trips'
-      fullPath: '/trips'
-      preLoaderRoute: typeof TripsRouteImport
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/attractions': {
-      id: '/api/attractions'
-      path: '/api/attractions'
-      fullPath: '/api/attractions'
-      preLoaderRoute: typeof ApiAttractionsRouteImport
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/classify-query': {
-      id: '/api/classify-query'
-      path: '/api/classify-query'
-      fullPath: '/api/classify-query'
-      preLoaderRoute: typeof ApiClassifyQueryRouteImport
+    '/saved': {
+      id: '/saved'
+      path: '/saved'
+      fullPath: '/saved'
+      preLoaderRoute: typeof SavedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/guide': {
-      id: '/api/guide'
-      path: '/api/guide'
-      fullPath: '/api/guide'
-      preLoaderRoute: typeof ApiGuideRouteImport
+    '/results': {
+      id: '/results'
+      path: '/results'
+      fullPath: '/results'
+      preLoaderRoute: typeof ResultsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/image-proxy': {
-      id: '/api/image-proxy'
-      path: '/api/image-proxy'
-      fullPath: '/api/image-proxy'
-      preLoaderRoute: typeof ApiImageProxyRouteImport
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/museum-highlights': {
-      id: '/api/museum-highlights'
-      path: '/api/museum-highlights'
-      fullPath: '/api/museum-highlights'
-      preLoaderRoute: typeof ApiMuseumHighlightsRouteImport
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/photo': {
-      id: '/api/photo'
-      path: '/api/photo'
-      fullPath: '/api/photo'
-      preLoaderRoute: typeof ApiPhotoRouteImport
+    '/player': {
+      id: '/player'
+      path: '/player'
+      fullPath: '/player'
+      preLoaderRoute: typeof PlayerRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/photo-gallery': {
-      id: '/api/photo-gallery'
-      path: '/api/photo-gallery'
-      fullPath: '/api/photo-gallery'
-      preLoaderRoute: typeof ApiPhotoGalleryRouteImport
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/report': {
-      id: '/api/report'
-      path: '/api/report'
-      fullPath: '/api/report'
-      preLoaderRoute: typeof ApiReportRouteImport
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/time-machine': {
-      id: '/api/time-machine'
-      path: '/api/time-machine'
-      fullPath: '/api/time-machine'
-      preLoaderRoute: typeof ApiTimeMachineRouteImport
+    '/museums': {
+      id: '/museums'
+      path: '/museums'
+      fullPath: '/museums'
+      preLoaderRoute: typeof MuseumsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/translate': {
-      id: '/api/translate'
-      path: '/api/translate'
-      fullPath: '/api/translate'
-      preLoaderRoute: typeof ApiTranslateRouteImport
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/trip-share': {
-      id: '/api/trip-share'
-      path: '/api/trip-share'
-      fullPath: '/api/trip-share'
-      preLoaderRoute: typeof ApiTripShareRouteImport
+    '/language': {
+      id: '/language'
+      path: '/language'
+      fullPath: '/language'
+      preLoaderRoute: typeof LanguageRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/tts': {
-      id: '/api/tts'
-      path: '/api/tts'
-      fullPath: '/api/tts'
-      preLoaderRoute: typeof ApiTtsRouteImport
+    '/destinations': {
+      id: '/destinations'
+      path: '/destinations'
+      fullPath: '/destinations'
+      preLoaderRoute: typeof DestinationsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/attraction/$id': {
-      id: '/attraction/$id'
-      path: '/attraction/$id'
-      fullPath: '/attraction/$id'
-      preLoaderRoute: typeof AttractionIdRouteImport
+    '/delete-account': {
+      id: '/delete-account'
+      path: '/delete-account'
+      fullPath: '/delete-account'
+      preLoaderRoute: typeof DeleteAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth/reset-password': {
-      id: '/auth/reset-password'
-      path: '/reset-password'
-      fullPath: '/auth/reset-password'
-      preLoaderRoute: typeof AuthResetPasswordRouteImport
-      parentRoute: typeof AuthRoute
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/auth/upgrade': {
-      id: '/auth/upgrade'
-      path: '/upgrade'
-      fullPath: '/auth/upgrade'
-      preLoaderRoute: typeof AuthUpgradeRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/destinations/$slug': {
-      id: '/destinations/$slug'
-      path: '/$slug'
-      fullPath: '/destinations/$slug'
-      preLoaderRoute: typeof DestinationsSlugRouteImport
-      parentRoute: typeof DestinationsRoute
-    }
-    '/t/$shareId': {
-      id: '/t/$shareId'
-      path: '/t/$shareId'
-      fullPath: '/t/$shareId'
-      preLoaderRoute: typeof TShareIdRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/trip/$id': {
@@ -775,11 +656,123 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TripIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/account/delete': {
-      id: '/api/account/delete'
-      path: '/api/account/delete'
-      fullPath: '/api/account/delete'
-      preLoaderRoute: typeof ApiAccountDeleteRouteImport
+    '/t/$shareId': {
+      id: '/t/$shareId'
+      path: '/t/$shareId'
+      fullPath: '/t/$shareId'
+      preLoaderRoute: typeof TShareIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/destinations/$slug': {
+      id: '/destinations/$slug'
+      path: '/$slug'
+      fullPath: '/destinations/$slug'
+      preLoaderRoute: typeof DestinationsSlugRouteImport
+      parentRoute: typeof DestinationsRoute
+    }
+    '/auth/upgrade': {
+      id: '/auth/upgrade'
+      path: '/upgrade'
+      fullPath: '/auth/upgrade'
+      preLoaderRoute: typeof AuthUpgradeRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/reset-password': {
+      id: '/auth/reset-password'
+      path: '/reset-password'
+      fullPath: '/auth/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/attraction/$id': {
+      id: '/attraction/$id'
+      path: '/attraction/$id'
+      fullPath: '/attraction/$id'
+      preLoaderRoute: typeof AttractionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tts': {
+      id: '/api/tts'
+      path: '/api/tts'
+      fullPath: '/api/tts'
+      preLoaderRoute: typeof ApiTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/trip-share': {
+      id: '/api/trip-share'
+      path: '/api/trip-share'
+      fullPath: '/api/trip-share'
+      preLoaderRoute: typeof ApiTripShareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/translate': {
+      id: '/api/translate'
+      path: '/api/translate'
+      fullPath: '/api/translate'
+      preLoaderRoute: typeof ApiTranslateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/time-machine': {
+      id: '/api/time-machine'
+      path: '/api/time-machine'
+      fullPath: '/api/time-machine'
+      preLoaderRoute: typeof ApiTimeMachineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/report': {
+      id: '/api/report'
+      path: '/api/report'
+      fullPath: '/api/report'
+      preLoaderRoute: typeof ApiReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/photo-gallery': {
+      id: '/api/photo-gallery'
+      path: '/api/photo-gallery'
+      fullPath: '/api/photo-gallery'
+      preLoaderRoute: typeof ApiPhotoGalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/photo': {
+      id: '/api/photo'
+      path: '/api/photo'
+      fullPath: '/api/photo'
+      preLoaderRoute: typeof ApiPhotoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/museum-highlights': {
+      id: '/api/museum-highlights'
+      path: '/api/museum-highlights'
+      fullPath: '/api/museum-highlights'
+      preLoaderRoute: typeof ApiMuseumHighlightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/image-proxy': {
+      id: '/api/image-proxy'
+      path: '/api/image-proxy'
+      fullPath: '/api/image-proxy'
+      preLoaderRoute: typeof ApiImageProxyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/guide': {
+      id: '/api/guide'
+      path: '/api/guide'
+      fullPath: '/api/guide'
+      preLoaderRoute: typeof ApiGuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/classify-query': {
+      id: '/api/classify-query'
+      path: '/api/classify-query'
+      fullPath: '/api/classify-query'
+      preLoaderRoute: typeof ApiClassifyQueryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/attractions': {
+      id: '/api/attractions'
+      path: '/api/attractions'
+      fullPath: '/api/attractions'
+      preLoaderRoute: typeof ApiAttractionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tm-sim/$id/$role': {
@@ -787,6 +780,13 @@ declare module '@tanstack/react-router' {
       path: '/tm-sim/$id/$role'
       fullPath: '/tm-sim/$id/$role'
       preLoaderRoute: typeof TmSimIdRoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/account/delete': {
+      id: '/api/account/delete'
+      path: '/api/account/delete'
+      fullPath: '/api/account/delete'
+      preLoaderRoute: typeof ApiAccountDeleteRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -856,3 +856,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
