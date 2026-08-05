@@ -53,13 +53,19 @@ export function PlayStoreBanner() {
           rel="noopener noreferrer"
           className="flex items-center gap-3 rounded-full px-2.5 py-1.5"
         >
-          {/* Google Play glyph — inline SVG so no asset request and it
-              inherits nothing (brand colors are part of the mark). */}
-          <svg viewBox="0 0 512 512" className="h-7 w-7 shrink-0" aria-hidden="true">
-            <path fill="#0fd865" d="M99 34l232 133-58 58L99 34z" />
-            <path fill="#0ab4e6" d="M91 40c-6 5-9 13-9 22v388c0 9 3 17 9 22l2 2 217-217v-2L93 38l-2 2z" />
-            <path fill="#ffce00" d="M403 315l-72-72v-2l72-72 2 1 86 49c24 14 24 36 0 50l-86 49-2-3z" />
-            <path fill="#f43249" d="M331 167l-58 58 58 58 74-42-74-74z" />
+          {/* Google Play glyph — the accurate Play-triangle outline
+              (Bootstrap Icons "google-play" geometry), monochrome in
+              the app's foreground color. Beka 2026-07-31: the earlier
+              hand-drawn 4-color version had wrong proportions; the
+              exact monochrome mark also sits better on Lokali's
+              dark/gold surface than off-brand color guesses. */}
+          <svg
+            viewBox="0 0 16 16"
+            className="h-6 w-6 shrink-0 text-foreground"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M14.222 9.374c1.037-.61 1.037-2.137 0-2.748L11.528 5.04 8.32 8l3.207 2.96 2.694-1.586Zm-3.595 2.116L7.583 8.68 1.03 14.73c.201 1.029 1.36 1.61 2.303 1.055l7.294-4.295ZM1 13.396V2.603L6.846 8 1 13.396ZM1.03 1.27l6.553 6.05 3.044-2.81L3.333.215C2.39-.341 1.231.24 1.03 1.27Z" />
           </svg>
           <span className="text-left leading-tight">
             <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
