@@ -2,17 +2,17 @@
 
 > Lokali is a free AI travel audio guide app (Android) that narrates landmarks, museums and city walks in 45+ languages. lokali.travel
 ## Explore guides (static pages)
-- https://lokali.travel/explore/en/tbilisi/
-- https://lokali.travel/explore/en/tbilisi/old-town/
-- https://lokali.travel/explore/en/tbilisi/metekhi-church/
-- https://lokali.travel/explore/en/tbilisi/narikala-fortress/
-- https://lokali.travel/explore/en/rome/
-- https://lokali.travel/explore/en/rome/colosseum/
-- https://lokali.travel/explore/en/rome/vatican-city/
-- https://lokali.travel/explore/en/rome/pantheon/
-- https://lokali.travel/explore/en/istanbul/
-- https://lokali.travel/explore/en/istanbul/hagia-sophia/
-- https://lokali.travel/explore/en/istanbul/blue-mosque/
-- https://lokali.travel/explore/en/istanbul/topkapi-palace/
+- https://lokali.travel/explore/en/tbilisi.html
+- https://lokali.travel/explore/en/tbilisi/old-town.html
+- https://lokali.travel/explore/en/tbilisi/metekhi-church.html
+- https://lokali.travel/explore/en/tbilisi/narikala-fortress.html
+- https://lokali.travel/explore/en/rome.html
+- https://lokali.travel/explore/en/rome/colosseum.html
+- https://lokali.travel/explore/en/rome/vatican-city.html
+- https://lokali.travel/explore/en/rome/pantheon.html
+- https://lokali.travel/explore/en/istanbul.html
+- https://lokali.travel/explore/en/istanbul/hagia-sophia.html
+- https://lokali.travel/explore/en/istanbul/blue-mosque.html
+- https://lokali.travel/explore/en/istanbul/topkapi-palace.html
 ## App
 - https://play.google.com/store/apps/details?id=app.lokali.travel
