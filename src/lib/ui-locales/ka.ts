@@ -73,6 +73,9 @@ export const KA: Partial<Record<UiKey, string>> = {
   "trips.shareGoneDesc": "პატრონმა გაზიარება შეწყვიტა, ან ლინკი მცდარია.",
   // Map trip filter
   "map.allSaved": "ყველა",
+  // Google Play banner
+  "playBanner.cta": "გადმოწერე აპი",
+  "playBanner.dismiss": "დახურვა",
   "profile.title": "პროფილი",
   "profile.account": "ანგარიში",
   "profile.openSettings": "პარამეტრები",

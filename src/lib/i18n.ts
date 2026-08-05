@@ -159,6 +159,9 @@ export const UI_STRINGS = {
   "trips.shareGoneDesc": "The owner stopped sharing it, or the link is incorrect.",
   // Map trip filter (Phase 5 follow-up)
   "map.allSaved": "All",
+  // Google Play banner (web visitors only)
+  "playBanner.cta": "Get the app",
+  "playBanner.dismiss": "Dismiss",
   "profile.title": "Profile",
   "profile.account": "Account",
   "profile.openSettings": "Settings",

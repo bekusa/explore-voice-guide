@@ -17,7 +17,15 @@
  * clearly instead of silently returning empty results.
  */
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
+// The Lovable-generated Database type doesn't know the api_logs table
+// (same situation as trips/trip_items in tripsStore.ts — the generated
+// types only cover profiles/saved_tours). Widen ONCE for the telemetry
+// insert; ApiLogRow keeps the write shape honest. Delete this cast when
+// the generated types learn the table.
+const telemetryDb = supabaseAdmin as unknown as SupabaseClient;
 
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 
@@ -122,7 +130,7 @@ type ApiLogRow = {
 // logging must never surface to callers or break a generation.
 async function logApiCall(row: ApiLogRow): Promise<void> {
   try {
-    await supabaseAdmin.from("api_logs").insert(row);
+    await telemetryDb.from("api_logs").insert(row);
   } catch (e) {
     console.warn("[anthropic] api_logs insert failed", e);
   }

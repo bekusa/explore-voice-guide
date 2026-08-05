@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Sparkles } from "lucide-react";
 import { TabBar } from "@/components/TabBar";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
+import { PlayStoreBanner } from "@/components/PlayStoreBanner";
 import { useT } from "@/hooks/useT";
 
 /**
@@ -98,6 +99,22 @@ export function MobileFrame({
             }`}
           >
             {floatingPanel}
+          </div>
+        )}
+        {/* "Get it on Google Play" pill — WEB visitors only (the
+            component self-hides inside the Capacitor app + after
+            dismissal). Pinned above the TabBar, below floatingPanel's
+            z-30 so the audio player wins when both are up. Beka
+            2026-07-31, production launch. */}
+        {!floatingPanel && (
+          <div
+            className={`absolute inset-x-0 z-20 ${
+              hideTabBar
+                ? "bottom-[max(16px,env(safe-area-inset-bottom))]"
+                : "bottom-[calc(64px+max(16px,env(safe-area-inset-bottom)))]"
+            }`}
+          >
+            <PlayStoreBanner />
           </div>
         )}
         {!hideTabBar && <TabBar />}
