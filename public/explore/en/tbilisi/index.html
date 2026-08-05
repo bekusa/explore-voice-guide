@@ -141,8 +141,14 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 .card-name{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-size:19px;color:var(--fg);margin-bottom:5px}
 .card-desc{color:var(--muted);font-size:13px;line-height:1.5}
 .more-note{color:var(--muted);font-size:14px;margin-top:20px;line-height:1.7}
-.appbar-cta{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;padding:12px 16px 16px;background:linear-gradient(180deg,rgba(17,12,8,0),rgba(17,12,8,.92) 45%,#110c08);pointer-events:none}
-.appbar-cta a{pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:520px;background:linear-gradient(135deg,#fdc357,#f67f2f);color:#110c08;font-weight:700;font-size:14px;padding:14px 22px;border-radius:999px;text-decoration:none;box-shadow:0 8px 28px rgba(0,0,0,.55),0 0 40px -12px #f5b75b}
+.appbar-cta{position:fixed;left:0;right:0;bottom:14px;z-index:50;display:none;justify-content:center;padding:0 16px;pointer-events:none}
+.appbar-cta.show{display:flex}
+.appbar-cta .pill{pointer-events:auto;display:flex;align-items:center;gap:6px;border:1px solid rgba(245,183,91,.3);background:rgba(27,21,16,.95);backdrop-filter:blur(20px);border-radius:999px;padding:8px 10px 8px 12px;box-shadow:0 20px 50px -20px rgba(0,0,0,.85)}
+.appbar-cta a{display:flex;align-items:center;gap:12px;text-decoration:none;padding:6px 10px;border-radius:999px}
+.appbar-cta .lb{display:flex;flex-direction:column;line-height:1.15;text-align:left}
+.appbar-cta .lb small{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted)}
+.appbar-cta .lb b{font-size:15px;font-weight:700;color:var(--fg)}
+.appbar-cta .x{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:16px}
 footer{border-top:1px solid var(--border);margin-top:38px;padding-top:20px;color:var(--muted);font-size:12.5px;text-align:center;line-height:1.85}
 footer a{color:var(--gold);text-decoration:none}
 </style>
@@ -168,6 +174,6 @@ footer a{color:var(--gold);text-decoration:none}
 </main>
 <footer>Lokali — free AI audio guides for travellers, in your own language.<br><a href="https://lokali.travel/">Open the Lokali app</a></footer>
 </div>
-<div class="appbar-cta"><a href="https://play.google.com/store/apps/details?id=app.lokali.travel&amp;pli=1"><svg width="16" height="16" viewBox="0 0 24 24" fill="#110c08" aria-hidden="true"><path d="M4 3l14 9-14 9z"/></svg> Get it on Google Play</a></div>
+<div class="appbar-cta" id="gpb"><div class="pill"><a href="https://play.google.com/store/apps/details?id=app.lokali.travel&amp;pli=1" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 16 16" width="24" height="24" aria-hidden="true"><path fill="#00B0FF" d="M1 13.396V2.603L6.846 8 1 13.396Z"/><path fill="#00E676" d="M1.03 1.27l6.553 6.05 3.044-2.81L3.333.215C2.39-.341 1.231.24 1.03 1.27Z"/><path fill="#FFC400" d="M14.222 9.374c1.037-.61 1.037-2.137 0-2.748L11.528 5.04 8.32 8l3.207 2.96 2.694-1.586Z"/><path fill="#FF3D57" d="M10.627 11.49 7.583 8.68 1.03 14.73c.201 1.029 1.36 1.61 2.303 1.055l7.294-4.295Z"/></svg><span class="lb"><small>Google Play</small><b>Get the app</b></span></a><button class="x" aria-label="Dismiss" onclick="try{localStorage.setItem('lokali.playbanner.dismissed.v1','1')}catch(e){};document.getElementById('gpb').classList.remove('show')">✕</button></div></div><script>(function(){var d=false;try{d=localStorage.getItem("lokali.playbanner.dismissed.v1")==="1"}catch(e){}if(!window.Capacitor&&!d){document.getElementById("gpb").classList.add("show")}})();</script>
 </body>
 </html>
