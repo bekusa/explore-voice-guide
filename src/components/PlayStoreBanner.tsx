@@ -46,26 +46,26 @@ export function PlayStoreBanner() {
 
   return (
     <div className="pointer-events-none flex justify-center px-4">
-      <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-primary/30 bg-card/95 p-1.5 pl-2 shadow-elegant backdrop-blur-xl">
+      <div className="pointer-events-auto flex items-center gap-1.5 rounded-full border border-primary/30 bg-card/95 p-2 pl-2.5 shadow-elegant backdrop-blur-xl">
         <a
           href={PLAY_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2.5 rounded-full px-2 py-1"
+          className="flex items-center gap-3 rounded-full px-2.5 py-1.5"
         >
           {/* Google Play glyph — inline SVG so no asset request and it
               inherits nothing (brand colors are part of the mark). */}
-          <svg viewBox="0 0 512 512" className="h-5 w-5 shrink-0" aria-hidden="true">
+          <svg viewBox="0 0 512 512" className="h-7 w-7 shrink-0" aria-hidden="true">
             <path fill="#0fd865" d="M99 34l232 133-58 58L99 34z" />
             <path fill="#0ab4e6" d="M91 40c-6 5-9 13-9 22v388c0 9 3 17 9 22l2 2 217-217v-2L93 38l-2 2z" />
             <path fill="#ffce00" d="M403 315l-72-72v-2l72-72 2 1 86 49c24 14 24 36 0 50l-86 49-2-3z" />
             <path fill="#f43249" d="M331 167l-58 58 58 58 74-42-74-74z" />
           </svg>
           <span className="text-left leading-tight">
-            <span className="block text-[8.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Google Play
             </span>
-            <span className="block text-[12.5px] font-bold text-foreground">
+            <span className="block text-[15px] font-bold text-foreground">
               {t("playBanner.cta")}
             </span>
           </span>
@@ -80,9 +80,9 @@ export function PlayStoreBanner() {
             setVisible(false);
           }}
           aria-label={t("playBanner.dismiss")}
-          className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-muted-foreground transition-smooth hover:text-foreground"
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-muted-foreground transition-smooth hover:text-foreground"
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="h-4 w-4" />
         </button>
       </div>
     </div>

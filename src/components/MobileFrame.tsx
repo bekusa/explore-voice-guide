@@ -110,8 +110,8 @@ export function MobileFrame({
           <div
             className={`absolute inset-x-0 z-20 ${
               hideTabBar
-                ? "bottom-[max(16px,env(safe-area-inset-bottom))]"
-                : "bottom-[calc(64px+max(16px,env(safe-area-inset-bottom)))]"
+                ? "bottom-[max(28px,env(safe-area-inset-bottom))]"
+                : "bottom-[calc(88px+max(16px,env(safe-area-inset-bottom)))]"
             }`}
           >
             <PlayStoreBanner />
