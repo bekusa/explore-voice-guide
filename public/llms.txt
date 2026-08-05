@@ -1,18 +1,123 @@
-# Lokali
+# Lokali SEO Static Pages — AI Crawler Manifest
+# Generated for lokali.travel explore section
+# Last updated: 2026-08-05
 
-> Lokali is a free AI travel audio guide app (Android) that narrates landmarks, museums and city walks in 45+ languages. lokali.travel
-## Explore guides (static pages)
-- https://lokali.travel/explore/en/tbilisi.html
-- https://lokali.travel/explore/en/tbilisi/old-town.html
-- https://lokali.travel/explore/en/tbilisi/metekhi-church.html
-- https://lokali.travel/explore/en/tbilisi/narikala-fortress.html
-- https://lokali.travel/explore/en/rome.html
-- https://lokali.travel/explore/en/rome/colosseum.html
-- https://lokali.travel/explore/en/rome/vatican-city.html
-- https://lokali.travel/explore/en/rome/pantheon.html
-- https://lokali.travel/explore/en/istanbul.html
-- https://lokali.travel/explore/en/istanbul/hagia-sophia.html
-- https://lokali.travel/explore/en/istanbul/blue-mosque.html
-- https://lokali.travel/explore/en/istanbul/topkapi-palace.html
-## App
-- https://play.google.com/store/apps/details?id=app.lokali.travel
+## Overview
+Free audio guide companion pages for Lokali travel app.
+Static HTML for search engine and AI crawler indexing.
+Multi-language support (44 languages).
+
+## Download the app
+https://play.google.com/store/apps/details?id=app.lokali.travel&pli=1
+
+## Canonical URLs (all static pages)
+
+https://lokali.travel/explore/af/istanbul.html
+https://lokali.travel/explore/af/istanbul/hagia-sophia.html
+https://lokali.travel/explore/ar/istanbul.html
+https://lokali.travel/explore/ar/istanbul/hagia-sophia.html
+https://lokali.travel/explore/az/istanbul.html
+https://lokali.travel/explore/az/istanbul/hagia-sophia.html
+https://lokali.travel/explore/bg/istanbul.html
+https://lokali.travel/explore/bg/istanbul/hagia-sophia.html
+https://lokali.travel/explore/bn/istanbul.html
+https://lokali.travel/explore/bn/istanbul/hagia-sophia.html
+https://lokali.travel/explore/cs/istanbul.html
+https://lokali.travel/explore/cs/istanbul/hagia-sophia.html
+https://lokali.travel/explore/da/istanbul.html
+https://lokali.travel/explore/da/istanbul/hagia-sophia.html
+https://lokali.travel/explore/de/istanbul.html
+https://lokali.travel/explore/de/istanbul/hagia-sophia.html
+https://lokali.travel/explore/de/tbilisi.html
+https://lokali.travel/explore/de/tbilisi/metekhi-church.html
+https://lokali.travel/explore/de/tbilisi/narikala-fortress.html
+https://lokali.travel/explore/de/tbilisi/old-town.html
+https://lokali.travel/explore/el/istanbul.html
+https://lokali.travel/explore/el/istanbul/hagia-sophia.html
+https://lokali.travel/explore/en/istanbul.html
+https://lokali.travel/explore/en/istanbul/hagia-sophia.html
+https://lokali.travel/explore/en/rome.html
+https://lokali.travel/explore/en/rome/colosseum.html
+https://lokali.travel/explore/en/rome/pantheon.html
+https://lokali.travel/explore/en/rome/vatican-city.html
+https://lokali.travel/explore/en/tbilisi.html
+https://lokali.travel/explore/en/tbilisi/metekhi-church.html
+https://lokali.travel/explore/en/tbilisi/narikala-fortress.html
+https://lokali.travel/explore/en/tbilisi/old-town.html
+https://lokali.travel/explore/es/istanbul.html
+https://lokali.travel/explore/es/istanbul/hagia-sophia.html
+https://lokali.travel/explore/fa/istanbul.html
+https://lokali.travel/explore/fa/istanbul/hagia-sophia.html
+https://lokali.travel/explore/fi/istanbul.html
+https://lokali.travel/explore/fi/istanbul/hagia-sophia.html
+https://lokali.travel/explore/fr/istanbul.html
+https://lokali.travel/explore/fr/istanbul/hagia-sophia.html
+https://lokali.travel/explore/he/istanbul.html
+https://lokali.travel/explore/he/istanbul/hagia-sophia.html
+https://lokali.travel/explore/hi/istanbul.html
+https://lokali.travel/explore/hi/istanbul/hagia-sophia.html
+https://lokali.travel/explore/hr/istanbul.html
+https://lokali.travel/explore/hr/istanbul/hagia-sophia.html
+https://lokali.travel/explore/hu/istanbul.html
+https://lokali.travel/explore/hu/istanbul/hagia-sophia.html
+https://lokali.travel/explore/hy/istanbul.html
+https://lokali.travel/explore/hy/istanbul/hagia-sophia.html
+https://lokali.travel/explore/id/istanbul.html
+https://lokali.travel/explore/id/istanbul/hagia-sophia.html
+https://lokali.travel/explore/it/istanbul.html
+https://lokali.travel/explore/it/istanbul/hagia-sophia.html
+https://lokali.travel/explore/ja/istanbul.html
+https://lokali.travel/explore/ja/istanbul/hagia-sophia.html
+https://lokali.travel/explore/ka/istanbul.html
+https://lokali.travel/explore/ka/istanbul/hagia-sophia.html
+https://lokali.travel/explore/ko/istanbul.html
+https://lokali.travel/explore/ko/istanbul/hagia-sophia.html
+https://lokali.travel/explore/mr/istanbul.html
+https://lokali.travel/explore/mr/istanbul/hagia-sophia.html
+https://lokali.travel/explore/ms/istanbul.html
+https://lokali.travel/explore/ms/istanbul/hagia-sophia.html
+https://lokali.travel/explore/nb/istanbul.html
+https://lokali.travel/explore/nb/istanbul/hagia-sophia.html
+https://lokali.travel/explore/nl/istanbul.html
+https://lokali.travel/explore/nl/istanbul/hagia-sophia.html
+https://lokali.travel/explore/pl/istanbul.html
+https://lokali.travel/explore/pl/istanbul/hagia-sophia.html
+https://lokali.travel/explore/pt/istanbul.html
+https://lokali.travel/explore/pt/istanbul/hagia-sophia.html
+https://lokali.travel/explore/ro/istanbul.html
+https://lokali.travel/explore/ro/istanbul/hagia-sophia.html
+https://lokali.travel/explore/ru/istanbul.html
+https://lokali.travel/explore/ru/istanbul/hagia-sophia.html
+https://lokali.travel/explore/sr/istanbul.html
+https://lokali.travel/explore/sr/istanbul/hagia-sophia.html
+https://lokali.travel/explore/sv/istanbul.html
+https://lokali.travel/explore/sv/istanbul/hagia-sophia.html
+https://lokali.travel/explore/sw/istanbul.html
+https://lokali.travel/explore/sw/istanbul/hagia-sophia.html
+https://lokali.travel/explore/ta/istanbul.html
+https://lokali.travel/explore/ta/istanbul/hagia-sophia.html
+https://lokali.travel/explore/te/istanbul.html
+https://lokali.travel/explore/te/istanbul/hagia-sophia.html
+https://lokali.travel/explore/th/istanbul.html
+https://lokali.travel/explore/th/istanbul/hagia-sophia.html
+https://lokali.travel/explore/tr/istanbul.html
+https://lokali.travel/explore/tr/istanbul/hagia-sophia.html
+https://lokali.travel/explore/uk/istanbul.html
+https://lokali.travel/explore/uk/istanbul/hagia-sophia.html
+https://lokali.travel/explore/ur/istanbul.html
+https://lokali.travel/explore/ur/istanbul/hagia-sophia.html
+https://lokali.travel/explore/vi/istanbul.html
+https://lokali.travel/explore/vi/istanbul/hagia-sophia.html
+https://lokali.travel/explore/zh-cn/istanbul.html
+https://lokali.travel/explore/zh-cn/istanbul/hagia-sophia.html
+https://lokali.travel/explore/zh-tw/istanbul.html
+https://lokali.travel/explore/zh-tw/istanbul/hagia-sophia.html
+
+## Sitemap
+https://lokali.travel/sitemap-explore.xml
+
+## Guidelines
+- All pages use hreflang for language alternates
+- Each page includes schema.org markup (TouristAttraction/TouristDestination)
+- RTL support for Arabic, Hebrew, Persian, Urdu
+- SEO-optimized meta titles and descriptions per language
