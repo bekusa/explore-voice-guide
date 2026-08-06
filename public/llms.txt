@@ -1,40 +1,62 @@
 # Lokali SEO Static Pages — AI Crawler Manifest
 # Generated for lokali.travel explore section
-# Last updated: 2026-08-05
+# Last updated: 2026-08-06
+# All content sourced from real cached_guides database (Supabase)
 
 ## Overview
 Free audio guide companion pages for Lokali travel app.
 Static HTML for search engine and AI crawler indexing.
-Multi-language support (44 languages).
 
 ## Download the app
 https://play.google.com/store/apps/details?id=app.lokali.travel&pli=1
 
-## Canonical URLs (all static pages)
+## Canonical URLs (all static pages, 154 total)
 
 https://lokali.travel/explore/af/istanbul.html
+https://lokali.travel/explore/af/istanbul/blue-mosque.html
 https://lokali.travel/explore/af/istanbul/hagia-sophia.html
+https://lokali.travel/explore/af/istanbul/topkapi-palace.html
+https://lokali.travel/explore/af/paris/louvre.html
 https://lokali.travel/explore/ar/istanbul.html
+https://lokali.travel/explore/ar/istanbul/blue-mosque.html
 https://lokali.travel/explore/ar/istanbul/hagia-sophia.html
+https://lokali.travel/explore/ar/istanbul/topkapi-palace.html
+https://lokali.travel/explore/ar/paris/louvre.html
 https://lokali.travel/explore/az/istanbul.html
+https://lokali.travel/explore/az/istanbul/blue-mosque.html
 https://lokali.travel/explore/az/istanbul/hagia-sophia.html
+https://lokali.travel/explore/az/istanbul/topkapi-palace.html
+https://lokali.travel/explore/az/paris/louvre.html
 https://lokali.travel/explore/bg/istanbul.html
+https://lokali.travel/explore/bg/istanbul/blue-mosque.html
 https://lokali.travel/explore/bg/istanbul/hagia-sophia.html
+https://lokali.travel/explore/bg/istanbul/topkapi-palace.html
 https://lokali.travel/explore/bn/istanbul.html
+https://lokali.travel/explore/bn/istanbul/blue-mosque.html
+https://lokali.travel/explore/bn/istanbul/hagia-sophia.html
+https://lokali.travel/explore/bn/istanbul/topkapi-palace.html
+https://lokali.travel/explore/bn/paris/louvre.html
 https://lokali.travel/explore/cs/istanbul.html
 https://lokali.travel/explore/cs/istanbul/hagia-sophia.html
 https://lokali.travel/explore/da/istanbul.html
 https://lokali.travel/explore/da/istanbul/hagia-sophia.html
+https://lokali.travel/explore/da/paris/louvre.html
 https://lokali.travel/explore/de/istanbul.html
 https://lokali.travel/explore/de/istanbul/hagia-sophia.html
+https://lokali.travel/explore/de/paris/louvre.html
 https://lokali.travel/explore/de/tbilisi.html
 https://lokali.travel/explore/de/tbilisi/metekhi-church.html
 https://lokali.travel/explore/de/tbilisi/narikala-fortress.html
 https://lokali.travel/explore/de/tbilisi/old-town.html
 https://lokali.travel/explore/el/istanbul.html
 https://lokali.travel/explore/el/istanbul/hagia-sophia.html
+https://lokali.travel/explore/el/istanbul/topkapi-palace.html
+https://lokali.travel/explore/el/paris/louvre.html
 https://lokali.travel/explore/en/istanbul.html
+https://lokali.travel/explore/en/istanbul/blue-mosque.html
 https://lokali.travel/explore/en/istanbul/hagia-sophia.html
+https://lokali.travel/explore/en/istanbul/topkapi-palace.html
+https://lokali.travel/explore/en/paris/louvre.html
 https://lokali.travel/explore/en/rome.html
 https://lokali.travel/explore/en/rome/colosseum.html
 https://lokali.travel/explore/en/rome/pantheon.html
@@ -45,30 +67,51 @@ https://lokali.travel/explore/en/tbilisi/narikala-fortress.html
 https://lokali.travel/explore/en/tbilisi/old-town.html
 https://lokali.travel/explore/es/istanbul.html
 https://lokali.travel/explore/es/istanbul/hagia-sophia.html
+https://lokali.travel/explore/es/istanbul/topkapi-palace.html
 https://lokali.travel/explore/fa/istanbul.html
 https://lokali.travel/explore/fa/istanbul/hagia-sophia.html
+https://lokali.travel/explore/fa/paris/louvre.html
 https://lokali.travel/explore/fi/istanbul.html
 https://lokali.travel/explore/fi/istanbul/hagia-sophia.html
+https://lokali.travel/explore/fi/istanbul/topkapi-palace.html
 https://lokali.travel/explore/fr/istanbul.html
+https://lokali.travel/explore/fr/istanbul/blue-mosque.html
 https://lokali.travel/explore/fr/istanbul/hagia-sophia.html
+https://lokali.travel/explore/fr/paris/louvre.html
 https://lokali.travel/explore/he/istanbul.html
 https://lokali.travel/explore/he/istanbul/hagia-sophia.html
+https://lokali.travel/explore/he/paris/louvre.html
 https://lokali.travel/explore/hi/istanbul.html
+https://lokali.travel/explore/hi/istanbul/hagia-sophia.html
+https://lokali.travel/explore/hi/paris/louvre.html
 https://lokali.travel/explore/hr/istanbul.html
+https://lokali.travel/explore/hr/istanbul/blue-mosque.html
 https://lokali.travel/explore/hr/istanbul/hagia-sophia.html
 https://lokali.travel/explore/hu/istanbul.html
 https://lokali.travel/explore/hu/istanbul/hagia-sophia.html
+https://lokali.travel/explore/hu/paris/louvre.html
 https://lokali.travel/explore/hy/istanbul.html
+https://lokali.travel/explore/hy/istanbul/blue-mosque.html
+https://lokali.travel/explore/hy/istanbul/hagia-sophia.html
+https://lokali.travel/explore/hy/istanbul/topkapi-palace.html
+https://lokali.travel/explore/hy/paris/louvre.html
 https://lokali.travel/explore/id/istanbul.html
+https://lokali.travel/explore/id/istanbul/blue-mosque.html
 https://lokali.travel/explore/id/istanbul/hagia-sophia.html
+https://lokali.travel/explore/id/paris/louvre.html
 https://lokali.travel/explore/it/istanbul.html
 https://lokali.travel/explore/it/istanbul/hagia-sophia.html
 https://lokali.travel/explore/ja/istanbul.html
 https://lokali.travel/explore/ja/istanbul/hagia-sophia.html
+https://lokali.travel/explore/ja/paris/louvre.html
 https://lokali.travel/explore/ka/istanbul.html
+https://lokali.travel/explore/ka/istanbul/hagia-sophia.html
+https://lokali.travel/explore/ka/paris/louvre.html
 https://lokali.travel/explore/ko/istanbul.html
 https://lokali.travel/explore/ko/istanbul/hagia-sophia.html
 https://lokali.travel/explore/mr/istanbul.html
+https://lokali.travel/explore/mr/istanbul/hagia-sophia.html
+https://lokali.travel/explore/mr/paris/louvre.html
 https://lokali.travel/explore/ms/istanbul.html
 https://lokali.travel/explore/ms/istanbul/hagia-sophia.html
 https://lokali.travel/explore/nb/istanbul.html
@@ -81,8 +124,10 @@ https://lokali.travel/explore/pt/istanbul.html
 https://lokali.travel/explore/pt/istanbul/hagia-sophia.html
 https://lokali.travel/explore/ro/istanbul.html
 https://lokali.travel/explore/ro/istanbul/hagia-sophia.html
+https://lokali.travel/explore/ro/istanbul/topkapi-palace.html
 https://lokali.travel/explore/ru/istanbul.html
 https://lokali.travel/explore/ru/istanbul/hagia-sophia.html
+https://lokali.travel/explore/ru/paris/louvre.html
 https://lokali.travel/explore/sr/istanbul.html
 https://lokali.travel/explore/sr/istanbul/hagia-sophia.html
 https://lokali.travel/explore/sv/istanbul.html
@@ -90,20 +135,37 @@ https://lokali.travel/explore/sv/istanbul/hagia-sophia.html
 https://lokali.travel/explore/sw/istanbul.html
 https://lokali.travel/explore/sw/istanbul/hagia-sophia.html
 https://lokali.travel/explore/ta/istanbul.html
+https://lokali.travel/explore/ta/istanbul/blue-mosque.html
+https://lokali.travel/explore/ta/istanbul/hagia-sophia.html
+https://lokali.travel/explore/ta/istanbul/topkapi-palace.html
+https://lokali.travel/explore/ta/paris/louvre.html
 https://lokali.travel/explore/te/istanbul.html
+https://lokali.travel/explore/te/istanbul/hagia-sophia.html
 https://lokali.travel/explore/th/istanbul.html
+https://lokali.travel/explore/th/istanbul/blue-mosque.html
+https://lokali.travel/explore/th/istanbul/hagia-sophia.html
+https://lokali.travel/explore/th/istanbul/topkapi-palace.html
+https://lokali.travel/explore/th/paris/louvre.html
 https://lokali.travel/explore/tr/istanbul.html
 https://lokali.travel/explore/tr/istanbul/hagia-sophia.html
+https://lokali.travel/explore/tr/paris/louvre.html
 https://lokali.travel/explore/uk/istanbul.html
+https://lokali.travel/explore/uk/istanbul/blue-mosque.html
 https://lokali.travel/explore/uk/istanbul/hagia-sophia.html
+https://lokali.travel/explore/uk/paris/louvre.html
 https://lokali.travel/explore/ur/istanbul.html
+https://lokali.travel/explore/ur/istanbul/blue-mosque.html
 https://lokali.travel/explore/ur/istanbul/hagia-sophia.html
+https://lokali.travel/explore/ur/istanbul/topkapi-palace.html
+https://lokali.travel/explore/ur/paris/louvre.html
 https://lokali.travel/explore/vi/istanbul.html
+https://lokali.travel/explore/vi/istanbul/blue-mosque.html
 https://lokali.travel/explore/vi/istanbul/hagia-sophia.html
 https://lokali.travel/explore/zh-cn/istanbul.html
 https://lokali.travel/explore/zh-cn/istanbul/hagia-sophia.html
 https://lokali.travel/explore/zh-tw/istanbul.html
 https://lokali.travel/explore/zh-tw/istanbul/hagia-sophia.html
+https://lokali.travel/explore/zh-tw/paris/louvre.html
 
 ## Sitemap
 https://lokali.travel/sitemap-explore.xml
@@ -113,3 +175,4 @@ https://lokali.travel/sitemap-explore.xml
 - Each page includes schema.org markup (TouristAttraction/TouristDestination)
 - RTL support for Arabic, Hebrew, Persian, Urdu
 - SEO-optimized meta titles and descriptions per language
+- All narrative content sourced from Lokali's cached_guides database (real, human-reviewed AI-generated guides)
