@@ -67,6 +67,11 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 .tips .item{background:rgba(250,188,5,.08);border:1px solid rgba(250,188,5,.3);color:#ffc955}
 .tips .item svg{color:#f5b75b}
 .map-placeholder{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;color:var(--muted);font-size:14px;margin-top:12px}
+.mapcard a{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;text-decoration:none;color:var(--fg);font-weight:600;font-size:14.5px}
+.mapcard a:hover{border-color:var(--gold)}
+.mapcard .ic{color:var(--gold);display:flex}
+.mapcard .arr{margin-left:auto;color:var(--muted)}
+.map-note{font-size:12.5px;color:var(--muted);margin-top:8px}
 .appbar-cta{position:fixed;bottom:20px;left:20px;right:20px;display:none;z-index:50}
 .appbar-cta.show{display:block}
 .appbar-cta .pill{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
@@ -150,7 +155,8 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 </section>
 <section>
 <h2 class="sec">Op de kaart</h2>
-<div class="map-placeholder">Opent een routebeschrijving naar Hagia Sophia vanaf jouw locatie.</div>
+<div class="mapcard"><a href="https://www.google.com/maps/search/?api=1&query=41.0086%2C28.9802" target="_blank" rel="noopener noreferrer"><span class="ic"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2.9 6.4-6.4 2.9 2.9-6.4z"/></svg></span>Openen in Google Maps<span class="arr">›</span></a></div>
+<p class="map-note">Opent een routebeschrijving naar Hagia Sophia vanaf jouw locatie.</p>
 </section>
 <div class="appbar-cta" id="gpb"><div class="pill"><a href="https://play.google.com/store/apps/details?id=app.lokali.travel&pli=1" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 48 48" width="24" height="24" style="flex-shrink:0">
 <path d="M24,24 L12,35 L12,13 Z" fill="#00B0FF"/>
