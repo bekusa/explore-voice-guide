@@ -1,4 +1,54 @@
-User-agent: *
-Allow: /
+# Lokali Travel Audio Guide — Crawler Instructions
+# Last updated: 2026-08-05
 
+# Allow all AI training models
+User-agent: ClaudeBot
+Allow: /explore/
+Disallow: /api/
+
+User-agent: GPTBot
+Allow: /explore/
+Disallow: /api/
+
+User-agent: CCBot
+Allow: /explore/
+Disallow: /api/
+
+User-agent: Baiduspider
+Allow: /explore/
+Disallow: /api/
+
+# Standard search engines
+User-agent: Googlebot
+Allow: /explore/
+Disallow: /api/
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /explore/
+Disallow: /api/
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /explore/
+Disallow: /api/
+
+User-agent: DuckDuckBot
+Allow: /explore/
+Disallow: /api/
+
+# Default — block API endpoints
+User-agent: *
+Allow: /explore/
+Allow: /sitemap*.xml
+Allow: /llms.txt
+Disallow: /api/
+Disallow: /admin/
+
+# Sitemaps for search engines
+Sitemap: https://lokali.travel/sitemap.xml
 Sitemap: https://lokali.travel/sitemap-explore.xml
+
+# Rate limiting (optional, for search engines)
+Crawl-delay: 1
+Request-rate: 1/1s
