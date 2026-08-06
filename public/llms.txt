@@ -21,7 +21,6 @@ https://lokali.travel/explore/az/istanbul/hagia-sophia.html
 https://lokali.travel/explore/bg/istanbul.html
 https://lokali.travel/explore/bg/istanbul/hagia-sophia.html
 https://lokali.travel/explore/bn/istanbul.html
-https://lokali.travel/explore/bn/istanbul/hagia-sophia.html
 https://lokali.travel/explore/cs/istanbul.html
 https://lokali.travel/explore/cs/istanbul/hagia-sophia.html
 https://lokali.travel/explore/da/istanbul.html
@@ -55,13 +54,11 @@ https://lokali.travel/explore/fr/istanbul/hagia-sophia.html
 https://lokali.travel/explore/he/istanbul.html
 https://lokali.travel/explore/he/istanbul/hagia-sophia.html
 https://lokali.travel/explore/hi/istanbul.html
-https://lokali.travel/explore/hi/istanbul/hagia-sophia.html
 https://lokali.travel/explore/hr/istanbul.html
 https://lokali.travel/explore/hr/istanbul/hagia-sophia.html
 https://lokali.travel/explore/hu/istanbul.html
 https://lokali.travel/explore/hu/istanbul/hagia-sophia.html
 https://lokali.travel/explore/hy/istanbul.html
-https://lokali.travel/explore/hy/istanbul/hagia-sophia.html
 https://lokali.travel/explore/id/istanbul.html
 https://lokali.travel/explore/id/istanbul/hagia-sophia.html
 https://lokali.travel/explore/it/istanbul.html
@@ -69,11 +66,9 @@ https://lokali.travel/explore/it/istanbul/hagia-sophia.html
 https://lokali.travel/explore/ja/istanbul.html
 https://lokali.travel/explore/ja/istanbul/hagia-sophia.html
 https://lokali.travel/explore/ka/istanbul.html
-https://lokali.travel/explore/ka/istanbul/hagia-sophia.html
 https://lokali.travel/explore/ko/istanbul.html
 https://lokali.travel/explore/ko/istanbul/hagia-sophia.html
 https://lokali.travel/explore/mr/istanbul.html
-https://lokali.travel/explore/mr/istanbul/hagia-sophia.html
 https://lokali.travel/explore/ms/istanbul.html
 https://lokali.travel/explore/ms/istanbul/hagia-sophia.html
 https://lokali.travel/explore/nb/istanbul.html
@@ -95,11 +90,8 @@ https://lokali.travel/explore/sv/istanbul/hagia-sophia.html
 https://lokali.travel/explore/sw/istanbul.html
 https://lokali.travel/explore/sw/istanbul/hagia-sophia.html
 https://lokali.travel/explore/ta/istanbul.html
-https://lokali.travel/explore/ta/istanbul/hagia-sophia.html
 https://lokali.travel/explore/te/istanbul.html
-https://lokali.travel/explore/te/istanbul/hagia-sophia.html
 https://lokali.travel/explore/th/istanbul.html
-https://lokali.travel/explore/th/istanbul/hagia-sophia.html
 https://lokali.travel/explore/tr/istanbul.html
 https://lokali.travel/explore/tr/istanbul/hagia-sophia.html
 https://lokali.travel/explore/uk/istanbul.html
