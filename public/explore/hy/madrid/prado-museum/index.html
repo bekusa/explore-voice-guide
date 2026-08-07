@@ -24,6 +24,9 @@
 <script type="application/ld+json">
 {"@context": "https://schema.org", "@type": "TouristAttraction", "name": "Պրադոյի թանգարան", "description": "Շեմն անցնելուն պես ներսում օդը փոխվում է՝ ավելի զով, լուռ, հին լաքի և կլիմայի կարգավորման թույլ թանգարանային հոտը կրելով։ Դրսում Պասեո դել Պրադոն լի է երթևեկությամբ և զբոսաշրջիկներով, բայց այստեղ՝ պատկերասրահներում, ժամանակը այլ կերպ է ընթանում։ Պրադոն պահում է աշխարհի մեծագույն նկարների հավաքածուներից մեկը, որը կազմվել է իսպանական թագավորական ընտանիքի չորս դարերի մասնավոր հավաքածուներից։ Այս պատերին դուք տեսնում եք այն, ինչով թագավորները նախընտրել են ապրել։.", "url": "https://lokali.travel/explore/hy/madrid/prado-museum.html", "geo": {"@type": "GeoCoordinates", "latitude": 40.4139, "longitude": -3.6921}, "address": {"@type": "PostalAddress", "addressLocality": "Madrid", "addressCountry": "ES"}, "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Museo_del_Prado_2016_%2825185969599%29.jpg/3840px-Museo_del_Prado_2016_%2825185969599%29.jpg"}
 </script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Որքա՞ն ժամանակ է անհրաժեշտ Պրադոյի թանգարան-ում", "acceptedAnswer": {"@type": "Answer", "text": "Նախատեսեք մոտ 9 րոպե։ Անվճար Lokali աուդիո ուղեցույցը պատմում է պատմությունը՝ մինչ դուք ուսումնասիրում եք։"}}, {"@type": "Question", "name": "Կա՞ արդյոք անվճար աուդիո ուղեցույց Պրադոյի թանգարան-ի համար", "acceptedAnswer": {"@type": "Answer", "text": "Այո։ Lokali հավելվածը անվճար պատմում է Պրադոյի թանգարան-ի մասին ձեր լեզվով՝ պատմություն, ինչի ուշադրություն դարձնել և գործնական խորհուրդներ հենց տեղում։"}}, {"@type": "Question", "name": "Ի՞նչ պետք է իմանաք մինչև Պրադոյի թանգարան այցելելը", "acceptedAnswer": {"@type": "Answer", "text": "Այցելեք աշխատանքային օրերին առավոտյան՝ ավելի նոսր մարդկանց համար"}}]}
+</script>
 <style>
 :root{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -70,6 +73,14 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 .mapcard .ic{color:var(--gold);display:flex}
 .mapcard .arr{margin-left:auto;color:var(--muted)}
 .map-note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.faq{margin-top:12px}
+.faq details{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:9px}
+.faq summary{cursor:pointer;font-weight:600;color:var(--fg);display:flex;align-items:center;gap:8px;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:"+";font-size:18px;font-weight:400}
+.faq details[open] summary::before{content:"2"}
+.faq details[open] summary{color:var(--gold)}
+.faq p{font-size:14px;color:var(--body);margin-top:12px;line-height:1.6}
 .appbar-cta{position:fixed;bottom:20px;left:20px;right:20px;display:none;z-index:50}
 .appbar-cta.show{display:block}
 .appbar-cta .pill{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
@@ -144,6 +155,13 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Ընտրեք մի քանի կարևոր սենյակներ՝ ամեն ինչ շտապեցնելու փոխարեն</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Օգտագործեք թանգարանային նստարաններ՝ նստելու և խոշոր աշխատանքները ուսումնասիրելու համար</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Եթե ժամանակը սուղ է, հետևեք առաջարկվող երկժամյա երթուղուն</span></div>
+</div></section>
+<section>
+<h2 class="sec">Common questions</h2>
+<div class="faq">
+<details><summary>Որքա՞ն ժամանակ է անհրաժեշտ Պրադոյի թանգարան-ում</summary><p>Նախատեսեք մոտ 9 րոպե։ Անվճար Lokali աուդիո ուղեցույցը պատմում է պատմությունը՝ մինչ դուք ուսումնասիրում եք։</p></details>
+<details><summary>Կա՞ արդյոք անվճար աուդիո ուղեցույց Պրադոյի թանգարան-ի համար</summary><p>Այո։ Lokali հավելվածը անվճար պատմում է Պրադոյի թանգարան-ի մասին ձեր լեզվով՝ պատմություն, ինչի ուշադրություն դարձնել և գործնական խորհուրդներ հենց տեղում։</p></details>
+<details><summary>Ի՞նչ պետք է իմանաք մինչև Պրադոյի թանգարան այցելելը</summary><p>Այցելեք աշխատանքային օրերին առավոտյան՝ ավելի նոսր մարդկանց համար</p></details>
 </div></section>
 <section>
 <h2 class="sec">On the map</h2>

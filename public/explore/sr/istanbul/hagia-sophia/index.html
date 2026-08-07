@@ -22,6 +22,9 @@
 <script type="application/ld+json">
 {"@context": "https://schema.org", "@type": "TouristAttraction", "name": "Аја Софија", "description": "Станите у двориште и погледајте горе.", "url": "https://lokali.travel/explore/sr/istanbul/hagia-sophia.html", "image": "https://lokaliphotos.blob.core.windows.net/attractions/800787d463f421e6765a1095a76c3604859d3791.jpg", "geo": {"@type": "GeoCoordinates", "latitude": 41.0086, "longitude": 28.9802}, "address": {"@type": "PostalAddress", "addressLocality": "Istanbul", "addressCountry": "TR"}}
 </script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How long needed?", "acceptedAnswer": {"@type": "Answer", "text": "Plan 1-2 hours. Lokali free audio guide narrates as you explore."}}, {"@type": "Question", "name": "Free audio guide?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Lokali app narrates Hagia Sophia free in your language."}}, {"@type": "Question", "name": "What to know?", "acceptedAnswer": {"@type": "Answer", "text": "Visit early for light. Wear modest clothes. Allow one hour to absorb scale."}}]}
+</script>
 <style>
 :root{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -67,6 +70,14 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 .tips .item{background:rgba(250,188,5,.08);border:1px solid rgba(250,188,5,.3);color:#ffc955}
 .tips .item svg{color:#f5b75b}
 .map-placeholder{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;color:var(--muted);font-size:14px;margin-top:12px}
+.faq{margin-top:12px}
+.faq details{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:9px}
+.faq summary{cursor:pointer;font-weight:600;color:var(--fg);display:flex;align-items:center;gap:8px;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:"+";font-size:18px;font-weight:400}
+.faq details[open] summary::before{content:"2"}
+.faq details[open] summary{color:var(--gold)}
+.faq p{font-size:14px;color:var(--body);margin-top:12px;line-height:1.6}
 .mapcard a{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;text-decoration:none;color:var(--fg);font-weight:600;font-size:14.5px}
 .mapcard a:hover{border-color:var(--gold)}
 .mapcard .ic{color:var(--gold);display:flex}
@@ -96,7 +107,7 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 </nav>
 </details>
 </div>
-<div class="crumbs"><a href="https://lokali.travel">Lokali</a> › <a href="https://lokali.travel/explore/sr/istanbul.html">Istanbul</a></div>
+<div class="crumbs"><a href="https://lokali.travel">Lokali</a> › <a href="https://lokali.travel/explore/en/istanbul.html">Istanbul</a></div>
 <div class="hero-img">
 <img src="https://lokaliphotos.blob.core.windows.net/attractions/800787d463f421e6765a1095a76c3604859d3791.jpg" alt="Аја Софија" loading="eager">
 <div class="ov"></div>
@@ -153,6 +164,13 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Проверите да ли је горња галерија отворена пре пењања</span></div>
 </div>
 </section>
+<section>
+<h2 class="sec">Common questions</h2>
+<div class="faq">
+<details><summary>How long needed?</summary><p>Plan 1-2 hours. Lokali free audio guide narrates as you explore.</p></details>
+<details><summary>Free audio guide?</summary><p>Yes. Lokali app narrates Hagia Sophia free in your language.</p></details>
+<details><summary>What to know?</summary><p>Visit early for light. Wear modest clothes. Allow one hour to absorb scale.</p></details>
+</div></section>
 <section>
 <h2 class="sec">On the map</h2>
 <div class="mapcard"><a href="https://www.google.com/maps/search/?api=1&query=41.0086%2C28.9802" target="_blank" rel="noopener noreferrer"><span class="ic"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2.9 6.4-6.4 2.9 2.9-6.4z"/></svg></span>Open in Google Maps<span class="arr">›</span></a></div>

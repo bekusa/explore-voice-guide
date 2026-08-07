@@ -22,6 +22,9 @@
 <script type="application/ld+json">
 {"@context": "https://schema.org", "@type": "TouristAttraction", "name": "The Rocks", "description": "Narrow lanes, worn sandstone, pub signs creaking above doorways.", "url": "https://lokali.travel/explore/en/sydney/rocks.html", "geo": {"@type": "GeoCoordinates", "latitude": -33.8597, "longitude": 151.2071}, "address": {"@type": "PostalAddress", "addressLocality": "Sydney", "addressCountry": "AU"}}
 </script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How long do you need at The Rocks?", "acceptedAnswer": {"@type": "Answer", "text": "Plan around 5 minutes on site. The free Lokali audio guide tells the story as you explore."}}, {"@type": "Question", "name": "Is there a free audio guide to The Rocks?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The Lokali app narrates The Rocks for free in your own language — history, what to look for and practical tips, right at the site."}}, {"@type": "Question", "name": "What should you know before visiting The Rocks?", "acceptedAnswer": {"@type": "Answer", "text": "Visit on a weekend for the full market experience"}}]}
+</script>
 <style>
 :root{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -68,6 +71,14 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 .mapcard .ic{color:var(--gold);display:flex}
 .mapcard .arr{margin-left:auto;color:var(--muted)}
 .map-note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.faq{margin-top:12px}
+.faq details{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:9px}
+.faq summary{cursor:pointer;font-weight:600;color:var(--fg);display:flex;align-items:center;gap:8px;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:"+";font-size:18px;font-weight:400}
+.faq details[open] summary::before{content:"2"}
+.faq details[open] summary{color:var(--gold)}
+.faq p{font-size:14px;color:var(--body);margin-top:12px;line-height:1.6}
 .appbar-cta{position:fixed;bottom:20px;left:20px;right:20px;display:none;z-index:50}
 .appbar-cta.show{display:block}
 .appbar-cta .pill{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
@@ -141,6 +152,13 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Enter the free Rocks Discovery Museum for excavated artifacts</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Tour Susannah Place to see preserved working-class homes</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Compare the rival oldest-pub claims over a quiet drink</span></div>
+</div></section>
+<section>
+<h2 class="sec">Common questions</h2>
+<div class="faq">
+<details><summary>How long do you need at The Rocks?</summary><p>Plan around 5 minutes on site. The free Lokali audio guide tells the story as you explore.</p></details>
+<details><summary>Is there a free audio guide to The Rocks?</summary><p>Yes. The Lokali app narrates The Rocks for free in your own language — history, what to look for and practical tips, right at the site.</p></details>
+<details><summary>What should you know before visiting The Rocks?</summary><p>Visit on a weekend for the full market experience</p></details>
 </div></section>
 <section>
 <h2 class="sec">On the map</h2>

@@ -22,6 +22,9 @@
 <script type="application/ld+json">
 {"@context": "https://schema.org", "@type": "TouristAttraction", "name": "Sainte-Sophie", "description": "Tenez-vous dans le narthex et levez les yeux.", "url": "https://lokali.travel/explore/fr/istanbul/hagia-sophia.html", "image": "https://lokaliphotos.blob.core.windows.net/attractions/800787d463f421e6765a1095a76c3604859d3791.jpg", "geo": {"@type": "GeoCoordinates", "latitude": 41.0086, "longitude": 28.9802}, "address": {"@type": "PostalAddress", "addressLocality": "Istanbul", "addressCountry": "TR"}}
 </script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Combien de temps faut-il pour visiter Sainte-Sophie ?", "acceptedAnswer": {"@type": "Answer", "text": "Prévoyez 1 à 2 heures sur place. L'audioguide gratuit Lokali (~9 min) vous raconte l'histoire pendant que vous explorez."}}, {"@type": "Question", "name": "Existe-t-il un audioguide gratuit de Sainte-Sophie ?", "acceptedAnswer": {"@type": "Answer", "text": "Oui. L'appli Lokali raconte Sainte-Sophie gratuitement dans votre langue — histoire, quoi observer et conseils pratiques, directement sur place."}}, {"@type": "Question", "name": "Que faut-il savoir avant de visiter Sainte-Sophie ?", "acceptedAnswer": {"@type": "Answer", "text": "Venez tôt le matin pour une lumière plus douce et moins de monde. Portez une tenue modeste couvrant les épaules et les genoux, et prévoyez au moins une heure pour prendre la mesure du lieu."}}]}
+</script>
 <style>
 :root{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -67,6 +70,14 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 .tips .item{background:rgba(250,188,5,.08);border:1px solid rgba(250,188,5,.3);color:#ffc955}
 .tips .item svg{color:#f5b75b}
 .map-placeholder{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;color:var(--muted);font-size:14px;margin-top:12px}
+.faq{margin-top:12px}
+.faq details{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:9px}
+.faq summary{cursor:pointer;font-weight:600;color:var(--fg);display:flex;align-items:center;gap:8px;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:"+";font-size:18px;font-weight:400}
+.faq details[open] summary::before{content:"2"}
+.faq details[open] summary{color:var(--gold)}
+.faq p{font-size:14px;color:var(--body);margin-top:12px;line-height:1.6}
 .mapcard a{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;text-decoration:none;color:var(--fg);font-weight:600;font-size:14.5px}
 .mapcard a:hover{border-color:var(--gold)}
 .mapcard .ic{color:var(--gold);display:flex}
@@ -96,7 +107,7 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 </nav>
 </details>
 </div>
-<div class="crumbs"><a href="https://lokali.travel">Lokali</a> › <a href="https://lokali.travel/explore/fr/istanbul.html">Istanbul</a></div>
+<div class="crumbs"><a href="https://lokali.travel">Lokali</a> › <a href="https://lokali.travel/explore/en/istanbul.html">Istanbul</a></div>
 <div class="hero-img">
 <img src="https://lokaliphotos.blob.core.windows.net/attractions/800787d463f421e6765a1095a76c3604859d3791.jpg" alt="Sainte-Sophie" loading="eager">
 <div class="ov"></div>
@@ -153,6 +164,13 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Prévoyez au moins une heure à l&#39;intérieur</span></div>
 </div>
 </section>
+<section>
+<h2 class="sec">Questions fréquentes</h2>
+<div class="faq">
+<details><summary>Combien de temps faut-il pour visiter Sainte-Sophie ?</summary><p>Prévoyez 1 à 2 heures sur place. L&#39;audioguide gratuit Lokali (~9 min) vous raconte l&#39;histoire pendant que vous explorez.</p></details>
+<details><summary>Existe-t-il un audioguide gratuit de Sainte-Sophie ?</summary><p>Oui. L&#39;appli Lokali raconte Sainte-Sophie gratuitement dans votre langue — histoire, quoi observer et conseils pratiques, directement sur place.</p></details>
+<details><summary>Que faut-il savoir avant de visiter Sainte-Sophie ?</summary><p>Venez tôt le matin pour une lumière plus douce et moins de monde. Portez une tenue modeste couvrant les épaules et les genoux, et prévoyez au moins une heure pour prendre la mesure du lieu.</p></details>
+</div></section>
 <section>
 <h2 class="sec">Sur la carte</h2>
 <div class="mapcard"><a href="https://www.google.com/maps/search/?api=1&query=41.0086%2C28.9802" target="_blank" rel="noopener noreferrer"><span class="ic"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2.9 6.4-6.4 2.9 2.9-6.4z"/></svg></span>Ouvrir dans Google Maps<span class="arr">›</span></a></div>

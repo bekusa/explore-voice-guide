@@ -24,6 +24,9 @@
 <script type="application/ld+json">
 {"@context": "https://schema.org", "@type": "TouristAttraction", "name": "浅草寺", "description": "首先扑面而来的是香气——铜炉中袅袅升起的袅袅香烟，朝圣者们将香烟拂过肩头，轻拂过额头，相信它能带来治愈。你正站在东京最古老的寺庙区域，近十四个世纪以来，这里一直吸引着无数信徒前来朝拜。.", "url": "https://lokali.travel/explore/zh/taito/sensoji.html", "geo": {"@type": "GeoCoordinates", "latitude": 35.7148, "longitude": 139.7967}, "address": {"@type": "PostalAddress", "addressLocality": "Taito", "addressCountry": "JP"}, "image": "https://upload.wikimedia.org/wikipedia/commons/4/43/Sensoji_2023.jpg"}
 </script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "参观浅草寺需要多长时间？", "acceptedAnswer": {"@type": "Answer", "text": "预计需要约9分钟。免费的Lokali语音导览会在您游览时讲述故事。"}}, {"@type": "Question", "name": "浅草寺有免费语音导览吗？", "acceptedAnswer": {"@type": "Answer", "text": "有的。Lokali应用会用您的语言免费讲述浅草寺的故事——历史、看点和实用贴士，就在现场。"}}, {"@type": "Question", "name": "参观浅草寺前应该了解什么？", "acceptedAnswer": {"@type": "Answer", "text": "清晨前往，避开人潮。"}}]}
+</script>
 <style>
 :root{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -70,6 +73,14 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 .mapcard .ic{color:var(--gold);display:flex}
 .mapcard .arr{margin-left:auto;color:var(--muted)}
 .map-note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.faq{margin-top:12px}
+.faq details{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:9px}
+.faq summary{cursor:pointer;font-weight:600;color:var(--fg);display:flex;align-items:center;gap:8px;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:"+";font-size:18px;font-weight:400}
+.faq details[open] summary::before{content:"2"}
+.faq details[open] summary{color:var(--gold)}
+.faq p{font-size:14px;color:var(--body);margin-top:12px;line-height:1.6}
 .appbar-cta{position:fixed;bottom:20px;left:20px;right:20px;display:none;z-index:50}
 .appbar-cta.show{display:block}
 .appbar-cta .pill{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
@@ -145,6 +156,13 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>抽取一根签，把厄运系在签架上。</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>漫步浅草的小巷，感受更宁静的氛围</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>黄昏时分返回，届时纸灯笼将照亮整个区域。</span></div>
+</div></section>
+<section>
+<h2 class="sec">常见问题</h2>
+<div class="faq">
+<details><summary>参观浅草寺需要多长时间？</summary><p>预计需要约9分钟。免费的Lokali语音导览会在您游览时讲述故事。</p></details>
+<details><summary>浅草寺有免费语音导览吗？</summary><p>有的。Lokali应用会用您的语言免费讲述浅草寺的故事——历史、看点和实用贴士，就在现场。</p></details>
+<details><summary>参观浅草寺前应该了解什么？</summary><p>清晨前往，避开人潮。</p></details>
 </div></section>
 <section>
 <h2 class="sec">地图位置</h2>

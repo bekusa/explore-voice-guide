@@ -150,6 +150,10 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 .appbar-cta .x{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:16px}
 footer{border-top:1px solid var(--border);margin-top:38px;padding-top:20px;color:var(--muted);font-size:12.5px;text-align:center;line-height:1.85}
 footer a{color:var(--gold);text-decoration:none}
+
+.more-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.more-list a{display:inline-flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:999px;padding:8px 14px;font-size:13px;color:var(--body);text-decoration:none}
+.more-list a:hover{border-color:var(--gold);color:var(--gold)}
 </style>
 </head>
 <body>
@@ -173,6 +177,23 @@ footer a{color:var(--gold);text-decoration:none}
 </main>
 <footer>Lokali — free AI audio guides for travellers, in your own language.<br><a href="https://lokali.travel/">Open the Lokali app</a></footer>
 </div>
+<section>
+<h2 class="sec">More to see in Rome</h2>
+<div class="more-list">
+<a href="https://lokali.travel/explore/en/rome/colosseum.html">Colosseum</a>
+<a href="https://lokali.travel/explore/en/rome/vatican-city.html">Vatican City</a>
+<a href="https://lokali.travel/explore/en/rome/pantheon.html">Pantheon</a>
+<a href="https://lokali.travel/explore/en/rome/capitoline-museums.html">Capitoline Museums</a>
+<a href="https://lokali.travel/explore/en/rome/castel-santangelo.html">Castel Sant&#39;Angelo</a>
+<a href="https://lokali.travel/explore/en/rome/palazzo-altemps.html">Palazzo Altemps</a>
+<a href="https://lokali.travel/explore/en/rome/piazza-navona.html">Piazza Navona</a>
+<a href="https://lokali.travel/explore/en/rome/ponte-santangelo.html">Ponte Sant&#39;Angelo</a>
+<a href="https://lokali.travel/explore/en/rome/roman-forum.html">Roman Forum</a>
+<a href="https://lokali.travel/explore/en/rome/spanish-steps.html">Spanish Steps</a>
+<a href="https://lokali.travel/explore/en/rome/trastevere.html">Trastevere</a>
+<a href="https://lokali.travel/explore/en/rome/trevi-fountain.html">Trevi Fountain</a>
+</div>
+</section>
 <div class="appbar-cta" id="gpb"><div class="pill"><a href="https://play.google.com/store/apps/details?id=app.lokali.travel&amp;pli=1" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 16 16" width="24" height="24" aria-hidden="true"><path fill="#00B0FF" d="M1 13.396V2.603L6.846 8 1 13.396Z"/><path fill="#00E676" d="M1.03 1.27l6.553 6.05 3.044-2.81L3.333.215C2.39-.341 1.231.24 1.03 1.27Z"/><path fill="#FFC400" d="M14.222 9.374c1.037-.61 1.037-2.137 0-2.748L11.528 5.04 8.32 8l3.207 2.96 2.694-1.586Z"/><path fill="#FF3D57" d="M10.627 11.49 7.583 8.68 1.03 14.73c.201 1.029 1.36 1.61 2.303 1.055l7.294-4.295Z"/></svg><span class="lb"><small>Google Play</small><b>Get the app</b></span></a><button class="x" aria-label="Dismiss" onclick="try{localStorage.setItem('lokali.playbanner.dismissed.v1','1')}catch(e){};document.getElementById('gpb').classList.remove('show')">✕</button></div></div><script>(function(){var d=false;try{d=localStorage.getItem("lokali.playbanner.dismissed.v1")==="1"}catch(e){}if(!window.Capacitor&&!d){document.getElementById("gpb").classList.add("show")}})();</script>
 </body>
 </html>

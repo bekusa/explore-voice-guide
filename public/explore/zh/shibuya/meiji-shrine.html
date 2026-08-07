@@ -24,6 +24,9 @@
 <script type="application/ld+json">
 {"@context": "https://schema.org", "@type": "TouristAttraction", "name": "明治神宫", "description": "脚下的碎石发出嘎吱嘎吱的声响——并非普通的碎石，而是数百万颗细小的白色石子，随着你的每一步移动、沉降，发出此起彼伏的声响，仿佛在宣告你的到来。你正漫步于东京市中心最大的森林之一，这片人工林虽古老，却不过百年历史。.", "url": "https://lokali.travel/explore/zh/shibuya/meiji-shrine.html", "geo": {"@type": "GeoCoordinates", "latitude": 35.6762, "longitude": 139.7002}, "address": {"@type": "PostalAddress", "addressLocality": "Shibuya", "addressCountry": "JP"}, "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Meiji_Jingu_2023-3.jpg/3840px-Meiji_Jingu_2023-3.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"}
 </script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "参观明治神宫需要多长时间？", "acceptedAnswer": {"@type": "Answer", "text": "预计需要约9分钟。免费的Lokali语音导览会在您游览时讲述故事。"}}, {"@type": "Question", "name": "明治神宫有免费语音导览吗？", "acceptedAnswer": {"@type": "Answer", "text": "有的。Lokali应用会用您的语言免费讲述明治神宫的故事——历史、看点和实用贴士，就在现场。"}}, {"@type": "Question", "name": "参观明治神宫前应该了解什么？", "acceptedAnswer": {"@type": "Answer", "text": "清晨前往，可以享受更安静的小径和更柔和的光线。"}}]}
+</script>
 <style>
 :root{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -70,6 +73,14 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 .mapcard .ic{color:var(--gold);display:flex}
 .mapcard .arr{margin-left:auto;color:var(--muted)}
 .map-note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.faq{margin-top:12px}
+.faq details{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:9px}
+.faq summary{cursor:pointer;font-weight:600;color:var(--fg);display:flex;align-items:center;gap:8px;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:"+";font-size:18px;font-weight:400}
+.faq details[open] summary::before{content:"2"}
+.faq details[open] summary{color:var(--gold)}
+.faq p{font-size:14px;color:var(--body);margin-top:12px;line-height:1.6}
 .appbar-cta{position:fixed;bottom:20px;left:20px;right:20px;display:none;z-index:50}
 .appbar-cta.show{display:block}
 .appbar-cta .pill{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
@@ -145,6 +156,13 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>主厅后面的鸢尾花园将于六月开放。</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>周末注意婚礼队伍。</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>对着供箱鞠躬两次，拍手两次，再鞠躬一次。</span></div>
+</div></section>
+<section>
+<h2 class="sec">常见问题</h2>
+<div class="faq">
+<details><summary>参观明治神宫需要多长时间？</summary><p>预计需要约9分钟。免费的Lokali语音导览会在您游览时讲述故事。</p></details>
+<details><summary>明治神宫有免费语音导览吗？</summary><p>有的。Lokali应用会用您的语言免费讲述明治神宫的故事——历史、看点和实用贴士，就在现场。</p></details>
+<details><summary>参观明治神宫前应该了解什么？</summary><p>清晨前往，可以享受更安静的小径和更柔和的光线。</p></details>
 </div></section>
 <section>
 <h2 class="sec">地图位置</h2>

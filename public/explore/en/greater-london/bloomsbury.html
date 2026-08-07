@@ -23,6 +23,9 @@
 <script type="application/ld+json">
 {"@context": "https://schema.org", "@type": "TouristAttraction", "name": "Bloomsbury", "description": "You leave the noise of the main road and turn into a quiet street lined with tall brick houses.", "url": "https://lokali.travel/explore/en/greater-london/bloomsbury.html", "geo": {"@type": "GeoCoordinates", "latitude": 51.5215, "longitude": -0.1273}, "address": {"@type": "PostalAddress", "addressLocality": "Greater London", "addressCountry": "GB"}, "image": "https://upload.wikimedia.org/wikipedia/commons/1/1b/British_Museum_from_NE_2_%28cropped%29.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"}
 </script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How long do you need at Bloomsbury?", "acceptedAnswer": {"@type": "Answer", "text": "Plan around 5 minutes on site. The free Lokali audio guide tells the story as you explore."}}, {"@type": "Question", "name": "Is there a free audio guide to Bloomsbury?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The Lokali app narrates Bloomsbury for free in your own language — history, what to look for and practical tips, right at the site."}}, {"@type": "Question", "name": "What should you know before visiting Bloomsbury?", "acceptedAnswer": {"@type": "Answer", "text": "Walk the Georgian streets to admire the matching terraces"}}]}
+</script>
 <style>
 :root{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -69,6 +72,14 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 .mapcard .ic{color:var(--gold);display:flex}
 .mapcard .arr{margin-left:auto;color:var(--muted)}
 .map-note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.faq{margin-top:12px}
+.faq details{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:9px}
+.faq summary{cursor:pointer;font-weight:600;color:var(--fg);display:flex;align-items:center;gap:8px;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:"+";font-size:18px;font-weight:400}
+.faq details[open] summary::before{content:"2"}
+.faq details[open] summary{color:var(--gold)}
+.faq p{font-size:14px;color:var(--body);margin-top:12px;line-height:1.6}
 .appbar-cta{position:fixed;bottom:20px;left:20px;right:20px;display:none;z-index:50}
 .appbar-cta.show{display:block}
 .appbar-cta .pill{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
@@ -146,6 +157,13 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Rest by the fountain in nearby Russell Square</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Look up for blue plaques naming famous residents</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Pair your visit with the British Museum next door</span></div>
+</div></section>
+<section>
+<h2 class="sec">Common questions</h2>
+<div class="faq">
+<details><summary>How long do you need at Bloomsbury?</summary><p>Plan around 5 minutes on site. The free Lokali audio guide tells the story as you explore.</p></details>
+<details><summary>Is there a free audio guide to Bloomsbury?</summary><p>Yes. The Lokali app narrates Bloomsbury for free in your own language — history, what to look for and practical tips, right at the site.</p></details>
+<details><summary>What should you know before visiting Bloomsbury?</summary><p>Walk the Georgian streets to admire the matching terraces</p></details>
 </div></section>
 <section>
 <h2 class="sec">On the map</h2>

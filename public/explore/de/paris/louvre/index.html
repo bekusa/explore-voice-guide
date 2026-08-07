@@ -22,6 +22,9 @@
 <script type="application/ld+json">
 {"@context": "https://schema.org", "@type": "TouristAttraction", "name": "Louvre", "description": "Stehen Sie im Zentrum des Cour Napoléon und spüren Sie die Schwere des Steins, der von drei Seiten herabdrückt – helle Kalksteinfassaden, die einst Könige beherbergten, rahmen nun eine Pyramide aus Glas und Stahl ein, die den Himmel berührt.", "url": "https://lokali.travel/explore/de/paris/louvre.html", "image": "https://lokali.travel/images/museums/louvre.jpg", "geo": {"@type": "GeoCoordinates", "latitude": 48.8606, "longitude": 2.3352}, "address": {"@type": "PostalAddress", "addressLocality": "Paris", "addressCountry": "FR"}}
 </script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Wie viel Zeit braucht man für Louvre?", "acceptedAnswer": {"@type": "Answer", "text": "Planen Sie etwa 9 Minuten ein. Der kostenlose Lokali-Audioguide erzählt die Geschichte, während Sie erkunden."}}, {"@type": "Question", "name": "Gibt es einen kostenlosen Audioguide für Louvre?", "acceptedAnswer": {"@type": "Answer", "text": "Ja. Die Lokali-App erzählt Louvre kostenlos in Ihrer Sprache — Geschichte, Sehenswertes und praktische Tipps direkt vor Ort."}}, {"@type": "Question", "name": "Was sollte man vor dem Besuch von Louvre wissen?", "acceptedAnswer": {"@type": "Answer", "text": "Kommen Sie zur Öffnungszeit, um die Galerien ruhiger zu erleben."}}]}
+</script>
 <style>
 :root{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -71,6 +74,14 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 .mapcard .ic{color:var(--gold);display:flex}
 .mapcard .arr{margin-left:auto;color:var(--muted)}
 .map-note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.faq{margin-top:12px}
+.faq details{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:9px}
+.faq summary{cursor:pointer;font-weight:600;color:var(--fg);display:flex;align-items:center;gap:8px;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:"+";font-size:18px;font-weight:400}
+.faq details[open] summary::before{content:"2"}
+.faq details[open] summary{color:var(--gold)}
+.faq p{font-size:14px;color:var(--body);margin-top:12px;line-height:1.6}
 .appbar-cta{position:fixed;bottom:20px;left:20px;right:20px;display:none;z-index:50}
 .appbar-cta.show{display:block}
 .appbar-cta .pill{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
@@ -95,7 +106,7 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 </nav>
 </details>
 </div>
-<div class="crumbs"><a href="https://lokali.travel">Lokali</a> › <a href="https://lokali.travel/explore/de/paris.html">Paris</a></div>
+<div class="crumbs"><a href="https://lokali.travel">Lokali</a> › Paris</div>
 <div class="hero-img">
 <img src="https://lokali.travel/images/museums/louvre.jpg" alt="Louvre" loading="eager">
 <div class="ov"></div>
@@ -151,6 +162,13 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Um Ermüdung vorzubeugen, sollten Sie mindestens drei Stunden einplanen.</span></div>
 </div>
 </section>
+<section>
+<h2 class="sec">Häufige Fragen</h2>
+<div class="faq">
+<details><summary>Wie viel Zeit braucht man für Louvre?</summary><p>Planen Sie etwa 9 Minuten ein. Der kostenlose Lokali-Audioguide erzählt die Geschichte, während Sie erkunden.</p></details>
+<details><summary>Gibt es einen kostenlosen Audioguide für Louvre?</summary><p>Ja. Die Lokali-App erzählt Louvre kostenlos in Ihrer Sprache — Geschichte, Sehenswertes und praktische Tipps direkt vor Ort.</p></details>
+<details><summary>Was sollte man vor dem Besuch von Louvre wissen?</summary><p>Kommen Sie zur Öffnungszeit, um die Galerien ruhiger zu erleben.</p></details>
+</div></section>
 <section>
 <h2 class="sec">Auf der Karte</h2>
 <div class="mapcard"><a href="https://www.google.com/maps/search/?api=1&query=48.8606%2C2.3352" target="_blank" rel="noopener noreferrer"><span class="ic"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2.9 6.4-6.4 2.9 2.9-6.4z"/></svg></span>In Google Maps öffnen<span class="arr">›</span></a></div>

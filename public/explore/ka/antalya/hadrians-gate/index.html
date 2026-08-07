@@ -24,6 +24,9 @@
 <script type="application/ld+json">
 {"@context": "https://schema.org", "@type": "TouristAttraction", "name": "ადრიანეს კარიბჭე", "description": "ფეხქვეშ ქვა აქ ტექსტურას იცვლის - ორი ათასი წლის ნაფეხურებით გაცვეთილი გლუვი მარმარილოს ფილები, რომლებიც თანამედროვე, ხალხმრავალი ქუჩის ტროტუარზეა ჩასმული.", "url": "https://lokali.travel/explore/ka/antalya/hadrians-gate.html", "geo": {"@type": "GeoCoordinates", "latitude": 36.8862, "longitude": 30.7048}, "address": {"@type": "PostalAddress", "addressLocality": "Antalya", "addressCountry": "TR"}, "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/P9271452_Hadrians_Gate.jpg/3840px-P9271452_Hadrians_Gate.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"}
 </script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "რამდენი დრო გჭირდებათ ადრიანეს კარიბჭე-ზე?", "acceptedAnswer": {"@type": "Answer", "text": "დაგეგმეთ დაახლოებით 8 წუთი. უფასო Lokali აუდიო გზამკვლელი მოგითხრობთ ისტორიას სანამ სეირნობთ."}}, {"@type": "Question", "name": "არსებობს თუ არა უფასო აუდიო გზამკვლელი ადრიანეს კარიბჭე-სთვის?", "acceptedAnswer": {"@type": "Answer", "text": "დიახ. Lokali აპლიკაცია გიყვება ადრიანეს კარიბჭე-ს შესახებ უფასოდ თქვენს ენაზე — ისტორია, რაზე მიაქციოთ ყურადღება და პრაქტიკული რჩევები პირდაპირ ადგილზე."}}, {"@type": "Question", "name": "რა უნდა იცოდეთ ადრიანეს კარიბჭე-ის მონახულებამდე?", "acceptedAnswer": {"@type": "Answer", "text": "მარმარილოს საუკეთესო განათებისთვის ეწვიეთ დილით ადრე."}}]}
+</script>
 <style>
 :root{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -70,6 +73,14 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 .mapcard .ic{color:var(--gold);display:flex}
 .mapcard .arr{margin-left:auto;color:var(--muted)}
 .map-note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.faq{margin-top:12px}
+.faq details{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:9px}
+.faq summary{cursor:pointer;font-weight:600;color:var(--fg);display:flex;align-items:center;gap:8px;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:"+";font-size:18px;font-weight:400}
+.faq details[open] summary::before{content:"2"}
+.faq details[open] summary{color:var(--gold)}
+.faq p{font-size:14px;color:var(--body);margin-top:12px;line-height:1.6}
 .appbar-cta{position:fixed;bottom:20px;left:20px;right:20px;display:none;z-index:50}
 .appbar-cta.show{display:block}
 .appbar-cta .pill{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
@@ -139,6 +150,13 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>მარმარილოს საუკეთესო განათებისთვის ეწვიეთ დილით ადრე.</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>გაიარეთ, რომ ნახოთ მიწის ქვედა თავდაპირველი დონე</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>აღმოსავლეთ კოშკის საძირკველზე ბერძნული წარწერა მოძებნეთ</span></div>
+</div></section>
+<section>
+<h2 class="sec">Common questions</h2>
+<div class="faq">
+<details><summary>რამდენი დრო გჭირდებათ ადრიანეს კარიბჭე-ზე?</summary><p>დაგეგმეთ დაახლოებით 8 წუთი. უფასო Lokali აუდიო გზამკვლელი მოგითხრობთ ისტორიას სანამ სეირნობთ.</p></details>
+<details><summary>არსებობს თუ არა უფასო აუდიო გზამკვლელი ადრიანეს კარიბჭე-სთვის?</summary><p>დიახ. Lokali აპლიკაცია გიყვება ადრიანეს კარიბჭე-ს შესახებ უფასოდ თქვენს ენაზე — ისტორია, რაზე მიაქციოთ ყურადღება და პრაქტიკული რჩევები პირდაპირ ადგილზე.</p></details>
+<details><summary>რა უნდა იცოდეთ ადრიანეს კარიბჭე-ის მონახულებამდე?</summary><p>მარმარილოს საუკეთესო განათებისთვის ეწვიეთ დილით ადრე.</p></details>
 </div></section>
 <section>
 <h2 class="sec">On the map</h2>

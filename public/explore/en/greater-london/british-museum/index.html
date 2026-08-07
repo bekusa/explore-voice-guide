@@ -24,6 +24,9 @@
 <script type="application/ld+json">
 {"@context": "https://schema.org", "@type": "TouristAttraction", "name": "British Museum", "description": "Climb the broad steps between the tall columns and push inside, and the crowd scatters into a vast white courtyard under a curving glass roof.", "url": "https://lokali.travel/explore/en/greater-london/british-museum.html", "geo": {"@type": "GeoCoordinates", "latitude": 51.5194, "longitude": -0.127}, "address": {"@type": "PostalAddress", "addressLocality": "Greater London", "addressCountry": "GB"}, "image": "https://upload.wikimedia.org/wikipedia/commons/8/86/British_Museum_%28aerial%29.jpg"}
 </script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How long do you need at British Museum?", "acceptedAnswer": {"@type": "Answer", "text": "Plan around 6 minutes on site. The free Lokali audio guide tells the story as you explore."}}, {"@type": "Question", "name": "Is there a free audio guide to British Museum?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The Lokali app narrates British Museum for free in your own language — history, what to look for and practical tips, right at the site."}}, {"@type": "Question", "name": "What should you know before visiting British Museum?", "acceptedAnswer": {"@type": "Answer", "text": "Pick two or three areas rather than everything."}}]}
+</script>
 <style>
 :root{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -70,6 +73,14 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 .mapcard .ic{color:var(--gold);display:flex}
 .mapcard .arr{margin-left:auto;color:var(--muted)}
 .map-note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.faq{margin-top:12px}
+.faq details{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:9px}
+.faq summary{cursor:pointer;font-weight:600;color:var(--fg);display:flex;align-items:center;gap:8px;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:"+";font-size:18px;font-weight:400}
+.faq details[open] summary::before{content:"2"}
+.faq details[open] summary{color:var(--gold)}
+.faq p{font-size:14px;color:var(--body);margin-top:12px;line-height:1.6}
 .appbar-cta{position:fixed;bottom:20px;left:20px;right:20px;display:none;z-index:50}
 .appbar-cta.show{display:block}
 .appbar-cta .pill{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
@@ -148,6 +159,13 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Visit early or late to avoid midday crowds.</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Entry is free; special exhibitions need tickets.</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Travel light, as bags are checked at entry.</span></div>
+</div></section>
+<section>
+<h2 class="sec">Common questions</h2>
+<div class="faq">
+<details><summary>How long do you need at British Museum?</summary><p>Plan around 6 minutes on site. The free Lokali audio guide tells the story as you explore.</p></details>
+<details><summary>Is there a free audio guide to British Museum?</summary><p>Yes. The Lokali app narrates British Museum for free in your own language — history, what to look for and practical tips, right at the site.</p></details>
+<details><summary>What should you know before visiting British Museum?</summary><p>Pick two or three areas rather than everything.</p></details>
 </div></section>
 <section>
 <h2 class="sec">On the map</h2>

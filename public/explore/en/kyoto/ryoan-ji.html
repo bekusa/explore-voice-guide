@@ -23,6 +23,9 @@
 <script type="application/ld+json">
 {"@context": "https://schema.org", "@type": "TouristAttraction", "name": "Ryoan-ji", "description": "You sit on a worn wooden floor, and in front of you there is mostly empty space.", "url": "https://lokali.travel/explore/en/kyoto/ryoan-ji.html", "geo": {"@type": "GeoCoordinates", "latitude": 35.0367, "longitude": 135.7293}, "address": {"@type": "PostalAddress", "addressLocality": "Kyoto", "addressCountry": "JP"}, "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Kare-sansui_zen_garden%2C_Ry%C5%8Dan-ji%2C_Kyoto_20190416_1.jpg/3840px-Kare-sansui_zen_garden%2C_Ry%C5%8Dan-ji%2C_Kyoto_20190416_1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"}
 </script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How long do you need at Ryoan-ji?", "acceptedAnswer": {"@type": "Answer", "text": "Plan around 5 minutes on site. The free Lokali audio guide tells the story as you explore."}}, {"@type": "Question", "name": "Is there a free audio guide to Ryoan-ji?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The Lokali app narrates Ryoan-ji for free in your own language — history, what to look for and practical tips, right at the site."}}, {"@type": "Question", "name": "What should you know before visiting Ryoan-ji?", "acceptedAnswer": {"@type": "Answer", "text": "Sit on the veranda and view the garden slowly"}}]}
+</script>
 <style>
 :root{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -69,6 +72,14 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 .mapcard .ic{color:var(--gold);display:flex}
 .mapcard .arr{margin-left:auto;color:var(--muted)}
 .map-note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.faq{margin-top:12px}
+.faq details{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:9px}
+.faq summary{cursor:pointer;font-weight:600;color:var(--fg);display:flex;align-items:center;gap:8px;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:"+";font-size:18px;font-weight:400}
+.faq details[open] summary::before{content:"2"}
+.faq details[open] summary{color:var(--gold)}
+.faq p{font-size:14px;color:var(--body);margin-top:12px;line-height:1.6}
 .appbar-cta{position:fixed;bottom:20px;left:20px;right:20px;display:none;z-index:50}
 .appbar-cta.show{display:block}
 .appbar-cta .pill{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
@@ -146,6 +157,13 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Try to spot all fifteen stones from one place</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Walk the older pond garden below the temple</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Find the coin-shaped stone basin behind the hall</span></div>
+</div></section>
+<section>
+<h2 class="sec">Common questions</h2>
+<div class="faq">
+<details><summary>How long do you need at Ryoan-ji?</summary><p>Plan around 5 minutes on site. The free Lokali audio guide tells the story as you explore.</p></details>
+<details><summary>Is there a free audio guide to Ryoan-ji?</summary><p>Yes. The Lokali app narrates Ryoan-ji for free in your own language — history, what to look for and practical tips, right at the site.</p></details>
+<details><summary>What should you know before visiting Ryoan-ji?</summary><p>Sit on the veranda and view the garden slowly</p></details>
 </div></section>
 <section>
 <h2 class="sec">On the map</h2>

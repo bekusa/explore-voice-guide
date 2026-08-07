@@ -27,6 +27,9 @@
 <script type="application/ld+json">
 {"@context": "https://schema.org", "@type": "TouristAttraction", "name": "Metropolitní muzeum umění", "description": "Velikost Metropolitní muzea může působit nadčasově, ale jeho historie je specifická.", "url": "https://lokali.travel/explore/cs/new-york/metropolitan-museum-of-art.html", "geo": {"@type": "GeoCoordinates", "latitude": 40.7813, "longitude": -73.974}, "address": {"@type": "PostalAddress", "addressLocality": "New York", "addressCountry": "US"}, "image": "https://upload.wikimedia.org/wikipedia/commons/3/30/Metropolitan_Museum_of_Art_%28The_Met%29_-_Central_Park%2C_NYC.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"}
 </script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Kolik času potřebujete na Metropolitní muzeum umění?", "acceptedAnswer": {"@type": "Answer", "text": "Počítejte s asi 3 minutami. Bezplatný audioprůvodce Lokali vypráví příběh, zatímco prozkoumáváte."}}, {"@type": "Question", "name": "Existuje bezplatný audioprůvodce pro Metropolitní muzeum umění?", "acceptedAnswer": {"@type": "Answer", "text": "Ano. Aplikace Lokali vypráví o místě Metropolitní muzeum umění zdarma ve vašem jazyce — historii, co si všimnout a praktické tipy přímo na místě."}}, {"@type": "Question", "name": "Co byste měli vědět před návštěvou Metropolitní muzeum umění?", "acceptedAnswer": {"@type": "Answer", "text": "Před vstupem si vyberte trasu; Metropolitní opera je příliš velká na běžnou prohlídku celého komplexu."}}]}
+</script>
 <style>
 :root{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -73,6 +76,14 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 .mapcard .ic{color:var(--gold);display:flex}
 .mapcard .arr{margin-left:auto;color:var(--muted)}
 .map-note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.faq{margin-top:12px}
+.faq details{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:9px}
+.faq summary{cursor:pointer;font-weight:600;color:var(--fg);display:flex;align-items:center;gap:8px;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:"+";font-size:18px;font-weight:400}
+.faq details[open] summary::before{content:"2"}
+.faq details[open] summary{color:var(--gold)}
+.faq p{font-size:14px;color:var(--body);margin-top:12px;line-height:1.6}
 .appbar-cta{position:fixed;bottom:20px;left:20px;right:20px;display:none;z-index:50}
 .appbar-cta.show{display:block}
 .appbar-cta .pill{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
@@ -146,6 +157,13 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Spárujte jednoho slavného moderátora s jedním klidnějším oddělením.</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Nechte si čas na přechody; samotná budova je součástí zážitku.</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 20 0 10 10 0 0 0-20 0z"/><path d="M12 8v4M12 16h.01"/></svg><span>Pokud jste unavení, vraťte se do Velké síně a začněte znovu s menším cílem.</span></div>
+</div></section>
+<section>
+<h2 class="sec">Časté otázky</h2>
+<div class="faq">
+<details><summary>Kolik času potřebujete na Metropolitní muzeum umění?</summary><p>Počítejte s asi 3 minutami. Bezplatný audioprůvodce Lokali vypráví příběh, zatímco prozkoumáváte.</p></details>
+<details><summary>Existuje bezplatný audioprůvodce pro Metropolitní muzeum umění?</summary><p>Ano. Aplikace Lokali vypráví o místě Metropolitní muzeum umění zdarma ve vašem jazyce — historii, co si všimnout a praktické tipy přímo na místě.</p></details>
+<details><summary>Co byste měli vědět před návštěvou Metropolitní muzeum umění?</summary><p>Před vstupem si vyberte trasu; Metropolitní opera je příliš velká na běžnou prohlídku celého komplexu.</p></details>
 </div></section>
 <section>
 <h2 class="sec">Na mapě</h2>
