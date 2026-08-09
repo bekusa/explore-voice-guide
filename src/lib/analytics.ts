@@ -17,7 +17,16 @@
  * and in the unlikely case the snippet failed to run, they simply no-op so a
  * broken analytics load can never take the app down with it.
  */
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+
+/**
+ * The Lovable-generated Database type only knows profiles/saved_tours,
+ * so `.from("usage_events")` fails to type-check (same situation as
+ * trips/trip_items and api_logs). Widen once for the telemetry insert.
+ * Remove when the generated types include usage_events.
+ */
+const telemetryDb = supabase as unknown as SupabaseClient;
 
 type PostHogClient = {
   capture: (event: string, properties?: Record<string, unknown>) => void;
@@ -88,7 +97,7 @@ export function trackEvent(
   captureEvent(event, properties);
   if (typeof window === "undefined") return;
   try {
-    void supabase
+    void telemetryDb
       .from("usage_events")
       .insert({ event, anon_id: anonId(), user_id: userId ?? null, props: properties ?? {} })
       .then(undefined, () => {});

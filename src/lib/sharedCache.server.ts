@@ -134,28 +134,65 @@ export function filtersKey(filters: { interests?: string[] }): string {
 
 export type GuideKey = {
   name: string;
+  /**
+   * Host city — part of the cache key since 2026-08-08 (BUG 2 in the
+   * bug report). Without it, same-named places in different cities
+   * collided: the key `pergamon museum` held BERLIN's Pergamonmuseum
+   * guide, so a user standing in Bergama (Turkey) heard a guide about
+   * Museumsinsel. Optional because legacy rows (and callers that
+   * genuinely don't know the city) map to the '' bucket.
+   */
+  city?: string;
   language: string;
   interest: string;
 };
 
+/** '' for missing city — matches the column default so legacy rows
+ *  stay reachable through the fallback lookup below. */
+function cityKey(city?: string): string {
+  return normalizeName(city ?? "");
+}
+
 export async function getCachedGuide(key: GuideKey): Promise<unknown | null> {
   const db = getDb();
   if (!db) return null;
+  const city = cityKey(key.city);
   try {
-    const { data, error } = await db
-      .from("cached_guides")
-      .select("payload")
-      .eq("name_normalized", normalizeName(key.name))
-      .eq("language", key.language)
-      .eq("interest", key.interest)
-      .maybeSingle();
-    if (error) {
-      console.warn("[sharedCache] getCachedGuide error", error.message);
-      return null;
+    const read = async (cityValue: string) => {
+      const { data, error } = await db
+        .from("cached_guides")
+        .select("payload")
+        .eq("name_normalized", normalizeName(key.name))
+        .eq("city_normalized", cityValue)
+        .eq("language", key.language)
+        .eq("interest", key.interest)
+        .maybeSingle();
+      if (error) {
+        console.warn("[sharedCache] getCachedGuide error", error.message);
+        return null;
+      }
+      return data;
+    };
+
+    // 1. Exact (name, city) row — the correct match once the cache has
+    //    been written under the new key.
+    let data = await read(city);
+    let matchedCity = city;
+    // 2. Legacy fallback: rows written before city_normalized existed
+    //    live in the '' bucket. Only consult it when we HAVE a city
+    //    (otherwise step 1 already read that bucket).
+    //
+    //    Trade-off, deliberate: a legacy row could be the wrong city's
+    //    content (that's the bug). But those rows are also the entire
+    //    warmed cache, and re-generating everything would be costly.
+    //    New writes always carry the city, so each place self-heals on
+    //    its first city-qualified generation.
+    if (!data && city) {
+      data = await read("");
+      matchedCity = "";
     }
     if (!data) return null;
-    // Bump hit count + updated_at without blocking the response.
-    void bumpGuideHit(key);
+    void bumpGuideHit({ ...key, city: matchedCity });
     return data.payload;
   } catch (err) {
     console.warn("[sharedCache] getCachedGuide threw", err);
@@ -170,12 +207,13 @@ export async function putCachedGuide(key: GuideKey, payload: unknown): Promise<v
     const { error } = await db.from("cached_guides").upsert(
       {
         name_normalized: normalizeName(key.name),
+        city_normalized: cityKey(key.city),
         language: key.language,
         interest: key.interest,
         payload: payload as never,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: "name_normalized,language,interest" },
+      { onConflict: "name_normalized,city_normalized,language,interest" },
     );
     if (error) console.warn("[sharedCache] putCachedGuide error", error.message);
   } catch (err) {
@@ -194,6 +232,7 @@ async function bumpGuideHit(key: GuideKey): Promise<void> {
       .from("cached_guides")
       .select("hit_count")
       .eq("name_normalized", normalizeName(key.name))
+      .eq("city_normalized", cityKey(key.city))
       .eq("language", key.language)
       .eq("interest", key.interest)
       .maybeSingle();
@@ -203,6 +242,7 @@ async function bumpGuideHit(key: GuideKey): Promise<void> {
       .from("cached_guides")
       .update({ hit_count: current + 1 })
       .eq("name_normalized", normalizeName(key.name))
+      .eq("city_normalized", cityKey(key.city))
       .eq("language", key.language)
       .eq("interest", key.interest);
   } catch {

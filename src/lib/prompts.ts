@@ -84,7 +84,9 @@ LOCATION INTERPRETATION:
 - Too vague or not a real destination: return \`{"attractions":[]}\`.
 
 FIELD GUIDANCE:
-- "name": Use the well-known English name when one widely exists ("Eiffel Tower", "Acropolis", "Brandenburg Gate"). Otherwise use the official or commonly used local/romanized name. Do NOT append parenthetical synonyms or alternate names — pick ONE canonical name and stop there. "Bridge of Peace" not "Bridge of Peace (Peace Bridge)"; "Liberty Square" not "Liberty Square (Tavisuplebis Moedani)"; "Old Town" not "Old Town (Historic District)". A parenthetical is only allowed for genuine geographic disambiguation across distinct places of the same name (e.g. "Cambridge, UK" vs "Cambridge, MA") and even then prefer a comma over parens. No emojis.
+- "name": Use the EXACT title the place has as its English Wikipedia article, when such an article exists. This is a hard rule, not a stylistic preference: the app's guide cache is keyed on this string, so "Istiklal Street" and "İstiklal Avenue" become two separate cache entries for one street and the same guide gets generated (and paid for) twice. Wikipedia's title is the tie-breaker whenever several English names circulate — "İstiklal Avenue" (not "Istiklal Street"), "Hagia Sophia" (not "Ayasofya Mosque"), "Blue Mosque" only if that is the article title, otherwise "Sultan Ahmed Mosque". When no English article exists, use the official local/romanized name exactly as it is written locally.
+- Do NOT append parenthetical synonyms or alternate names — pick ONE canonical name and stop there. "Bridge of Peace" not "Bridge of Peace (Peace Bridge)"; "Liberty Square" not "Liberty Square (Tavisuplebis Moedani)"; "Old Town" not "Old Town (Historic District)". A parenthetical is only allowed for genuine geographic disambiguation across distinct places of the same name (e.g. "Cambridge, UK" vs "Cambridge, MA") and even then prefer a comma over parens. No emojis.
+- AMBIGUOUS NAMES MUST BE CITY-QUALIFIED: if the bare name is shared with a famous place in ANOTHER city, use the locally-correct distinguishing name instead of the ambiguous one. The archaeological museum in Bergama is "Bergama Archaeological Museum" — NEVER "Pergamon Museum", which is the Berlin institution. Same logic for any "National Museum", "Old Bridge", "Grand Mosque", "Archaeological Museum" that would otherwise collide with a better-known namesake elsewhere.
 - "type": ONE noun, MAXIMUM two words, capitalized. Examples: Museum, Park, Cathedral, Square, Market, Viewpoint, Neighborhood, Street, Bridge, Palace, Castle, Food Market. NOT "Historical Religious Building" or "Boutique Coffee Shop".
 - "outside_desc": 35-60 words. Neutral, factual, magazine-tone. What the place is and why it matters.
 - "insider_desc": 20-40 words. Warm and specific. Must add something \`outside_desc\` did NOT already cover — practical timing, sensory detail, a quiet corner, a viewing angle, a small ritual. Do not restate the same fact in different words.
@@ -109,6 +111,11 @@ WHAT NOT TO INCLUDE:
 - Pop-up exhibitions or temporary installations.
 - Private businesses without clear public access.
 - Duplicates: if you list a neighborhood ("Old Town"), do not also list its constituent streets and squares as separate top-tier entries.
+
+NO DUPLICATE PLACES (hard rule — the list is shown as-is to the user):
+- NEVER list the same physical place twice under different names or in different languages. "Red Basilica" and "Kızıl Avlu" are ONE building; "Blue Mosque" and "Sultan Ahmed Mosque" are ONE mosque; "Duomo" and "Cathedral of Santa Maria del Fiore" are ONE cathedral. Pick the single canonical English name and emit that entry once.
+- NEVER list a sub-feature of an attraction already in the list as its own entry. If "Acropolis of Pergamon" is listed, do NOT also list "Ancient Theatre of Pergamon" — the theatre is part of that site. Same for a cathedral's crypt, a palace's garden, a museum's individual wing.
+- Before writing each entry, re-read the names you have already emitted and ask: "is this the same place, a translation of it, or a part of it?" If yes to any, skip it and pick a genuinely different place instead.
 
 ORDERING (matters — frontend paginates 10 per page):
 Structure your picks dynamically based on the requested count, using these proportions:
