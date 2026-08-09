@@ -427,6 +427,18 @@ function AttractionPage() {
     return out.slice(0, 5);
   }, [searchPhoto, heroPhoto, heroGalleryRaw]);
 
+  // BACKGROUND ENRICHMENT (not a render gate — Beka 2026-08-08).
+  // This asks /api/attractions for the list around `fallbackName` and
+  // keeps the matching record for its extras: outside_desc / insider_desc
+  // (About + Story), rating, duration, lat/lng, city.
+  //
+  // It is deliberately NOT allowed to hold up the page any more. When a
+  // user searches a specific landmark ("kayakoy"), Stage-0 routes them
+  // straight here, the guide comes back from cache in ~1 s, but this
+  // call is a full Sonnet list generation that used to take 30-60 s —
+  // and About/Stops were gated on it. Now the guide alone drives the
+  // skeletons and whatever this returns is merged in whenever it lands
+  // (often after the user has already started listening).
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -830,12 +842,17 @@ function AttractionPage() {
 
         {/* About — outside-view short description (n8n: outside_desc).
             FIRST: at-a-glance factual summary.
-            Wait for BOTH endpoints (attractions metadata + guide
-            content) before swapping the skeleton, so About and Stops
-            land together — Beka noticed the staggered fade-in and
-            asked for them to share timing. */}
+            Beka 2026-08-08 — no longer waits for the ATTRACTIONS
+            endpoint. Gating on `loading` (the /api/attractions list)
+            meant a user who searched a specific landmark sat on a
+            skeleton for 30-60 s while Sonnet generated a whole
+            city list for that one name — even though the guide was
+            already cached and answered in ~1 s. The list is now pure
+            background enrichment (see the fetchAttractions effect),
+            so About/Stops render as soon as the GUIDE lands and the
+            about text fills in later if the list adds anything. */}
         <AboutSection
-          loading={loading || loadingScript}
+          loading={loadingScript}
           aboutText={a?.outside_desc ?? a?.description ?? ""}
         />
 
@@ -848,7 +865,7 @@ function AttractionPage() {
             THIRD: rendered as flowing prose, with no chapter cards or
             numbering — Beka's request was to keep the content but drop
             the divisions. */}
-        <StopsSection script={script} loading={loading || loadingScript} />
+        <StopsSection script={script} loading={loadingScript} />
 
         {/* Key facts — emerald chips */}
         <ChipsSection
