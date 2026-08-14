@@ -62,6 +62,10 @@ const LANG_NAMES: Record<string, string> = {
   mr: "Marathi",
   sw: "Swahili",
   af: "Afrikaans",
+  // CIS expansion 2026-08-08. REQUIRED here — without the name the
+  // runtime translator only sees the bare code and quality collapses.
+  uz: "Uzbek",
+  kk: "Kazakh",
 };
 
 function langName(code: string): string {
@@ -179,6 +183,10 @@ function hasWrongScript(text: string, target: string): boolean {
     ["mr", /[\u0900-\u097F]/],
     ["bg", /[\u0400-\u04FF]/],
     ["sr", /[\u0400-\u04FF]/],
+    // Kazakh is Cyrillic; Uzbek is Latin in Uzbekistan today, so it
+    // needs no script gate (a Latin-script check would reject valid
+    // output).
+    ["kk", /[\u0400-\u04FF]/],
   ];
   for (const [prefix, rx] of scriptOf) {
     if (lc.startsWith(prefix)) return !rx.test(text);

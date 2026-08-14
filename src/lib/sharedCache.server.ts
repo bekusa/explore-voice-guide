@@ -111,8 +111,80 @@ function getDb(): DbWithCache | null {
  * `attractionSlug()` uses (modulo the dash separator), so we can
  * cross-reference if needed.
  */
+/**
+ * Characters that do NOT decompose under Unicode NFD, so the
+ * combining-mark strip below can't reach them. Turkish dotless ı is
+ * the one that actually bit us (BUG 1b): Haiku returns "Kaputaş"
+ * sometimes and "Kaputas" other times, producing two cache rows for
+ * one beach. Folding both to "kaputas" makes the alias rows the
+ * warming script had to insert unnecessary.
+ */
+const CHAR_FOLD: Record<string, string> = {
+  ı: "i",
+  ø: "o",
+  ł: "l",
+  đ: "d",
+  ð: "d",
+  þ: "th",
+  ß: "ss",
+  æ: "ae",
+  œ: "oe",
+};
+
+/**
+ * Strip diacritics so "Kaputaş" and "Kaputas", "Göreme" and "Goreme",
+ * "Şanlıurfa" and "Sanliurfa" collapse to one cache key. Expects an
+ * already-lowercased string (Turkish İ lowercases to i + combining
+ * dot, which the NFD strip then removes correctly).
+ */
+export function foldDiacritics(s: string): string {
+  let out = s;
+  for (const [from, to] of Object.entries(CHAR_FOLD)) {
+    if (out.includes(from)) out = out.split(from).join(to);
+  }
+  // NFD splits "ş" into "s" + U+0327; the range strip drops the mark.
+  return out.normalize("NFD").replace(/[̀-ͯ]/g, "");
+}
+
 export function normalizeName(name: string): string {
-  return name.trim().toLowerCase().replace(/\s+/g, " ");
+  return foldDiacritics(name.trim().toLowerCase()).replace(/\s+/g, " ");
+}
+
+/**
+ * Canonical cache language code (BUG 7).
+ *
+ * The DB had `pl` AND `pl-PL`, `zh` AND `zh-cn` AND `zh-tw` — the
+ * same language split across keys, so each variant paid its own
+ * Gemini translation and missed the other's cache.
+ *
+ * Canonical form = what the rest of the codebase already uses: the
+ * lowercase BASE code, keeping a region suffix ONLY for the four
+ * locales the app genuinely serves differently (matching the
+ * src/lib/ui-locales/*.ts filenames: pt-br, pt-pt, zh-cn, zh-tw).
+ * So "pl-PL" → "pl", "en-US" → "en", "ka-GE" → "ka", "zh-CN" →
+ * "zh-cn". Bare "zh"/"pt" get the majority variant so they stop
+ * forming their own orphan bucket.
+ */
+const SPLIT_LOCALES = new Set(["pt-br", "pt-pt", "zh-cn", "zh-tw"]);
+const BARE_SPLIT_DEFAULT: Record<string, string> = {
+  zh: "zh-cn",
+  pt: "pt-br",
+};
+
+export function normalizeLang(lang: string): string {
+  const raw = (lang ?? "").trim().toLowerCase().replace(/_/g, "-");
+  if (!raw) return "en";
+  // Script subtags Chinese sometimes arrives with.
+  const scripted = raw
+    .replace(/^zh-hans(-.*)?$/, "zh-cn")
+    .replace(/^zh-hant(-.*)?$/, "zh-tw");
+  if (SPLIT_LOCALES.has(scripted)) return scripted;
+  const base = scripted.split("-")[0];
+  if (base in BARE_SPLIT_DEFAULT && !SPLIT_LOCALES.has(scripted)) {
+    // "zh" alone, or an unexpected zh-XX / pt-XX region.
+    return scripted === base ? BARE_SPLIT_DEFAULT[base] : BARE_SPLIT_DEFAULT[base];
+  }
+  return base;
 }
 
 /**
@@ -164,7 +236,7 @@ export async function getCachedGuide(key: GuideKey): Promise<unknown | null> {
         .select("payload")
         .eq("name_normalized", normalizeName(key.name))
         .eq("city_normalized", cityValue)
-        .eq("language", key.language)
+        .eq("language", normalizeLang(key.language))
         .eq("interest", key.interest)
         .maybeSingle();
       if (error) {
@@ -208,7 +280,7 @@ export async function putCachedGuide(key: GuideKey, payload: unknown): Promise<v
       {
         name_normalized: normalizeName(key.name),
         city_normalized: cityKey(key.city),
-        language: key.language,
+        language: normalizeLang(key.language),
         interest: key.interest,
         payload: payload as never,
         updated_at: new Date().toISOString(),
@@ -233,7 +305,7 @@ async function bumpGuideHit(key: GuideKey): Promise<void> {
       .select("hit_count")
       .eq("name_normalized", normalizeName(key.name))
       .eq("city_normalized", cityKey(key.city))
-      .eq("language", key.language)
+      .eq("language", normalizeLang(key.language))
       .eq("interest", key.interest)
       .maybeSingle();
     if (!data) return;
@@ -243,7 +315,7 @@ async function bumpGuideHit(key: GuideKey): Promise<void> {
       .update({ hit_count: current + 1 })
       .eq("name_normalized", normalizeName(key.name))
       .eq("city_normalized", cityKey(key.city))
-      .eq("language", key.language)
+      .eq("language", normalizeLang(key.language))
       .eq("interest", key.interest);
   } catch {
     /* hit_count is analytics, never block on it */
@@ -266,7 +338,7 @@ export async function getCachedAttractions(key: AttractionsKey): Promise<unknown
       .from("cached_attractions")
       .select("payload")
       .eq("query_normalized", normalizeName(key.query))
-      .eq("language", key.language)
+      .eq("language", normalizeLang(key.language))
       .eq("filters_key", filtersKey(key.filters))
       .maybeSingle();
     if (error) {
@@ -289,7 +361,7 @@ export async function putCachedAttractions(key: AttractionsKey, payload: unknown
     const { error } = await db.from("cached_attractions").upsert(
       {
         query_normalized: normalizeName(key.query),
-        language: key.language,
+        language: normalizeLang(key.language),
         filters_key: filtersKey(key.filters),
         payload: payload as never,
         updated_at: new Date().toISOString(),
@@ -310,7 +382,7 @@ async function bumpAttractionsHit(key: AttractionsKey): Promise<void> {
       .from("cached_attractions")
       .select("hit_count")
       .eq("query_normalized", normalizeName(key.query))
-      .eq("language", key.language)
+      .eq("language", normalizeLang(key.language))
       .eq("filters_key", filtersKey(key.filters))
       .maybeSingle();
     if (!data) return;
@@ -319,7 +391,7 @@ async function bumpAttractionsHit(key: AttractionsKey): Promise<void> {
       .from("cached_attractions")
       .update({ hit_count: current + 1 })
       .eq("query_normalized", normalizeName(key.query))
-      .eq("language", key.language)
+      .eq("language", normalizeLang(key.language))
       .eq("filters_key", filtersKey(key.filters));
   } catch {
     /* analytics-only */
@@ -343,7 +415,7 @@ export async function getCachedMuseumHighlights(key: MuseumHighlightsKey): Promi
       .from("cached_museum_highlights")
       .select("payload")
       .eq("museum_id", key.museumId)
-      .eq("language", key.language)
+      .eq("language", normalizeLang(key.language))
       .maybeSingle();
     if (error) {
       console.warn("[sharedCache] getCachedMuseumHighlights error", error.message);
@@ -368,7 +440,7 @@ export async function putCachedMuseumHighlights(
     const { error } = await db.from("cached_museum_highlights").upsert(
       {
         museum_id: key.museumId,
-        language: key.language,
+        language: normalizeLang(key.language),
         payload: payload as never,
         updated_at: new Date().toISOString(),
       },
@@ -388,7 +460,7 @@ async function bumpMuseumHighlightsHit(key: MuseumHighlightsKey): Promise<void> 
       .from("cached_museum_highlights")
       .select("hit_count")
       .eq("museum_id", key.museumId)
-      .eq("language", key.language)
+      .eq("language", normalizeLang(key.language))
       .maybeSingle();
     if (!data) return;
     const current = typeof data.hit_count === "number" ? data.hit_count : 0;
@@ -396,7 +468,7 @@ async function bumpMuseumHighlightsHit(key: MuseumHighlightsKey): Promise<void> 
       .from("cached_museum_highlights")
       .update({ hit_count: current + 1 })
       .eq("museum_id", key.museumId)
-      .eq("language", key.language);
+      .eq("language", normalizeLang(key.language));
   } catch {
     /* analytics-only */
   }
@@ -425,7 +497,7 @@ export async function getCachedTimeMachine(key: TimeMachineKey): Promise<unknown
       .select("payload")
       .eq("attraction_id", key.attractionId)
       .eq("role", key.role)
-      .eq("language", key.language)
+      .eq("language", normalizeLang(key.language))
       .maybeSingle();
     if (error) {
       console.warn("[sharedCache] getCachedTimeMachine error", error.message);
@@ -448,7 +520,7 @@ export async function putCachedTimeMachine(key: TimeMachineKey, payload: unknown
       {
         attraction_id: key.attractionId,
         role: key.role,
-        language: key.language,
+        language: normalizeLang(key.language),
         payload: payload as never,
         updated_at: new Date().toISOString(),
       },
@@ -469,7 +541,7 @@ async function bumpTimeMachineHit(key: TimeMachineKey): Promise<void> {
       .select("hit_count")
       .eq("attraction_id", key.attractionId)
       .eq("role", key.role)
-      .eq("language", key.language)
+      .eq("language", normalizeLang(key.language))
       .maybeSingle();
     if (!data) return;
     const current = typeof data.hit_count === "number" ? data.hit_count : 0;
@@ -478,7 +550,7 @@ async function bumpTimeMachineHit(key: TimeMachineKey): Promise<void> {
       .update({ hit_count: current + 1 })
       .eq("attraction_id", key.attractionId)
       .eq("role", key.role)
-      .eq("language", key.language);
+      .eq("language", normalizeLang(key.language));
   } catch {
     /* analytics-only */
   }

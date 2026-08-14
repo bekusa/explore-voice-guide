@@ -56,6 +56,10 @@ const LANGUAGES_RAW: Language[] = [
   // and a Wikipedia-photo locale (api.photo.ts ALLOWED_WIKI_LANGS).
   { code: "hy-AM", name: "Armenian", native: "Հայերեն", flag: "🇦🇲" },
   { code: "az-AZ", name: "Azerbaijani", native: "Azərbaycanca", flag: "🇦🇿" },
+  // CIS expansion 2026-08-08 (Beka). Azure voices verified live
+  // against /api/tts before shipping — all four returned audio/mpeg.
+  { code: "uz-UZ", name: "Uzbek", native: "Oʻzbekcha", flag: "🇺🇿" },
+  { code: "kk-KZ", name: "Kazakh", native: "Қазақша", flag: "🇰🇿" },
   { code: "bg-BG", name: "Bulgarian", native: "Български", flag: "🇧🇬" },
   { code: "hr-HR", name: "Croatian", native: "Hrvatski", flag: "🇭🇷" },
   { code: "sr-RS", name: "Serbian", native: "Српски", flag: "🇷🇸" },
@@ -118,6 +122,8 @@ export const PREVIEW_PHRASES: Record<string, string> = {
   "zh-TW": "你好！今天由我為您導覽。",
   "hy-AM": "Բարև՜ Այսօր ես կլինեմ ձեր ուղեկցորդը։",
   "az-AZ": "Salam! Bu gün sizin bələdçiniz olacağam.",
+  "uz-UZ": "Salom! Bugun men sizning yoʻlboshchingiz boʻlaman.",
+  "kk-KZ": "Сәлеметсіз бе! Бүгін мен сіздің гидіңіз боламын.",
   "bg-BG": "Здравейте! Днес аз ще бъда вашият водач.",
   "hr-HR": "Bok! Danas ću biti vaš vodič.",
   "sr-RS": "Здраво! Данас ћу бити ваш водич.",

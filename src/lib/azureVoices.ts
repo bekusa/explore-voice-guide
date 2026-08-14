@@ -193,6 +193,16 @@ export const AZURE_VOICES: Record<string, AzureVoice[]> = {
     { name: "hy-AM-AnahitNeural", display: "Anahit", gender: "female" },
     { name: "hy-AM-HaykNeural", display: "Hayk", gender: "male" },
   ],
+  // Verified live against Azure via /api/tts on 2026-08-08 — every
+  // name below returned audio/mpeg 200 (not guessed from docs).
+  "uz-UZ": [
+    { name: "uz-UZ-MadinaNeural", display: "Madina", gender: "female" },
+    { name: "uz-UZ-SardorNeural", display: "Sardor", gender: "male" },
+  ],
+  "kk-KZ": [
+    { name: "kk-KZ-AigulNeural", display: "Aigul", gender: "female" },
+    { name: "kk-KZ-DauletNeural", display: "Daulet", gender: "male" },
+  ],
   "az-AZ": [
     { name: "az-AZ-BanuNeural", display: "Banu", gender: "female" },
     { name: "az-AZ-BabekNeural", display: "Babek", gender: "male" },

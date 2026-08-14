@@ -36,6 +36,8 @@ const ALLOWED_WIKI_LANGS = new Set([
   "ja","ko","zh",
   // 2026-06-22 market expansion locales (localised Wikipedia photo lookup).
   "hy","az","bg","hr","sr","ta","te","mr","sw","af",
+  // 2026-08-08 CIS expansion — both have their own Wikipedias.
+  "uz","kk",
 ]);
 export function sanitizeWikiLang(raw: string | null | undefined, fallback: string): string {
   if (!raw) return fallback;

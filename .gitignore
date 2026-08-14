@@ -39,3 +39,6 @@ dist-ssr
 android/
 ios/
 .capacitor/
+
+# superseded files parked here by tooling (the mount forbids unlink)
+_to_delete/

@@ -42,6 +42,8 @@ const YEAR_CARDINAL_LANGS = new Set<string>([
   "ka", // Georgian (confirmed)
   "hy", // Armenian
   "az", // Azerbaijani
+  "uz", // Uzbek — Turkic, reads years as a cardinal number like az/tr
+  "kk", // Kazakh — same Turkic pattern
   "ar", // Arabic
   "fa", // Persian
   "he", // Hebrew
