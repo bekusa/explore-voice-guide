@@ -82,7 +82,7 @@ export const KA: Partial<Record<UiKey, string>> = {
   "highlights.sortAz": "ა-ჰ",
   "highlights.sortEra": "ეპოქა",
   "highlights.tabGuide": "აღწერა",
-  "highlights.tabWorks": "ნამუშევრები",
+  "highlights.tabWorks": "ექსპონატები",
   // Google Play banner
   "playBanner.cta": "გადმოწერე აპი",
   "playBanner.dismiss": "დახურვა",
@@ -110,7 +110,7 @@ export const KA: Partial<Record<UiKey, string>> = {
   "museums.intro":
     "ადამიანური კულტურის ხელით შერჩეული შედევრები — ლუვრიდან თოფქაფამდე და მათ შორის.",
   "highlights.title": "აუცილებლად სანახავი",
-  "highlights.subtitle": "30 მთავარი ექსპონატი — გვერდზე 10",
+  "highlights.subtitle": "ექსპონატები, რომლებისთვისაც მუზეუმის გადაკვეთა ღირს",
   "highlights.noLocation": "ადგილი დასაზუსტებელია",
   "highlights.empty": "ამ მუზეუმისთვის გამორჩეული ექსპონატები ჯერ არ არის.",
   "unesco.title": "UNESCO-ს მსოფლიო მემკვიდრეობა",

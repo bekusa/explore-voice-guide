@@ -168,7 +168,7 @@ export const UI_STRINGS = {
   "highlights.sortAz": "A-Z",
   "highlights.sortEra": "Era",
   "highlights.tabGuide": "About",
-  "highlights.tabWorks": "Works",
+  "highlights.tabWorks": "Artworks",
   // Google Play banner (web visitors only)
   "playBanner.cta": "Get the app",
   "playBanner.dismiss": "Dismiss",
@@ -198,7 +198,9 @@ export const UI_STRINGS = {
   // Museum-highlights section on the attraction page (only renders
   // when the attraction matches one of the curated MUSEUMS).
   "highlights.title": "Must-see",
-  "highlights.subtitle": "Top 30 highlights — paginated 10 per page",
+  // 2026-08-08: pagination removed, so the old "Top 30 — paginated
+  // 10 per page" copy was both stale and wrong (the Louvre has 50).
+  "highlights.subtitle": "The pieces worth crossing the museum for",
   "highlights.noLocation": "Location TBD",
   "highlights.empty": "No highlights yet for this museum.",
   "unesco.title": "UNESCO World Heritage",

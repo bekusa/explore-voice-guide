@@ -860,30 +860,63 @@ function AttractionPage() {
             other. Only rendered for museums we actually have
             highlights for; every non-museum attraction is unchanged. */}
         {isMuseumWithWorks && (
-          <div className="mt-4 px-6">
-            <div className="inline-flex w-full rounded-full border border-border bg-card p-1">
+          <div className="mt-5 px-6">
+            {/* Segmented switch. Beka 2026-08-08 asked for it to read
+                unmistakably as a TOGGLE, so: a sunken track (inset
+                shadow + darker bg) with a single raised gold pill
+                that slides between the two halves, each with its own
+                icon. The inactive half keeps a visible border and
+                full-contrast text so it looks tappable rather than
+                disabled. */}
+            <div className="relative flex rounded-2xl border border-border bg-secondary/60 p-1 shadow-[inset_0_1px_3px_rgba(0,0,0,0.35)]">
+              {/* Sliding indicator — animates between halves. */}
+              <span
+                aria-hidden="true"
+                className={`pointer-events-none absolute inset-y-1 w-[calc(50%-0.25rem)] rounded-xl bg-gradient-gold shadow-glow transition-transform duration-300 ease-out ${
+                  museumTab === "works" ? "translate-x-[calc(100%+0.5rem)]" : "translate-x-0"
+                }`}
+              />
               {(
                 [
-                  ["guide", t("highlights.tabGuide")],
-                  ["works", `${t("highlights.tabWorks")} · ${highlights?.length ?? 0}`],
+                  ["guide", t("highlights.tabGuide"), <Info key="i" className="h-4 w-4" />],
+                  [
+                    "works",
+                    t("highlights.tabWorks"),
+                    <Sparkles key="s" className="h-4 w-4" />,
+                  ],
                 ] as const
-              ).map(([tab, label]) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => {
-                    void haptic("light");
-                    setMuseumTab(tab);
-                  }}
-                  className={`flex-1 rounded-full px-4 py-2 text-[12.5px] font-bold transition-smooth ${
-                    museumTab === tab
-                      ? "bg-gradient-gold text-primary-foreground shadow-glow"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+              ).map(([tab, label, icon]) => {
+                const active = museumTab === tab;
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => {
+                      void haptic("light");
+                      setMuseumTab(tab);
+                    }}
+                    className={`relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-[13px] font-bold transition-colors duration-200 ${
+                      active ? "text-primary-foreground" : "text-foreground/70 hover:text-foreground"
+                    }`}
+                  >
+                    {icon}
+                    <span>{label}</span>
+                    {tab === "works" && (
+                      <span
+                        className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none ${
+                          active
+                            ? "bg-primary-foreground/20 text-primary-foreground"
+                            : "bg-foreground/10 text-muted-foreground"
+                        }`}
+                      >
+                        {highlights?.length ?? 0}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
