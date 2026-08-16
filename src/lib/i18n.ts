@@ -159,6 +159,16 @@ export const UI_STRINGS = {
   "trips.shareGoneDesc": "The owner stopped sharing it, or the link is incorrect.",
   // Map trip filter (Phase 5 follow-up)
   "map.allSaved": "All",
+  // Museum highlights — full list + in-museum search (2026-08-08)
+  "highlights.searchPh": "Search this museum…",
+  "highlights.count": "{n} works",
+  "highlights.found": "{n} found",
+  "highlights.noMatch": "Nothing matches that. Try the artist, the era, or part of the title.",
+  "highlights.sortCurated": "Top",
+  "highlights.sortAz": "A-Z",
+  "highlights.sortEra": "Era",
+  "highlights.tabGuide": "About",
+  "highlights.tabWorks": "Works",
   // Google Play banner (web visitors only)
   "playBanner.cta": "Get the app",
   "playBanner.dismiss": "Dismiss",

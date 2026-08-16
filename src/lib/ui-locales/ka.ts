@@ -73,6 +73,16 @@ export const KA: Partial<Record<UiKey, string>> = {
   "trips.shareGoneDesc": "პატრონმა გაზიარება შეწყვიტა, ან ლინკი მცდარია.",
   // Map trip filter
   "map.allSaved": "ყველა",
+  // Museum highlights — full list + search
+  "highlights.searchPh": "მოძებნე ამ მუზეუმში…",
+  "highlights.count": "{n} ნამუშევარი",
+  "highlights.found": "ნაპოვნია {n}",
+  "highlights.noMatch": "ვერაფერი მოიძებნა. სცადე ავტორი, ეპოქა ან სათაურის ნაწილი.",
+  "highlights.sortCurated": "ტოპი",
+  "highlights.sortAz": "ა-ჰ",
+  "highlights.sortEra": "ეპოქა",
+  "highlights.tabGuide": "აღწერა",
+  "highlights.tabWorks": "ნამუშევრები",
   // Google Play banner
   "playBanner.cta": "გადმოწერე აპი",
   "playBanner.dismiss": "დახურვა",

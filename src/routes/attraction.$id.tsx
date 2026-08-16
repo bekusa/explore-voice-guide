@@ -32,6 +32,7 @@ import {
   ChevronRight,
   ChevronDown,
   Flag,
+  Search,
 } from "lucide-react";
 import { toast } from "sonner";
 import { LoadingMessages } from "@/components/LoadingMessages";
@@ -269,6 +270,13 @@ function AttractionPage() {
   // we hear back. Effectively merged into attraction.lat/lng for
   // the MapSection render.
   const [geocoded, setGeocoded] = useState<{ lat: number; lng: number } | null>(null);
+  /**
+   * Museum view switch (Beka 2026-08-08): "guide" = the narrated
+   * overview of the museum itself, "works" = the must-see artwork
+   * list. Only ever shown for museums that actually have highlights;
+   * see isMuseumWithWorks / showGuideTab below.
+   */
+  const [museumTab, setMuseumTab] = useState<"guide" | "works">("guide");
   // Full guide payload (script + key_facts/tips/look_for/nearby).
   // Initialized from cache for instant first paint when revisiting a place.
   const [guide, setGuide] = useState<GuideData | null>(() => {
@@ -554,6 +562,14 @@ function AttractionPage() {
   );
   const [highlights, setHighlights] = useState<MuseumHighlight[] | null>(null);
   const [loadingHighlights, setLoadingHighlights] = useState(false);
+  /**
+   * Tabs only make sense once we KNOW there are works to switch to.
+   * Until the highlights land (or on a non-museum attraction) the
+   * page stays exactly as it was — single scroll, no tab bar.
+   */
+  const isMuseumWithWorks = !!matchedMuseum && (highlights?.length ?? 0) > 0;
+  /** Guide content shows unless the user actively picked the works tab. */
+  const showGuideTab = !isMuseumWithWorks || museumTab === "guide";
   useEffect(() => {
     if (!matchedMuseum) {
       setHighlights(null);
@@ -834,6 +850,52 @@ function AttractionPage() {
           onPlay={openPlayer}
         />
 
+        {/* Museum tabs (Beka 2026-08-08). On a museum page the must-see
+            works are the reason people came, but they used to sit
+            below About + Story + the whole narration — a long
+            thumb-scroll away. A jump button was the first idea;
+            Beka's tab is better: the two things a museum visitor
+            wants (read/listen about the place vs. walk the works)
+            become peer views instead of one being buried under the
+            other. Only rendered for museums we actually have
+            highlights for; every non-museum attraction is unchanged. */}
+        {isMuseumWithWorks && (
+          <div className="mt-4 px-6">
+            <div className="inline-flex w-full rounded-full border border-border bg-card p-1">
+              {(
+                [
+                  ["guide", t("highlights.tabGuide")],
+                  ["works", `${t("highlights.tabWorks")} · ${highlights?.length ?? 0}`],
+                ] as const
+              ).map(([tab, label]) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => {
+                    void haptic("light");
+                    setMuseumTab(tab);
+                  }}
+                  className={`flex-1 rounded-full px-4 py-2 text-[12.5px] font-bold transition-smooth ${
+                    museumTab === tab
+                      ? "bg-gradient-gold text-primary-foreground shadow-glow"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ─── GUIDE TAB ─────────────────────────────────────────
+            Everything from the interest picker down to the tips is
+            the "about this place" view. On a museum page it hides
+            when the user switches to the works tab; on every other
+            attraction `showGuideTab` is permanently true so nothing
+            about those pages changes. */}
+        {showGuideTab && (
+          <>
         {/* Interest picker — Beka's product call: bias the *guide* (not
             the discovery list) by user interest. Tap a chip → re-fetches
             the n8n /webhook/guide with that interest, and the script /
@@ -901,6 +963,8 @@ function AttractionPage() {
             userId={user?.id ?? null}
           />
         )}
+          </>
+        )}
 
         {/* Nearby section retired per Beka's request — felt redundant
             next to the Map below it, and the LLM-suggested neighbours
@@ -913,7 +977,11 @@ function AttractionPage() {
             three pages max. Quiet skeleton while the first fetch is
             in flight; nothing shown when the attraction isn't a
             museum we know about. */}
-        {matchedMuseum && (
+        {/* Works tab — always rendered for non-tabbed states (loading,
+            or a museum whose highlights haven't arrived yet) so the
+            skeleton still shows; hidden only when tabs are active and
+            the user is on the guide tab. */}
+        {matchedMuseum && (!isMuseumWithWorks || museumTab === "works") && (
           <MuseumHighlightsSection
             museum={matchedMuseum}
             highlights={highlights}
@@ -926,13 +994,15 @@ function AttractionPage() {
             player / TabBar, per Beka's spec ("ჩამოსქროლვისას მხოლოდ
             რუკა გადმოდის footer-ის წინ"). Removing Nearby above made
             this naturally land at the bottom. */}
-        <MapSection
-          lat={typeof a?.lat === "number" ? a.lat : geocoded?.lat}
-          lng={typeof a?.lng === "number" ? a.lng : geocoded?.lng}
-          name={a?.name ?? fallbackName}
-          currentSlug={id}
-          cityHint={(typeof a?.city === "string" ? a.city : null) || searchCity || undefined}
-        />
+        {showGuideTab && (
+          <MapSection
+            lat={typeof a?.lat === "number" ? a.lat : geocoded?.lat}
+            lng={typeof a?.lng === "number" ? a.lng : geocoded?.lng}
+            name={a?.name ?? fallbackName}
+            currentSlug={id}
+            cityHint={(typeof a?.city === "string" ? a.city : null) || searchCity || undefined}
+          />
+        )}
 
         {/* The audio player itself lives in MobileFrame's floatingPanel
             slot — see the prop on the wrapping <MobileFrame> above.
@@ -2210,13 +2280,20 @@ function TipsSection({ items }: { items?: string[] }) {
 }
 
 /**
- * MuseumHighlightsSection — paginated "must-see" list for one museum.
+ * MuseumHighlightsSection — full "must-see" list for one museum, with
+ * an in-museum search box.
  *
- * Beka's spec: top 30 highlights paginated 10 per page (1-2-3),
- * matching the /results page pagination UX. Each item shows the
- * artwork's name, era, brief summary, vivid story, and gallery hint.
- * Cache hits land in 50-100 ms; first-fetch on a fresh (museum,
- * lang) tuple takes 30-60 s — gated by the loading skeleton.
+ * Beka 2026-08-08: pagination removed. It used to show the top 30 in
+ * 3 pages of 10, which silently TRUNCATED bigger collections — he
+ * curated 50 works for the Louvre and only 30 were reachable. Now
+ * every highlight renders in one scrollable list (no page hops), and
+ * a search field filters by name / artist / era / gallery so a
+ * specific piece can be found without scrolling a 50-item list.
+ *
+ * Each item shows the artwork's name, era, brief summary, vivid
+ * story, and gallery hint. Cache hits land in 50-100 ms; first-fetch
+ * on a fresh (museum, lang) tuple takes 30-60 s — gated by the
+ * loading skeleton.
  */
 function MuseumHighlightsSection({
   museum,
@@ -2236,7 +2313,16 @@ function MuseumHighlightsSection({
 }) {
   const t = useT();
   const { user } = useAuth();
-  const [page, setPage] = useState(1);
+  /** In-museum artwork filter (Beka 2026-08-08). */
+  const [q, setQ] = useState("");
+  /**
+   * Sort mode. "curated" is the museum's own importance order — the
+   * highlights prompt emits top-tier works first, so it doubles as
+   * the popularity ranking (we have no view counts to sort by, and
+   * inventing one would be worse than using the curator order).
+   * "era" is the one a visitor actually walks with: oldest → newest.
+   */
+  const [sort, setSort] = useState<"curated" | "az" | "era">("curated");
 
   // ─── Voice resolution for per-card mini players ─────────────
   // Beka 2026-06-11: the must-see mini Play button was firing
@@ -2276,31 +2362,46 @@ function MuseumHighlightsSection({
       cancelled = true;
     };
   }, [user, language]);
-  // Ref on the section header so changePage() can scroll the
-  // highlights heading back into view when the user taps 1-2-3.
-  // Without this the user lands on the bottom of page N+1's last
-  // card and has to thumb back up to see the new top of the list.
   const sectionRef = useRef<HTMLElement | null>(null);
-  const PAGE_SIZE = 10;
-  const MAX_PAGES = 3;
-  const total = Math.min(highlights?.length ?? 0, PAGE_SIZE * MAX_PAGES);
-  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const safePage = Math.min(Math.max(1, page), pageCount);
-  const slice = useMemo(() => {
-    if (!highlights) return [];
-    const start = (safePage - 1) * PAGE_SIZE;
-    return highlights.slice(0, total).slice(start, start + PAGE_SIZE);
-  }, [highlights, safePage, total]);
 
-  const changePage = (p: number) => {
-    setPage(p);
-    // Defer one frame so the new slice has time to render before
-    // we scroll — otherwise the browser scrolls to the position
-    // computed against the OLD content and lands slightly off.
-    requestAnimationFrame(() => {
-      sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  };
+  // Filtered view. `rank` is captured BEFORE filtering so a searched
+  // item keeps its real position in the museum's curated order (the
+  // Mona Lisa stays "#1" even when it's the only row on screen).
+  // Matching is diacritic-insensitive so "Venus de Milo" finds
+  // "Vénus de Milo" and "cezanne" finds "Cézanne".
+  const ranked = useMemo(
+    () => (highlights ?? []).map((h, i) => ({ h, rank: i + 1 })),
+    [highlights],
+  );
+  const visible = useMemo(() => {
+    const needle = foldForSearch(q);
+    const filtered = !needle
+      ? ranked
+      : ranked.filter(({ h }) =>
+          [h.name, h.name_en, h.artist, h.era, h.location_hint]
+            .filter((v): v is string => typeof v === "string" && v.length > 0)
+            .some((v) => foldForSearch(v).includes(needle)),
+        );
+    if (sort === "curated") return filtered;
+    const out = [...filtered];
+    if (sort === "az") {
+      out.sort((a, b) =>
+        foldForSearch(a.h.name).localeCompare(foldForSearch(b.h.name)),
+      );
+    } else {
+      // Oldest first; anything we can't date sinks to the bottom
+      // rather than polluting the timeline with 0s.
+      out.sort((a, b) => {
+        const ya = eraToYear(a.h.era);
+        const yb = eraToYear(b.h.era);
+        if (ya === null && yb === null) return a.rank - b.rank;
+        if (ya === null) return 1;
+        if (yb === null) return -1;
+        return ya - yb || a.rank - b.rank;
+      });
+    }
+    return out;
+  }, [ranked, q, sort]);
 
   // Loading skeleton — three placeholder rows so the section's
   // footprint is roughly correct when content lands and the rest of
@@ -2339,17 +2440,81 @@ function MuseumHighlightsSection({
   }
 
   return (
-    <section ref={sectionRef} className="mt-8 px-6 scroll-mt-4">
+    <section id="museum-highlights" ref={sectionRef} className="mt-8 px-6 scroll-mt-4">
       <div className="flex items-center gap-2">
         <Sparkles className="h-4 w-4 text-primary" />
         <h2 className="font-display text-[20px] text-foreground">{t("highlights.title")}</h2>
       </div>
       <p className="mt-1 text-[12px] text-muted-foreground">{t("highlights.subtitle")}</p>
 
-      <ol className="mt-4 flex flex-col gap-3" start={(safePage - 1) * PAGE_SIZE + 1}>
-        {slice.map((h, i) => {
-          const rank = (safePage - 1) * PAGE_SIZE + i + 1;
-          return (
+      {/* In-museum search — filters the curated list by artwork name,
+          artist, era or gallery. Only shown once the collection is
+          big enough that scanning it by eye gets tedious. */}
+      {ranked.length > 8 && (
+        <div className="mt-4 flex items-center gap-2.5 rounded-full border border-border bg-card px-3.5 py-2 shadow-soft">
+          <Search className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={2.2} />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={t("highlights.searchPh")}
+            aria-label={t("highlights.searchPh")}
+            className="min-w-0 flex-1 bg-transparent text-[13.5px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
+          />
+          {q && (
+            <button
+              type="button"
+              onClick={() => setQ("")}
+              aria-label={t("trips.cancel")}
+              className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-muted-foreground transition-smooth hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Count + sort row. The count reassures the user the WHOLE
+          collection is here (Beka's 50 Louvre works used to cap at
+          30) and doubles as the search result counter. */}
+      <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          {q
+            ? t("highlights.found").replace("{n}", String(visible.length))
+            : t("highlights.count").replace("{n}", String(ranked.length))}
+        </p>
+        {ranked.length > 8 && (
+          <div className="inline-flex rounded-full border border-border bg-card p-0.5">
+            {(
+              [
+                ["curated", t("highlights.sortCurated")],
+                ["az", t("highlights.sortAz")],
+                ["era", t("highlights.sortEra")],
+              ] as const
+            ).map(([mode, label]) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setSort(mode)}
+                className={`rounded-full px-2.5 py-1 text-[10.5px] font-bold transition-smooth ${
+                  sort === mode
+                    ? "bg-gradient-gold text-primary-foreground shadow-glow"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {visible.length === 0 ? (
+        <p className="mt-4 rounded-2xl border border-dashed border-border bg-card/50 px-4 py-6 text-center text-[12.5px] text-muted-foreground">
+          {t("highlights.noMatch")}
+        </p>
+      ) : (
+        <ol className="mt-3 flex flex-col gap-3">
+          {visible.map(({ h, rank }) => (
             <HighlightCard
               key={`${h.name_en ?? h.name}-${rank}`}
               h={h}
@@ -2358,52 +2523,59 @@ function MuseumHighlightsSection({
               language={language}
               voice={voice}
             />
-          );
-        })}
-      </ol>
-
-      {pageCount > 1 && (
-        <nav
-          aria-label="Highlights pagination"
-          className="mt-5 flex items-center justify-center gap-2"
-        >
-          <button
-            type="button"
-            onClick={() => changePage(safePage - 1)}
-            disabled={safePage <= 1}
-            className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:border-primary/40 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => {
-            const active = p === safePage;
-            return (
-              <button
-                key={p}
-                type="button"
-                onClick={() => changePage(p)}
-                className={`h-9 min-w-[36px] rounded-full border px-3 text-[12px] font-bold transition-smooth ${
-                  active
-                    ? "border-primary/60 bg-gradient-gold text-primary-foreground shadow-glow"
-                    : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
-                }`}
-              >
-                {p}
-              </button>
-            );
-          })}
-          <button
-            type="button"
-            onClick={() => changePage(safePage + 1)}
-            disabled={safePage >= pageCount}
-            className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:border-primary/40 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </nav>
+          ))}
+        </ol>
       )}
     </section>
   );
+}
+
+/**
+ * Lowercase + strip diacritics for search matching, so "cezanne"
+ * matches "Cézanne" and "venus" matches "Vénus". Mirrors the server's
+ * foldDiacritics (sharedCache.server.ts) but lives here because that
+ * module is server-only.
+ */
+function foldForSearch(s: string): string {
+  return s
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
+}
+
+/**
+ * Turn a free-form era label into a sortable year for the
+ * chronological view. Handles the shapes the highlights prompt
+ * actually emits:
+ *   "c. 1503-1519"          → 1503
+ *   "1665"                   → 1665
+ *   "2nd century BCE"        → -150   (BCE ⇒ negative, mid-century)
+ *   "13th-century Romanesque"→ 1250
+ *   "Ming Dynasty"           → null   (undatable → sinks to bottom)
+ * Returns null when nothing numeric can be read, so the caller can
+ * park those items at the end instead of pretending they're year 0.
+ */
+function eraToYear(era?: string | null): number | null {
+  if (!era) return null;
+  const s = era.toLowerCase();
+  const bce = /\b(bce|bc)\b/.test(s);
+  // "Nth century" → midpoint of that century (2nd c. ⇒ 150).
+  const century = s.match(/(\d{1,2})\s*(?:st|nd|rd|th)?[\s-]*century/);
+  if (century) {
+    const n = parseInt(century[1], 10);
+    if (Number.isFinite(n)) {
+      const mid = (n - 1) * 100 + 50;
+      return bce ? -mid : mid;
+    }
+  }
+  // Otherwise the first 3-4 digit run is the year.
+  const year = s.match(/\d{3,4}/);
+  if (year) {
+    const n = parseInt(year[0], 10);
+    if (Number.isFinite(n)) return bce ? -n : n;
+  }
+  return null;
 }
 
 /**
