@@ -277,6 +277,30 @@ function AttractionPage() {
    * see isMuseumWithWorks / showGuideTab below.
    */
   const [museumTab, setMuseumTab] = useState<"guide" | "works">("guide");
+  /** Anchor for the tab switcher — used to scroll the user to the top
+   *  of the newly-shown tab so a switch never leaves them mid-list. */
+  const museumTabsRef = useRef<HTMLDivElement | null>(null);
+  /** Sentinel placed after the last About-tab section. */
+  const guideEndRef = useRef<HTMLDivElement | null>(null);
+  /**
+   * Auto-advance guard (Beka 2026-08-08): reaching the end of the
+   * About tab hands the user over to the Artworks tab — the natural
+   * next step on a museum page. Fires AT MOST ONCE per page, and
+   * never after the user has picked a tab themselves, so it can't
+   * fight an explicit choice or ping-pong while they scroll around.
+   */
+  const autoAdvancedRef = useRef(false);
+  const userPickedTabRef = useRef(false);
+
+  const pickMuseumTab = (tab: "guide" | "works") => {
+    userPickedTabRef.current = true;
+    void haptic("light");
+    setMuseumTab(tab);
+    // Land at the top of the tab we just revealed.
+    requestAnimationFrame(() => {
+      museumTabsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
   // Full guide payload (script + key_facts/tips/look_for/nearby).
   // Initialized from cache for instant first paint when revisiting a place.
   const [guide, setGuide] = useState<GuideData | null>(() => {
@@ -570,6 +594,35 @@ function AttractionPage() {
   const isMuseumWithWorks = !!matchedMuseum && (highlights?.length ?? 0) > 0;
   /** Guide content shows unless the user actively picked the works tab. */
   const showGuideTab = !isMuseumWithWorks || museumTab === "guide";
+
+  // Hand the reader over to the Artworks tab when they finish the
+  // About tab. Uses a sentinel at the very end of the guide content
+  // (after the map) rather than a scroll listener, so it costs
+  // nothing while scrolling and fires exactly when that element is
+  // actually on screen. Guards keep it one-shot and non-intrusive.
+  useEffect(() => {
+    if (!isMuseumWithWorks || museumTab !== "guide") return;
+    if (autoAdvancedRef.current || userPickedTabRef.current) return;
+    const el = guideEndRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        if (autoAdvancedRef.current || userPickedTabRef.current) return;
+        autoAdvancedRef.current = true;
+        io.disconnect();
+        setMuseumTab("works");
+        // Without this the user would be dumped at the BOTTOM of a
+        // 50-item list. Put them at the top of what they just opened.
+        requestAnimationFrame(() => {
+          museumTabsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.6 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [isMuseumWithWorks, museumTab]);
   useEffect(() => {
     if (!matchedMuseum) {
       setHighlights(null);
@@ -860,7 +913,7 @@ function AttractionPage() {
             other. Only rendered for museums we actually have
             highlights for; every non-museum attraction is unchanged. */}
         {isMuseumWithWorks && (
-          <div className="mt-5 px-6">
+          <div ref={museumTabsRef} className="mt-5 scroll-mt-4 px-6">
             {/* Segmented switch. Beka 2026-08-08 asked for it to read
                 unmistakably as a TOGGLE, so: a sunken track (inset
                 shadow + darker bg) with a single raised gold pill
@@ -893,10 +946,7 @@ function AttractionPage() {
                     type="button"
                     role="tab"
                     aria-selected={active}
-                    onClick={() => {
-                      void haptic("light");
-                      setMuseumTab(tab);
-                    }}
+                    onClick={() => pickMuseumTab(tab)}
                     className={`relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-[13px] font-bold transition-colors duration-200 ${
                       active ? "text-primary-foreground" : "text-foreground/70 hover:text-foreground"
                     }`}
@@ -1035,6 +1085,14 @@ function AttractionPage() {
             currentSlug={id}
             cityHint={(typeof a?.city === "string" ? a.city : null) || searchCity || undefined}
           />
+        )}
+
+        {/* End-of-About sentinel. When this scrolls into view on a
+            museum page we hand the reader to the Artworks tab (see the
+            IntersectionObserver effect). The switcher at the top stays
+            put, so going back is always one tap. */}
+        {isMuseumWithWorks && museumTab === "guide" && (
+          <div ref={guideEndRef} aria-hidden="true" className="h-8" />
         )}
 
         {/* The audio player itself lives in MobileFrame's floatingPanel
