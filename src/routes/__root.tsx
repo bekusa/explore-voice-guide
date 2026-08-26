@@ -169,6 +169,25 @@ function RootShell({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        {/* Crawlable entry point into the static /explore/ pages.
+            Without this the 1,000+ generated pages are orphans reachable only
+            from the sitemap, which is why Search Console reported ~500 of them
+            as "Discovered - currently not indexed" (2026-08-27).
+            Deliberately a plain <a>, not a router Link: /explore/ is static
+            HTML served outside the SPA. Bottom padding clears the fixed nav. */}
+        <footer
+          style={{
+            padding: "28px 16px 96px",
+            textAlign: "center",
+            fontSize: "12px",
+            lineHeight: 1.8,
+            color: "rgba(169,156,142,0.85)",
+          }}
+        >
+          <a href="/explore/" style={{ color: "#f5b75b", textDecoration: "none" }}>
+            Explore audio guides by city
+          </a>
+        </footer>
         <Scripts />
       </body>
     </html>
