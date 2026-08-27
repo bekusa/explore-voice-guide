@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#110c08">
+<title>How Lokali writes its audio guides | Editorial process</title>
+<meta name="description" content="How Lokali researches, writes, translates and checks its free audio guides: sources, AI assistance, human review, coordinate verification and how to report an error.">
+<link rel="canonical" href="https://lokali.travel/about/editorial-process.html">
+<link rel="alternate" hreflang="en" href="https://lokali.travel/about/editorial-process.html">
+<link rel="alternate" hreflang="x-default" href="https://lokali.travel/about/editorial-process.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Lokali">
+<meta property="og:title" content="How Lokali writes its audio guides">
+<meta property="og:url" content="https://lokali.travel/about/editorial-process.html">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "AboutPage", "name": "How Lokali writes its audio guides", "url": "https://lokali.travel/about/editorial-process.html", "publisher": {"@type": "Organization", "name": "Lokali", "url": "https://lokali.travel"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Lokali", "item": "https://lokali.travel"}, {"@type": "ListItem", "position": 2, "name": "Editorial process", "item": "https://lokali.travel/about/editorial-process.html"}]}]}
+</script>
+<style>
+:root{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:'Inter',ui-sans-serif,system-ui,sans-serif;line-height:1.65;-webkit-font-smoothing:antialiased}
+.page{max-width:620px;margin:0 auto;padding:0 20px 120px}
+a{color:var(--gold)}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 0 12px}
+.brand{font-family:'Playfair Display',ui-serif,Georgia,serif;font-size:21px;font-weight:600;color:var(--fg);text-decoration:none}
+.lang-dd{position:relative}
+.lang-dd summary{list-style:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);padding:6px 13px;border-radius:999px;border:1px solid var(--border);display:inline-flex;align-items:center;gap:6px}
+.lang-dd summary::-webkit-details-marker{display:none}
+.lang-dd summary::after{content:"\25BE";font-size:9px;opacity:.8}
+.lang-dd[open] summary{color:var(--fg);border-color:var(--gold)}
+.lang-menu{position:absolute;right:0;top:calc(100% + 6px);min-width:170px;max-height:300px;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:6px;z-index:60;box-shadow:0 14px 34px rgba(0,0,0,.55)}
+.lang-menu a{display:block;padding:9px 12px;border-radius:8px;font-size:13px;color:var(--body);text-decoration:none}
+.lang-menu a.active{color:var(--gold);font-weight:600}
+nav.crumbs{font-size:12.5px;color:var(--muted);margin:2px 0 14px;line-height:1.9}
+nav.crumbs a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent}
+nav.crumbs a:hover{color:var(--gold);border-bottom-color:var(--gold)}
+nav.crumbs .sep{opacity:.5;margin:0 5px}
+.hero-img{position:relative;border-radius:20px;overflow:hidden;aspect-ratio:5/4;background:var(--card)}
+.hero-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero-img .ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(17,12,8,0) 0%,rgba(17,12,8,.35) 55%,rgba(17,12,8,.92) 100%)}
+.badge{position:absolute;left:14px;bottom:14px;display:inline-flex;align-items:center;gap:6px;background:rgba(17,12,8,.55);border:1px solid rgba(245,183,91,.4);color:var(--gold);text-transform:uppercase;letter-spacing:1.6px;font-size:10px;font-weight:700;padding:6px 11px;border-radius:999px;backdrop-filter:blur(6px)}
+h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-size:36px;line-height:1.08;margin-top:16px}
+.geoline{font-size:11.5px;color:var(--muted);letter-spacing:.4px;margin-top:8px}
+.answer{margin-top:14px;padding:15px 17px;background:rgba(245,183,91,.06);border:1px solid rgba(245,183,91,.28);border-left:3px solid var(--gold);border-radius:12px;font-size:15.5px;color:var(--fg);line-height:1.7}
+.verified{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:11.5px;color:var(--muted)}
+.verified b{color:var(--green);font-weight:600}
+.verified a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+.cta-row{display:flex;gap:10px;margin-top:16px}
+.cta{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#fdc357,#f67f2f);color:#110c08;border-radius:16px;padding:12px 18px;text-decoration:none;box-shadow:0 0 60px -16px #f5b75b8c}
+.cta .play{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:rgba(17,12,8,.15);color:#110c08}
+.cta .lbl{display:flex;flex-direction:column;line-height:1.1}
+.cta .lbl small{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;opacity:.75}
+.cta .lbl b{font-size:16px;font-weight:700}
+.sec{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-size:22px;color:var(--fg);margin:34px 0 12px}
+table.facts-tbl{width:100%;border-collapse:collapse;margin-top:6px;font-size:14px}
+table.facts-tbl th,table.facts-tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+table.facts-tbl th{color:var(--muted);font-weight:600;width:42%;white-space:nowrap}
+table.facts-tbl td{color:var(--body)}
+table.facts-tbl tr:last-child th,table.facts-tbl tr:last-child td{border-bottom:none}
+.tour p{font-size:15.5px;color:var(--body);line-height:1.85;margin:0 0 15px}
+.chips .item{display:flex;align-items:flex-start;gap:9px;border-radius:14px;padding:10px 14px;font-size:13.5px;line-height:1.45;margin:0 0 9px;width:fit-content;max-width:100%}
+.chips .item svg{flex-shrink:0;margin-top:2px}
+.facts .item{background:rgba(29,158,117,.09);border:1px solid rgba(93,202,165,.3);color:#a7e6d1}
+.facts .item svg{color:var(--green)}
+.look .item{background:rgba(55,138,221,.09);border:1px solid rgba(133,183,235,.3);color:#bcd8f4}
+.look .item svg{color:var(--blue)}
+.tips .item{background:rgba(250,188,5,.08);border:1px solid rgba(250,188,5,.3);color:#ffc955}
+.tips .item svg{color:#f5b75b}
+.faq h3{font-size:15px;font-weight:600;color:var(--fg);margin:18px 0 7px;line-height:1.4}
+.faq h3:first-child{margin-top:4px}
+.faq p{font-size:14.5px;color:var(--body);line-height:1.75;margin:0}
+.nearby{display:grid;gap:8px;margin-top:6px}
+.nearby a{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 14px;text-decoration:none;color:var(--body);font-size:14px}
+.nearby a:hover{border-color:var(--gold);color:var(--gold)}
+.nearby .km{margin-left:auto;color:var(--muted);font-size:12px;white-space:nowrap}
+.mapcard a{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;text-decoration:none;color:var(--fg);font-weight:600;font-size:14.5px}
+.mapcard a:hover{border-color:var(--gold)}
+.mapcard .ic{color:var(--gold);display:flex}
+.mapcard .arr{margin-left:auto;color:var(--muted)}
+.map-note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.srcbox{margin-top:8px;font-size:13px;color:var(--muted);line-height:1.8}
+.srcbox a{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(245,183,91,.35)}
+footer{border-top:1px solid var(--border);margin-top:40px;padding-top:20px;color:var(--muted);font-size:12.5px;line-height:1.9}
+footer a{color:var(--gold);text-decoration:none}
+.appbar-cta{position:fixed;bottom:20px;left:20px;right:20px;display:none;z-index:50}
+.appbar-cta.show{display:block}
+.appbar-cta .pill{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.4);max-width:600px;margin:0 auto}
+.appbar-cta a{display:flex;align-items:center;gap:8px;flex:1;text-decoration:none;color:var(--fg)}
+.appbar-cta svg{width:32px;height:32px;flex-shrink:0}
+.appbar-cta .lb{display:flex;flex-direction:column;line-height:1.1}
+.appbar-cta .lb small{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.appbar-cta .lb b{font-size:15px;font-weight:700;color:var(--gold)}
+.appbar-cta .x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:4px 8px;margin-left:auto}
+</style>
+</head>
+<body>
+<div class="page">
+<header class="topbar"><a href="https://lokali.travel" class="brand">Lokali</a></header>
+<nav class="crumbs" aria-label="Breadcrumb"><a href="https://lokali.travel">Lokali</a> <span class="sep">&rsaquo;</span> <span>Editorial process</span></nav>
+<h1>How we write these guides</h1>
+<p class="answer">Lokali publishes 884 free audio guides across 190 cities in 73 countries. Guides are drafted with AI assistance from a fixed research brief, checked against structured place data, and cross-referenced against Wikipedia and Wikidata by coordinate match where an entity exists. This page explains exactly how that works and how to tell us when we get something wrong.</p>
+<section>
+<h2 class="sec">Where the content comes from</h2>
+<div class="tour">
+<p>Each guide starts from a structured record for the place: its name, type, coordinates, typical visit duration and a factual summary. That record drives every page, so the visit time we quote and the coordinates we publish come from data rather than from prose.</p>
+<p>The narration itself is drafted by a large language model working from that record against a fixed brief: plain language, no invented quotations, no invented dates, no superlatives that cannot be checked. We use Claude, made by Anthropic, for drafting and translation.</p>
+<p>We say this openly because you should know how a text was made before you decide how much to trust it.</p>
+</div>
+</section>
+<section>
+<h2 class="sec">What we verify</h2>
+<div class="tour">
+<p><b>Coordinates.</b> Every place carries latitude and longitude. Where we link to Wikipedia or Wikidata, the link is only published when the external entity's own coordinates fall within three kilometres of ours. 242 of 884 guides currently carry a verified cross-reference; the rest have no matching entity and so carry no link rather than a guessed one.</p>
+<p><b>Visit duration.</b> The "time needed" figure on each page is the time visitors spend at the site. It is kept separate from the length of the audio narration, which is listed on its own line. These two numbers mean different things and we do not mix them.</p>
+<p><b>Translations.</b> Guides are translated from a single English source. When the English source changes, the translations are regenerated rather than left stale.</p>
+</div>
+</section>
+<section>
+<h2 class="sec">What we do not claim</h2>
+<div class="tour">
+<p>We do not publish opening hours or ticket prices, because those change often and a stale price is worse than none. Check the official site before you travel.</p>
+<p>We are not affiliated with any of the sites we describe, and no one pays to appear in Lokali. There is no advertising in these pages.</p>
+<p>We do not write reviews or ratings of our own.</p>
+</div>
+</section>
+<section>
+<h2 class="sec">Corrections</h2>
+<div class="tour">
+<p>If something here is wrong, tell us at <a href="mailto:contact@lokali.travel">contact@lokali.travel</a> with the page address. Factual corrections are applied to the English source and then pushed through every language.</p>
+<p>Each guide page carries the month it was last verified.</p>
+</div>
+</section>
+<footer>
+<a href="https://lokali.travel/explore/">All cities</a> &middot; <a href="https://lokali.travel">Lokali</a>
+</footer>
+</div>
+</body>
+</html>

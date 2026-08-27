@@ -1,21 +1,72 @@
 # Lokali Travel Audio Guide — Crawler Instructions
-# Last updated: 2026-08-05
+# Last updated: 2026-08-27
+# Editorial process: https://lokali.travel/about/editorial-process.html
 
-# Allow all AI training models
+# AI answer engines (these fetch pages to build cited answers)
+User-agent: OAI-SearchBot
+Allow: /explore/
+Allow: /about/
+Disallow: /api/
+
+User-agent: ChatGPT-User
+Allow: /explore/
+Allow: /about/
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /explore/
+Allow: /about/
+Disallow: /api/
+
+User-agent: Perplexity-User
+Allow: /explore/
+Allow: /about/
+Disallow: /api/
+
+User-agent: Claude-User
+Allow: /explore/
+Allow: /about/
+Disallow: /api/
+
+User-agent: Claude-SearchBot
+Allow: /explore/
+Allow: /about/
+Disallow: /api/
+
+User-agent: Amazonbot
+Allow: /explore/
+Allow: /about/
+Disallow: /api/
+
+User-agent: Applebot
+Allow: /explore/
+Allow: /about/
+Disallow: /api/
+
+# AI training crawlers
 User-agent: ClaudeBot
 Allow: /explore/
+Allow: /about/
 Disallow: /api/
 
 User-agent: GPTBot
 Allow: /explore/
+Allow: /about/
 Disallow: /api/
 
 User-agent: CCBot
 Allow: /explore/
+Allow: /about/
+Disallow: /api/
+
+User-agent: Google-Extended
+Allow: /explore/
+Allow: /about/
 Disallow: /api/
 
 User-agent: Baiduspider
 Allow: /explore/
+Allow: /about/
 Disallow: /api/
 
 # Standard search engines
@@ -40,8 +91,10 @@ Disallow: /api/
 # Default — block API endpoints
 User-agent: *
 Allow: /explore/
+Allow: /about/
 Allow: /sitemap*.xml
 Allow: /llms.txt
+Allow: /.well-known/
 Disallow: /api/
 Disallow: /admin/
 

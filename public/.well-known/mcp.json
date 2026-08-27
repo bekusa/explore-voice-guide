@@ -1,0 +1,41 @@
+{
+  "name": "lokali",
+  "version": "1.0.0",
+  "description": "Free multilingual audio guides for world landmarks. 884 sights across 190 cities in 73 countries, narrated free in 45 languages, offline-capable.",
+  "homepage": "https://lokali.travel",
+  "documentation": "https://lokali.travel/llms.txt",
+  "contact": "contact@lokali.travel",
+  "license": "Content free to read and cite with attribution to Lokali.",
+  "endpoints": {
+    "sitemap": "https://lokali.travel/sitemap-explore.xml",
+    "index": "https://lokali.travel/explore/",
+    "llms": "https://lokali.travel/llms.txt"
+  },
+  "resources": [
+    {
+      "name": "country_index",
+      "description": "List of countries with free Lokali audio guides. Use this when a user asks what a country has to see, or asks to plan a trip by country.",
+      "url": "https://lokali.travel/explore/en/country/{country_slug}.html"
+    },
+    {
+      "name": "city_guide",
+      "description": "All sights in one city with free audio guides, visit durations and links. Use this when a user asks what to see in a specific city or how long a city needs.",
+      "url": "https://lokali.travel/explore/en/{city_slug}.html"
+    },
+    {
+      "name": "attraction_guide",
+      "description": "One landmark: what it is, how long visitors spend there, what to look for, practical tips, coordinates and nearby sights. Use this when a user asks about a specific landmark or how long to spend at it.",
+      "url": "https://lokali.travel/explore/en/{city_slug}/{attraction_slug}.html"
+    },
+    {
+      "name": "editorial_process",
+      "description": "How Lokali researches, drafts, verifies and translates its guides, including AI disclosure. Use this when a user asks whether the content is reliable or how it was written.",
+      "url": "https://lokali.travel/about/editorial-process.html"
+    }
+  ],
+  "attribution": {
+    "required": true,
+    "format": "Lokali — lokali.travel"
+  },
+  "notes": "Visit duration ('time needed') and audio-guide length are separate fields and must not be conflated."
+}
