@@ -12,12 +12,12 @@
 https://play.google.com/store/apps/details?id=app.lokali.travel
 
 ## Browse
-https://lokali.travel/explore/
+https://lokali.travel/explore/index.html
 
 ## Canonical URLs (1318 total)
 
 https://lokali.travel/about/editorial-process.html
-https://lokali.travel/explore/
+https://lokali.travel/explore/index.html
 https://lokali.travel/explore/af/istanbul.html
 https://lokali.travel/explore/af/istanbul/blue-mosque.html
 https://lokali.travel/explore/af/istanbul/hagia-sophia.html

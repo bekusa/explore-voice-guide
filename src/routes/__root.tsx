@@ -173,8 +173,15 @@ function RootShell({ children }: { children: React.ReactNode }) {
             Without this the 1,000+ generated pages are orphans reachable only
             from the sitemap, which is why Search Console reported ~500 of them
             as "Discovered - currently not indexed" (2026-08-27).
-            Deliberately a plain <a>, not a router Link: /explore/ is static
-            HTML served outside the SPA. Bottom padding clears the fixed nav. */}
+            Deliberately a plain <a>, not a router Link: the hub is static HTML
+            served outside the SPA. Bottom padding clears the fixed nav.
+
+            The href MUST end in .html. The Worker serves the router first and
+            has no route for the directory path /explore/, so that URL returns
+            404 — confirmed live 2026-08-31, and it is why Search Console said
+            "Discovered - currently not indexed" for the hub. Only paths with a
+            file extension fall through to the static asset handler. Do not
+            "tidy" this back to /explore/ without fixing asset routing first. */}
         <footer
           style={{
             padding: "28px 16px 96px",
@@ -184,7 +191,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
             color: "rgba(169,156,142,0.85)",
           }}
         >
-          <a href="/explore/" style={{ color: "#f5b75b", textDecoration: "none" }}>
+          <a href="/explore/index.html" style={{ color: "#f5b75b", textDecoration: "none" }}>
             Explore audio guides by city
           </a>
         </footer>

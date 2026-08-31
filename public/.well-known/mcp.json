@@ -8,7 +8,7 @@
   "license": "Content free to read and cite with attribution to Lokali.",
   "endpoints": {
     "sitemap": "https://lokali.travel/sitemap-explore.xml",
-    "index": "https://lokali.travel/explore/",
+    "index": "https://lokali.travel/explore/index.html",
     "llms": "https://lokali.travel/llms.txt"
   },
   "resources": [
