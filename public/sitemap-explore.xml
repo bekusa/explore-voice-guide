@@ -3638,11 +3638,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/agra/tomb-of-akbar.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/akureyri/akureyri-church.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -3916,11 +3911,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/bangkok/wat-saket-golden-mount.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/bangkok/wat-saket.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -4054,11 +4044,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/barcelona/sagrada-família.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/barcelona/santa-maria-del-pi.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -4150,11 +4135,6 @@
   </url>
   <url>
     <loc>https://lokali.travel/explore/en/berlin/reichstag-building.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/berlin/reichstag.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -5210,11 +5190,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/giza/grand-egyptian-museum-gem.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/giza/grand-egyptian-museum.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -5488,11 +5463,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/istanbul/balat-neighbourhood.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/istanbul/balat.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -5504,15 +5474,6 @@
   </url>
   <url>
     <loc>https://lokali.travel/explore/da/istanbul/basilikacisternen.html</loc>
-    <xhtml:link rel="alternate" hreflang="da" href="https://lokali.travel/explore/da/istanbul/basilikacisternen.html"/>
-    <xhtml:link rel="alternate" hreflang="en-GB" href="https://lokali.travel/explore/en/istanbul/basilikacisternen.html"/>
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://lokali.travel/explore/en/istanbul/basilikacisternen.html"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://lokali.travel/explore/en/istanbul/basilikacisternen.html"/>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/istanbul/basilikacisternen.html</loc>
     <xhtml:link rel="alternate" hreflang="da" href="https://lokali.travel/explore/da/istanbul/basilikacisternen.html"/>
     <xhtml:link rel="alternate" hreflang="en-GB" href="https://lokali.travel/explore/en/istanbul/basilikacisternen.html"/>
     <xhtml:link rel="alternate" hreflang="en-US" href="https://lokali.travel/explore/en/istanbul/basilikacisternen.html"/>
@@ -9017,11 +8978,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/milan/la-scala.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/milan/milan-cathedral.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -12105,11 +12061,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/rethymno/venetian-harbour-chania.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/rethymno/venetian-loggia-rethymno.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -12681,26 +12632,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/tbilisi/abanotubani-district.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/tbilisi/abanotubani-sulfur-baths.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/tbilisi/abanotubani-sulphur-baths-district.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/tbilisi/abanotubani-sulphur-baths.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/tbilisi/abanotubani.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -12878,15 +12809,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/tbilisi/shardeni-gaden.html</loc>
-    <xhtml:link rel="alternate" hreflang="da" href="https://lokali.travel/explore/da/tbilisi/shardeni-gaden.html"/>
-    <xhtml:link rel="alternate" hreflang="en-GB" href="https://lokali.travel/explore/en/tbilisi/shardeni-gaden.html"/>
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://lokali.travel/explore/en/tbilisi/shardeni-gaden.html"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://lokali.travel/explore/en/tbilisi/shardeni-gaden.html"/>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/tbilisi/shardeni-street-market.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -12924,20 +12846,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/tbilisi/sioni-katedralen.html</loc>
-    <xhtml:link rel="alternate" hreflang="da" href="https://lokali.travel/explore/da/tbilisi/sioni-katedralen.html"/>
-    <xhtml:link rel="alternate" hreflang="en-GB" href="https://lokali.travel/explore/en/tbilisi/sioni-katedralen.html"/>
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://lokali.travel/explore/en/tbilisi/sioni-katedralen.html"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://lokali.travel/explore/en/tbilisi/sioni-katedralen.html"/>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/tbilisi/sulfur-baths.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/tbilisi/tbilisi-botanical-garden.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -12963,17 +12871,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/thủ-đức/bitexco-financial-tower-observation-deck.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/thủ-đức/bitexco-financial-tower.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/thủ-đức/central-post-office.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -13311,11 +13209,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/vantaa/suomenlinna-fortress.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/vantaa/suomenlinna.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -13534,11 +13427,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/xi-an/terracotta-army-museum.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/xi-an/terracotta-army.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -13637,10 +13525,5 @@
     <loc>https://lokali.travel/explore/en/şanlıurfa/göbekli-tepe.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country.html</loc>
-    <lastmod>2026-08-27</lastmod>
-    <changefreq>monthly</changefreq>
   </url>
 </urlset>

@@ -14,7 +14,7 @@ https://play.google.com/store/apps/details?id=app.lokali.travel
 ## Browse
 https://lokali.travel/explore/
 
-## Canonical URLs (1338 total)
+## Canonical URLs (1318 total)
 
 https://lokali.travel/about/editorial-process.html
 https://lokali.travel/explore/
@@ -85,7 +85,6 @@ https://lokali.travel/explore/en/agra/fatehpur-sikri.html
 https://lokali.travel/explore/en/agra/itimad-ud-daulah.html
 https://lokali.travel/explore/en/agra/mehtab-bagh.html
 https://lokali.travel/explore/en/agra/taj-mahal.html
-https://lokali.travel/explore/en/agra/tomb-of-akbar.html
 https://lokali.travel/explore/en/akureyri.html
 https://lokali.travel/explore/en/akureyri/akureyri-church.html
 https://lokali.travel/explore/en/akureyri/botanical-garden-akureyri.html
@@ -148,7 +147,6 @@ https://lokali.travel/explore/en/bangkok/wat-mangkon-kamalawat.html
 https://lokali.travel/explore/en/bangkok/wat-pho.html
 https://lokali.travel/explore/en/bangkok/wat-prayun.html
 https://lokali.travel/explore/en/bangkok/wat-ratchanatdaram-loha-prasat.html
-https://lokali.travel/explore/en/bangkok/wat-saket-golden-mount.html
 https://lokali.travel/explore/en/bangkok/wat-saket.html
 https://lokali.travel/explore/en/bangkok/wat-salas-loi.html
 https://lokali.travel/explore/en/bangkok/wat-suthat.html
@@ -174,7 +172,6 @@ https://lokali.travel/explore/en/barcelona/plaça-espanya.html
 https://lokali.travel/explore/en/barcelona/plaça-reial.html
 https://lokali.travel/explore/en/barcelona/plaça-sant-felip-neri.html
 https://lokali.travel/explore/en/barcelona/sagrada-familia.html
-https://lokali.travel/explore/en/barcelona/sagrada-família.html
 https://lokali.travel/explore/en/barcelona/santa-maria-del-pi.html
 https://lokali.travel/explore/en/batumi.html
 https://lokali.travel/explore/en/batumi/ali-and-nino-statue.html
@@ -196,7 +193,6 @@ https://lokali.travel/explore/en/berlin/old-national-gallery.html
 https://lokali.travel/explore/en/berlin/pergamon-museum.html
 https://lokali.travel/explore/en/berlin/potsdamer-platz.html
 https://lokali.travel/explore/en/berlin/reichstag-building.html
-https://lokali.travel/explore/en/berlin/reichstag.html
 https://lokali.travel/explore/en/berlin/tiergarten.html
 https://lokali.travel/explore/en/berlin/unter-den-linden.html
 https://lokali.travel/explore/en/beyoğlu.html
@@ -517,7 +513,6 @@ https://lokali.travel/explore/en/gilgit/kargah-buddha.html
 https://lokali.travel/explore/en/gilgit/naltar-valley.html
 https://lokali.travel/explore/en/gilgit/shandur-top.html
 https://lokali.travel/explore/en/giza.html
-https://lokali.travel/explore/en/giza/grand-egyptian-museum-gem.html
 https://lokali.travel/explore/en/giza/grand-egyptian-museum.html
 https://lokali.travel/explore/en/gqeberha.html
 https://lokali.travel/explore/en/gqeberha/bayworld.html
@@ -583,10 +578,8 @@ https://lokali.travel/explore/en/inhambane.html
 https://lokali.travel/explore/en/inhambane/inhambane-cathedral.html
 https://lokali.travel/explore/en/inhambane/inhambane-town.html
 https://lokali.travel/explore/en/istanbul.html
-https://lokali.travel/explore/en/istanbul/balat-neighbourhood.html
 https://lokali.travel/explore/en/istanbul/balat.html
 https://lokali.travel/explore/en/istanbul/basilica-cistern.html
-https://lokali.travel/explore/en/istanbul/basilikacisternen.html
 https://lokali.travel/explore/en/istanbul/blue-mosque.html
 https://lokali.travel/explore/en/istanbul/bosphorus-strait.html
 https://lokali.travel/explore/en/istanbul/chora-church.html
@@ -717,7 +710,6 @@ https://lokali.travel/explore/en/milan/castello-sforzesco.html
 https://lokali.travel/explore/en/milan/cimitero-monumentale.html
 https://lokali.travel/explore/en/milan/galleria-vittorio-emanuele-ii.html
 https://lokali.travel/explore/en/milan/la-scala-opera-house.html
-https://lokali.travel/explore/en/milan/la-scala.html
 https://lokali.travel/explore/en/milan/milan-cathedral.html
 https://lokali.travel/explore/en/milan/santa-maria-delle-grazie.html
 https://lokali.travel/explore/en/milan/sforza-castle.html
@@ -888,7 +880,6 @@ https://lokali.travel/explore/en/reno/pioneer-center-for-the-performing-arts.htm
 https://lokali.travel/explore/en/rethymno.html
 https://lokali.travel/explore/en/rethymno/chania-old-harbour.html
 https://lokali.travel/explore/en/rethymno/venetian-fortress-rethymno.html
-https://lokali.travel/explore/en/rethymno/venetian-harbour-chania.html
 https://lokali.travel/explore/en/rethymno/venetian-loggia-rethymno.html
 https://lokali.travel/explore/en/rio-de-janeiro.html
 https://lokali.travel/explore/en/rio-de-janeiro/cascatinha-taunay-waterfall.html
@@ -1024,10 +1015,6 @@ https://lokali.travel/explore/en/takayama/sanmachi-suji.html
 https://lokali.travel/explore/en/takayama/takayama-jinya.html
 https://lokali.travel/explore/en/takayama/takayama-matsuri-yatai-kaikan.html
 https://lokali.travel/explore/en/tbilisi.html
-https://lokali.travel/explore/en/tbilisi/abanotubani-district.html
-https://lokali.travel/explore/en/tbilisi/abanotubani-sulfur-baths.html
-https://lokali.travel/explore/en/tbilisi/abanotubani-sulphur-baths-district.html
-https://lokali.travel/explore/en/tbilisi/abanotubani-sulphur-baths.html
 https://lokali.travel/explore/en/tbilisi/abanotubani.html
 https://lokali.travel/explore/en/tbilisi/anchiskhati-basilica.html
 https://lokali.travel/explore/en/tbilisi/david-gareja-monastery-complex.html
@@ -1046,21 +1033,16 @@ https://lokali.travel/explore/en/tbilisi/nariqala-fortress.html
 https://lokali.travel/explore/en/tbilisi/old-town.html
 https://lokali.travel/explore/en/tbilisi/peace-bridge.html
 https://lokali.travel/explore/en/tbilisi/sameba-cathedral.html
-https://lokali.travel/explore/en/tbilisi/shardeni-gaden.html
 https://lokali.travel/explore/en/tbilisi/shardeni-street-market.html
 https://lokali.travel/explore/en/tbilisi/shardeni-street.html
 https://lokali.travel/explore/en/tbilisi/sioni-cathedral.html
-https://lokali.travel/explore/en/tbilisi/sioni-katedralen.html
-https://lokali.travel/explore/en/tbilisi/sulfur-baths.html
 https://lokali.travel/explore/en/tbilisi/tbilisi-botanical-garden.html
 https://lokali.travel/explore/en/tbilisi/tbilisi-state-opera-and-ballet-theatre.html
 https://lokali.travel/explore/en/tbilisi/vake-district.html
 https://lokali.travel/explore/en/tbilisi/vake-park.html
 https://lokali.travel/explore/en/thủ-đức.html
 https://lokali.travel/explore/en/thủ-đức/ben-thanh-market.html
-https://lokali.travel/explore/en/thủ-đức/bitexco-financial-tower-observation-deck.html
 https://lokali.travel/explore/en/thủ-đức/bitexco-financial-tower.html
-https://lokali.travel/explore/en/thủ-đức/central-post-office.html
 https://lokali.travel/explore/en/thủ-đức/district-1-walking-tour.html
 https://lokali.travel/explore/en/thủ-đức/dong-khoi-street.html
 https://lokali.travel/explore/en/thủ-đức/ho-chi-minh-city-museum.html
@@ -1137,7 +1119,6 @@ https://lokali.travel/explore/en/vancouver/gastown.html
 https://lokali.travel/explore/en/vancouver/granville-island.html
 https://lokali.travel/explore/en/vancouver/science-world.html
 https://lokali.travel/explore/en/vantaa.html
-https://lokali.travel/explore/en/vantaa/suomenlinna-fortress.html
 https://lokali.travel/explore/en/vantaa/suomenlinna.html
 https://lokali.travel/explore/en/vatican-city.html
 https://lokali.travel/explore/en/vatican-city/egyptian-museum.html
@@ -1188,7 +1169,6 @@ https://lokali.travel/explore/en/xi-an/giant-wild-goose-pagoda.html
 https://lokali.travel/explore/en/xi-an/huaqing-palace.html
 https://lokali.travel/explore/en/xi-an/shaanxi-history-museum.html
 https://lokali.travel/explore/en/xi-an/small-wild-goose-pagoda.html
-https://lokali.travel/explore/en/xi-an/terracotta-army-museum.html
 https://lokali.travel/explore/en/xi-an/terracotta-army.html
 https://lokali.travel/explore/en/xiehe.html
 https://lokali.travel/explore/en/xiehe/golden-whip-stream.html
