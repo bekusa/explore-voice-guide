@@ -16,22 +16,12 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/country/nigeria.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/country/türkiye.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://lokali.travel/explore/en/country/india.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/iceland.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -46,17 +36,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/country/netherlands.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/country/brazil.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/kazakhstan.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -81,16 +61,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/country/germany.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/slovenia.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/country/canada.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -106,17 +76,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/country/belgium.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/country/argentina.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/colombia.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -156,21 +116,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/country/bolivia.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/ci.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/denmark.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/country/costa-rica.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -182,21 +127,6 @@
   </url>
   <url>
     <loc>https://lokali.travel/explore/en/country/south-korea.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/senegal.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/ireland.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/ecuador.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -221,16 +151,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/country/egypt.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/guatemala.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/country/finland.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -251,32 +171,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/country/israel.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/country/nepal.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/malaysia.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/ethiopia.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/nicaragua.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/philippines.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -291,102 +186,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/country/algeria.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/panama.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/pg.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/czechia.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/chile.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/new-zealand.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/iran.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/el-salvador.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/cambodia.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/singapore.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/sweden.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/namibia.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/taiwan.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/cyprus.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/va.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/austria.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/country/switzerland.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/abu-dhabi.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/abuja.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/adıyaman.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -422,16 +222,6 @@
   </url>
   <url>
     <loc>https://lokali.travel/explore/en/armação-dos-búzios.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/astana.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/athens.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -481,17 +271,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/boischatel.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/boston.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/bridgetown.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -507,11 +287,6 @@
   </url>
   <url>
     <loc>https://lokali.travel/explore/en/buzios.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/cali.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -532,11 +307,6 @@
   </url>
   <url>
     <loc>https://lokali.travel/explore/en/cape-town.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/casablanca.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -571,11 +341,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/city-of-london.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/city-of-westminster.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -606,22 +371,12 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/cusco.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/daegu.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://lokali.travel/explore/en/daejeon.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/dakar.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -637,11 +392,6 @@
   </url>
   <url>
     <loc>https://lokali.travel/explore/en/delhi.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/denizli.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -676,22 +426,12 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/gaborone.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/gdańsk.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://lokali.travel/explore/en/gilgit.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/giza.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -721,11 +461,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/göreme.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/helsinki.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -737,11 +472,6 @@
   </url>
   <url>
     <loc>https://lokali.travel/explore/en/honolulu.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/hunza.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3005,11 +2735,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/jakarta.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/jerusalem.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -3056,11 +2781,6 @@
   </url>
   <url>
     <loc>https://lokali.travel/explore/en/las-palmas-de-gran-canaria.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/lodz.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3140,11 +2860,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/mtskheta.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/multan.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -3195,17 +2910,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/panama-city.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/paris.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/patan.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3216,21 +2921,6 @@
   </url>
   <url>
     <loc>https://lokali.travel/explore/en/petra.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/petra-sub-district.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/phuket.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/port-elizabeth.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3261,11 +2951,6 @@
   </url>
   <url>
     <loc>https://lokali.travel/explore/en/quebec.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/queenstown.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3335,11 +3020,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/selçuk.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/seoul.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -3365,22 +3045,12 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/speightstown.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/stockholm.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://lokali.travel/explore/en/sukhothai.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/suzhou.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3438,17 +3108,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/tokyo.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/toronto.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/troodos.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3473,11 +3133,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/unknown.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/upper-hunza-tehsil.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -3493,11 +3148,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/vantaa.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/vatican-city.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -3509,11 +3159,6 @@
   </url>
   <url>
     <loc>https://lokali.travel/explore/en/verona.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/versailles.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3548,11 +3193,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lokali.travel/explore/en/zhangjiajie.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lokali.travel/explore/en/zone-v.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -3569,11 +3209,6 @@
   </url>
   <url>
     <loc>https://lokali.travel/explore/en/łódź.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lokali.travel/explore/en/şanlıurfa.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
