@@ -60,7 +60,8 @@ export const KO: Partial<Record<UiKey, string>> = {
     "아야 소피아의 돔, 일몰의 기도 시간 외침, 그리고 유럽에서 아시아로 데려다주는 짧은 페리.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "모든 언어로 이용 가능",
+  "home.everyLang.title": "{count}개 언어 지원",
+  "home.go": "검색",
   "home.everyLang.sub": "주변의 거리, 명소, 박물관, 숨겨진 이야기를 들려주는 AI 오디오 가이드.",
 
   // Destination screen

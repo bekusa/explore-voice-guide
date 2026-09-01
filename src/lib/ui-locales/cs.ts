@@ -60,7 +60,8 @@ export const CS: Partial<Record<UiKey, string>> = {
     "Kupole Hagia Sofie, výzva k modlitbě při západu slunce a krátká plavba trajektem z Evropy do Asie.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Dostupné ve všech jazycích",
+  "home.everyLang.title": "K dispozici v {count} jazycích",
+  "home.go": "Jít",
   "home.everyLang.sub":
     "AI audioprůvodce po ulicích, památkách, muzeích a skrytých příbězích kolem tebe.",
 

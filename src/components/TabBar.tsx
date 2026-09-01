@@ -121,13 +121,21 @@ export function TabBar() {
             <span className="text-[10px] font-medium">{t("nav.profile")}</span>
           </Link>
         ) : (
+          // Beka 2026-09-01 — "sign in ჩაანაცვლე Profile-ით". The tab
+          // now reads "Profile" whether or not the user is signed in,
+          // so the bottom bar stops changing its own labels underneath
+          // people. The DESTINATION still differs: signed out it goes
+          // to /auth (sign-in screen), signed in to /settings (the
+          // profile page). `nav.signIn` stays in i18n for the /auth
+          // screen's own heading and buttons — only this tab label
+          // changed.
           <Link
             to="/auth"
             onClick={tapHaptic}
             className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
           >
             <UserIcon className="h-[19px] w-[19px]" />
-            <span className="text-[10px] font-medium">{t("nav.signIn")}</span>
+            <span className="text-[10px] font-medium">{t("nav.profile")}</span>
           </Link>
         ))}
     </nav>

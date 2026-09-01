@@ -60,7 +60,8 @@ export const UK: Partial<Record<UiKey, string>> = {
     "Куполи Святої Софії, заклик до молитви на заході сонця та короткий пором з Європи до Азії.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Доступно будь-якою мовою",
+  "home.everyLang.title": "Доступно {count} мовами",
+  "home.go": "Пошук",
   "home.everyLang.sub":
     "AI-аудіогід вулицями, пам'ятками, музеями і прихованими історіями довкола тебе.",
 

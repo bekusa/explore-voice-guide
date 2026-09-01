@@ -60,7 +60,8 @@ export const AR: Partial<Record<UiKey, string>> = {
     "قباب آيا صوفيا، الأذان عند غروب الشمس، وعبارة قصيرة تنقلك من أوروبا إلى آسيا.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "متاح بكل اللغات",
+  "home.everyLang.title": "متاح بـ {count} لغة",
+  "home.go": "انطلق",
   "home.everyLang.sub":
     "دليل صوتي بالذكاء الاصطناعي للشوارع والمعالم والمتاحف والقصص الخفية من حولك.",
 

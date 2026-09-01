@@ -66,6 +66,24 @@ const MARQUEE_LANGS: Array<{ code: string; cc: string; native: string }> = [
   { code: "ar", cc: "sa", native: "العربية" },
 ];
 
+/**
+ * Number of DISTINCT languages Lokali speaks — the figure shown in the
+ * language card's title ("Available in {count} languages").
+ *
+ * Deliberately NOT `LANGUAGES.length`. That array holds 49 *options*,
+ * because four languages ship two regional variants each (en-US/en-GB,
+ * es-ES/es-MX, pt-PT/pt-BR, zh-CN/zh-TW). Counting options would
+ * advertise 49 languages when the honest answer is 45.
+ *
+ * Beka asked for a literal "50+" here on 2026-09-01; deriving the value
+ * keeps the claim true today AND makes it become 50, 60, … on its own
+ * as the ~25 planned languages land, with no copy change in 44 locale
+ * files.
+ */
+const LANGUAGE_COUNT = new Set(
+  LANGUAGES.map((l) => l.code.split("-")[0].toLowerCase()),
+).size;
+
 // The 3 cities Beka wants surfaced as the brand carousel:
 // Tbilisi (Lokali's home base), Rome (the canonical European audio-
 // guide city), Istanbul (East–West crossroads). The Paris / Bangkok /
@@ -82,7 +100,6 @@ export function HomeScreen() {
   const navigate = useNavigate();
   const online = useOnlineStatus();
   const unread = useUnreadCount();
-  const selected = useSelectedDestination();
   const t = useT();
   const lang = usePreferredLanguage();
   // Resolve the user's current language entry so the Home top bar
@@ -148,10 +165,15 @@ export function HomeScreen() {
     setHeroIdx(((next % total) + total) % total);
   };
 
-  // Selected-destination chips still translate on the fly — selected
-  // can be any of the 30+ catalog entries, so a static dict isn't
-  // practical here.
-  const [selectedCity, selectedCountry] = useTranslated([selected.city, selected.country]);
+  // Beka 2026-09-01: the "WHERE NEXT? / {city}, {country}" header block
+  // was removed from the top of Home. It was the only consumer of the
+  // selected destination on this screen, so `useSelectedDestination()`
+  // and the `useTranslated([city, country])` call that fed it are gone
+  // too — the latter fired a live /api/translate round-trip on every
+  // locale change for text nobody sees any more.
+  //
+  // The store itself is untouched; /destinations still writes it and
+  // other screens still read it.
 
   // Hero rotation strings are PRE-TRANSLATED per locale (see
   // hero.<slug>.* in src/lib/i18n.ts + locales). Beka asked for this
@@ -311,26 +333,27 @@ export function HomeScreen() {
             style={{ top: "max(2.25rem, calc(env(safe-area-inset-top) + 0.75rem))" }}
             className="absolute left-5 right-5 z-[5] flex flex-col gap-3"
           >
+            {/* Beka 2026-09-01 — "მთავარ ფეიჯზე თავში მოხსენი ლოკაცია":
+                the "WHERE NEXT? / {city}, {country}" block that used to
+                open this row is gone. It duplicated the destination
+                picker that the hero CTA and /destinations already give,
+                and it competed with the hero headline right below it.
+
+                The OFFLINE badge survives on its own — it is a state
+                warning, not navigation, and losing it would leave the
+                user with no signal for why content is stale. It now sits
+                alone on the left of the row.
+
+                `selectedCity` / `selectedCountry` are still read above
+                for the rest of the screen (search + city cards), so
+                removing this block does not orphan them. */}
             <div className="flex items-start justify-between">
               <div className="min-w-0">
-                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-primary">
-                  {t("home.whereNext")}
-                  {!online && (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/15 px-1.5 py-0.5 text-[9px] tracking-[0.16em] text-accent">
-                      <WifiOff className="h-2.5 w-2.5" /> {t("home.offline")}
-                    </span>
-                  )}
-                </div>
-                <Link
-                  to="/destinations"
-                  className="mt-1.5 inline-flex max-w-full items-center gap-1.5 truncate text-[15px] font-semibold text-foreground transition-smooth hover:text-primary"
-                >
-                  <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
-                  <span className="truncate">
-                    {selectedCity}, {selectedCountry}
+                {!online && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/15 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-accent">
+                    <WifiOff className="h-2.5 w-2.5" /> {t("home.offline")}
                   </span>
-                  <ChevronDown className="h-3 w-3 shrink-0 opacity-60" />
-                </Link>
+                )}
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 {/* Language picker (moved from Row 2 to take the
@@ -410,7 +433,30 @@ export function HomeScreen() {
                 active the 7-second hero rotation pauses (see the
                 useEffect that gates on `listening`) so the city
                 doesn't change mid-sentence. */}
+            {/* Beka 2026-09-01 — "Listen ღილაკი უფრო პატარაა და ჩამქრალია
+                ვიდრე ქალაქის. იყოს პირიქით." The two CTAs have SWAPPED
+                roles and order:
+
+                  Listen  → primary: gold gradient, glow, listed first.
+                  {city}  → secondary: outlined glass pill.
+
+                This is the right way round for the product anyway —
+                Lokali sells the audio guide, so the audio action should
+                be the loudest thing in the hero, not a link to a city
+                page the user can also reach from search and the cards
+                below. Listen keeps `disabled={listening}` so a second
+                tap can't restart the panel mid-sentence. */}
             <div className="mt-6 flex flex-wrap items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => setListening(true)}
+                disabled={listening}
+                aria-label={t("attr.listen")}
+                className="inline-flex h-12 items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03] disabled:opacity-60"
+              >
+                <Play className="h-3.5 w-3.5 shrink-0 fill-current" />
+                <span>{t("attr.listen")}</span>
+              </button>
               {/* Hero CTA routes to the city detail page
                   (/destinations/$slug) for the 3 launch cities. Earlier
                   the link went straight to /results; Beka now wants an
@@ -424,32 +470,30 @@ export function HomeScreen() {
                 to="/destinations/$slug"
                 params={{ slug: heroDest.slug }}
                 aria-label={t("home.openCity", { city: heroCity })}
-                className="inline-flex h-12 max-w-full items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03]"
+                className="inline-flex h-12 max-w-full items-center gap-2 rounded-full border border-foreground/25 bg-background/40 px-5 text-[12px] font-bold uppercase tracking-[0.18em] text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60"
               >
                 <span className="truncate">{heroCity}</span>
                 <ArrowRight className="h-3.5 w-3.5 shrink-0" />
               </Link>
-              <button
-                type="button"
-                onClick={() => setListening(true)}
-                disabled={listening}
-                aria-label={t("attr.listen")}
-                className="inline-flex h-12 items-center gap-2 rounded-full border border-foreground/25 bg-background/40 px-5 text-[12px] font-bold uppercase tracking-[0.18em] text-foreground backdrop-blur-md transition-smooth active:scale-95 hover:bg-background/60 disabled:opacity-60"
-              >
-                <Play className="h-3.5 w-3.5 fill-current" />
-                <span>{t("attr.listen")}</span>
-              </button>
             </div>
           </div>
         </section>
 
         {/* ─── SEARCH ─── */}
         <section className="-mt-6 relative z-10 px-5">
+          {/* Beka 2026-09-01 — "Search პანელი უნდა იყოს უფრო მკვეთრი":
+              the pill sat on `border-border` over `bg-card`, which on
+              the dark theme is a ~4% contrast edge that visually
+              dissolved into the hero photo behind it. Sharpened with a
+              gold-tinted border, an opaque background, and a stronger
+              shadow, plus a gold ring on focus so it reads as the
+              primary input on the screen. The magnifier also steps up
+              from muted to full foreground. */}
           <form
             onSubmit={submitSearch}
-            className="flex h-14 items-center gap-3 rounded-full border border-border bg-card px-5 shadow-elegant transition-smooth focus-within:border-primary/60"
+            className="flex h-14 items-center gap-3 rounded-full border-2 border-primary/35 bg-card px-5 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.65)] transition-smooth focus-within:border-primary focus-within:shadow-glow"
           >
-            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <Search className="h-4 w-4 shrink-0 text-primary" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -459,29 +503,38 @@ export function HomeScreen() {
               // 200-char cap — same as the /results search box. Stops
               // accidental clipboard floods from going to n8n / Claude.
               maxLength={200}
-              className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none"
+              className="flex-1 bg-transparent text-[14px] font-medium text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
+            {/* Beka 2026-09-01 — "Search იკონკა ამოცვალე Go წარწერით".
+                The submit control was an arrow-only gold circle; it is
+                now a gold pill reading "Go".
+
+                Why "Go" and not the old "Search": the arrow replaced
+                "SEARCH" precisely because that word translates much
+                wider in Georgian/German/Finnish and overflowed the
+                pill. "Go" is a separate, deliberately SHORT key
+                (`home.go`) translated as an imperative of 2-4
+                characters in every locale, so it fits where "Search"
+                did not. The arrow stays alongside the word as the
+                direction cue. `w-auto px-4` lets the pill grow for the
+                few locales that need a third or fourth character. */}
             {query.trim() ? (
-              // Symbol-only submit — Beka caught the SEARCH text
-              // overflowing the input pill in non-Latin locales (the
-              // word translates much wider in Georgian, German, etc.).
-              // The arrow inside the gold circle is universal and
-              // pairs with the Search magnifier on the left for a
-              // clean "type → tap arrow" flow.
               <button
                 type="submit"
                 aria-label={t("home.search")}
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-gold text-primary-foreground transition-smooth active:scale-95 hover:scale-105"
+                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-gradient-gold px-4 text-[12px] font-bold uppercase tracking-[0.14em] text-primary-foreground transition-smooth active:scale-95 hover:scale-105"
               >
-                <ArrowRight className="h-4 w-4" />
+                <span>{t("home.go")}</span>
+                <ArrowRight className="h-3.5 w-3.5 shrink-0" />
               </button>
             ) : (
               <Link
                 to="/destinations"
                 aria-label={t("home.browse")}
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-secondary/60 text-muted-foreground transition-smooth hover:text-foreground"
+                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-4 text-[12px] font-bold uppercase tracking-[0.14em] text-muted-foreground transition-smooth hover:text-foreground"
               >
-                <ArrowRight className="h-4 w-4" />
+                <span>{t("home.go")}</span>
+                <ArrowRight className="h-3.5 w-3.5 shrink-0" />
               </Link>
             )}
           </form>
@@ -506,12 +559,17 @@ export function HomeScreen() {
             className="group mt-3.5 block rounded-[18px] border border-foreground/[0.09] bg-gradient-to-b from-[#4E3E2C8C] to-[#30261C59] px-3.5 py-3 transition-smooth hover:border-primary/30 active:scale-[0.99]"
           >
             <div className="flex items-center justify-between gap-3">
+              {/* Beka 2026-09-01 — the one-line sub ("AI audio guides
+                  for streets, museums and hidden corners") is DELETED:
+                  it described the product, not the language card it sat
+                  on, so it read as a non-sequitur under the title. The
+                  `home.everyLang.sub` key is left in i18n.ts and the
+                  locale files rather than ripped out of 44 files for no
+                  gain — it is simply no longer rendered. The title now
+                  centres against the arrow on its own. */}
               <div className="min-w-0">
                 <p className="text-[15px] font-bold leading-[1.2] text-foreground">
-                  {t("home.everyLang.title")}
-                </p>
-                <p className="mt-0.5 truncate text-[12.5px] leading-[1.3] text-muted-foreground">
-                  {t("home.everyLang.sub")}
+                  {t("home.everyLang.title", { count: LANGUAGE_COUNT })}
                 </p>
               </div>
               <span className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full border border-foreground/20 text-foreground transition-transform duration-300 group-hover:translate-x-0.5">
@@ -546,7 +604,10 @@ export function HomeScreen() {
                       </span>
                     ))}
                     <span className="inline-flex items-center whitespace-nowrap rounded-full border border-[#F4D03F59] px-[11px] py-1 text-[13px] leading-none text-[#F4D03F]">
-                      +{LANGUAGES.length - MARQUEE_LANGS.length}
+                      {/* Counts DISTINCT languages, matching the title
+                          above — LANGUAGES.length would count regional
+                          variants twice and disagree with it. */}
+                      +{LANGUAGE_COUNT - MARQUEE_LANGS.length}
                     </span>
                   </div>
                 ))}
@@ -572,11 +633,21 @@ export function HomeScreen() {
                 {t("home.museums.sub")}
               </p>
             </div>
+            {/* Beka 2026-09-01 — "Top museum-ზე see all ტექსტი არის
+                ჩამოწელილი 2 ხაზზე". The link had no wrap guard, so once
+                the museums heading + sub took the row's width the two
+                words broke onto separate lines (worst in locales where
+                "See all" is longer, e.g. ka "ყველას ნახვა").
+                `shrink-0` stops the flex row from squeezing it and
+                `whitespace-nowrap` keeps the label on one line; the
+                heading block beside it already has room to wrap
+                instead. Same guard applied to the other two "See all"
+                links so they can't regress the same way. */}
             <Link
               to="/museums"
-              className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary transition-smooth hover:opacity-80"
+              className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[11px] font-bold uppercase tracking-[0.16em] text-primary transition-smooth hover:opacity-80"
             >
-              {t("home.seeAll")} <ArrowRight className="h-3 w-3" />
+              {t("home.seeAll")} <ArrowRight className="h-3 w-3 shrink-0" />
             </Link>
           </div>
           <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
@@ -599,9 +670,9 @@ export function HomeScreen() {
             </div>
             <Link
               to="/destinations"
-              className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary transition-smooth hover:opacity-80"
+              className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[11px] font-bold uppercase tracking-[0.16em] text-primary transition-smooth hover:opacity-80"
             >
-              {t("home.seeAll")} <ArrowRight className="h-3 w-3" />
+              {t("home.seeAll")} <ArrowRight className="h-3 w-3 shrink-0" />
             </Link>
           </div>
 
@@ -625,9 +696,9 @@ export function HomeScreen() {
             </div>
             <Link
               to="/time-machine"
-              className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary transition-smooth hover:opacity-80"
+              className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[11px] font-bold uppercase tracking-[0.16em] text-primary transition-smooth hover:opacity-80"
             >
-              {t("home.seeAll")} <ArrowRight className="h-3 w-3" />
+              {t("home.seeAll")} <ArrowRight className="h-3 w-3 shrink-0" />
             </Link>
           </div>
           <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">

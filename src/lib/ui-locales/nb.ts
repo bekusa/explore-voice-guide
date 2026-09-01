@@ -60,7 +60,8 @@ export const NB: Partial<Record<UiKey, string>> = {
     "Kuplene på Hagia Sofia, bønneropet ved solnedgang og en kort ferge som tar deg fra Europa til Asia.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Tilgjengelig på alle språk",
+  "home.everyLang.title": "Tilgjengelig på {count} språk",
+  "home.go": "Gå",
   "home.everyLang.sub":
     "AI-lydguide for gater, severdigheter, museer og skjulte historier rundt deg.",
 

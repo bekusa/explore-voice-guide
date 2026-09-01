@@ -60,7 +60,8 @@ export const SV: Partial<Record<UiKey, string>> = {
     "Hagia Sofias kupoler, böneutropet vid solnedgång och en kort färja som tar dig från Europa till Asien.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Tillgängligt på alla språk",
+  "home.everyLang.title": "Tillgängligt på {count} språk",
+  "home.go": "Kör",
   "home.everyLang.sub":
     "AI-ljudguide för gator, sevärdheter, museer och dolda berättelser runt omkring dig.",
 

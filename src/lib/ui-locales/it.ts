@@ -60,7 +60,8 @@ export const IT: Partial<Record<UiKey, string>> = {
     "Le cupole di Santa Sofia, il richiamo alla preghiera al tramonto e un breve traghetto che ti porta dall'Europa all'Asia.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Disponibile in ogni lingua",
+  "home.everyLang.title": "Disponibile in {count} lingue",
+  "home.go": "Vai",
   "home.everyLang.sub":
     "Audioguida basata su AI per strade, monumenti, musei e storie nascoste attorno a te.",
 

@@ -242,18 +242,28 @@ function MapPage() {
       map.eachLayer((l) => {
         if ((l as L.TileLayer).getAttribution) map.removeLayer(l);
       });
-      const tiles =
-        style === "dark"
-          ? L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-              attribution: "© OpenStreetMap · © CARTO",
-              maxZoom: 19,
-            })
-          : L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-              attribution: "© OpenStreetMap",
-              maxZoom: 19,
-            });
+      // Beka 2026-08-16: CARTO started requiring an API key on
+      // basemaps.cartocdn.com and stamps unauthenticated tiles with an
+      // "API KEY REQUIRED" watermark — which is exactly what he saw,
+      // and why the map read as "too dark, can't see locations" (the
+      // tiles were effectively dead). CARTO is also retiring raster
+      // PNG basemaps, so taking a key there would only buy time.
+      //
+      // Both styles now use plain OpenStreetMap tiles: free, no key,
+      // no volume gate, and already proven in this app (the "streets"
+      // style has always used them). The dark look is recreated with
+      // a CSS filter applied to Leaflet's TILE PANE ONLY — see
+      // `.map-dark` in styles.css — so the gold pins and tooltips
+      // keep their real colours instead of being inverted too.
+      const tiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap",
+        maxZoom: 19,
+      });
       tiles.addTo(map);
       layer = tiles;
+      // Toggle the dark treatment on the map container.
+      const el = containerRef.current;
+      if (el) el.classList.toggle("map-dark", style === "dark");
     })();
     return () => {
       const l = layer as { remove?: () => void } | null;

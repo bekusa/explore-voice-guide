@@ -60,7 +60,8 @@ export const ID: Partial<Record<UiKey, string>> = {
     "Kubah-kubah Hagia Sophia, panggilan azan saat matahari terbenam, dan kapal feri pendek yang membawamu dari Eropa ke Asia.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Tersedia dalam setiap bahasa",
+  "home.everyLang.title": "Tersedia dalam {count} bahasa",
+  "home.go": "Cari",
   "home.everyLang.sub":
     "Panduan audio berbasis AI untuk jalan, tempat ikonik, museum, dan kisah tersembunyi di sekitarmu.",
 

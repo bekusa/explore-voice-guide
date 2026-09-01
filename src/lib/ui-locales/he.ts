@@ -60,7 +60,8 @@ export const HE: Partial<Record<UiKey, string>> = {
     "כיפות אגיה סופיה, קריאת התפילה בשקיעה, ומעבורת קצרה שלוקחת אותך מאירופה לאסיה.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "זמין בכל שפה",
+  "home.everyLang.title": "זמין ב-{count} שפות",
+  "home.go": "קדימה",
   "home.everyLang.sub":
     "מדריך שמע מבוסס בינה מלאכותית לרחובות, אתרים, מוזיאונים וסיפורים נסתרים סביבכם.",
 

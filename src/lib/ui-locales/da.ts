@@ -60,7 +60,8 @@ export const DA: Partial<Record<UiKey, string>> = {
     "Hagia Sofias kupler, bønneråbet ved solnedgang og en kort færge, der tager dig fra Europa til Asien.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Tilgængelig på alle sprog",
+  "home.everyLang.title": "Tilgængelig på {count} sprog",
+  "home.go": "Gå",
   "home.everyLang.sub":
     "AI-lydguide til gader, seværdigheder, museer og skjulte historier omkring dig.",
 

@@ -146,7 +146,8 @@ export const KA: Partial<Record<UiKey, string>> = {
     "აია-სოფიას გუმბათები, მზის ჩასვლის ჟამის ლოცვაზე მოწოდება და მოკლე ბორანი ევროპიდან აზიამდე.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "ხელმისაწვდომია ყველა ენაზე",
+  "home.everyLang.title": "ხელმისაწვდომია {count} ენაზე",
+  "home.go": "წადი",
   "home.everyLang.cta": "აირჩიე შენი ენა",
   "home.everyLang.sub":
     "AI-ზე დაფუძნებული აუდიოგიდი ქუჩებისთვის, ღირსშესანიშნაობებისთვის, მუზეუმებისთვის და შენ ირგვლივ დამალული ისტორიებისთვის.",

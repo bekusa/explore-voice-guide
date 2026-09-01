@@ -60,7 +60,8 @@ export const HI: Partial<Record<UiKey, string>> = {
     "हागिया सोफिया के गुंबद, सूर्यास्त के समय अज़ान, और एक छोटी फेरी जो आपको यूरोप से एशिया ले जाती है।",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "हर भाषा में उपलब्ध",
+  "home.everyLang.title": "{count} भाषाओं में उपलब्ध",
+  "home.go": "जाएँ",
   "home.everyLang.sub":
     "आपके आसपास की सड़कों, स्थलों, संग्रहालयों और छिपी कहानियों के लिए AI ऑडियो गाइड।",
 

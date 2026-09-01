@@ -286,8 +286,24 @@ export const UI_STRINGS = {
   // Beka asked for a confidence-building line that surfaces Lokali's
   // multi-language story right above the fold. Static so we don't
   // round-trip through the translator for tagline copy.
-  "home.everyLang.title": "Available in every language",
+  // Beka 2026-09-01 asked for "Available in 50+ languages". The catalog
+  // holds 45 DISTINCT languages today (49 options — en/es/pt/zh each ship
+  // two regional variants), so a hard-coded "50+" would be a false claim
+  // on the storefront's most visible line. The string is parameterised
+  // instead and HomeScreen passes the live count off LANGUAGES, so it
+  // reads "Available in 45 languages" now and turns into 50, 60, … by
+  // itself as languages land — no re-translation across 44 locales.
+  "home.everyLang.title": "Available in {count} languages",
+  // Search submit button. Replaced the arrow-only gold circle
+  // (Beka: "Search იკონკა ამოცვალე Go წარწერით"). Kept deliberately to
+  // the shortest natural imperative in every locale — "SEARCH" was
+  // dropped from this pill in the first place because it overflowed in
+  // wider languages.
+  "home.go": "Go",
   "home.everyLang.cta": "Choose your language",
+  // NOTE: no longer rendered. Beka removed this line from the language
+  // card on 2026-09-01 — it described the product, not the card. Key and
+  // its 44 translations are retained in case the copy finds a new home.
   "home.everyLang.sub":
     "AI audio guide for streets, landmarks, museums, and hidden stories around you.",
 

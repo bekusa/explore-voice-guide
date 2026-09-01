@@ -60,7 +60,8 @@ export const BN: Partial<Record<UiKey, string>> = {
     "হাগিয়া সোফিয়ার গম্বুজ, সূর্যাস্তে নামাজের ডাক, এবং ইউরোপ থেকে এশিয়ায় নিয়ে যাওয়া একটি ছোট ফেরি।",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "সব ভাষায় উপলব্ধ",
+  "home.everyLang.title": "{count}টি ভাষায় উপলব্ধ",
+  "home.go": "যান",
   "home.everyLang.sub":
     "আপনার চারপাশের রাস্তা, ল্যান্ডমার্ক, জাদুঘর আর লুকোনো গল্পের জন্য AI অডিও গাইড।",
 

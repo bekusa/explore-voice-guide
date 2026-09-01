@@ -60,7 +60,8 @@ export const FA: Partial<Record<UiKey, string>> = {
     "گنبدهای ایاصوفیه، اذان هنگام غروب، و کشتی کوتاهی که شما را از اروپا به آسیا می‌برد.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "در دسترس به همه زبان‌ها",
+  "home.everyLang.title": "در {count} زبان در دسترس است",
+  "home.go": "برو",
   "home.everyLang.sub":
     "راهنمای صوتی با هوش مصنوعی برای خیابان‌ها، بناهای دیدنی، موزه‌ها و داستان‌های پنهان اطراف شما.",
 

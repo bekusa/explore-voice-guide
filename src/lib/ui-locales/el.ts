@@ -60,7 +60,8 @@ export const EL: Partial<Record<UiKey, string>> = {
     "Οι θόλοι της Αγίας Σοφίας, η πρόσκληση σε προσευχή στο ηλιοβασίλεμα και ένα σύντομο φέρι που σε μεταφέρει από την Ευρώπη στην Ασία.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Διαθέσιμο σε κάθε γλώσσα",
+  "home.everyLang.title": "Διαθέσιμο σε {count} γλώσσες",
+  "home.go": "Πάμε",
   "home.everyLang.sub":
     "Ηχητικός οδηγός AI για δρόμους, αξιοθέατα, μουσεία και κρυμμένες ιστορίες γύρω σου.",
 

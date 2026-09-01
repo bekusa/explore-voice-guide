@@ -60,7 +60,8 @@ export const TR: Partial<Record<UiKey, string>> = {
     "Ayasofya'nın kubbeleri, gün batımında ezan ve Avrupa'dan Asya'ya kısa bir vapur yolculuğu.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Her dilde mevcut",
+  "home.everyLang.title": "{count} dilde mevcut",
+  "home.go": "Git",
   "home.everyLang.sub":
     "Etrafındaki sokaklar, simgeler, müzeler ve gizli hikâyeler için AI sesli rehber.",
 

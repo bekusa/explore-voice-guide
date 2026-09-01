@@ -409,6 +409,37 @@
   color: var(--primary) !important;
 }
 
+/* ─── Dark basemap without a tile-provider key (Beka 2026-08-16) ───
+   CARTO began requiring an API key on basemaps.cartocdn.com and
+   watermarks unauthenticated tiles with "API KEY REQUIRED"; they are
+   also retiring raster PNG basemaps. We now serve plain OpenStreetMap
+   tiles (free, keyless, unlimited-ish) and recreate the dark look
+   here.
+
+   The filter is scoped to Leaflet's TILE pane on purpose. Markers,
+   tooltips and popups live in sibling panes, so the gold pins keep
+   their real colour instead of being inverted into blue.
+
+   It is also scoped to `html:not(.light)` so the LIGHT theme
+   (Settings → Theme) gets the untouched daylight OSM map instead of an
+   inverted one. `.light` is set on <html> by the theme boot script in
+   __root.tsx. */
+html:not(.light) .map-dark .leaflet-tile-pane {
+  /* invert+hue-rotate turns OSM's white paper dark while keeping the
+     water blue and parks green roughly on-hue. brightness/contrast are
+     tuned UP relative to the old CARTO dark_all basemap — Beka's other
+     complaint was "რუკა არის ძალიან მუქი, თითქმის არ ჩანს ლოკაციები",
+     so road and label greys land lighter here on purpose. */
+  filter: invert(1) hue-rotate(180deg) brightness(0.96) contrast(0.86) saturate(0.6);
+}
+/* Attribution sits above the tiles; keep it legible on the dark map. */
+html:not(.light) .map-dark .leaflet-control-attribution {
+  background: rgba(20, 16, 12, 0.6) !important;
+}
+html:not(.light) .map-dark .leaflet-control-attribution a {
+  color: rgba(245, 183, 91, 0.9) !important;
+}
+
 /* ─── "Available in every language" marquee (Home, option 1a) ───────
    Beka 2026-07-05, from the Claude-Design handoff README. The chip
    strip translates 0 → -50% over 22 s and loops; the chip set is

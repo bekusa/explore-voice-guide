@@ -60,7 +60,8 @@ export const FR: Partial<Record<UiKey, string>> = {
     "Les coupoles de Sainte-Sophie, l'appel à la prière au coucher du soleil, et un court ferry qui vous emmène d'Europe en Asie.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Disponible dans toutes les langues",
+  "home.everyLang.title": "Disponible en {count} langues",
+  "home.go": "Go",
   "home.everyLang.sub":
     "Guide audio par IA pour les rues, monuments, musées et histoires cachées autour de vous.",
 

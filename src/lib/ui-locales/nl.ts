@@ -60,7 +60,8 @@ export const NL: Partial<Record<UiKey, string>> = {
     "De koepels van de Hagia Sophia, de gebedsoproep bij zonsondergang en een korte veerboot die je van Europa naar Azië brengt.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Beschikbaar in alle talen",
+  "home.everyLang.title": "Beschikbaar in {count} talen",
+  "home.go": "Ga",
   "home.everyLang.sub":
     "AI-audiogids voor straten, bezienswaardigheden, musea en verborgen verhalen om je heen.",
 

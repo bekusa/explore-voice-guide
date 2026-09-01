@@ -60,7 +60,8 @@ export const ZH_TW: Partial<Record<UiKey, string>> = {
     "聖索菲亞大教堂的圓頂、日落時分的祈禱呼喚，以及一段從歐洲到亞洲的短途渡輪。",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "支援每一種語言",
+  "home.everyLang.title": "支援 {count} 種語言",
+  "home.go": "搜尋",
   "home.everyLang.sub": "AI 語音導覽，為你講述身邊的街道、地標、博物館與隱藏故事。",
 
   // Destination screen

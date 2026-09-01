@@ -60,7 +60,8 @@ export const PT_BR: Partial<Record<UiKey, string>> = {
     "As cúpulas da Hagia Sophia, o chamado à oração ao pôr do sol e uma curta balsa que leva você da Europa à Ásia.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Disponível em todos os idiomas",
+  "home.everyLang.title": "Disponível em {count} idiomas",
+  "home.go": "Ir",
   "home.everyLang.sub":
     "Guia de áudio com IA para ruas, pontos turísticos, museus e histórias escondidas ao seu redor.",
 

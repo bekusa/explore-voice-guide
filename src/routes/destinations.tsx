@@ -115,6 +115,30 @@ function DestinationsPage() {
               ))}
             </div>
           </div>
+
+          {/* Crawlable entry point into the static /explore/ pages.
+              Relocated here from the root shell on 2026-09-01 (it used to
+              render under every screen in the app). Without it the 8,000+
+              generated pages are orphans reachable only from
+              sitemap-explore.xml — which is why Search Console reported
+              ~500 of them as "Discovered - currently not indexed".
+
+              Deliberately a plain <a>, not a router Link: the hub is static
+              HTML served outside the SPA.
+
+              The href MUST end in .html. The Worker serves the router first
+              and has no route for the directory path /explore/, so that URL
+              returns 404 (confirmed live 2026-08-31). Only paths with a file
+              extension fall through to the static asset handler. Do not
+              "tidy" this back to /explore/ without fixing asset routing. */}
+          <div className="px-5 pb-24 pt-8 text-center">
+            <a
+              href="/explore/index.html"
+              className="text-[11px] text-muted-foreground/70 transition-smooth hover:text-primary"
+            >
+              Explore audio guides by city
+            </a>
+          </div>
         </div>
       </div>
     </MobileFrame>

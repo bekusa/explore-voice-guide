@@ -60,7 +60,8 @@ export const DE: Partial<Record<UiKey, string>> = {
     "Die Kuppeln der Hagia Sophia, der Ruf zum Gebet bei Sonnenuntergang und eine kurze Fähre, die dich von Europa nach Asien bringt.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "In jeder Sprache verfügbar",
+  "home.everyLang.title": "In {count} Sprachen verfügbar",
+  "home.go": "Los",
   "home.everyLang.sub":
     "KI-Audioguide für Straßen, Sehenswürdigkeiten, Museen und verborgene Geschichten um dich herum.",
 

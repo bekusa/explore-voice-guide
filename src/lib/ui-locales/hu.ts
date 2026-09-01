@@ -60,7 +60,8 @@ export const HU: Partial<Record<UiKey, string>> = {
     "A Hagia Szófia kupolái, a naplementekori imára szólítás, és egy rövid komp, amely Európából Ázsiába visz.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Minden nyelven elérhető",
+  "home.everyLang.title": "{count} nyelven érhető el",
+  "home.go": "Mehet",
   "home.everyLang.sub":
     "AI-alapú hangos kalauz utcákhoz, nevezetességekhez, múzeumokhoz és rejtett történetekhez körülötted.",
 

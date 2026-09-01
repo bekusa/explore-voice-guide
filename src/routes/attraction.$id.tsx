@@ -2120,8 +2120,11 @@ function MapSection({
         scrollWheelZoom: false,
       });
       L.control.attribution({ position: "bottomleft", prefix: false }).addTo(map);
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-        attribution: "© OpenStreetMap · © CARTO",
+      // OSM tiles + `.map-dark` filter — CARTO now requires an API key
+      // and watermarks unauthenticated tiles (see map.tsx note).
+      containerRef.current?.classList.add("map-dark");
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap",
         maxZoom: 19,
       }).addTo(map);
 

@@ -60,7 +60,8 @@ export const FI: Partial<Record<UiKey, string>> = {
     "Hagia Sofian kupolit, rukouskutsu auringonlaskussa ja lyhyt lautta Euroopasta Aasiaan.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Saatavilla kaikilla kielillä",
+  "home.everyLang.title": "Saatavilla {count} kielellä",
+  "home.go": "Mene",
   "home.everyLang.sub":
     "Tekoälyllä luotu ääniopas kaduille, nähtävyyksiin, museoihin ja kätkettyihin tarinoihin ympärilläsi.",
 

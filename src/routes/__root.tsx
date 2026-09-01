@@ -169,32 +169,21 @@ function RootShell({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
-        {/* Crawlable entry point into the static /explore/ pages.
-            Without this the 1,000+ generated pages are orphans reachable only
-            from the sitemap, which is why Search Console reported ~500 of them
-            as "Discovered - currently not indexed" (2026-08-27).
-            Deliberately a plain <a>, not a router Link: the hub is static HTML
-            served outside the SPA. Bottom padding clears the fixed nav.
+        {/* Beka 2026-09-01: the "Explore audio guides by city" footer that
+            used to live here has MOVED to the bottom of /destinations
+            (src/routes/destinations.tsx). It sat in the root shell, so it
+            appeared under EVERY screen of the app — including the mobile
+            build — which is what he asked to have removed, along with its
+            ~124 px of padding.
 
-            The href MUST end in .html. The Worker serves the router first and
-            has no route for the directory path /explore/, so that URL returns
-            404 — confirmed live 2026-08-31, and it is why Search Console said
-            "Discovered - currently not indexed" for the hub. Only paths with a
-            file extension fall through to the static asset handler. Do not
-            "tidy" this back to /explore/ without fixing asset routing first. */}
-        <footer
-          style={{
-            padding: "28px 16px 96px",
-            textAlign: "center",
-            fontSize: "12px",
-            lineHeight: 1.8,
-            color: "rgba(169,156,142,0.85)",
-          }}
-        >
-          <a href="/explore/index.html" style={{ color: "#f5b75b", textDecoration: "none" }}>
-            Explore audio guides by city
-          </a>
-        </footer>
+            It could not simply be deleted: it is the only in-page link into
+            the 8,000+ static /explore/ pages, which were otherwise orphans
+            reachable only from sitemap-explore.xml (Search Console reported
+            ~500 as "Discovered - currently not indexed", 2026-08-27).
+            /destinations is the natural home for it — a browse-cities page
+            that is itself crawlable — so the internal link survives while
+            the app screens stay clean. If that link is ever removed too,
+            expect the /explore/ hub to lose its crawl path again. */}
         <Scripts />
       </body>
     </html>

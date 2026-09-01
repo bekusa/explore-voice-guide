@@ -60,7 +60,8 @@ export const TH: Partial<Record<UiKey, string>> = {
     "โดมของฮายาโซเฟีย เสียงอะซานยามอาทิตย์ตก และเรือเฟอร์รี่ระยะสั้นที่พาคุณจากยุโรปสู่เอเชีย",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "พร้อมใช้งานในทุกภาษา",
+  "home.everyLang.title": "รองรับ {count} ภาษา",
+  "home.go": "ไป",
   "home.everyLang.sub":
     "ไกด์เสียง AI สำหรับถนน สถานที่สำคัญ พิพิธภัณฑ์ และเรื่องราวซ่อนเร้นรอบตัวคุณ",
 

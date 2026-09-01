@@ -60,7 +60,8 @@ export const PL: Partial<Record<UiKey, string>> = {
     "Kopuły Hagia Sophia, wezwanie do modlitwy o zachodzie słońca i krótka przeprawa promem z Europy do Azji.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Dostępne w każdym języku",
+  "home.everyLang.title": "Dostępne w {count} językach",
+  "home.go": "Szukaj",
   "home.everyLang.sub":
     "Audioprzewodnik AI po ulicach, zabytkach, muzeach i ukrytych historiach wokół ciebie.",
 

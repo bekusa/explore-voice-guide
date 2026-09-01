@@ -60,10 +60,14 @@ export function TripMap({ items }: { items: TripItem[] }) {
       });
       mapRef.current = map;
 
-      L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-        { attribution: "&copy; OpenStreetMap &copy; CARTO", maxZoom: 19 },
-      ).addTo(map);
+      // OSM tiles + the `.map-dark` CSS filter (styles.css). CARTO's
+      // basemaps started demanding an API key and watermarking
+      // unauthenticated tiles in Aug 2026 — see the note in map.tsx.
+      el.classList.add("map-dark");
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap",
+        maxZoom: 19,
+      }).addTo(map);
 
       const icon = L.divIcon({
         className: "tg-pin-saved",

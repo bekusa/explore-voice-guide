@@ -60,7 +60,8 @@ export const UR: Partial<Record<UiKey, string>> = {
     "ہاگیہ صوفیہ کے گنبد، غروب آفتاب کے وقت اذان، اور ایک مختصر فیری جو آپ کو یورپ سے ایشیا لے جاتی ہے۔",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "ہر زبان میں دستیاب",
+  "home.everyLang.title": "{count} زبانوں میں دستیاب",
+  "home.go": "جائیں",
   "home.everyLang.sub":
     "آپ کے ارد گرد گلیوں، یادگاروں، عجائب گھروں اور چھپی کہانیوں کے لیے AI آڈیو گائیڈ۔",
 

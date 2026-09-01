@@ -60,7 +60,8 @@ export const JA: Partial<Record<UiKey, string>> = {
     "アヤソフィアのドーム、夕暮れの礼拝の呼び声、そしてヨーロッパからアジアへの短いフェリー。",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "すべての言語で利用可能",
+  "home.everyLang.title": "{count}言語に対応",
+  "home.go": "検索",
   "home.everyLang.sub":
     "身のまわりの通り、名所、博物館、隠れた物語を案内するAI音声ガイド。",
 

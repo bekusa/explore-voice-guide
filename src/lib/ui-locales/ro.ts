@@ -60,7 +60,8 @@ export const RO: Partial<Record<UiKey, string>> = {
     "Cupolele Sfintei Sofia, chemarea la rugăciune la apus și un feribot scurt care te duce din Europa în Asia.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Disponibil în orice limbă",
+  "home.everyLang.title": "Disponibil în {count} limbi",
+  "home.go": "Mergi",
   "home.everyLang.sub":
     "Ghid audio AI pentru străzi, monumente, muzee și povești ascunse din jurul tău.",
 

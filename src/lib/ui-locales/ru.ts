@@ -60,7 +60,8 @@ export const RU: Partial<Record<UiKey, string>> = {
     "Купола Айя-Софии, призыв к молитве на закате и короткий паром из Европы в Азию.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Доступно на любом языке",
+  "home.everyLang.title": "Доступно на {count} языках",
+  "home.go": "Найти",
   "home.everyLang.sub":
     "AI-аудиогид по улицам, достопримечательностям, музеям и скрытым историям вокруг тебя.",
 

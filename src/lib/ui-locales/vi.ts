@@ -60,7 +60,8 @@ export const VI: Partial<Record<UiKey, string>> = {
     "Mái vòm Hagia Sophia, lời gọi cầu nguyện lúc hoàng hôn, và một chuyến phà ngắn đưa bạn từ châu Âu sang châu Á.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Có sẵn ở mọi ngôn ngữ",
+  "home.everyLang.title": "Có sẵn bằng {count} ngôn ngữ",
+  "home.go": "Tìm",
   "home.everyLang.sub":
     "Hướng dẫn âm thanh AI cho các con phố, địa danh, bảo tàng và những câu chuyện ẩn mình quanh bạn.",
 

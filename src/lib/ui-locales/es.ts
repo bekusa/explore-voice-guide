@@ -60,7 +60,8 @@ export const ES: Partial<Record<UiKey, string>> = {
     "Las cúpulas de Santa Sofía, la llamada a la oración al atardecer y un corto ferry que te lleva de Europa a Asia.",
 
   // "Available in every language" badge under the search bar.
-  "home.everyLang.title": "Disponible en todos los idiomas",
+  "home.everyLang.title": "Disponible en {count} idiomas",
+  "home.go": "Ir",
   "home.everyLang.sub":
     "Guía de audio con IA para calles, monumentos, museos e historias ocultas a tu alrededor.",
 
