@@ -774,6 +774,22 @@ export const UI_STRINGS = {
   "attr.whatToLook": "What to look for",
   "attr.tips": "tips",
   "attr.practical": "Practical",
+  // Practical-info block (opening hours / website / phone), Beka
+  // 2026-09-01. Data comes from Google Places via /api/place-details —
+  // never from Claude, because hours are live facts and a hallucinated
+  // one sends a traveller to a locked door.
+  //
+  // Only five keys: WEEKDAY NAMES AND CLOCK TIMES ARE NOT KEYS. They
+  // are produced by Intl.DateTimeFormat in the user's locale, which is
+  // also why the server caches one language-neutral row per place and
+  // still serves all 45 languages from it. Adding day names as keys
+  // would mean 308 hand-translated strings for something the platform
+  // already gets right, numerals and 12/24-hour conventions included.
+  "attr.openNow": "Open now",
+  "attr.closedNow": "Closed",
+  "attr.open24": "Open 24 hours",
+  "attr.website": "Website",
+  "attr.call": "Call",
   "attr.nearbyWord": "Nearby",
   "attr.places": "places",
   "attr.onTheMap": "On the",

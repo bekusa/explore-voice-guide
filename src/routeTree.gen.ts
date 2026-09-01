@@ -40,6 +40,7 @@ import { Route as ApiTimeMachineRouteImport } from './routes/api.time-machine'
 import { Route as ApiReportRouteImport } from './routes/api.report'
 import { Route as ApiPhotoGalleryRouteImport } from './routes/api.photo-gallery'
 import { Route as ApiPhotoRouteImport } from './routes/api.photo'
+import { Route as ApiPlaceDetailsRouteImport } from './routes/api.place-details'
 import { Route as ApiMuseumHighlightsRouteImport } from './routes/api.museum-highlights'
 import { Route as ApiImageProxyRouteImport } from './routes/api.image-proxy'
 import { Route as ApiGuideRouteImport } from './routes/api.guide'
@@ -203,6 +204,11 @@ const ApiPhotoRoute = ApiPhotoRouteImport.update({
   path: '/api/photo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPlaceDetailsRoute = ApiPlaceDetailsRouteImport.update({
+  id: '/api/place-details',
+  path: '/api/place-details',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiMuseumHighlightsRoute = ApiMuseumHighlightsRouteImport.update({
   id: '/api/museum-highlights',
   path: '/api/museum-highlights',
@@ -264,6 +270,7 @@ export interface FileRoutesByFullPath {
   '/api/image-proxy': typeof ApiImageProxyRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/photo': typeof ApiPhotoRoute
+  '/api/place-details': typeof ApiPlaceDetailsRoute
   '/api/photo-gallery': typeof ApiPhotoGalleryRoute
   '/api/report': typeof ApiReportRoute
   '/api/time-machine': typeof ApiTimeMachineRoute
@@ -304,6 +311,7 @@ export interface FileRoutesByTo {
   '/api/image-proxy': typeof ApiImageProxyRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/photo': typeof ApiPhotoRoute
+  '/api/place-details': typeof ApiPlaceDetailsRoute
   '/api/photo-gallery': typeof ApiPhotoGalleryRoute
   '/api/report': typeof ApiReportRoute
   '/api/time-machine': typeof ApiTimeMachineRoute
@@ -345,6 +353,7 @@ export interface FileRoutesById {
   '/api/image-proxy': typeof ApiImageProxyRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/photo': typeof ApiPhotoRoute
+  '/api/place-details': typeof ApiPlaceDetailsRoute
   '/api/photo-gallery': typeof ApiPhotoGalleryRoute
   '/api/report': typeof ApiReportRoute
   '/api/time-machine': typeof ApiTimeMachineRoute
@@ -387,6 +396,7 @@ export interface FileRouteTypes {
     | '/api/image-proxy'
     | '/api/museum-highlights'
     | '/api/photo'
+    | '/api/place-details'
     | '/api/photo-gallery'
     | '/api/report'
     | '/api/time-machine'
@@ -427,6 +437,7 @@ export interface FileRouteTypes {
     | '/api/image-proxy'
     | '/api/museum-highlights'
     | '/api/photo'
+    | '/api/place-details'
     | '/api/photo-gallery'
     | '/api/report'
     | '/api/time-machine'
@@ -467,6 +478,7 @@ export interface FileRouteTypes {
     | '/api/image-proxy'
     | '/api/museum-highlights'
     | '/api/photo'
+    | '/api/place-details'
     | '/api/photo-gallery'
     | '/api/report'
     | '/api/time-machine'
@@ -508,6 +520,7 @@ export interface RootRouteChildren {
   ApiImageProxyRoute: typeof ApiImageProxyRoute
   ApiMuseumHighlightsRoute: typeof ApiMuseumHighlightsRoute
   ApiPhotoRoute: typeof ApiPhotoRoute
+  ApiPlaceDetailsRoute: typeof ApiPlaceDetailsRoute
   ApiPhotoGalleryRoute: typeof ApiPhotoGalleryRoute
   ApiReportRoute: typeof ApiReportRoute
   ApiTimeMachineRoute: typeof ApiTimeMachineRoute
@@ -740,6 +753,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPhotoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/place-details': {
+      id: '/api/place-details'
+      path: '/api/place-details'
+      fullPath: '/api/place-details'
+      preLoaderRoute: typeof ApiPlaceDetailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/museum-highlights': {
       id: '/api/museum-highlights'
       path: '/api/museum-highlights'
@@ -841,6 +861,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiImageProxyRoute: ApiImageProxyRoute,
   ApiMuseumHighlightsRoute: ApiMuseumHighlightsRoute,
   ApiPhotoRoute: ApiPhotoRoute,
+  ApiPlaceDetailsRoute: ApiPlaceDetailsRoute,
   ApiPhotoGalleryRoute: ApiPhotoGalleryRoute,
   ApiReportRoute: ApiReportRoute,
   ApiTimeMachineRoute: ApiTimeMachineRoute,

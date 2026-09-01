@@ -970,3 +970,81 @@ export async function fetchMuseumHighlights(
   });
   return Array.isArray(data?.highlights) ? data.highlights : [];
 }
+
+/* ─── Practical visit info (opening hours / website / phone) ────────
+ *
+ * Beka 2026-09-01. Served by /api/place-details, backed by Google
+ * Places and cached in its own `cached_place_details` table.
+ *
+ * This is completely SEPARATE from the guide/attractions pipeline: no
+ * Claude call, no generation, and no existing cached content is read
+ * or invalidated by it. Failure is silent by design — a missing
+ * opening-hours block should never break or delay an attraction page.
+ */
+
+/** One opening interval. `day` is 0 = Sunday … 6 = Saturday; `time` is "HHMM". */
+export type OpeningPeriod = {
+  open: { day: number; time: string };
+  /** Absent when the place never closes (24h). */
+  close?: { day: number; time: string };
+};
+
+export type PlaceDetails = {
+  placeId?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  mapsUrl?: string | null;
+  /**
+   * Language-neutral schedule. Weekday names and times are formatted
+   * on the client through the app's i18n + Intl, which is why one
+   * cached row serves all 45 languages.
+   */
+  periods?: OpeningPeriod[] | null;
+  /** Google's English lines — fallback for schedules `periods` can't express. */
+  weekdayText?: string[] | null;
+  businessStatus?: string | null;
+  utcOffsetMinutes?: number | null;
+  lat?: number | null;
+  lng?: number | null;
+  /** Google has no entry for this place. Render nothing. */
+  notFound?: boolean;
+};
+
+/**
+ * Look up practical info for one attraction.
+ *
+ * `city` and the coordinates are disambiguation hints — pass them when
+ * available. Without them a generic name ("Old Town", "Botanical
+ * Garden") can resolve to the wrong city's version, the same failure
+ * mode that put Metekhi Church in Batumi.
+ *
+ * Returns `null` for "nothing to show" (no match, network error, key
+ * missing). Callers should render the block only on a non-null result
+ * with at least one populated field.
+ */
+export async function fetchPlaceDetails(
+  name: string,
+  city?: string,
+  lat?: number | null,
+  lng?: number | null,
+): Promise<PlaceDetails | null> {
+  const n = (name ?? "").trim();
+  if (!n) return null;
+  try {
+    const params = new URLSearchParams({ name: n });
+    if (city?.trim()) params.set("city", city.trim());
+    if (typeof lat === "number" && Number.isFinite(lat)) params.set("lat", String(lat));
+    if (typeof lng === "number" && Number.isFinite(lng)) params.set("lng", String(lng));
+
+    const res = await fetch(`/api/place-details?${params.toString()}`, {
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as PlaceDetails;
+    if (!data || data.notFound) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}

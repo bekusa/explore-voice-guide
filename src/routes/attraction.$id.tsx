@@ -39,6 +39,7 @@ import { LoadingMessages } from "@/components/LoadingMessages";
 import { InlineAudioPanel } from "@/components/InlineAudioPanel";
 import { MobileFrame } from "@/components/MobileFrame";
 import { UnescoBadge } from "@/components/UnescoBadge";
+import { PracticalInfo } from "@/components/PracticalInfo";
 import { isUnescoSite } from "@/lib/unesco";
 import {
   attractionSlug,
@@ -1070,6 +1071,29 @@ function AttractionPage() {
             highlights={highlights}
             loading={loadingHighlights}
             language={language}
+          />
+        )}
+
+        {/* Practical info — opening hours, website, phone. Beka
+            2026-09-01.
+
+            ADDITIVE BY CONSTRUCTION. It fetches its own data from
+            /api/place-details (Google Places → cached_place_details,
+            a table created for this feature) and renders null when
+            there's no match. It does NOT touch the guide payload, does
+            not call Claude, and does not invalidate a single cached
+            guide — his requirement was "არსებული ინფო არ დაზიანდეს და
+            თავიდან არ მქონდეს გამოსაძახებელი".
+
+            Placed directly above the map: hours/phone/website and
+            "where is it" are the same practical question, and both
+            belong after the story rather than interrupting it. */}
+        {showGuideTab && (
+          <PracticalInfo
+            name={a?.name ?? fallbackName}
+            city={(typeof a?.city === "string" ? a.city : null) || searchCity || undefined}
+            lat={typeof a?.lat === "number" ? a.lat : geocoded?.lat}
+            lng={typeof a?.lng === "number" ? a.lng : geocoded?.lng}
           />
         )}
 

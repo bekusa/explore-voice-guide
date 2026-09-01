@@ -74,7 +74,8 @@ type DbWithCache = {
       | "cached_time_machine"
       | "cached_photos"
       | "cached_audio"
-      | "cached_classifications",
+      | "cached_classifications"
+      | "cached_place_details",
   ) => AnyTable;
 };
 
@@ -772,5 +773,158 @@ export async function putCachedClassification(
     if (error) console.warn("[sharedCache] putCachedClassification error", error.message);
   } catch (err) {
     console.warn("[sharedCache] putCachedClassification threw", err);
+  }
+}
+
+/* ─── cached_place_details ─────────────────────────────────────────
+ *
+ * Practical visit info — opening hours, website, phone, address — for
+ * an attraction. Beka 2026-09-01.
+ *
+ * Read the migration header (supabase/migrations/*_cached_place_details.sql)
+ * for why this is a SEPARATE table and not extra columns on
+ * cached_guides: adding it to the guide payload would have invalidated
+ * every existing cached guide (thousands of paid Claude calls), and
+ * Claude has no reliable knowledge of opening hours anyway — these are
+ * live facts from Google Places, never model output.
+ *
+ * NOTHING in this section reads or writes cached_guides /
+ * cached_attractions. A place-details failure can never damage guide
+ * content, and dropping this table costs only API calls.
+ */
+
+/** Structured, language-neutral opening hours as Google returns them. */
+export type OpeningPeriod = {
+  /** 0 = Sunday … 6 = Saturday */
+  open: { day: number; time: string };
+  /** Absent for places that never close (24h). */
+  close?: { day: number; time: string };
+};
+
+export type PlaceDetails = {
+  placeId?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  mapsUrl?: string | null;
+  /** Language-neutral — the client renders weekday names via its own i18n. */
+  periods?: OpeningPeriod[] | null;
+  /** Google's English pre-formatted lines; fallback for odd schedules. */
+  weekdayText?: string[] | null;
+  businessStatus?: string | null;
+  utcOffsetMinutes?: number | null;
+  lat?: number | null;
+  lng?: number | null;
+  /** TRUE when Google had no match. Cached so we stop re-asking. */
+  notFound?: boolean;
+};
+
+export type PlaceDetailsKey = {
+  name: string;
+  /** City qualifier — same disambiguation the photo/guide caches use. */
+  city?: string;
+};
+
+export function placeDetailsCacheKey(key: PlaceDetailsKey): string {
+  return `${normalizeName(key.name)}|${cityKey(key.city)}`;
+}
+
+/**
+ * Look up cached practical info.
+ *
+ * Returns `null` on a miss, on error, OR when the row is older than
+ * `maxAgeMs` — hours change with seasons and renovations, so a stale
+ * row is treated as a miss and the caller refetches. `notFound` rows
+ * age out on the same clock, so a place that gets listed on Google
+ * later is picked up automatically.
+ */
+export async function getCachedPlaceDetails(
+  key: PlaceDetailsKey,
+  maxAgeMs: number,
+): Promise<PlaceDetails | null> {
+  const db = getDb();
+  if (!db) return null;
+  try {
+    const { data, error } = await db
+      .from("cached_place_details")
+      .select(
+        "place_id, formatted_address, phone, website, google_maps_url, opening_periods, weekday_text, business_status, utc_offset_minutes, lat, lng, not_found, updated_at",
+      )
+      .eq("cache_key", placeDetailsCacheKey(key))
+      .maybeSingle();
+    if (error) {
+      console.warn("[sharedCache] getCachedPlaceDetails error", error.message);
+      return null;
+    }
+    if (!data) return null;
+
+    const updatedAt = Date.parse(String(data.updated_at ?? ""));
+    if (Number.isFinite(updatedAt) && Date.now() - updatedAt > maxAgeMs) return null;
+
+    return {
+      placeId: (data.place_id as string) ?? null,
+      address: (data.formatted_address as string) ?? null,
+      phone: (data.phone as string) ?? null,
+      website: (data.website as string) ?? null,
+      mapsUrl: (data.google_maps_url as string) ?? null,
+      periods: (data.opening_periods as OpeningPeriod[]) ?? null,
+      weekdayText: (data.weekday_text as string[]) ?? null,
+      businessStatus: (data.business_status as string) ?? null,
+      utcOffsetMinutes: (data.utc_offset_minutes as number) ?? null,
+      lat: (data.lat as number) ?? null,
+      lng: (data.lng as number) ?? null,
+      notFound: Boolean(data.not_found),
+    };
+  } catch (err) {
+    console.warn("[sharedCache] getCachedPlaceDetails threw", err);
+    return null;
+  }
+}
+
+/**
+ * Persist practical info.
+ *
+ * MUST be awaited by the caller. Cloudflare Workers terminate pending
+ * promises the moment the Response is returned, so the fire-and-forget
+ * pattern described at the top of this file silently drops writes in
+ * production — that bug already cost us the classification cache once.
+ *
+ * Unlike putCachedPhoto, misses ARE cached (`notFound: true`). A photo
+ * miss is worth retrying because a code fix can produce one; a Google
+ * Places miss means the place genuinely is not in Google's index, and
+ * re-asking on every pageview would burn quota for nothing. The TTL
+ * still expires those rows.
+ */
+export async function putCachedPlaceDetails(
+  key: PlaceDetailsKey,
+  details: PlaceDetails,
+): Promise<void> {
+  const db = getDb();
+  if (!db) return;
+  try {
+    const { error } = await db.from("cached_place_details").upsert(
+      {
+        cache_key: placeDetailsCacheKey(key),
+        name: key.name,
+        city: key.city ?? "",
+        place_id: details.placeId ?? null,
+        formatted_address: details.address ?? null,
+        phone: details.phone ?? null,
+        website: details.website ?? null,
+        google_maps_url: details.mapsUrl ?? null,
+        opening_periods: details.periods ?? null,
+        weekday_text: details.weekdayText ?? null,
+        business_status: details.businessStatus ?? null,
+        utc_offset_minutes: details.utcOffsetMinutes ?? null,
+        lat: details.lat ?? null,
+        lng: details.lng ?? null,
+        not_found: Boolean(details.notFound),
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "cache_key" },
+    );
+    if (error) console.warn("[sharedCache] putCachedPlaceDetails error", error.message);
+  } catch (err) {
+    console.warn("[sharedCache] putCachedPlaceDetails threw", err);
   }
 }
