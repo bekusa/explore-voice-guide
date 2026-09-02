@@ -503,7 +503,23 @@ export function HomeScreen() {
               // 200-char cap — same as the /results search box. Stops
               // accidental clipboard floods from going to n8n / Claude.
               maxLength={200}
-              className="flex-1 bg-transparent text-[14px] font-medium text-foreground placeholder:text-muted-foreground focus:outline-none"
+              // `min-w-0` is load-bearing, not decoration. Beka
+              // 2026-09-03: the new "Go" pill was pushed OUT of the
+              // rounded search bar.
+              //
+              // Cause: a flex item's `min-width` defaults to `auto`,
+              // which resolves to its INTRINSIC width — and an <input>
+              // carries a built-in intrinsic width (~180 px, from the
+              // default `size=20`). So `flex-1` alone could not make
+              // this input shrink; instead the row overflowed and the
+              // submit control spilled past the pill's edge.
+              //
+              // It never showed before because the old submit was a
+              // 36 px circle, which fit inside the slack. Replacing it
+              // with a ~95 px "Go" pill exceeded that slack and exposed
+              // the latent bug. `min-w-0` lets the input shrink, so the
+              // button keeps its size and stays inside the pill.
+              className="min-w-0 flex-1 bg-transparent text-[14px] font-medium text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
             {/* Beka 2026-09-01 — "Search იკონკა ამოცვალე Go წარწერით".
                 The submit control was an arrow-only gold circle; it is
