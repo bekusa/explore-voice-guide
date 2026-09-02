@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
-import { getCachedPhoto, putCachedPhoto } from "@/lib/sharedCache.server";
+import {
+  getCachedPhotoEntry,
+  putCachedPhoto,
+  putCachedPhotoMiss,
+} from "@/lib/sharedCache.server";
 import { isAzureConfigured, mirrorPhotoToBlob } from "@/lib/azureBlob.server";
 
 /**
@@ -283,11 +287,16 @@ function toWikimediaThumb(url: string | null): string | null {
   return url;
 }
 
-type FindPlaceResponse = {
-  candidates?: Array<{
-    photos?: Array<{ photo_reference: string }>;
+/**
+ * Places API (New) Text Search response, trimmed to the field mask we
+ * request. `photos[].name` is a resource path like
+ * `places/ChIJ.../photos/AeJb...` which is then fed to the photo media
+ * endpoint.
+ */
+type SearchTextResponse = {
+  places?: Array<{
+    photos?: Array<{ name?: string }>;
   }>;
-  status?: string;
 };
 
 type WikiSearchResponse = {
@@ -328,34 +337,56 @@ async function googlePhoto(q: string, city: string | null): Promise<string | nul
   variants.push(q);
 
   for (const variant of variants) {
-    // `locationbias=ipbias` neutralises the API key's region setting.
-    // Beka's Google Cloud project is registered in Georgia, so bare
-    // findplacefromtext calls were ranking Tbilisi-area matches above
-    // anything we passed via the city query (Liberty Bank for "Liberty
-    // Leading the People", a Tbilisi suburb for "The Lacemaker"). With
-    // ipbias the request gets re-biased to whichever Cloudflare edge
-    // node served it — globally neutral. The "name + city" variant
-    // stays in the input string so legitimate Tbilisi searches still
-    // win when the city is Tbilisi.
-    const findUrl =
-      `https://maps.googleapis.com/maps/api/place/findplacefromtext/json` +
-      `?input=${encodeURIComponent(variant)}` +
-      `&inputtype=textquery&fields=photos&locationbias=ipbias&language=en&key=${GOOGLE_KEY}`;
+    // ── Places API (NEW). Migrated off `findplacefromtext` on
+    // 2026-09-01 because Beka is moving the Google services to another
+    // account, and Google froze the legacy Places API on 2025-03-01:
+    // it CANNOT be enabled on a new Cloud project. Keeping the legacy
+    // call would have meant every attraction photo silently stopping
+    // the moment the new key went in, with a 403 that reads like a bad
+    // key rather than a dead API.
+    //
+    // The old call passed `locationbias=ipbias` to cancel out the key's
+    // region setting — Beka's project is registered in Georgia, so
+    // unbiased legacy calls ranked Tbilisi matches above everything
+    // (Liberty Bank for "Liberty Leading the People", a Tbilisi suburb
+    // for "The Lacemaker"). The New API has no ipbias, and does not
+    // apply the project's region as a ranking bias in the first place,
+    // so simply omitting bias gives the globally-neutral behaviour we
+    // were using ipbias to get back. The "name + city" variant still
+    // carries the disambiguation.
+    const searchRes = await fetch("https://places.googleapis.com/v1/places:searchText", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": GOOGLE_KEY,
+        // Photos only — the field mask is what Google bills on.
+        "X-Goog-FieldMask": "places.photos",
+      },
+      body: JSON.stringify({
+        textQuery: variant,
+        maxResultCount: 1,
+        languageCode: "en",
+      }),
+    });
+    if (!searchRes.ok) continue;
 
-    const findRes = await fetch(findUrl);
-    if (!findRes.ok) continue;
-    const findData = (await findRes.json()) as FindPlaceResponse;
-    const photoRef = findData.candidates?.[0]?.photos?.[0]?.photo_reference;
-    if (!photoRef) continue;
+    const searchData = (await searchRes.json()) as SearchTextResponse;
+    const photoName = searchData.places?.[0]?.photos?.[0]?.name;
+    if (!photoName) continue;
 
-    // /place/photo returns a 302 to lh3.googleusercontent.com — read
-    // Location header and return it so the browser fetches directly.
-    const photoUrl =
-      `https://maps.googleapis.com/maps/api/place/photo` +
-      `?maxwidth=600&photo_reference=${photoRef}&key=${GOOGLE_KEY}`;
-    const photoRes = await fetch(photoUrl, { redirect: "manual" });
-    const location = photoRes.headers.get("Location");
-    if (location) return location;
+    // `skipHttpRedirect=true` makes the media endpoint answer with JSON
+    // carrying `photoUri` instead of a 302. Cleaner than the legacy
+    // dance of reading a Location header off a manual redirect, and it
+    // avoids depending on `redirect: "manual"` semantics inside a
+    // Cloudflare Worker.
+    const mediaRes = await fetch(
+      `https://places.googleapis.com/v1/${photoName}/media` +
+        `?maxWidthPx=600&skipHttpRedirect=true`,
+      { headers: { "X-Goog-Api-Key": GOOGLE_KEY } },
+    );
+    if (!mediaRes.ok) continue;
+    const media = (await mediaRes.json()) as { photoUri?: string };
+    if (media.photoUri) return media.photoUri;
   }
   return null;
 }
@@ -1118,7 +1149,27 @@ export const Route = createFileRoute("/api/photo")({
           city: city ?? "",
           museum: museum ?? "",
         };
-        const persistedRaw = await getCachedPhoto(persistentKey);
+        const persistedEntry = await getCachedPhotoEntry(persistentKey);
+
+        // ⚠️ COST GATE. A recorded, still-fresh miss short-circuits the
+        // ENTIRE lookup chain — Met, Wikipedia and above all Google
+        // Places. Before this existed, every photo-less attraction
+        // re-ran the chain on every single page view, and Google bills
+        // Text Search attempts (~$32/1,000) whether or not they match.
+        // That is the mechanism behind the ~$1,500 bill in Aug 2026.
+        // See PHOTO_MISS_TTL_MS in sharedCache.server.ts.
+        //
+        // `no-store` on the way out is deliberate and unchanged: the
+        // BROWSER must not remember the null, so a lookup fix reaches
+        // users immediately. Only the SERVER remembers it.
+        if (persistedEntry?.miss) {
+          return corsJson(
+            { url: null },
+            { headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } },
+          );
+        }
+
+        const persistedRaw = persistedEntry?.url ?? null;
         // Rewrite legacy cache entries on read — rows written before
         // the Wikimedia thumb transformation landed will still hold
         // the full-resolution `originalimage` URL. Transforming on
@@ -1389,6 +1440,18 @@ export const Route = createFileRoute("/api/photo")({
           // visitor reads from Postgres in ~50 ms and skips the
           // ~12 s Wikipedia / Google round-trip.
           await putCachedPhoto(persistentKey, photoUrl, sourceUrl);
+        } else {
+          // ⚠️ COST CONTROL — record the miss. Without this line the
+          // whole chain (including a paid Google Places Text Search)
+          // re-runs for every visitor to this place, forever. This is
+          // the single change that stops the billing leak; see
+          // PHOTO_MISS_TTL_MS in sharedCache.server.ts.
+          //
+          // Awaited for the same Cloudflare reason as the success
+          // path: a floating promise is killed when Response returns,
+          // which would silently write nothing — and "silently writes
+          // nothing" is exactly how this cost $1,500 the first time.
+          await putCachedPhotoMiss(persistentKey);
         }
         return corsJson(
           { url: photoUrl },

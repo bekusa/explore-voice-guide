@@ -21,12 +21,16 @@
  * data comes from Google Places, or it is omitted.
  *
  * ── Cost control ──────────────────────────────────────────────────
- * Two Google calls on a cold miss (Find Place → Details), zero on a
- * hit. Results are cached globally for 30 days, and MISSES are cached
- * too — plenty of the attractions Claude names ("the old Soviet mosaic
- * on Pekini Avenue") simply aren't Google Places entries, and without
- * a negative cache each of those would re-pay a Find Place call on
- * every single pageview.
+ * ONE Google call on a cold miss, zero on a hit. Results are cached
+ * globally for 30 days, and MISSES are cached too — plenty of the
+ * attractions Claude names ("the old Soviet mosaic on Pekini Avenue")
+ * simply aren't Google Places entries, and without a negative cache
+ * each of those would re-pay a search call on every single pageview.
+ *
+ * Places is the expensive part of the Google bill (Text Search is the
+ * priciest SKU on the platform), so the caching here is not a nicety —
+ * it is the difference between paying once per place ever and paying
+ * once per visitor.
  *
  * ── Language ──────────────────────────────────────────────────────
  * The response is language-NEUTRAL by design: structured `periods`
@@ -78,131 +82,175 @@ function coord(raw: string | null, limit: number): number | null {
   return Number.isFinite(n) && Math.abs(n) <= limit ? n : null;
 }
 
-type GoogleCandidate = { place_id?: string };
-type GoogleDetailsResult = {
-  place_id?: string;
-  formatted_address?: string;
-  international_phone_number?: string;
-  formatted_phone_number?: string;
-  website?: string;
-  url?: string;
-  business_status?: string;
-  utc_offset_minutes?: number;
-  geometry?: { location?: { lat?: number; lng?: number } };
-  opening_hours?: {
-    periods?: OpeningPeriod[];
-    weekday_text?: string[];
-  };
-  /** Google's newer field name; same shape, used when hours differ by service. */
-  current_opening_hours?: {
-    periods?: OpeningPeriod[];
-    weekday_text?: string[];
-  };
+/* ─── Places API (NEW) ─────────────────────────────────────────────
+ *
+ * This endpoint deliberately uses `places.googleapis.com/v1` and NOT
+ * the older `maps.googleapis.com/maps/api/place/*` endpoints.
+ *
+ * Beka is moving the Google API services to a different Google
+ * account, which means a NEW Cloud project — and Google froze the
+ * legacy Places API on 2025-03-01: **legacy Places cannot be enabled
+ * on a new Cloud project at all**. Existing projects keep working,
+ * new ones get "REQUEST_DENIED / API not enabled" forever. Writing
+ * this against the legacy API would therefore have produced a feature
+ * that works today and dies the moment the key is swapped, with a
+ * failure mode that looks like a bad key rather than a dead API.
+ *
+ * The New API also happens to be nicer here: one Text Search returns
+ * the place id, and `skipHttpRedirect` lets us read a photo URL as
+ * JSON instead of parsing a 302 Location header.
+ */
+
+/** Places API (New) returns hours as {day, hour, minute} objects. */
+type NewApiPeriod = {
+  open?: { day?: number; hour?: number; minute?: number };
+  close?: { day?: number; hour?: number; minute?: number };
+};
+type NewApiHours = {
+  periods?: NewApiPeriod[];
+  weekdayDescriptions?: string[];
+};
+type NewApiPlace = {
+  id?: string;
+  formattedAddress?: string;
+  internationalPhoneNumber?: string;
+  nationalPhoneNumber?: string;
+  websiteUri?: string;
+  googleMapsUri?: string;
+  businessStatus?: string;
+  utcOffsetMinutes?: number;
+  location?: { latitude?: number; longitude?: number };
+  regularOpeningHours?: NewApiHours;
+  currentOpeningHours?: NewApiHours;
 };
 
 /**
- * Step 1 — resolve a free-text name to a Google place_id.
+ * Convert the New API's {day, hour, minute} to the {day, time:"HHMM"}
+ * shape we store and the client renders.
+ *
+ * Done at the API boundary on purpose: the cache rows, the client
+ * type, and PracticalInfo.tsx all keep the one schedule format, so a
+ * future provider swap touches only this function. Rows written by an
+ * earlier version stay readable.
+ */
+function toStoredPeriods(periods: NewApiPeriod[] | undefined): OpeningPeriod[] | null {
+  if (!Array.isArray(periods) || periods.length === 0) return null;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const out: OpeningPeriod[] = [];
+  for (const p of periods) {
+    const od = p.open?.day;
+    if (typeof od !== "number") continue;
+    const open = {
+      day: od,
+      time: `${pad(p.open?.hour ?? 0)}${pad(p.open?.minute ?? 0)}`,
+    };
+    // A missing `close` is meaningful — it marks an open-ended /
+    // 24-hour period — so it must stay absent rather than default.
+    if (typeof p.close?.day === "number") {
+      out.push({
+        open,
+        close: {
+          day: p.close.day,
+          time: `${pad(p.close.hour ?? 0)}${pad(p.close.minute ?? 0)}`,
+        },
+      });
+    } else {
+      out.push({ open });
+    }
+  }
+  return out.length > 0 ? out : null;
+}
+
+/**
+ * One Text Search call that returns the place AND all the practical
+ * fields in a single round trip.
+ *
+ * The legacy implementation needed two calls (Find Place → Details).
+ * The New API's field mask lets us ask for the detail fields directly
+ * on the search response, which halves both the latency and the
+ * per-lookup cost on a cache miss.
  *
  * The city qualifier and the coordinate bias both matter: "Old Town"
- * or "Botanical Garden" exist in a hundred cities, and without a
- * locationbias Google happily returns the wrong continent's version.
- * This is the same class of bug that produced Batumi's Metekhi Church
- * in the attractions list.
+ * and "Botanical Garden" exist in a hundred cities, and unbiased
+ * Google happily returns the wrong continent's version — the same
+ * class of bug that put Metekhi Church in Batumi.
  */
-async function findPlaceId(
+async function lookupPlace(
   name: string,
   city: string,
   lat: number | null,
   lng: number | null,
-): Promise<string | null> {
-  const input = city ? `${name}, ${city}` : name;
-  const bias =
-    lat !== null && lng !== null
-      ? `&locationbias=${encodeURIComponent(`circle:20000@${lat},${lng}`)}`
-      : "";
-  const url =
-    `https://maps.googleapis.com/maps/api/place/findplacefromtext/json` +
-    `?input=${encodeURIComponent(input)}` +
-    `&inputtype=textquery&fields=place_id${bias}` +
-    `&key=${encodeURIComponent(GOOGLE_KEY)}`;
-
-  const res = await fetch(url);
-  if (!res.ok) {
-    console.warn("[api.place-details] findplace HTTP", res.status);
-    return null;
-  }
-  const json = (await res.json()) as {
-    status?: string;
-    candidates?: GoogleCandidate[];
-  };
-  if (json.status !== "OK") {
-    // ZERO_RESULTS is normal and expected — see the negative-cache note
-    // in the file header. Anything else (OVER_QUERY_LIMIT,
-    // REQUEST_DENIED) is a configuration problem worth seeing in logs.
-    if (json.status !== "ZERO_RESULTS") {
-      console.warn("[api.place-details] findplace status", json.status);
-    }
-    return null;
-  }
-  return json.candidates?.[0]?.place_id ?? null;
-}
-
-/** Step 2 — pull the practical fields for a resolved place_id. */
-async function fetchDetails(placeId: string): Promise<PlaceDetails | null> {
-  // Explicit field list — Google bills per field group, so asking for
-  // everything would cost several times more per call for data we
-  // don't render.
-  const fields = [
-    "place_id",
-    "formatted_address",
-    "international_phone_number",
-    "formatted_phone_number",
-    "website",
-    "url",
-    "business_status",
-    "utc_offset",
-    "geometry/location",
-    "opening_hours",
-    "current_opening_hours",
+): Promise<PlaceDetails | null> {
+  // Billed per field mask, so this list is exactly what we render —
+  // nothing speculative.
+  const fieldMask = [
+    "places.id",
+    "places.formattedAddress",
+    "places.internationalPhoneNumber",
+    "places.nationalPhoneNumber",
+    "places.websiteUri",
+    "places.googleMapsUri",
+    "places.businessStatus",
+    "places.utcOffsetMinutes",
+    "places.location",
+    "places.regularOpeningHours",
+    "places.currentOpeningHours",
   ].join(",");
 
-  const url =
-    `https://maps.googleapis.com/maps/api/place/details/json` +
-    `?place_id=${encodeURIComponent(placeId)}` +
-    `&fields=${encodeURIComponent(fields)}` +
-    `&key=${encodeURIComponent(GOOGLE_KEY)}`;
-
-  const res = await fetch(url);
-  if (!res.ok) {
-    console.warn("[api.place-details] details HTTP", res.status);
-    return null;
-  }
-  const json = (await res.json()) as {
-    status?: string;
-    result?: GoogleDetailsResult;
+  const body: Record<string, unknown> = {
+    textQuery: city ? `${name}, ${city}` : name,
+    maxResultCount: 1,
+    // English keeps the match stable across our 45 UI languages; the
+    // fields we keep are language-neutral anyway (see file header).
+    languageCode: "en",
   };
-  if (json.status !== "OK" || !json.result) {
-    console.warn("[api.place-details] details status", json.status);
+  if (lat !== null && lng !== null) {
+    body.locationBias = {
+      circle: { center: { latitude: lat, longitude: lng }, radius: 20000 },
+    };
+  }
+
+  const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      // Header auth, not ?key= — the New API's convention, and it
+      // keeps the key out of any URL that might get logged.
+      "X-Goog-Api-Key": GOOGLE_KEY,
+      "X-Goog-FieldMask": fieldMask,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    // 403 here almost always means "Places API (New) is not enabled on
+    // this Cloud project" rather than a bad key — worth spelling out,
+    // because that is the exact failure the account move can cause.
+    const detail = await res.text().catch(() => "");
+    console.warn("[api.place-details] searchText HTTP", res.status, detail.slice(0, 200));
     return null;
   }
 
-  const r = json.result;
-  // Prefer current_opening_hours (reflects holiday overrides) and fall
+  const json = (await res.json()) as { places?: NewApiPlace[] };
+  const p = json.places?.[0];
+  if (!p) return null; // genuine no-match — caller negative-caches it
+
+  // Prefer currentOpeningHours (reflects holiday overrides) and fall
   // back to the regular schedule.
-  const hours = r.current_opening_hours ?? r.opening_hours;
+  const hours = p.currentOpeningHours ?? p.regularOpeningHours;
 
   return {
-    placeId: r.place_id ?? placeId,
-    address: r.formatted_address ?? null,
-    phone: r.international_phone_number ?? r.formatted_phone_number ?? null,
-    website: r.website ?? null,
-    mapsUrl: r.url ?? null,
-    periods: hours?.periods ?? null,
-    weekdayText: hours?.weekday_text ?? null,
-    businessStatus: r.business_status ?? null,
-    utcOffsetMinutes: r.utc_offset_minutes ?? null,
-    lat: r.geometry?.location?.lat ?? null,
-    lng: r.geometry?.location?.lng ?? null,
+    placeId: p.id ?? null,
+    address: p.formattedAddress ?? null,
+    phone: p.internationalPhoneNumber ?? p.nationalPhoneNumber ?? null,
+    website: p.websiteUri ?? null,
+    mapsUrl: p.googleMapsUri ?? null,
+    periods: toStoredPeriods(hours?.periods),
+    weekdayText: hours?.weekdayDescriptions ?? null,
+    businessStatus: p.businessStatus ?? null,
+    utcOffsetMinutes: typeof p.utcOffsetMinutes === "number" ? p.utcOffsetMinutes : null,
+    lat: p.location?.latitude ?? null,
+    lng: p.location?.longitude ?? null,
     notFound: false,
   };
 }
@@ -243,11 +291,11 @@ export const Route = createFileRoute("/api/place-details")({
           return corsJson({ notFound: true });
         }
 
-        // 3. Cold path: two Google calls.
+        // 3. Cold path: ONE Google call (Text Search with a field mask
+        //    that already carries the detail fields).
         let details: PlaceDetails | null = null;
         try {
-          const placeId = await findPlaceId(name, city, lat, lng);
-          if (placeId) details = await fetchDetails(placeId);
+          details = await lookupPlace(name, city, lat, lng);
         } catch (err) {
           console.warn("[api.place-details] lookup threw", err);
           // Transient network/quota failure — do NOT write a notFound

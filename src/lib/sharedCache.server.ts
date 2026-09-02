@@ -591,12 +591,55 @@ function photoCacheKey(key: PhotoKey): string {
  * per-worker memory cache so the two layers stay in lock-step.
  */
 export async function getCachedPhoto(key: PhotoKey): Promise<string | null> {
+  const entry = await getCachedPhotoEntry(key);
+  return entry?.url ?? null;
+}
+
+/**
+ * How long a RECORDED MISS suppresses re-running the lookup chain.
+ *
+ * ⚠️ COST CONTROL — read before changing. Beka received a ~$1,500
+ * Google bill (2026-08). The mechanism: this endpoint cached only
+ * SUCCESSFUL lookups, so every attraction with no findable photo
+ * re-ran the whole chain — including a Google Places Text Search — on
+ * EVERY page view, for every visitor, forever. Google bills attempts,
+ * not successes, and Text Search is the platform's most expensive SKU
+ * (~$32 per 1,000 calls). `googlePhoto()` tries up to two query
+ * variants, so one popular photo-less place viewed 100×/day could burn
+ * ~$6/day on its own — and no amount of traffic growth would ever pay
+ * it off, because the answer never got remembered.
+ *
+ * 14 days, not 30: a place that genuinely has no photo won't grow one
+ * quickly, but a lookup we FIX in code should heal without a manual
+ * cache wipe. To force an immediate re-check after a lookup fix:
+ *
+ *     DELETE FROM cached_photos WHERE not_found = TRUE;
+ */
+export const PHOTO_MISS_TTL_MS = 14 * 24 * 60 * 60 * 1000;
+
+export type CachedPhotoEntry =
+  /** A real photo URL. */
+  | { url: string; miss: false }
+  /** We looked, recently, and there was nothing. Do NOT call upstream. */
+  | { url: null; miss: true };
+
+/**
+ * Read the photo cache, distinguishing three outcomes that the older
+ * `string | null` signature collapsed into two:
+ *
+ *   - a hit               → `{ url, miss: false }`
+ *   - a FRESH recorded miss → `{ url: null, miss: true }`  ← skip lookup
+ *   - nothing / stale miss → `null`                        ← do the lookup
+ *
+ * That middle case is the whole point; see PHOTO_MISS_TTL_MS.
+ */
+export async function getCachedPhotoEntry(key: PhotoKey): Promise<CachedPhotoEntry | null> {
   const db = getDb();
   if (!db) return null;
   try {
     const { data, error } = await db
       .from("cached_photos")
-      .select("url")
+      .select("url, not_found, updated_at")
       .eq("cache_key", photoCacheKey(key))
       .maybeSingle();
     if (error) {
@@ -604,11 +647,54 @@ export async function getCachedPhoto(key: PhotoKey): Promise<string | null> {
       return null;
     }
     if (!data) return null;
+
     const url = data.url;
-    return typeof url === "string" && url.length > 0 ? url : null;
+    if (typeof url === "string" && url.length > 0) return { url, miss: false };
+
+    // Negative row. Honour it only while fresh, so a lookup fix heals
+    // on its own within the TTL.
+    if (data.not_found) {
+      const updatedAt = Date.parse(String(data.updated_at ?? ""));
+      const fresh = !Number.isFinite(updatedAt) || Date.now() - updatedAt <= PHOTO_MISS_TTL_MS;
+      if (fresh) return { url: null, miss: true };
+    }
+    return null;
   } catch (err) {
     console.warn("[sharedCache] getCachedPhoto threw", err);
     return null;
+  }
+}
+
+/**
+ * Record that a lookup found nothing, so the next visitor to this same
+ * place does not re-pay the upstream calls.
+ *
+ * This is the fix for the billing incident described above. Note it
+ * does NOT change what the HTTP layer tells the browser: /api/photo
+ * still answers a miss with `no-store`, so a client never pins a null
+ * in its own disk cache — that was the separate 2026 bug the
+ * "only cache successes" rule was originally written to fix. The two
+ * concerns were conflated; they are now handled at their own layers:
+ *
+ *   server → remembers the miss (stops paying Google repeatedly)
+ *   client → does not remember it (retries pick up fixes instantly)
+ */
+export async function putCachedPhotoMiss(key: PhotoKey): Promise<void> {
+  const db = getDb();
+  if (!db) return;
+  try {
+    const { error } = await db.from("cached_photos").upsert(
+      {
+        cache_key: photoCacheKey(key),
+        url: null,
+        not_found: true,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "cache_key" },
+    );
+    if (error) console.warn("[sharedCache] putCachedPhotoMiss error", error.message);
+  } catch (err) {
+    console.warn("[sharedCache] putCachedPhotoMiss threw", err);
   }
 }
 
