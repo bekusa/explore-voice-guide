@@ -38,9 +38,9 @@ import { Route as ApiTripShareRouteImport } from './routes/api.trip-share'
 import { Route as ApiTranslateRouteImport } from './routes/api.translate'
 import { Route as ApiTimeMachineRouteImport } from './routes/api.time-machine'
 import { Route as ApiReportRouteImport } from './routes/api.report'
+import { Route as ApiPlaceDetailsRouteImport } from './routes/api.place-details'
 import { Route as ApiPhotoGalleryRouteImport } from './routes/api.photo-gallery'
 import { Route as ApiPhotoRouteImport } from './routes/api.photo'
-import { Route as ApiPlaceDetailsRouteImport } from './routes/api.place-details'
 import { Route as ApiMuseumHighlightsRouteImport } from './routes/api.museum-highlights'
 import { Route as ApiImageProxyRouteImport } from './routes/api.image-proxy'
 import { Route as ApiGuideRouteImport } from './routes/api.guide'
@@ -194,6 +194,11 @@ const ApiReportRoute = ApiReportRouteImport.update({
   path: '/api/report',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPlaceDetailsRoute = ApiPlaceDetailsRouteImport.update({
+  id: '/api/place-details',
+  path: '/api/place-details',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPhotoGalleryRoute = ApiPhotoGalleryRouteImport.update({
   id: '/api/photo-gallery',
   path: '/api/photo-gallery',
@@ -202,11 +207,6 @@ const ApiPhotoGalleryRoute = ApiPhotoGalleryRouteImport.update({
 const ApiPhotoRoute = ApiPhotoRouteImport.update({
   id: '/api/photo',
   path: '/api/photo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPlaceDetailsRoute = ApiPlaceDetailsRouteImport.update({
-  id: '/api/place-details',
-  path: '/api/place-details',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMuseumHighlightsRoute = ApiMuseumHighlightsRouteImport.update({
@@ -270,8 +270,8 @@ export interface FileRoutesByFullPath {
   '/api/image-proxy': typeof ApiImageProxyRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/photo': typeof ApiPhotoRoute
-  '/api/place-details': typeof ApiPlaceDetailsRoute
   '/api/photo-gallery': typeof ApiPhotoGalleryRoute
+  '/api/place-details': typeof ApiPlaceDetailsRoute
   '/api/report': typeof ApiReportRoute
   '/api/time-machine': typeof ApiTimeMachineRoute
   '/api/translate': typeof ApiTranslateRoute
@@ -311,8 +311,8 @@ export interface FileRoutesByTo {
   '/api/image-proxy': typeof ApiImageProxyRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/photo': typeof ApiPhotoRoute
-  '/api/place-details': typeof ApiPlaceDetailsRoute
   '/api/photo-gallery': typeof ApiPhotoGalleryRoute
+  '/api/place-details': typeof ApiPlaceDetailsRoute
   '/api/report': typeof ApiReportRoute
   '/api/time-machine': typeof ApiTimeMachineRoute
   '/api/translate': typeof ApiTranslateRoute
@@ -353,8 +353,8 @@ export interface FileRoutesById {
   '/api/image-proxy': typeof ApiImageProxyRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/photo': typeof ApiPhotoRoute
-  '/api/place-details': typeof ApiPlaceDetailsRoute
   '/api/photo-gallery': typeof ApiPhotoGalleryRoute
+  '/api/place-details': typeof ApiPlaceDetailsRoute
   '/api/report': typeof ApiReportRoute
   '/api/time-machine': typeof ApiTimeMachineRoute
   '/api/translate': typeof ApiTranslateRoute
@@ -396,8 +396,8 @@ export interface FileRouteTypes {
     | '/api/image-proxy'
     | '/api/museum-highlights'
     | '/api/photo'
-    | '/api/place-details'
     | '/api/photo-gallery'
+    | '/api/place-details'
     | '/api/report'
     | '/api/time-machine'
     | '/api/translate'
@@ -437,8 +437,8 @@ export interface FileRouteTypes {
     | '/api/image-proxy'
     | '/api/museum-highlights'
     | '/api/photo'
-    | '/api/place-details'
     | '/api/photo-gallery'
+    | '/api/place-details'
     | '/api/report'
     | '/api/time-machine'
     | '/api/translate'
@@ -478,8 +478,8 @@ export interface FileRouteTypes {
     | '/api/image-proxy'
     | '/api/museum-highlights'
     | '/api/photo'
-    | '/api/place-details'
     | '/api/photo-gallery'
+    | '/api/place-details'
     | '/api/report'
     | '/api/time-machine'
     | '/api/translate'
@@ -520,8 +520,8 @@ export interface RootRouteChildren {
   ApiImageProxyRoute: typeof ApiImageProxyRoute
   ApiMuseumHighlightsRoute: typeof ApiMuseumHighlightsRoute
   ApiPhotoRoute: typeof ApiPhotoRoute
-  ApiPlaceDetailsRoute: typeof ApiPlaceDetailsRoute
   ApiPhotoGalleryRoute: typeof ApiPhotoGalleryRoute
+  ApiPlaceDetailsRoute: typeof ApiPlaceDetailsRoute
   ApiReportRoute: typeof ApiReportRoute
   ApiTimeMachineRoute: typeof ApiTimeMachineRoute
   ApiTranslateRoute: typeof ApiTranslateRoute
@@ -739,6 +739,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiReportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/place-details': {
+      id: '/api/place-details'
+      path: '/api/place-details'
+      fullPath: '/api/place-details'
+      preLoaderRoute: typeof ApiPlaceDetailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/photo-gallery': {
       id: '/api/photo-gallery'
       path: '/api/photo-gallery'
@@ -751,13 +758,6 @@ declare module '@tanstack/react-router' {
       path: '/api/photo'
       fullPath: '/api/photo'
       preLoaderRoute: typeof ApiPhotoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/place-details': {
-      id: '/api/place-details'
-      path: '/api/place-details'
-      fullPath: '/api/place-details'
-      preLoaderRoute: typeof ApiPlaceDetailsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/museum-highlights': {
@@ -861,8 +861,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiImageProxyRoute: ApiImageProxyRoute,
   ApiMuseumHighlightsRoute: ApiMuseumHighlightsRoute,
   ApiPhotoRoute: ApiPhotoRoute,
-  ApiPlaceDetailsRoute: ApiPlaceDetailsRoute,
   ApiPhotoGalleryRoute: ApiPhotoGalleryRoute,
+  ApiPlaceDetailsRoute: ApiPlaceDetailsRoute,
   ApiReportRoute: ApiReportRoute,
   ApiTimeMachineRoute: ApiTimeMachineRoute,
   ApiTranslateRoute: ApiTranslateRoute,
