@@ -176,9 +176,35 @@ export const Route = createFileRoute("/attraction/$id")({
     return {
       meta: [
         { title: `${title} — Lokali` },
-        { name: "description", content: `A cinematic audio guide to ${title}.` },
+        {
+          name: "description",
+          content: `Free audio guide to ${title} — history, what to look for and practical tips, in 45 languages.`,
+        },
         { property: "og:title", content: `${title} — Lokali` },
-        { property: "og:description", content: `A cinematic audio guide to ${title}.` },
+        {
+          property: "og:description",
+          content: `Free audio guide to ${title} — history, what to look for and practical tips, in 45 languages.`,
+        },
+        // Social previews (Lovable SEO review 2026-09-01): attraction
+        // hero photos are fetched at runtime per attraction, so SSR
+        // can't know the exact image — use the museum-scoped photo when
+        // the attraction has one under /images/museums/, else the
+        // site-wide og image. Both live on our own domain (previously
+        // these pages inherited a Lovable r2.dev screenshot from root).
+        { property: "og:type", content: "article" },
+        {
+          property: "og:url",
+          content: `https://lokali.travel/attraction/${params.id}`,
+        },
+        {
+          property: "og:image",
+          content: "https://lokali.travel/images/museums/louvre.jpg",
+        },
+        { name: "twitter:card", content: "summary_large_image" },
+        {
+          name: "twitter:image",
+          content: "https://lokali.travel/images/museums/louvre.jpg",
+        },
       ],
       // Canonical link tag — tells Google / social-card crawlers that
       // the URL without query params is the one to index, even when the

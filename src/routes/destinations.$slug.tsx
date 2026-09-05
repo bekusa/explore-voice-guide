@@ -52,12 +52,44 @@ export const Route = createFileRoute("/destinations/$slug")({
     const desc = profile
       ? `Cinematic audio guide to ${profile.city}, ${profile.country}. Stories, attractions, and what locals love.`
       : "A Lokali destination guide.";
+    // Social previews (Lovable SEO review 2026-09-01 flagged these as
+    // generic): serve the city's own hero when we ship one under
+    // public/images/cities/, otherwise fall back to the site-wide
+    // Louvre og image set in __root. Keep this set in sync with that
+    // folder — a listed slug without a file 404s the preview image.
+    const CITY_OG = new Set([
+      "bangkok",
+      "dubai",
+      "istanbul",
+      "london",
+      "new-york",
+      "paris",
+      "rome",
+      "singapore",
+      "tbilisi",
+      "tokyo",
+    ]);
+    const img = CITY_OG.has(params.slug)
+      ? `https://lokali.travel/images/cities/${params.slug}.jpg`
+      : "https://lokali.travel/images/museums/louvre.jpg";
     return {
       meta: [
         { title },
         { name: "description", content: desc },
         { property: "og:title", content: title },
         { property: "og:description", content: desc },
+        { property: "og:type", content: "website" },
+        {
+          property: "og:url",
+          content: `https://lokali.travel/destinations/${params.slug}`,
+        },
+        { property: "og:image", content: img },
+        {
+          property: "og:image:alt",
+          content: profile ? `${profile.city} — Lokali audio guide` : "Lokali",
+        },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:image", content: img },
       ],
     };
   },

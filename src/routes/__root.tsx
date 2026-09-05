@@ -86,37 +86,51 @@ export const Route = createRootRoute({
         name: "viewport",
         content: "width=device-width, initial-scale=1, viewport-fit=cover",
       },
-      { title: "Lokali" },
+      // SEO head cleanup 2026-09-01: title/description carry the real
+      // value prop (free · 45 languages · offline); author + twitter:site
+      // no longer leak "Lovable"; og/twitter images point at our own
+      // hosted asset instead of a Lovable r2.dev preview screenshot.
+      // NOTE: keep the language count in sync with src/lib/ui-locales/.
+      { title: "Lokali — Free Audio Guides in 45 Languages" },
       {
         name: "description",
         content:
-          "Lokali is an AI-powered global audio guide for tourists, offering personalized tours in 37 languages.",
+          "Free audio guides for 190+ cities worldwide, in 45 languages. History, what to look for and practical tips — offline, no ticket, no tour group.",
       },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lokali" },
+      { name: "author", content: "Lokali" },
+      {
+        property: "og:title",
+        content: "Lokali — Free Audio Guides in 45 Languages",
+      },
       {
         property: "og:description",
         content:
-          "Lokali is an AI-powered global audio guide for tourists, offering personalized tours in 37 languages.",
+          "Free audio guides for 190+ cities worldwide, in 45 languages. History, what to look for and practical tips — offline, no ticket, no tour group.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Lokali" },
+      { property: "og:site_name", content: "Lokali" },
+      { property: "og:url", content: "https://lokali.travel/" },
+      { name: "twitter:card", content: "summary_large_image" },
+      {
+        name: "twitter:title",
+        content: "Lokali — Free Audio Guides in 45 Languages",
+      },
       {
         name: "twitter:description",
         content:
-          "Lokali is an AI-powered global audio guide for tourists, offering personalized tours in 37 languages.",
+          "Free audio guides for 190+ cities worldwide, in 45 languages. Offline, no ticket, no tour group.",
       },
       {
         property: "og:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2c6124de-a910-4e7f-a9a8-f1f9c6aa86ed/id-preview-5e507a33--f618b725-5654-4e69-89f1-a620cf4ed64f.lovable.app-1777193546368.png",
+        content: "https://lokali.travel/images/museums/louvre.jpg",
+      },
+      {
+        property: "og:image:alt",
+        content: "The Louvre pyramid at dusk — one of 960+ Lokali audio guides",
       },
       {
         name: "twitter:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2c6124de-a910-4e7f-a9a8-f1f9c6aa86ed/id-preview-5e507a33--f618b725-5654-4e69-89f1-a620cf4ed64f.lovable.app-1777193546368.png",
+        content: "https://lokali.travel/images/museums/louvre.jpg",
       },
     ],
     links: [
