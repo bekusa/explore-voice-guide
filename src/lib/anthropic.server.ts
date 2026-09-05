@@ -222,8 +222,34 @@ async function callClaudeOnce(opts: ClaudeCallOpts): Promise<string> {
       continue;
     }
 
+    // Beka 2026-09-05 diagnostic: record WHICH Cloudflare edge the
+    // call went out from.
+    //
+    // Why: he hit an instant `403 forbidden / "Request not allowed"`
+    // on both Sonnet and Haiku (8 ms and 33 ms — rejected before any
+    // model ran). That is not a credit problem (low balance is a 400
+    // with "Your credit balance is too low") and not a model problem
+    // (an unknown/retired model is a 404 not_found_error). It is the
+    // signature Anthropic returns when the CALLING IP sits in an
+    // unsupported country.
+    //
+    // Our Worker's egress is whatever Cloudflare edge served the user,
+    // so a visitor near a non-supported region can push the outbound
+    // call into that region even though Beka and the account are in
+    // Georgia (which IS supported; Russia is not).
+    //
+    // api.anthropic.com is itself behind Cloudflare, so its response
+    // carries a `cf-ray` whose suffix is the colo code — DME/SVO =
+    // Moscow, IST = Istanbul, FRA = Frankfurt, TBS = Tbilisi. Appending
+    // it to the error message means the NEXT failure identifies the
+    // edge with no extra call, no cost, and no schema migration (it
+    // rides along in api_logs.error).
+    const cfRay = res.headers.get("cf-ray");
+    const colo = cfRay?.split("-")[1];
     throw new Error(
-      `[anthropic] ${res.status} ${res.statusText}${errText ? ` — ${errText.slice(0, 300)}` : ""}`,
+      `[anthropic] ${res.status} ${res.statusText}` +
+        (colo ? ` [edge:${colo}]` : "") +
+        (errText ? ` — ${errText.slice(0, 300)}` : ""),
     );
   }
 
