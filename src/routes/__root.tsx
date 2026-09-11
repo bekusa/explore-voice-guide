@@ -70,6 +70,11 @@ export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
+      // Google Search Console site verification for https://lokali.travel/
+      {
+        name: "google-site-verification",
+        content: "0WmDqRIH0nw4Ygrf46in-64xudOyIt7Csb4Qyo45Qb8",
+      },
       // theme-color paints the browser chrome (Chrome/Edge address
       // bar on Android, Safari status-bar tint on iOS PWA installs)
       // to match Lokali's charcoal. Without this the system bar
