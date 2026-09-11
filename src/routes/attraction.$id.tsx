@@ -175,22 +175,16 @@ export const Route = createFileRoute("/attraction/$id")({
     const title = unslugAttraction(params.id);
     return {
       meta: [
-        { title: `${title} — Lokali` },
+        { title: `${title} - Lokali` },
         {
           name: "description",
-          content: `Free audio guide to ${title} — history, what to look for and practical tips, in 45 languages.`,
+          content: `Free audio guide to ${title} - history, what to look for and practical tips, in 45 languages.`,
         },
-        { property: "og:title", content: `${title} — Lokali` },
+        { property: "og:title", content: `${title} - Lokali` },
         {
           property: "og:description",
-          content: `Free audio guide to ${title} — history, what to look for and practical tips, in 45 languages.`,
+          content: `Free audio guide to ${title} - history, what to look for and practical tips, in 45 languages.`,
         },
-        // Social previews (Lovable SEO review 2026-09-01): attraction
-        // hero photos are fetched at runtime per attraction, so SSR
-        // can't know the exact image — use the museum-scoped photo when
-        // the attraction has one under /images/museums/, else the
-        // site-wide og image. Both live on our own domain (previously
-        // these pages inherited a Lovable r2.dev screenshot from root).
         { property: "og:type", content: "article" },
         {
           property: "og:url",
