@@ -28,6 +28,11 @@ import { supabase } from "@/integrations/supabase/client";
  */
 const telemetryDb = supabase as unknown as SupabaseClient;
 
+// Current signed-in user id, kept in sync by identifyUser / resetAnalytics
+// so telemetry writes (visits, plays) can be attributed without every caller
+// threading the id through. Null while signed out.
+let currentUserId: string | null = null;
+
 type PostHogClient = {
   capture: (event: string, properties?: Record<string, unknown>) => void;
   identify: (distinctId: string, properties?: Record<string, unknown>) => void;
@@ -107,10 +112,36 @@ export function trackEvent(
 }
 
 /**
+ * Record a site visit (a resolved page view) into public.usage_events so the
+ * dashboard can report unique visitors + pageviews from Supabase, without
+ * relying on the PostHog API. PostHog still gets its own $pageview via
+ * capturePageview(); this is the Supabase-native mirror. Fire-and-forget,
+ * never throws. anon_id gives unique-visitor counts even for signed-out
+ * traffic; user_id attributes it when someone is signed in.
+ */
+export function logVisit(path?: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    void telemetryDb
+      .from("usage_events")
+      .insert({
+        event: "page_view",
+        anon_id: anonId(),
+        user_id: currentUserId,
+        props: { path: path ?? (typeof location !== "undefined" ? location.pathname : null) },
+      })
+      .then(undefined, () => {});
+  } catch {
+    /* never throw from telemetry */
+  }
+}
+
+/**
  * Tie subsequent events to a signed-in user. We identify by the Supabase
  * user UUID only (pseudonymous) — no email or other PII is sent to PostHog.
  */
 export function identifyUser(distinctId: string, properties?: Record<string, unknown>): void {
+  currentUserId = distinctId;
   ph()?.identify(distinctId, properties);
 }
 
@@ -119,5 +150,6 @@ export function identifyUser(distinctId: string, properties?: Record<string, unk
  * merged into the previous user's profile.
  */
 export function resetAnalytics(): void {
+  currentUserId = null;
   ph()?.reset();
 }

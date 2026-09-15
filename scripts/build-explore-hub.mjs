@@ -21,8 +21,29 @@
  * It reads the real directory tree, so it stays correct as content changes.
  * Re-run it after every content regeneration.
  *
- * STILL NEEDS A HUMAN: add a footer link to /explore/ in the app shell.
- * Without an inbound link the hub is itself an orphan and this only half works.
+ * ⚠ READ BEFORE RUNNING (updated 2026-09-10)
+ *
+ * City pages are safe: existing files are never overwritten. But this script
+ * ALWAYS rewrites public/explore/index.html, and in early September it quietly
+ * reverted a hand-built version of that hub — that is how "47 languages" and a
+ * link to the dead /explore/en/country.html got back onto the live site.
+ *
+ * Three things were wrong in the output and are now fixed here. Do not undo
+ * them:
+ *   1. URLs pointed at the bare directory /explore/, which returns 404 on the
+ *      Cloudflare Worker. Everything now uses /explore/index.html (HUB_URL).
+ *   2. The copy said 47 languages. The app ships 45 — src/lib/ui-locales/ is
+ *      the source of truth; keep this file, the Play listing and the /explore/
+ *      templates in step with it.
+ *   3. Generated pages had no Play Store link. Every page must carry one.
+ *
+ * It also used to re-add pages to the sitemap that were deliberately set to
+ * robots=noindex,follow (thin hubs: one sight, or a country with one city).
+ * Those are now skipped. If you make a thin hub richer, remove its noindex tag
+ * and it will come back into the sitemap by itself.
+ *
+ * The richer city and country hubs live outside this script. If you need to
+ * regenerate those, do not use this file — it only knows the simple template.
  */
 
 import { readdir, readFile, writeFile, stat } from "node:fs/promises";
@@ -109,13 +130,25 @@ footer a{color:var(--gold);text-decoration:none}`;
 const FONTS = `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">`;
 
-const FOOTER = `<footer>Lokali — free AI audio guides for travellers, in your own language.<br><a href="${BASE}/">Open the Lokali app</a></footer>`;
+// HUB_URL: the explore hub must be linked as /explore/index.html, never as
+// the bare directory /explore/. The Cloudflare Worker runs the router first
+// and has no route for directory paths, so /explore/ returns 404 (confirmed
+// live 2026-08-31). Only paths with a file extension fall through to the
+// static asset handler. Do not "tidy" this back to a trailing slash.
+const HUB_URL = `${BASE}/explore/index.html`;
+
+// Every generated page must carry a Play Store link (Beka, 2026-09-01).
+const PLAY =
+  "https://play.google.com/store/apps/details?id=app.lokali.travel" +
+  "&amp;utm_source=seo&amp;utm_medium=explore&amp;utm_campaign=hub";
+
+const FOOTER = `<footer>Lokali — free AI audio guides for travellers, in your own language.<br><a href="${BASE}/">Open the Lokali app</a> · <a href="${PLAY}" rel="noopener">Get it on Google Play</a></footer>`;
 
 function cityPage(city, attrs) {
   const name = titleCase(city);
   const url = `${BASE}/explore/en/${city}.html`;
   const top = attrs.slice(0, 3).map((a) => a.name).join(", ");
-  const desc = `Free ${name} audio guide in your own language: ${top}. History, tips and what to see — self-guided, no fee.`;
+  const desc = `Free ${name} audio guide in 45 languages: ${top}. Visit times, what to look for and practical tips — self-guided, offline, no fee.`;
   const links = attrs
     .map((a) => `<a href="${BASE}/explore/en/${city}/${a.slug}.html">${esc(a.name)}</a>`)
     .join("\n");
@@ -150,7 +183,7 @@ ${FONTS}
     "@type": "BreadcrumbList",
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "Lokali", "item": "${BASE}/" },
-      { "@type": "ListItem", "position": 2, "name": "Explore", "item": "${BASE}/explore/" },
+      { "@type": "ListItem", "position": 2, "name": "Explore", "item": ${JSON.stringify(HUB_URL)} },
       { "@type": "ListItem", "position": 3, "name": ${JSON.stringify(name)}, "item": ${JSON.stringify(url)} }
     ]
   }
@@ -163,9 +196,9 @@ ${CSS}
 <body>
 <div class="page">
 <header class="topbar"><a class="brand" href="${BASE}/">Lokali</a></header>
-<div class="crumbs"><a href="${BASE}/">Lokali</a> › <a href="${BASE}/explore/">Explore</a> › ${esc(name)}</div>
+<div class="crumbs"><a href="${BASE}/">Lokali</a> › <a href="${HUB_URL}">Explore</a> › ${esc(name)}</div>
 <h1>${esc(name)}</h1>
-<p class="lede">${attrs.length} landmark${attrs.length === 1 ? "" : "s"} in ${esc(name)} with a free Lokali audio guide. Pick one to read about it, then listen in the app in any of 47 languages.</p>
+<p class="lede">${attrs.length} landmark${attrs.length === 1 ? "" : "s"} in ${esc(name)} with a free Lokali audio guide. Pick one to read about it, then listen in the app in any of 45 languages — offline, no ticket, no tour group.</p>
 <div class="cta-row"><a class="cta" href="${BASE}/"><span class="lbl"><small>Begin</small><b>Open the Lokali app</b></span></a></div>
 <section><h2 class="sec">What to see in ${esc(name)}</h2>
 <div class="more-list">
@@ -202,17 +235,18 @@ function hubPage(cities) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#110c08">
-<title>Explore ${names.length} Cities — Free Audio Guides | Lokali</title>
+<title>Explore ${names.length} Cities — Free Audio Guides in 45 Languages | Lokali</title>
 <meta name="description" content="${esc(desc)}">
-<link rel="canonical" href="${BASE}/explore/">
-<link rel="alternate" hreflang="en-US" href="${BASE}/explore/">
-<link rel="alternate" hreflang="en-GB" href="${BASE}/explore/">
-<link rel="alternate" hreflang="x-default" href="${BASE}/explore/">
+<link rel="canonical" href="${HUB_URL}">
+<link rel="alternate" hreflang="en-US" href="${HUB_URL}">
+<link rel="alternate" hreflang="en-GB" href="${HUB_URL}">
+<link rel="alternate" hreflang="x-default" href="${HUB_URL}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Lokali">
-<meta property="og:title" content="Explore ${names.length} Cities — Free Audio Guides | Lokali">
+<meta property="og:title" content="Explore ${names.length} Cities — Free Audio Guides in 45 Languages | Lokali">
 <meta property="og:description" content="${esc(desc)}">
-<meta property="og:url" content="${BASE}/explore/">
+<meta property="og:image" content="${BASE}/images/museums/louvre.jpg">
+<meta property="og:url" content="${HUB_URL}">
 <meta name="twitter:card" content="summary_large_image">
 ${FONTS}
 <script type="application/ld+json">
@@ -220,7 +254,7 @@ ${FONTS}
   "@context": "https://schema.org",
   "@type": "CollectionPage",
   "name": "Explore cities with Lokali",
-  "url": "${BASE}/explore/",
+  "url": ${JSON.stringify(HUB_URL)},
   "isPartOf": { "@type": "WebSite", "name": "Lokali", "url": "${BASE}/" }
 }
 </script>
@@ -233,7 +267,7 @@ ${CSS}
 <header class="topbar"><a class="brand" href="${BASE}/">Lokali</a></header>
 <div class="crumbs"><a href="${BASE}/">Lokali</a> › Explore</div>
 <h1>Explore by city</h1>
-<p class="lede">Free audio guides for ${names.length} cities and ${attrTotal} landmarks. Pick a city to see what is worth your time there, then listen in the Lokali app in any of 47 languages. No ticket, no tour group, no fee.</p>
+<p class="lede">Free audio guides for ${names.length} cities and ${attrTotal} landmarks. Pick a city to see what is worth your time there, then listen in the Lokali app in any of 45 languages. No ticket, no tour group, no fee. Every guide works offline once downloaded.</p>
 <div class="cta-row"><a class="cta" href="${BASE}/"><span class="lbl"><small>Begin</small><b>Open the Lokali app</b></span></a></div>
 
 ${body}
@@ -272,16 +306,34 @@ console.log(`Scanned public/explore/en — ${cities.size} cities, ` +
   `${[...cities.values()].reduce((n, a) => n + a.length, 0)} attraction pages\n`);
 
 let written = 0;
-const newUrls = [`${BASE}/explore/`];
+let skippedNoindex = 0;
+const newUrls = [HUB_URL];
 for (const [city, attrs] of cities) {
   const out = path.join(EN, `${city}.html`);
+  if (existsSync(out)) {
+    // Never overwrite a hand-built page — and never re-add a page we have
+    // deliberately taken out of the index. Thin hubs (one sight, or a
+    // country with a single city) carry robots=noindex,follow on purpose:
+    // they stay linked and crawlable but must not compete in search.
+    // Putting them back in the sitemap would undo that (2026-09-10).
+    const existing = await readFile(out, "utf8");
+    if (/name="robots"[^>]*noindex/.test(existing)) {
+      skippedNoindex++;
+      continue;
+    }
+    newUrls.push(`${BASE}/explore/en/${city}.html`);
+    continue;
+  }
   newUrls.push(`${BASE}/explore/en/${city}.html`);
-  if (existsSync(out)) continue;          // never overwrite a hand-built page
   if (APPLY) await writeFile(out, cityPage(city, attrs), "utf8");
   written++;
 }
-console.log(`1. City pages: ${written} created, ${cities.size - written} already existed`);
+console.log(`1. City pages: ${written} created, ${cities.size - written} already existed` +
+  (skippedNoindex ? `, ${skippedNoindex} kept out of the sitemap (noindex)` : ""));
 
+// The hub is the one file this script always rewrites, so it is also the one
+// that silently reverted hand-made SEO work in the past. Keep it in sync with
+// the real templates: /explore/index.html URLs, 45 languages, a Play link.
 const hub = path.join(PUB, "explore", "index.html");
 if (APPLY) await writeFile(hub, hubPage(cities), "utf8");
 console.log(`2. Hub: public/explore/index.html (${cities.size} cities linked)`);

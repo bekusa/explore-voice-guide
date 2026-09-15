@@ -102,6 +102,12 @@ Disallow: /admin/
 Sitemap: https://lokali.travel/sitemap.xml
 Sitemap: https://lokali.travel/sitemap-explore.xml
 
+# IndexNow (Bing, Yandex, Seznam, Naver) — key file lives at
+# https://lokali.travel/a7f3c91e5b2d48069c1fa73e8d2b5064.txt
+# Submit changed URLs with a GET to:
+#   https://api.indexnow.org/indexnow?url=<URL>&key=a7f3c91e5b2d48069c1fa73e8d2b5064
+# Do not rename or delete that .txt file — it is how the engines verify ownership.
+
 # Rate limiting (optional, for search engines)
 Crawl-delay: 1
 Request-rate: 1/1s

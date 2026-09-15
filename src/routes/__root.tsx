@@ -10,7 +10,7 @@ import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { useT } from "@/hooks/useT";
 import { useCapacitorBridge } from "@/hooks/useCapacitorBridge";
-import { capturePageview, identifyUser, resetAnalytics } from "@/lib/analytics";
+import { capturePageview, logVisit, identifyUser, resetAnalytics } from "@/lib/analytics";
 
 import appCss from "../styles.css?url";
 
@@ -234,8 +234,10 @@ function RootComponent() {
   // navigation. router.subscribe returns its own unsubscribe fn.
   useEffect(() => {
     capturePageview();
+    logVisit();
     const unsubscribe = router.subscribe("onResolved", () => {
       capturePageview();
+      logVisit();
     });
     return unsubscribe;
   }, [router]);
