@@ -4,16 +4,16 @@ import { HomeScreen } from "@/components/HomeScreen";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Lokali — Cinematic Audio Guides for Cities Around the World" },
+      { title: "Lokali - Free Audio Guides in 45 Languages" },
       {
         name: "description",
         content:
-          "Locally narrated, cinematic walking tours for cities across the globe — from Tbilisi to Paris, Rome to London. Listen anywhere, even offline.",
+          "Free audio guides for 190+ cities worldwide, in 45 languages. History, what to look for and practical tips - offline, no ticket, no tour group.",
       },
-      { property: "og:title", content: "Lokali — Audio Guides for Travellers" },
+      { property: "og:title", content: "Lokali - Free Audio Guides in 45 Languages" },
       {
         property: "og:description",
-        content: "Cinematic walking tours, narrated by locals, for cities around the world.",
+        content: "Free audio guides for 190+ cities worldwide, in 45 languages. History, what to look for and practical tips - offline, no ticket, no tour group.",
       },
     ],
   }),
