@@ -69,9 +69,7 @@ JSON SHAPE (return exactly this shape):
       "insider_desc": "Warm local detail, 20-40 words.",
       "rating": 4.6,
       "duration": "30-60 min",
-      "category": "history",
-      "lat": 48.8584,
-      "lng": 2.2945
+      "category": "history"
     }
   ]
 }
