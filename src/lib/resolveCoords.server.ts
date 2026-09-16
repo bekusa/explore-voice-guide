@@ -54,28 +54,44 @@ function encodeInValue(value: string): string {
   return encodeURIComponent(`"${value.replace(/"/g, '""')}"`);
 }
 
-async function lookupTable(keys: string[]): Promise<Map<string, Coord>> {
-  const out = new Map<string, Coord>();
+/**
+ * Batched table lookup. Rows flagged `ambiguous === true` are homonyms
+ * ("Pantheon", "National Museum", …) whose coordinates can't be trusted
+ * for a given city — treat them exactly like a cache miss so the
+ * city-scoped Nominatim path picks the right one, and never overwrite
+ * them on write-back.
+ */
+async function lookupTable(keys: string[]): Promise<{
+  found: Map<string, Coord>;
+  ambiguous: Set<string>;
+}> {
+  const found = new Map<string, Coord>();
+  const ambiguous = new Set<string>();
   const env = getSupabaseEnv();
-  if (!env || keys.length === 0) return out;
+  if (!env || keys.length === 0) return { found, ambiguous };
 
   const list = keys.map(encodeInValue).join(",");
-  const url = `${env.url}/rest/v1/attraction_coords?select=name_key,lat,lng&name_key=in.(${list})`;
+  const url = `${env.url}/rest/v1/attraction_coords?select=name_key,lat,lng,ambiguous&name_key=in.(${list})`;
   const res = await fetch(url, {
     headers: { apikey: env.key, Authorization: `Bearer ${env.key}` },
   });
   if (!res.ok) {
     console.warn("[resolveCoords] table lookup failed", res.status);
-    return out;
+    return { found, ambiguous };
   }
   const rows = (await res.json()) as Array<Record<string, unknown>>;
   for (const row of Array.isArray(rows) ? rows : []) {
     const k = typeof row.name_key === "string" ? row.name_key : "";
+    if (!k) continue;
+    if (row.ambiguous === true) {
+      ambiguous.add(k);
+      continue;
+    }
     const lat = finite(row.lat);
     const lng = finite(row.lng);
-    if (k && lat !== null && lng !== null) out.set(k, { lat, lng });
+    if (lat !== null && lng !== null) found.set(k, { lat, lng });
   }
-  return out;
+  return { found, ambiguous };
 }
 
 async function saveCoord(key: string, coord: Coord): Promise<void> {
@@ -138,8 +154,11 @@ export async function resolveCoords(
     );
 
     let found = new Map<string, Coord>();
+    let ambiguousKeys = new Set<string>();
     try {
-      found = await lookupTable(keys);
+      const table = await lookupTable(keys);
+      found = table.found;
+      ambiguousKeys = table.ambiguous;
     } catch (err) {
       console.warn("[resolveCoords] table lookup error", err);
     }
@@ -157,7 +176,9 @@ export async function resolveCoords(
         const hit = await geocode(name, city);
         if (hit) {
           found.set(key, hit);
-          await saveCoord(key, hit);
+          // Never overwrite a row flagged ambiguous — the Nominatim hit
+          // is city-scoped and would clobber the shared homonym row.
+          if (!ambiguousKeys.has(key)) await saveCoord(key, hit);
         }
       } catch (err) {
         console.warn("[resolveCoords] nominatim error", err);
