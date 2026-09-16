@@ -141,7 +141,17 @@ export const Route = createFileRoute("/api/attractions")({
             maxTokens: 3072,
             label: "attractions",
           });
-          const parsed = parseClaudeJson(text);
+          const rawParsed = parseClaudeJson(text);
+          // Coordinates NEVER come from Claude any more (it hallucinated
+          // them confidently). Resolve from the validated coords table +
+          // a capped Nominatim fallback BEFORE caching, so the cached
+          // English baseline — and every translation derived from it —
+          // carries trusted pins or none at all.
+          const rawArr = extractAttractionsArray(rawParsed);
+          const parsed =
+            rawArr.length > 0
+              ? { attractions: await resolveCoords(rawArr, key.query) }
+              : rawParsed;
 
           // Persist the English baseline only when at least one
           // attraction is present — caching an empty list would pin
