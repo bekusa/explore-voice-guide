@@ -176,7 +176,9 @@ export async function resolveCoords(
         const hit = await geocode(name, city);
         if (hit) {
           found.set(key, hit);
-          await saveCoord(key, hit);
+          // Never overwrite a row flagged ambiguous — the Nominatim hit
+          // is city-scoped and would clobber the shared homonym row.
+          if (!ambiguousKeys.has(key)) await saveCoord(key, hit);
         }
       } catch (err) {
         console.warn("[resolveCoords] nominatim error", err);
