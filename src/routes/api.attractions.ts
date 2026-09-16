@@ -5,6 +5,7 @@ import { translateAttractionsPayload } from "@/lib/translatePayload.server";
 import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
 import { buildAttractionsSystem, buildAttractionsUser } from "@/lib/prompts";
 import { normalizeToCanonicalEnglish } from "@/lib/normalizeAttractionName.server";
+import { resolveCoords } from "@/lib/resolveCoords.server";
 
 /**
  * /api/attractions — Cloudflare Worker route that calls Anthropic
