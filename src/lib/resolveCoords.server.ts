@@ -154,8 +154,11 @@ export async function resolveCoords(
     );
 
     let found = new Map<string, Coord>();
+    let ambiguousKeys = new Set<string>();
     try {
-      found = await lookupTable(keys);
+      const table = await lookupTable(keys);
+      found = table.found;
+      ambiguousKeys = table.ambiguous;
     } catch (err) {
       console.warn("[resolveCoords] table lookup error", err);
     }
