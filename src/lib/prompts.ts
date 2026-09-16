@@ -97,7 +97,6 @@ FIELD GUIDANCE:
   A 10-item list should span at least 1.0 of range — not cluster around 4.5.
 - "duration": Realistic on-site visit time. Format strictly as "X-Y min" OR "X-Y hours". Examples: "20-40 min", "1-2 hours", "2-4 hours". Never use "approximately", "half a day", or word numbers.
 - "category": Choose exactly ONE id from this set: ${INTERESTS.map((i) => `"${i.id}"`).join(", ")}. Pick the strongest fit; default to "editors" when no clear bias.
-- "lat" / "lng": Approximate decimal coordinates. Set BOTH to \`null\` (do not omit the fields) if you are not confident the coordinates are correct to within roughly 10 metres AND that the place is in the specified city. Wrong coordinates place a pin in the wrong neighbourhood and break trust — \`null\` is safer than a guess. The frontend has Wikipedia and Google Places fallback for null coordinates.
 
 WHAT NOT TO INCLUDE:
 - Attractions in a DIFFERENT city or region than the one queried. If the query is "Tbilisi", do not include Kutaisi, Batumi, Borjomi, or Bagrati Cathedral. If the query is "Rome", do not include Florence, Naples, or Milan attractions. The only exception is the 1-2 nearby tourism-packaged places allowed under LOCATION INTERPRETATION.
