@@ -408,10 +408,12 @@ async function handleExtensionRequest(
   // list — Claude sometimes ignores the "don't include these" rule.
   const excludeSet = new Set(extras.exclude.map((s) => s.trim().toLowerCase()));
   const newEnRaw = extractAttractionsArray(parsed);
-  const newEn = newEnRaw.filter((row) => {
+  const newEnFiltered = newEnRaw.filter((row) => {
     const name = typeof row.name === "string" ? row.name.trim().toLowerCase() : "";
     return name.length > 0 && !excludeSet.has(name);
   });
+  // Trusted coordinates only — see the main cache-miss path.
+  const newEn = await resolveCoords(newEnFiltered, key.query);
 
   if (newEn.length === 0) {
     return jsonResponse({ attractions: [] }, 200, "EXTEND-EMPTY", "no-new-items");
