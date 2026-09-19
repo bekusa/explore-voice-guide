@@ -19,6 +19,7 @@
     "photos:download:missing": "node scripts/download-hero-photos.mjs --skip-existing"
   },
   "dependencies": {
+    "@capacitor-community/in-app-review": "^8.0.0",
     "@capacitor/android": "^7.0.0",
     "@capacitor/app": "^7.0.0",
     "@capacitor/browser": "^7.0.0",
