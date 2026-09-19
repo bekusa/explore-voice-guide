@@ -228,6 +228,18 @@ function hubPage(cities) {
       return `<section><h2 class="sec">${letter}</h2>\n<div class="more-list">\n${links}\n</div></section>`;
     })
     .join("\n\n");
+  // Other-language trees that exist as full page sets. These are NOT reachable
+  // from the A-Z list above (which is English-only), so without this block the
+  // only crawl path into them is the sitemap. Added 2026-09-19 with the Turkish
+  // tree (109 URLs). Add a line here whenever another language gets its own tree.
+  const OTHER_TREES = [
+    { url: `${BASE}/explore/tr/turkiye.html`, label: "Türkiye — Türkçe sesli rehberler", lang: "tr" },
+  ];
+  const otherBlock = OTHER_TREES.length
+    ? `<section><h2 class="sec">In other languages</h2>\n<div class="more-list">\n` +
+      OTHER_TREES.map((t) => `<a href="${t.url}" hreflang="${t.lang}" lang="${t.lang}">${esc(t.label)}</a>`).join("\n") +
+      `\n</div></section>`
+    : "";
   const desc = `Free self-guided audio tours for ${names.length} cities worldwide. Browse landmarks by city and listen in your own language — no ticket, no tour group, no fee.`;
   return `<!DOCTYPE html>
 <html lang="en">
@@ -272,6 +284,8 @@ ${CSS}
 
 ${body}
 
+${otherBlock}
+
 ${FOOTER}
 </div>
 </body>
@@ -283,6 +297,11 @@ async function updateSitemap(newUrls) {
   const p = path.join(PUB, "sitemap-explore.xml");
   const xml = await readFile(p, "utf8");
   const have = new Set([...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]));
+  // APPEND ONLY. Since 2026-09-19 the sitemap also carries non-English trees
+  // (Turkish: 109 urls) and <xhtml:link> hreflang alternates that this script
+  // knows nothing about. Rewriting the file from scratch here would delete
+  // them. If you ever need a full rebuild, use the generator that produced
+  // them, not this function.
   const add = newUrls.filter((u) => !have.has(u));
   if (!add.length) return { added: 0, total: have.size };
   const today = new Date().toISOString().slice(0, 10);

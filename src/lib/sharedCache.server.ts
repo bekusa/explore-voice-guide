@@ -107,86 +107,27 @@ function getDb(): DbWithCache | null {
 /* ─── Key normalization ─── */
 
 /**
- * Canonicalize a free-form place name so trivial whitespace / case
- * drift collapses to one cache row. Same shape the frontend
- * `attractionSlug()` uses (modulo the dash separator), so we can
- * cross-reference if needed.
- */
-/**
- * Characters that do NOT decompose under Unicode NFD, so the
- * combining-mark strip below can't reach them. Turkish dotless ı is
- * the one that actually bit us (BUG 1b): Haiku returns "Kaputaş"
- * sometimes and "Kaputas" other times, producing two cache rows for
- * one beach. Folding both to "kaputas" makes the alias rows the
- * warming script had to insert unnecessary.
- */
-const CHAR_FOLD: Record<string, string> = {
-  ı: "i",
-  ø: "o",
-  ł: "l",
-  đ: "d",
-  ð: "d",
-  þ: "th",
-  ß: "ss",
-  æ: "ae",
-  œ: "oe",
-};
-
-/**
- * Strip diacritics so "Kaputaş" and "Kaputas", "Göreme" and "Goreme",
- * "Şanlıurfa" and "Sanliurfa" collapse to one cache key. Expects an
- * already-lowercased string (Turkish İ lowercases to i + combining
- * dot, which the NFD strip then removes correctly).
- */
-export function foldDiacritics(s: string): string {
-  let out = s;
-  for (const [from, to] of Object.entries(CHAR_FOLD)) {
-    if (out.includes(from)) out = out.split(from).join(to);
-  }
-  // NFD splits "ş" into "s" + U+0327; the range strip drops the mark.
-  return out.normalize("NFD").replace(/[̀-ͯ]/g, "");
-}
-
-export function normalizeName(name: string): string {
-  return foldDiacritics(name.trim().toLowerCase()).replace(/\s+/g, " ");
-}
-
-/**
- * Canonical cache language code (BUG 7).
+ * MOVED to `src/lib/cacheKey.ts` on 2026-09-19 and re-exported here so
+ * every existing `import { normalizeName } from "sharedCache.server"`
+ * keeps working unchanged.
  *
- * The DB had `pl` AND `pl-PL`, `zh` AND `zh-cn` AND `zh-tw` — the
- * same language split across keys, so each variant paid its own
- * Gemini translation and missed the other's cache.
+ * Why they moved: guide ratings run in the BROWSER and need the exact
+ * same key shape, but this file can never be imported client-side —
+ * it pulls in the Supabase service-role key and process.env. Copying
+ * the normalisers into a client module would have worked right up
+ * until the two copies drifted, at which point the rating → cached
+ * guide join would stop matching with no error anywhere.
  *
- * Canonical form = what the rest of the codebase already uses: the
- * lowercase BASE code, keeping a region suffix ONLY for the four
- * locales the app genuinely serves differently (matching the
- * src/lib/ui-locales/*.ts filenames: pt-br, pt-pt, zh-cn, zh-tw).
- * So "pl-PL" → "pl", "en-US" → "en", "ka-GE" → "ka", "zh-CN" →
- * "zh-cn". Bare "zh"/"pt" get the majority variant so they stop
- * forming their own orphan bucket.
+ * One definition, two consumers. See the warning in cacheKey.ts about
+ * treating edits there as a cache migration.
+ *
+ * NOTE the import + re-export pair rather than a bare
+ * `export { … } from`: this file calls normalizeName / normalizeLang
+ * 30-odd times itself, and a pure re-export does NOT bring the names
+ * into local scope.
  */
-const SPLIT_LOCALES = new Set(["pt-br", "pt-pt", "zh-cn", "zh-tw"]);
-const BARE_SPLIT_DEFAULT: Record<string, string> = {
-  zh: "zh-cn",
-  pt: "pt-br",
-};
-
-export function normalizeLang(lang: string): string {
-  const raw = (lang ?? "").trim().toLowerCase().replace(/_/g, "-");
-  if (!raw) return "en";
-  // Script subtags Chinese sometimes arrives with.
-  const scripted = raw
-    .replace(/^zh-hans(-.*)?$/, "zh-cn")
-    .replace(/^zh-hant(-.*)?$/, "zh-tw");
-  if (SPLIT_LOCALES.has(scripted)) return scripted;
-  const base = scripted.split("-")[0];
-  if (base in BARE_SPLIT_DEFAULT && !SPLIT_LOCALES.has(scripted)) {
-    // "zh" alone, or an unexpected zh-XX / pt-XX region.
-    return scripted === base ? BARE_SPLIT_DEFAULT[base] : BARE_SPLIT_DEFAULT[base];
-  }
-  return base;
-}
+import { foldDiacritics, normalizeName, normalizeLang } from "@/lib/cacheKey";
+export { foldDiacritics, normalizeName, normalizeLang };
 
 /**
  * Stable string key for the `filters` argument to /attractions —

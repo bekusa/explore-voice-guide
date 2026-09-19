@@ -350,10 +350,12 @@ ROOMS & ARCHITECTURAL SPACES:
 Rooms, halls, and architectural features can be entries when they are collection-defining experiences (the Sistine Chapel inside the Vatican Museums, the Hall of Mirrors at the Palace of Versailles, the Pantheon's oculus). For these, "artist" is the empty string "". Do not include generic museum rooms (cafés, lobbies, gift shops, stairwells).
 
 COUNT:
-TARGET: 30 highlights, ordered by importance.
-- For major encyclopedic museums (Louvre, Met, Vatican Museums, British Museum, Hermitage, Prado, Uffizi, Rijksmuseum, MoMA, National Gallery London, Tate Britain, State Tretyakov, Pergamonmuseum, Egyptian Museum, Topkapi Palace Museum), the goal IS exactly 30. These all have 30+ universally-recognised collection-defining works — under-shooting on these museums leaves obvious masterpieces missing. Push to 30.
-- Return fewer than 30 ONLY for genuinely small, regional, single-artist, or specialist museums where 30 must-see-level works do not exist in this collection. For those, return however many real entries you can stand behind (could be 18, 22, 27).
-- DO NOT pad with weak, uncertain, duplicate, or generic entries to reach 30. Better 22 trustworthy entries than 30 with 8 borderline or fabricated. But for a museum that obviously HAS 30+ defining works, returning only 15 is its own failure mode — keep going until you reach 30.
+TARGET: 50 highlights for major encyclopedic museums, 30 for everything else, ordered by importance.
+- For major encyclopedic museums (Louvre, Met, Vatican Museums, British Museum, Hermitage, Prado, Uffizi, Rijksmuseum, MoMA, National Gallery London, Tate Britain, State Tretyakov, Pergamonmuseum, Egyptian Museum, Topkapi Palace Museum), the goal IS exactly 50. These all hold far more than 50 universally-recognised collection-defining works — under-shooting on these museums leaves obvious masterpieces missing. Push to 50.
+- For all other museums, target 30.
+- Return fewer ONLY for genuinely small, regional, single-artist, or specialist museums where that many must-see-level works do not exist in this collection. For those, return however many real entries you can stand behind (could be 18, 22, 27).
+- DO NOT pad with weak, uncertain, duplicate, or generic entries to reach the target. Better 22 trustworthy entries than 30 with 8 borderline or fabricated. But for a museum that obviously HAS 50+ defining works, returning only 15 is its own failure mode — keep going until you reach the target.
+- Ordering matters more at 50 than it did at 30: the first 10 must be the works a first-time visitor would regret missing, and the tail can go deeper. Do not front-load deep cuts.
 
 UNIQUENESS (Beka's catch, Louvre had 6 Raft of the Medusa entries):
 Every entry must refer to a DIFFERENT physical object. Two entries are duplicates and must be collapsed to one when ANY of these is true:
@@ -406,7 +408,15 @@ export function buildMuseumHighlightsUser(args: MuseumHighlightsPromptArgs): str
     `CITY: ${args.city}`,
     `LANGUAGE: ${args.language || "en"}`,
     "",
-    "Return up to 30 highlights, ordered by importance from strongest signature works down to deeper cuts. For smaller museums that lack 30 must-see-level works, return fewer real entries — never pad.",
+    // Beka 2026-09-18: raised 30 → 50 for the encyclopedic museums.
+    // The Louvre already HAS 50 entries, but only because they were
+    // inserted by hand — this number was never updated, so every other
+    // big museum (Prado, Uffizi, British Museum, Hermitage…) was still
+    // being generated at 30 and silently truncated.
+    //
+    // Kept in sync with the COUNT section of the system prompt above;
+    // if you change one, change both.
+    "Return up to 50 highlights for a major encyclopedic museum (30 for other museums), ordered by importance from strongest signature works down to deeper cuts. For smaller museums that lack that many must-see-level works, return fewer real entries — never pad.",
     "",
     "Now return the JSON. First character must be `{`, no markdown fences, no commentary.",
   ].join("\n");

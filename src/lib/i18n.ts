@@ -679,6 +679,11 @@ export const UI_STRINGS = {
   "auth.alreadyRegistered": "This email is already registered. Try signing in.",
   // OAuth providers
   "auth.continueWithGoogle": "Continue with Google",
+  // Beka 2026-09-19 — Facebook + Microsoft sign-in. The provider
+  // names are brand names and stay untranslated in every locale; only
+  // the "Continue with" part changes.
+  "auth.continueWithFacebook": "Continue with Facebook",
+  "auth.continueWithMicrosoft": "Continue with Microsoft",
   "auth.continueWithApple": "Continue with Apple",
   "auth.appleComingSoon": "Apple Sign In coming soon",
   "auth.orWithEmail": "or with email",
@@ -790,6 +795,18 @@ export const UI_STRINGS = {
   "attr.open24": "Open 24 hours",
   "attr.website": "Website",
   "attr.call": "Call",
+  // Guide rating block (Beka 2026-09-19). Deliberately asks about
+  // THE GUIDE, not the place — "rate this" next to the Louvre would
+  // obviously read as rating the Louvre.
+  //
+  // These are OUR strings and unrelated to the Play Store dialog,
+  // which Google renders itself. Nothing here is shown next to that
+  // dialog, which would breach Google's no-gating rule.
+  "rating.question": "How was this guide?",
+  "rating.stars": "{n} stars",
+  "rating.thanks": "Thanks!",
+  "rating.commentPlaceholder": "Anything we got wrong? (optional)",
+  "rating.commentSaved": "Saved",
   "attr.nearbyWord": "Nearby",
   "attr.places": "places",
   "attr.onTheMap": "On the",

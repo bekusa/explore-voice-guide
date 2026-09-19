@@ -8,6 +8,7 @@ import { resolveAzureVoice } from "@/lib/azureVoices";
 import { attractionSlug } from "@/lib/api";
 import { audioId, getAudioBlobUrl, saveAudioBlob, saveScript, scriptId } from "@/lib/offlineStore";
 import { trackEvent } from "@/lib/analytics";
+import { noteAudioCompleted } from "@/lib/reviewPrompt";
 
 /**
  * Sticky-bottom inline audio panel — full transport row + scrubber.
@@ -332,6 +333,15 @@ export function InlineAudioPanel({
           onEnded={() => {
             setPlaying(false);
             setPaused(false);
+            // Beka 2026-09-19 — the strongest "this person got value"
+            // signal we have, and the one the Play Store review
+            // prompt leans on hardest. Opening a page proves nothing;
+            // listening to a whole guide does.
+            //
+            // Fire-and-forget on purpose: this writes to Capacitor
+            // Preferences and must never delay the UI settling after
+            // playback. It no-ops on web.
+            void noteAudioCompleted();
           }}
           // Toast on decode / network failures so the panel doesn't
           // hang at 0:00 / 0:00 forever when Azure returns a broken

@@ -19,6 +19,24 @@ export const Route = createFileRoute("/auth")({
 
 type Mode = "signin" | "signup" | "reset";
 
+/**
+ * Social providers wired to Supabase Auth.
+ *
+ * ⚠️ These strings are SUPABASE provider ids, not brand names.
+ * Microsoft's id is **"azure"** — passing "microsoft" returns
+ * "Unsupported provider" and is the single easiest mistake to make
+ * here. Facebook's is plain "facebook".
+ *
+ * Adding a provider needs THREE things, and it silently fails if any
+ * one is missing:
+ *   1. this type + a button below
+ *   2. the provider enabled in Supabase Dashboard → Authentication →
+ *      Providers, with its client id/secret
+ *   3. the redirect URL registered on the provider's own side
+ *      (https://dwyajguhgyjbgkpzjaln.supabase.co/auth/v1/callback)
+ */
+export type OAuthProvider = "google" | "apple" | "facebook" | "azure";
+
 function AuthPage() {
   const navigate = useNavigate();
   const t = useT();
@@ -27,7 +45,11 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [oauthLoading, setOauthLoading] = useState<null | "google" | "apple" | "guest">(null);
+  // Beka 2026-09-19: added facebook + azure (Microsoft). "azure" is
+  // Supabase's provider id for Microsoft accounts — NOT "microsoft".
+  const [oauthLoading, setOauthLoading] = useState<
+    null | OAuthProvider | "guest"
+  >(null);
 
   // Redirect if already signed in. Send to onboarding if profile is unset.
   useEffect(() => {
@@ -61,14 +83,14 @@ function AuthPage() {
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
 
-  /* ─── OAuth (Google + Apple) ─── */
-  const signInWithProvider = async (provider: "google" | "apple") => {
+  /* ─── OAuth (Google · Apple · Facebook · Microsoft) ─── */
+  const signInWithProvider = async (provider: OAuthProvider) => {
     setOauthLoading(provider);
     try {
       const { Capacitor } = await import("@capacitor/core");
       const isNative = Capacitor.isNativePlatform();
 
-      if (isNative && provider === "google") {
+      if (isNative) {
         // Browser-based Google OAuth (Chrome Custom Tab) — Beka
         // 2026-06-21 switch from native @codetrix-studio plugin.
         //
@@ -88,49 +110,39 @@ function AuthPage() {
         // intent filter in AndroidManifest catches the scheme,
         // useCapacitorBridge's appUrlOpen listener pulls the code,
         // and supabase.auth.exchangeCodeForSession finishes the job.
-        // Identical pattern to the Apple branch below — proven to
-        // work, no plugin-call lifecycle dependency.
+        // Beka 2026-09-19: Google and Apple previously had two
+        // byte-identical branches here. Facebook and Microsoft need
+        // exactly the same flow, so rather than paste it twice more
+        // the branch is now shared by ALL providers. Nothing about
+        // the Google or Apple behaviour changed.
+        //
+        // The flow works for every provider because the redirect
+        // target is our own deep link, not anything provider-specific:
+        // Supabase sends the browser back to
+        // `com.lokali.app://auth/callback?code=...`, the intent filter
+        // in AndroidManifest catches the scheme, useCapacitorBridge's
+        // appUrlOpen listener pulls the code, and
+        // supabase.auth.exchangeCodeForSession finishes the job.
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider,
           options: {
             redirectTo: "com.lokali.app://auth/callback",
             // skipBrowserRedirect prevents Supabase from trying to
-            // window.location-navigate the wrapped WebView (which
-            // Google rejects). We open the URL ourselves in a
-            // Custom Tab via @capacitor/browser.
+            // window.location-navigate the wrapped WebView. Google
+            // rejects embedded WebViews outright, and Facebook does
+            // the same — both require a real browser (Chrome Custom
+            // Tab), which is what @capacitor/browser opens below.
             skipBrowserRedirect: true,
           },
         });
         if (error) throw error;
         if (!data?.url) {
-          throw new Error("Google OAuth URL missing from Supabase response");
+          throw new Error(`${provider} OAuth URL missing from Supabase response`);
         }
         const { Browser } = await import("@capacitor/browser");
         await Browser.open({ url: data.url, presentationStyle: "popover" });
         // The onAuthStateChange listener in this component handles the
         // navigation (onboarding vs home) — nothing else to do here.
-      } else if (isNative && provider === "apple") {
-        // Apple Sign-In via Supabase still uses the OAuth-in-browser
-        // pattern: open Apple's auth URL in a Chrome Custom Tab and
-        // come back via the com.lokali.app:// deep link.
-        // Apple, unlike Google, does NOT block embedded browsers for
-        // its OAuth flow, so this path actually works — and a native
-        // Apple plugin requires an Apple Developer account + Sign In
-        // with Apple capability which we don't have yet. Once Lokali
-        // ships to iOS this branch will switch to the native plugin.
-        const { data, error } = await supabase.auth.signInWithOAuth({
-          provider,
-          options: {
-            redirectTo: "com.lokali.app://auth/callback",
-            skipBrowserRedirect: true,
-          },
-        });
-        if (error) throw error;
-        if (!data?.url) {
-          throw new Error("Apple OAuth URL missing from Supabase response");
-        }
-        const { Browser } = await import("@capacitor/browser");
-        await Browser.open({ url: data.url, presentationStyle: "popover" });
       } else {
         // Web flow: regular OAuth redirect, same tab, lands back on
         // /auth where the auth-state-change subscription routes the
@@ -277,6 +289,38 @@ function AuthPage() {
                   <GoogleIcon className="h-4 w-4" />
                 )}
                 {t("auth.continueWithGoogle")}
+              </button>
+              {/* Beka 2026-09-19 — Facebook and Microsoft added.
+                  Both go through the same shared native/web flow as
+                  Google; no provider-specific code. They sit ABOVE
+                  Apple because Apple is still a disabled placeholder
+                  (needs the $99/yr Apple Developer account), and a
+                  dead button shouldn't outrank two live ones. */}
+              <button
+                type="button"
+                onClick={() => signInWithProvider("facebook")}
+                disabled={!!oauthLoading}
+                className="flex h-12 items-center justify-center gap-3 rounded-2xl border border-border bg-card px-5 text-[14px] font-semibold text-foreground transition-smooth hover:bg-secondary disabled:opacity-60"
+              >
+                {oauthLoading === "facebook" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FacebookIcon className="h-4 w-4" />
+                )}
+                {t("auth.continueWithFacebook")}
+              </button>
+              <button
+                type="button"
+                onClick={() => signInWithProvider("azure")}
+                disabled={!!oauthLoading}
+                className="flex h-12 items-center justify-center gap-3 rounded-2xl border border-border bg-card px-5 text-[14px] font-semibold text-foreground transition-smooth hover:bg-secondary disabled:opacity-60"
+              >
+                {oauthLoading === "azure" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <MicrosoftIcon className="h-4 w-4" />
+                )}
+                {t("auth.continueWithMicrosoft")}
               </button>
               <button
                 type="button"
@@ -455,6 +499,39 @@ function AppleIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 384 512" className={className} aria-hidden fill="currentColor">
       <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" />
+    </svg>
+  );
+}
+
+/**
+ * Facebook "f" mark. Brand blue #1877F2 is hard-coded rather than
+ * `currentColor`: Meta's brand guidelines require the logo in its own
+ * blue (or solid white/black), and a muted-foreground "f" would also
+ * read as a disabled button next to the full-colour Google mark.
+ */
+function FacebookIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden>
+      <path
+        fill="#1877F2"
+        d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.09 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.09 24 18.1 24 12.07z"
+      />
+    </svg>
+  );
+}
+
+/**
+ * Microsoft's four-square logo. Microsoft's brand rules are explicit
+ * that the squares keep their four colours and are never recoloured
+ * or reduced to a single tone, so these are hard-coded too.
+ */
+function MicrosoftIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 23 23" className={className} aria-hidden>
+      <path fill="#F25022" d="M1 1h10v10H1z" />
+      <path fill="#7FBA00" d="M12 1h10v10H12z" />
+      <path fill="#00A4EF" d="M1 12h10v10H1z" />
+      <path fill="#FFB900" d="M12 12h10v10H12z" />
     </svg>
   );
 }

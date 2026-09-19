@@ -40,6 +40,14 @@ import { InlineAudioPanel } from "@/components/InlineAudioPanel";
 import { MobileFrame } from "@/components/MobileFrame";
 import { UnescoBadge } from "@/components/UnescoBadge";
 import { PracticalInfo } from "@/components/PracticalInfo";
+import { GuideRating } from "@/components/GuideRating";
+import { maybeAskForReview, noteLocationViewed } from "@/lib/reviewPrompt";
+// Aliased: this file also deals with UI language codes, and i18n.ts
+// exports a DIFFERENT normalizeLang that only strips the region.
+// The cache one is the right comparison here (it folds zh-hans,
+// bare zh/pt, underscores) — mixing them up would make "en" and
+// "en-US" look like different languages.
+import { normalizeLang as normalizeCacheLang } from "@/lib/cacheKey";
 import { isUnescoSite } from "@/lib/unesco";
 import {
   attractionSlug,
@@ -258,6 +266,15 @@ function AttractionPage() {
   // back in the same language the user was browsing in. Falls back to
   // the user's preferred UI language when the name has no script hint.
   const language = detectQueryLanguage(fallbackName, preferredLanguage);
+
+  /* Play Store review prompt — "this attraction was opened".
+   * Deduped by slug inside reviewPrompt, so re-reading the same place
+   * does not count twice toward the 3-location threshold.
+   * The prompt itself fires further down, once `guide` exists. */
+  useEffect(() => {
+    if (!id) return;
+    void noteLocationViewed(id);
+  }, [id]);
   // Global per-user interest preference (single-select, persisted in
   // localStorage). Tilts the n8n guide toward a topic — e.g.
   // "photography" gets more on framing, light, materials than dates.
@@ -330,6 +347,31 @@ function AttractionPage() {
   });
   const [loadingScript, setLoadingScript] = useState(false);
   const script = guide?.script ?? "";
+
+  /* Play Store review prompt — the actual attempt. Beka 2026-09-19.
+   *
+   * Sits HERE, below `guide`, not up with the other signal effects:
+   * referencing `guide` before its useState line is a temporal-dead-
+   * zone ReferenceError at render time, not a lint nit.
+   *
+   * Cheap and idempotent — it no-ops unless every condition holds
+   * (3 distinct places, one audio finished, a 4-5★ guide rating, two
+   * separate days, no error in 24 h, online, native, never asked).
+   *
+   * `inPreferredLanguage` is Beka's explicit requirement: "რამდენიმე
+   * ლოკაციას ნახავს საკუთარ არჩეულ ენაზე". `language` is detected
+   * from the place NAME's script, so a Latin-script name can hand a
+   * Georgian reader an English guide — that is not the experience we
+   * want to be judged on, so we stay quiet. Compared through the
+   * cache normaliser so "en" and "en-US" don't read as a mismatch. */
+  useEffect(() => {
+    if (!guide) return;
+    void maybeAskForReview({
+      inPreferredLanguage:
+        normalizeCacheLang(language) === normalizeCacheLang(preferredLanguage),
+      online,
+    });
+  }, [guide, language, preferredLanguage, online]);
 
   // What the InlineAudioPanel actually speaks. Originally just the
   // narrated `script`; Beka asked for the audio to also cover the
@@ -1114,6 +1156,23 @@ function AttractionPage() {
             city={(typeof a?.city === "string" ? a.city : null) || searchCity || undefined}
             lat={typeof a?.lat === "number" ? a.lat : geocoded?.lat}
             lng={typeof a?.lng === "number" ? a.lng : geocoded?.lng}
+          />
+        )}
+
+        {/* "How was this guide?" — Beka 2026-09-19.
+            Placed AFTER the guide and the practical block, before the
+            map: the reader has finished the thing being rated. Asking
+            mid-article would interrupt the story and collect verdicts
+            from people who hadn't read it.
+
+            Gated on `guide` existing so we never ask about a page
+            that failed to generate — rating an error message is
+            noise, and it would also poison the review-prompt signal. */}
+        {showGuideTab && guide && (
+          <GuideRating
+            name={a?.name ?? fallbackName}
+            city={(typeof a?.city === "string" ? a.city : null) || searchCity || null}
+            language={language}
           />
         )}
 

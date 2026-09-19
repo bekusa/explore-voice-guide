@@ -97,11 +97,27 @@ export const Route = createFileRoute("/api/museum-highlights")({
           // tokens to ~220, and 30 × 220 = 6600 was clipping past
           // the 6144 ceiling. Haiku at 150 tok/s × 8192 tokens is
           // ~55 s — still inside Cloudflare's 100 s budget.
+          //
+          // 8192 → 12288 on 2026-09-18, together with raising the
+          // prompt's target from 30 to 50 for encyclopedic museums.
+          // THE TWO MUST MOVE TOGETHER: 50 × ~220 tokens = ~11,000,
+          // which would have been clipped by the 8192 ceiling — and a
+          // clipped response is worse than a short one, because the
+          // JSON is cut mid-object and parseClaudeJson cannot recover
+          // it at all. That is the exact bug from 2026-05-20, just at
+          // a bigger size.
+          //
+          // Timing check against Cloudflare's 100 s origin budget: the
+          // 30-item runs produced ~6,600 tokens in 25-40 s, i.e. an
+          // observed 165-260 tok/s. At that rate ~11,000 tokens lands
+          // at 42-67 s. Inside the budget, but the margin is thinner
+          // than before — if 524s reappear on museum highlights, this
+          // ceiling (not the model) is the first thing to look at.
           const text = await callClaude({
             model: "claude-haiku-4-5",
             system,
             user,
-            maxTokens: 8192,
+            maxTokens: 12288,
           });
           const parsedRaw = parseClaudeJson(text);
           // Normalise so {items:[...]}, {data:{highlights:...}}, or
