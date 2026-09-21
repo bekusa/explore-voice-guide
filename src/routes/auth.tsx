@@ -37,6 +37,43 @@ type Mode = "signin" | "signup" | "reset";
  */
 export type OAuthProvider = "google" | "apple" | "facebook" | "azure";
 
+/**
+ * Facebook + Microsoft sign-in buttons: HIDDEN. Beka 2026-09-22.
+ *
+ * Not "coming soon" placeholders like Apple — hidden outright. With
+ * Apple already a dead placeholder, showing two more greyed-out
+ * buttons would have left three of four options non-functional, which
+ * reads as a broken app rather than a short list.
+ *
+ * ── Why they were turned off ──────────────────────────────────────
+ * Both reached the provider and then failed, for two DIFFERENT
+ * reasons, both found by reading the outgoing OAuth URL:
+ *
+ *   Facebook — Supabase sent
+ *     client_id=beka.tsitskishvili%40gmail.com
+ *   The Client ID field in the Supabase dashboard had been filled by
+ *   the BROWSER'S AUTOFILL with his email instead of the App ID
+ *   (2169525187777606). Facebook rejects the whole request.
+ *
+ *   Microsoft — Supabase sent `scope=openid` and nothing else. With
+ *   only `openid`, Microsoft returns no email address, and Supabase
+ *   cannot create a user without one. It needs
+ *   `openid profile email`, passed as `scopes` on signInWithOAuth.
+ *
+ * ── To re-enable ──────────────────────────────────────────────────
+ *   1. Supabase → Auth → Providers → Facebook: set Client ID to the
+ *      real App ID. Check the secret the same way — autofill hits
+ *      that field too.
+ *   2. Add `scopes: "openid profile email"` for azure (and keep
+ *      "email" for facebook) in signInWithProvider's options.
+ *   3. Flip this flag to true.
+ *
+ * Everything else is intact on purpose — the provider type, the
+ * shared OAuth branch, both icons, and all 44 locales' button labels.
+ * Re-enabling is this one boolean plus the two fixes above.
+ */
+const SHOW_FB_MS = false;
+
 function AuthPage() {
   const navigate = useNavigate();
   const t = useT();
@@ -290,38 +327,39 @@ function AuthPage() {
                 )}
                 {t("auth.continueWithGoogle")}
               </button>
-              {/* Beka 2026-09-19 — Facebook and Microsoft added.
-                  Both go through the same shared native/web flow as
-                  Google; no provider-specific code. They sit ABOVE
-                  Apple because Apple is still a disabled placeholder
-                  (needs the $99/yr Apple Developer account), and a
-                  dead button shouldn't outrank two live ones. */}
-              <button
-                type="button"
-                onClick={() => signInWithProvider("facebook")}
-                disabled={!!oauthLoading}
-                className="flex h-12 items-center justify-center gap-3 rounded-2xl border border-border bg-card px-5 text-[14px] font-semibold text-foreground transition-smooth hover:bg-secondary disabled:opacity-60"
-              >
-                {oauthLoading === "facebook" ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <FacebookIcon className="h-4 w-4" />
-                )}
-                {t("auth.continueWithFacebook")}
-              </button>
-              <button
-                type="button"
-                onClick={() => signInWithProvider("azure")}
-                disabled={!!oauthLoading}
-                className="flex h-12 items-center justify-center gap-3 rounded-2xl border border-border bg-card px-5 text-[14px] font-semibold text-foreground transition-smooth hover:bg-secondary disabled:opacity-60"
-              >
-                {oauthLoading === "azure" ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <MicrosoftIcon className="h-4 w-4" />
-                )}
-                {t("auth.continueWithMicrosoft")}
-              </button>
+              {/* Facebook + Microsoft — HIDDEN, Beka 2026-09-22.
+                  Flip SHOW_FB_MS back to true to restore them; see the
+                  constant above for what has to be fixed first. */}
+              {SHOW_FB_MS && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => signInWithProvider("facebook")}
+                    disabled={!!oauthLoading}
+                    className="flex h-12 items-center justify-center gap-3 rounded-2xl border border-border bg-card px-5 text-[14px] font-semibold text-foreground transition-smooth hover:bg-secondary disabled:opacity-60"
+                  >
+                    {oauthLoading === "facebook" ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <FacebookIcon className="h-4 w-4" />
+                    )}
+                    {t("auth.continueWithFacebook")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => signInWithProvider("azure")}
+                    disabled={!!oauthLoading}
+                    className="flex h-12 items-center justify-center gap-3 rounded-2xl border border-border bg-card px-5 text-[14px] font-semibold text-foreground transition-smooth hover:bg-secondary disabled:opacity-60"
+                  >
+                    {oauthLoading === "azure" ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <MicrosoftIcon className="h-4 w-4" />
+                    )}
+                    {t("auth.continueWithMicrosoft")}
+                  </button>
+                </>
+              )}
               <button
                 type="button"
                 onClick={() => toast.info(t("auth.appleComingSoon"))}
