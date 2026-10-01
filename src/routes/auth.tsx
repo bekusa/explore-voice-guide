@@ -10,8 +10,19 @@ import { MobileFrame } from "@/components/MobileFrame";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in · Lokali" },
-      { name: "description", content: "Sign in or create an account to save audio tours." },
+      { title: "Sign in to Lokali — Save Your Audio Guides and Trips" },
+      {
+        name: "description",
+        content:
+          "Sign in to Lokali to save audio guides, keep your trips in sync across devices and pick up any tour where you left off. Free, no subscription needed.",
+      },
+      // Bing flagged this page three ways at once (short title, short
+      // description, thin content) — and it is right: a sign-in form has
+      // nothing to rank for. noindex,follow removes all three findings and
+      // costs no traffic, while still letting the crawler follow the links
+      // back into the site. Keep the title/description above anyway: they
+      // are what a browser tab and a shared link show. 2026-09-25.
+      { name: "robots", content: "noindex, follow" },
     ],
   }),
   component: AuthPage,

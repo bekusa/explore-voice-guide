@@ -180,19 +180,56 @@ export const Route = createFileRoute("/attraction/$id")({
     photo: typeof search.photo === "string" ? search.photo : undefined,
   }),
   head: ({ params }) => {
-    const title = unslugAttraction(params.id);
+    // unslugAttraction only swaps hyphens for spaces, so the raw value is
+    // lower case ("the grand egyptian museum") and that is exactly how it
+    // showed up in search results. Title-case it for display only — do NOT
+    // change unslugAttraction itself, its output is used as a cache/lookup
+    // key elsewhere and the DB rows are keyed lower case. 2026-09-25.
+    const raw = unslugAttraction(params.id);
+    const SMALL = new Set(["a", "an", "and", "at", "by", "de", "del", "der",
+      "di", "for", "in", "la", "le", "of", "on", "or", "the", "to", "van", "von"]);
+    const title = raw
+      .split(" ")
+      .map((w, i) =>
+        i > 0 && SMALL.has(w) ? w : w.charAt(0).toUpperCase() + w.slice(1)
+      )
+      .join(" ");
+    // Bing flags descriptions under ~150 characters as too short; Google
+    // truncates titles past ~60 and descriptions past ~160. Attraction
+    // names range from "Ephesus" to "The Metropolitan Museum of Art", so
+    // pick the longest variant that still fits instead of one fixed
+    // string. 2026-09-25.
+    const pick = (variants: string[], max: number) =>
+      variants.find((v) => v.length <= max) ?? variants[variants.length - 1];
+
+    const pageTitle = pick(
+      [
+        `${title} Audio Guide — Free, 45 Languages | Lokali`,
+        `${title} Audio Guide — Free | Lokali`,
+        `${title} — Free Audio Guide | Lokali`,
+        `${title} — Free Audio Guide`,
+        `${title} — Lokali`,
+      ],
+      60
+    );
+    // "Free The Grand Egyptian Museum audio guide" reads badly, so the
+    // leading article is dropped for the description only — the title and
+    // the heading keep the full name.
+    const bare = title.replace(/^The\s+/i, "");
+    const description = pick(
+      [
+        `Free ${bare} audio guide — history, what to look for and practical tips, narrated in 45 languages. Works offline, no ticket and no tour group needed.`,
+        `Free ${bare} audio guide — history, what to look for and practical tips, in 45 languages. Works offline, no ticket needed.`,
+        `Free ${bare} audio guide — history, what to look for and practical tips, in 45 languages.`,
+      ],
+      158
+    );
     return {
       meta: [
-        { title: `${title} - Lokali` },
-        {
-          name: "description",
-          content: `Free audio guide to ${title} - history, what to look for and practical tips, in 45 languages.`,
-        },
-        { property: "og:title", content: `${title} - Lokali` },
-        {
-          property: "og:description",
-          content: `Free audio guide to ${title} - history, what to look for and practical tips, in 45 languages.`,
-        },
+        { title: pageTitle },
+        { name: "description", content: description },
+        { property: "og:title", content: pageTitle },
+        { property: "og:description", content: description },
         { property: "og:type", content: "article" },
         {
           property: "og:url",

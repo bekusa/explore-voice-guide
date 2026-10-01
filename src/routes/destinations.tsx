@@ -8,20 +8,30 @@ import { CityCard } from "@/components/CityCard";
 import { CITY_LIST } from "@/lib/cityList";
 import { useT, useTranslated } from "@/hooks/useT";
 
+// `q` is optional and carries NO default. It used to be
+// `fallback(z.string(), "").default("")`, which made the router normalise
+// every visit to /destinations into a 307 redirect to /destinations?q= —
+// so the clean URL never returned 200 and Bing logged it as a page with no
+// title and no description (2026-09-25). Leaving the default off keeps
+// /destinations itself crawlable; the component supplies "" where needed.
 const searchSchema = z.object({
-  q: fallback(z.string(), "").default(""),
+  q: fallback(z.string(), "").optional(),
 });
 
 export const Route = createFileRoute("/destinations")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
-      { title: "Explore destinations — Lokali" },
+      { title: "Explore Destinations — Free Audio Guides | Lokali" },
       {
         name: "description",
-        content: "Browse cinematic, locally narrated audio walks across cities around the world.",
+        content:
+          "Browse free Lokali audio guides for 190+ cities worldwide — history, what to look for and practical tips, in 45 languages. Offline, no ticket needed.",
       },
     ],
+    // Canonical belongs in links, not meta. Points at the clean URL so any
+    // ?q=… variant that still gets crawled folds into one indexable page.
+    links: [{ rel: "canonical", href: "https://lokali.travel/destinations" }],
   }),
   component: DestinationsPage,
 });
@@ -29,7 +39,10 @@ export const Route = createFileRoute("/destinations")({
 function DestinationsPage() {
   const { q } = Route.useSearch();
   const t = useT();
-  const [query, setQuery] = useState(q);
+  // `q` is optional now (see searchSchema above — dropping its default is
+  // what stopped /destinations 307-ing to /destinations?q=). Coalesce here
+  // so the input stays controlled instead of flipping to uncontrolled.
+  const [query, setQuery] = useState(q ?? "");
   const matchRoute = useMatchRoute();
   const inChild = matchRoute({ to: "/destinations/$slug", fuzzy: true });
 
