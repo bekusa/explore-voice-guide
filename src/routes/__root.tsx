@@ -25,10 +25,21 @@ const themeBootScript = `(function(){try{var t=localStorage.getItem('tg.theme');
 // PostHog loader snippet — the official queuing stub. It installs
 // `window.posthog` synchronously (so calls made before the real
 // library downloads are queued, not lost), then async-loads
-// array.js from the US-cloud assets host and calls init().
+// array.js from the matching assets host and calls init().
+//
+// REGION FIX, 2026-10-02. This used to point at
+//   phc_o65XCRaZi3tqYsxd3ETsdN47guGRXL8AhmS9x53NZ3Gp @ https://us.i.posthog.com
+// but Beka's PostHog account lives in the EU region: us.posthog.com refuses the
+// login with "You're already logged into PostHog Cloud in the EU region", so
+// nobody could ever open that US project. Meanwhile his EU project 290874 read
+// "This project has no events yet" — because the site had never sent it any.
+// That mismatch is why the August audit reported 0 audio plays: it was reading
+// an empty project. (The real numbers were in Supabase `usage_events` all along:
+// 155 audio plays by 62 people.) Key and host below now point at EU project
+// 290874, which is the one Beka can actually open.
 //
 // Config notes:
-//   - api_host us.i.posthog.com — project region is US Cloud.
+//   - api_host eu.i.posthog.com — project region is EU Cloud.
 //   - capture_pageview:false — we drive $pageview ourselves from the
 //     router's onResolved event (see RootComponent); this is a SPA,
 //     so the automatic load-time pageview would under-count.
@@ -37,13 +48,14 @@ const themeBootScript = `(function(){try{var t=localStorage.getItem('tg.theme');
 //     still counted as events (DAU works), but no person profile is
 //     created until identify() runs at sign-in. Keeps us well inside
 //     the 1M-events/month free tier.
-//   - respect_dnt:true — honour Do-Not-Track; GDPR-friendly for EU
-//     travellers even though the project lives in US Cloud.
+//   - respect_dnt:true — honour Do-Not-Track. With the project now in EU
+//     Cloud this is also the simpler GDPR story: EU visitors' events no
+//     longer leave the EU.
 //
 // The project API key below is a PUBLIC, write-only key: it can send
 // events but cannot read data, so shipping it in the client bundle is
 // expected and safe.
-const posthogBootScript = `!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug getPageViewId captureTraceFeedback captureTraceMetric".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_o65XCRaZi3tqYsxd3ETsdN47guGRXL8AhmS9x53NZ3Gp',{api_host:'https://us.i.posthog.com',person_profiles:'identified_only',capture_pageview:false,capture_pageleave:true,autocapture:true,respect_dnt:true});`;
+const posthogBootScript = `!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug getPageViewId captureTraceFeedback captureTraceMetric".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_qCd9xVsVntEAjMS7fGPC7JcpXGGVftSk7oKEzzSxuMqc',{api_host:'https://eu.i.posthog.com',person_profiles:'identified_only',capture_pageview:false,capture_pageleave:true,autocapture:true,respect_dnt:true});`;
 
 function NotFoundComponent() {
   const t = useT();
