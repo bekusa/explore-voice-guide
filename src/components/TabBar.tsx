@@ -101,43 +101,39 @@ export function TabBar() {
         <Bookmark className="h-[19px] w-[19px]" />
         <span className="text-[10px] font-medium">{t("nav.saved")}</span>
       </Link>
-      {online &&
-        (user ? (
-          // Profile hub — was a direct Sign-out button until 2026-06-18.
-          // Beka asked to demote destructive actions out of the persistent
-          // nav AND to land the user on a single profile-shaped page
-          // that already includes settings (no second tap to reach
-          // them). So this points at /settings — the renamed Profile
-          // page — which now starts with an identity card and unfolds
-          // into the full preferences list below. /profile is still a
-          // valid URL but it redirects to /settings server-side.
-          <Link
-            to="/settings"
-            onClick={tapHaptic}
-            className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
-            activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
-          >
-            <UserIcon className="h-[19px] w-[19px]" />
-            <span className="text-[10px] font-medium">{t("nav.profile")}</span>
-          </Link>
-        ) : (
-          // Beka 2026-09-01 — "sign in ჩაანაცვლე Profile-ით". The tab
-          // now reads "Profile" whether or not the user is signed in,
-          // so the bottom bar stops changing its own labels underneath
-          // people. The DESTINATION still differs: signed out it goes
-          // to /auth (sign-in screen), signed in to /settings (the
-          // profile page). `nav.signIn` stays in i18n for the /auth
-          // screen's own heading and buttons — only this tab label
-          // changed.
-          <Link
-            to="/auth"
-            onClick={tapHaptic}
-            className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
-          >
-            <UserIcon className="h-[19px] w-[19px]" />
-            <span className="text-[10px] font-medium">{t("nav.profile")}</span>
-          </Link>
-        ))}
+      {online && (
+        // Profile hub — was a direct Sign-out button until 2026-06-18.
+        // Beka asked to demote destructive actions out of the persistent
+        // nav AND to land the user on a single profile-shaped page
+        // that already includes settings (no second tap to reach
+        // them). So this points at /settings — the renamed Profile
+        // page — which starts with an identity card and unfolds into
+        // the full preferences list below. /profile is still a valid
+        // URL but it redirects to /settings server-side.
+        //
+        // Beka 2026-10-03 — this used to send SIGNED-OUT users to
+        // /auth instead, which is why he couldn't change the theme
+        // while logged out ("თემის ფერის ცვლილება შემეძლოს
+        // დაულოგინებელზეც"). The theme toggle was never gated; the
+        // whole screen was simply unreachable.
+        //
+        // Everything on /settings above the Account section is a
+        // DEVICE preference — theme, language, narrator voice,
+        // offline library — and none of it needs an account. The page
+        // already handles the signed-out case: the identity card is
+        // hidden and a "Save your account" CTA takes its place. So
+        // both states now land here, and signing in is one tap away
+        // from the screen rather than a wall in front of it.
+        <Link
+          to="/settings"
+          onClick={tapHaptic}
+          className="flex flex-1 flex-col items-center gap-1 text-muted-foreground transition-smooth hover:text-foreground"
+          activeProps={{ className: "flex flex-1 flex-col items-center gap-1 text-primary" }}
+        >
+          <UserIcon className="h-[19px] w-[19px]" />
+          <span className="text-[10px] font-medium">{t("nav.profile")}</span>
+        </Link>
+      )}
     </nav>
   );
 }

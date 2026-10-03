@@ -139,6 +139,10 @@ export const FR: Partial<Record<UiKey, string>> = {
   "toast.libCleared": "Bibliothèque hors ligne effacée",
   "toast.speechUnsupported": "La synthèse vocale n'est pas prise en charge sur cet appareil",
   "toast.couldNotLoadGuide": "Impossible de charger le guide",
+  "toast.audioUnavailableTitle": "L'audio n'est pas disponible pour l'instant",
+  "toast.audioQuotaHint": "La limite de narration du jour est atteinte. Réessayez plus tard.",
+  "toast.audioOurSideHint": "Le problème vient de chez nous — nous regardons déjà. Le guide écrit fonctionne toujours.",
+  "lang.clearSearch": "Effacer la recherche",
   "toast.tryAgainPlease": "Veuillez réessayer.",
   "toast.voiceUnavailableTitle": "Voix pas encore disponible pour cette langue",
   "toast.voiceUnavailableHint":
@@ -157,7 +161,7 @@ export const FR: Partial<Record<UiKey, string>> = {
   "lang.speakMy": "Parlez ma",
   "lang.language": "langue",
   "lang.current": "Sélectionnée",
-  "lang.searchPlaceholder": "Rechercher parmi 37 langues…",
+  "lang.searchPlaceholder": "Rechercher parmi {count} langues…",
   "lang.tapHint":
     "Touchez une langue pour changer immédiatement. La voix de narration passera à la première voix disponible pour cette langue.",
   "lang.noMatches": "Aucune langue ne correspond",

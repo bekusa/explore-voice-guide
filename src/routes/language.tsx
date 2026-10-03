@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Check, Loader2, Search } from "lucide-react";
+import { ArrowLeft, Check, Loader2, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
 import { Input } from "@/components/ui/input";
@@ -93,6 +93,23 @@ function LanguagePage() {
       cancelled = true;
     };
   }, [user]);
+
+  /**
+   * DISTINCT languages, for the search placeholder. Beka 2026-10-03.
+   *
+   * Not LANGUAGES.length: that array holds 49 OPTIONS because four
+   * languages ship two regional variants each (en-US/en-GB,
+   * es-ES/es-MX, pt-PT/pt-BR, zh-CN/zh-TW). Counting options would
+   * advertise 49 where the honest answer is 45 — and would also
+   * disagree with the Home screen, which already counts this way.
+   *
+   * Derived rather than written down because the previous hard-coded
+   * "37" sat wrong in 45 files for months.
+   */
+  const LANGUAGE_COUNT = useMemo(
+    () => new Set(LANGUAGES.map((l) => l.code.split("-")[0].toLowerCase())).size,
+    [],
+  );
 
   const filtered = useMemo(() => {
     if (!query.trim()) return LANGUAGES;
@@ -197,10 +214,26 @@ function LanguagePage() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={t("lang.searchPlaceholder")}
+              placeholder={t("lang.searchPlaceholder", { count: LANGUAGE_COUNT })}
               autoComplete="off"
               className="h-auto border-0 bg-transparent p-0 text-[13px] shadow-none focus-visible:ring-0"
             />
+            {/* Clear button. Beka 2026-10-03: "ენის ცვლილებისას ძიებაში
+                ტექსტი არ იშლება" — after picking a language the typed
+                filter stayed, so coming back to the screen showed a
+                part-filtered list with no obvious way to reset it on a
+                phone (no Esc key, and the native clear "×" only appears
+                on type="search" inputs). */}
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                aria-label={t("lang.clearSearch")}
+                className="shrink-0 rounded-full p-1 text-muted-foreground transition-smooth hover:text-foreground active:scale-90"
+              >
+                <X className="h-4 w-4" strokeWidth={2.2} />
+              </button>
+            )}
           </div>
         </div>
 

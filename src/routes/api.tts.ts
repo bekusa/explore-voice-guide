@@ -7,6 +7,22 @@ import {
   isAzureConfigured,
   uploadToAzureBlob,
 } from "@/lib/azureBlob.server";
+import { classifyStatus, describeThrown, logError } from "@/lib/errorLog.server";
+
+/**
+ * How long to wait for Azure before giving up. Beka 2026-10-03.
+ *
+ * There was no timeout at all: a hung connection sat until Cloudflare
+ * killed the entire Worker at ~100 s, which the browser sees as a
+ * generic 502 — indistinguishable from a rejected key, which is
+ * exactly the confusion that made this bug take five days to spot.
+ *
+ * 45 s is comfortably above Azure's normal synthesis time for a
+ * long guide (typically 3-12 s) and comfortably below the Worker
+ * budget, so a timeout here is reported as a timeout rather than
+ * taking the whole request down with it.
+ */
+const TTS_TIMEOUT_MS = 45_000;
 
 /**
  * /api/tts — Azure Speech REST → Azure Blob cache.
@@ -98,14 +114,55 @@ export const Route = createFileRoute("/api/tts")({
         const speechKey = env("AZURE_SPEECH_KEY");
         const speechRegion = env("AZURE_SPEECH_REGION");
         if (!speechKey || !speechRegion) {
-          return corsJson(
-            { error: "AZURE_SPEECH_KEY / AZURE_SPEECH_REGION not configured" },
-            { status: 500 },
-          );
+          // Logged, not just returned: a secret going missing after a
+          // redeploy looks identical to a rejected key from the user's
+          // side, and this is the one case where the fix is "put the
+          // value back in Lovable Project Secrets".
+          await logError({
+            service: "azure-speech",
+            route: "/api/tts",
+            kind: "auth",
+            message: "AZURE_SPEECH_KEY / AZURE_SPEECH_REGION not configured",
+            context: {
+              hasKey: Boolean(speechKey),
+              hasRegion: Boolean(speechRegion),
+              hint: "Set both in Lovable Project Secrets, then redeploy",
+            },
+          });
+          return corsJson({ reason: "auth" }, { status: 500 });
         }
         const ssml = buildSsml(meta);
         let mp3Buffer: ArrayBuffer;
         let contentType = "audio/mpeg";
+
+        /* ── Azure call, instrumented. Beka 2026-10-03 ──────────────
+         *
+         * This block used to do two things wrong, and together they
+         * cost five days of completely broken audio that nobody could
+         * see:
+         *
+         *   1. It logged only to console.warn. In a Cloudflare Worker
+         *      that goes nowhere unless someone happens to be running
+         *      a live tail at that moment.
+         *   2. It returned the raw upstream status to the browser,
+         *      which rendered as
+         *        HTTP 502: {"error":"Azure Speech 401","detail":""}
+         *      That is a stack trace shown to a traveller, and it was
+         *      also actively misleading: Beka reasonably read "502"
+         *      as a timeout, when 401 means the KEY WAS REJECTED.
+         *
+         * So: every outcome is now classified, logged to error_logs
+         * with timing, and translated into one of three honest
+         * machine-readable reasons the client maps to real sentences.
+         *
+         * An explicit timeout is set because there wasn't one. A hung
+         * Azure connection would previously sit until Cloudflare
+         * killed the whole Worker at ~100 s, which surfaces as a
+         * generic 502 and is indistinguishable from everything else.
+         */
+        const started = Date.now();
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), TTS_TIMEOUT_MS);
         try {
           const upstream = await fetch(
             `https://${speechRegion}.tts.speech.microsoft.com/cognitiveservices/v1`,
@@ -118,40 +175,75 @@ export const Route = createFileRoute("/api/tts")({
                 "User-Agent": "Lokali/1.0",
               },
               body: ssml,
+              signal: controller.signal,
             },
           );
           if (!upstream.ok) {
             const errTxt = await upstream.text().catch(() => "");
-            console.warn(
-              `[api.tts] Azure Speech ${upstream.status}: ${errTxt.slice(0, 200)}`,
-            );
-            return corsJson(
-              {
-                error: `Azure Speech ${upstream.status}`,
-                detail: errTxt.slice(0, 300),
+            const kind = classifyStatus(upstream.status);
+            await logError({
+              service: "azure-speech",
+              route: "/api/tts",
+              status: upstream.status,
+              kind,
+              message: `Azure Speech rejected the request: ${errTxt.slice(0, 300) || "(empty body)"}`,
+              durationMs: Date.now() - started,
+              context: {
+                region: speechRegion,
+                voice: meta.voice ?? null,
+                language: meta.language ?? null,
+                ssmlChars: ssml.length,
+                // The single most useful field: 401/403 means the key
+                // or region is wrong — which for a free (F0) Speech
+                // resource usually means it expired and needs
+                // recreating, not that anything in the app changed.
+                hint:
+                  kind === "auth"
+                    ? "AZURE_SPEECH_KEY/REGION rejected — check the Speech resource still exists and the key matches the region"
+                    : kind === "quota"
+                      ? "Azure Speech quota exhausted for this period"
+                      : undefined,
               },
-              { status: 502 },
-            );
+            });
+            return corsJson({ reason: kind }, { status: 502 });
           }
           mp3Buffer = await upstream.arrayBuffer();
           const ct = upstream.headers.get("Content-Type");
           if (ct) contentType = ct.split(";")[0].trim();
         } catch (err) {
-          console.warn("[api.tts] speech call failed", err);
-          return corsJson(
-            { error: "Service temporarily unavailable" },
-            { status: 502 },
-          );
+          const { message, kind } = describeThrown(err);
+          await logError({
+            service: "azure-speech",
+            route: "/api/tts",
+            kind,
+            message,
+            durationMs: Date.now() - started,
+            context: {
+              region: speechRegion,
+              voice: meta.voice ?? null,
+              language: meta.language ?? null,
+              timeoutMs: TTS_TIMEOUT_MS,
+            },
+          });
+          return corsJson({ reason: kind }, { status: 502 });
+        } finally {
+          clearTimeout(timeoutId);
         }
 
         // Sanity-check the response actually looks like audio — Azure
         // can return a 200 with an empty body if the quota is hit
         // mid-request, and we don't want to pin a broken blob in cache.
         if (mp3Buffer.byteLength < 500) {
-          return corsJson(
-            { error: "Azure Speech returned an empty body" },
-            { status: 502 },
-          );
+          await logError({
+            service: "azure-speech",
+            route: "/api/tts",
+            status: 200,
+            kind: "bad-response",
+            message: `Azure Speech returned ${mp3Buffer.byteLength} bytes — too small to be audio`,
+            durationMs: Date.now() - started,
+            context: { bytes: mp3Buffer.byteLength, voice: meta.voice ?? null },
+          });
+          return corsJson({ reason: "bad-response" }, { status: 502 });
         }
 
         // ─── 3. Upload to blob + cache the URL ───────────────────

@@ -181,7 +181,34 @@ export function InlineAudioPanel({
         if (looksLikeUnsupported) {
           throw new Error("VOICE_UNAVAILABLE");
         }
-        throw new Error(`HTTP ${res.status}${errText ? `: ${errText.slice(0, 120)}` : ""}`);
+
+        /* Beka 2026-10-03 — never surface the raw status or body.
+         *
+         * This line used to produce, verbatim on screen:
+         *   HTTP 502: {"error":"Azure Speech 401","detail":""}
+         *
+         * Two problems. It is a stack trace shown to a traveller
+         * standing in a museum; and it actively misled US — the 502
+         * read as a timeout when the real cause was 401, a rejected
+         * key. /api/tts now returns a classified `reason` instead, and
+         * we map it to a sentence a person can act on. The precise
+         * upstream detail lives in error_logs, which is where it
+         * belongs. */
+        let reason = "";
+        try {
+          reason = (JSON.parse(errText) as { reason?: string }).reason ?? "";
+        } catch {
+          /* non-JSON body — fall through to the generic message */
+        }
+        throw new Error(
+          reason === "auth"
+            ? "TTS_AUTH"
+            : reason === "quota"
+              ? "TTS_QUOTA"
+              : reason === "timeout"
+                ? "TTS_TIMEOUT"
+                : "TTS_FAILED",
+        );
       }
       const blob = await res.blob();
       if (blob.size < 500 || !blob.type.toLowerCase().includes("audio")) {
@@ -228,9 +255,30 @@ export function InlineAudioPanel({
         toast.error(t("toast.voiceUnavailableTitle"), {
           description: t("toast.voiceUnavailableHint"),
         });
+      } else if (message === "TTS_QUOTA") {
+        // Honest and specific: waiting actually helps here, and
+        // "try again" alone would send them into a retry loop that
+        // cannot succeed until the quota window rolls over.
+        toast.error(t("toast.audioUnavailableTitle"), {
+          description: t("toast.audioQuotaHint"),
+        });
+      } else if (message === "TTS_AUTH" || message === "TTS_FAILED") {
+        // A rejected key is OUR problem, not theirs — so the copy says
+        // "we're on it" rather than "try again", which would be a lie.
+        // The real cause is already in error_logs.
+        toast.error(t("toast.audioUnavailableTitle"), {
+          description: t("toast.audioOurSideHint"),
+        });
       } else {
+        /* Beka 2026-10-03 — `message` is NEVER shown any more.
+         *
+         * It used to be passed straight into the toast description,
+         * which is how a traveller ended up reading
+         *   HTTP 502: {"error":"Azure Speech 401","detail":""}
+         * on their phone. Internal strings stay internal; the user
+         * gets a sentence, and error_logs gets the detail. */
         toast.error(t("toast.couldNotLoadGuide"), {
-          description: message || t("toast.tryAgainPlease"),
+          description: t("toast.tryAgainPlease"),
         });
       }
       return null;

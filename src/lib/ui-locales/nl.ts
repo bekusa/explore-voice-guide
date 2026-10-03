@@ -139,6 +139,10 @@ export const NL: Partial<Record<UiKey, string>> = {
   "toast.libCleared": "Offline-bibliotheek gewist",
   "toast.speechUnsupported": "Spraak niet ondersteund op dit apparaat",
   "toast.couldNotLoadGuide": "Kon de gids niet laden",
+  "toast.audioUnavailableTitle": "Audio is nu niet beschikbaar",
+  "toast.audioQuotaHint": "De vertellimiet van vandaag is bereikt. Probeer het later opnieuw.",
+  "toast.audioOurSideHint": "Dit ligt aan ons — we kijken er al naar. De geschreven gids werkt nog steeds.",
+  "lang.clearSearch": "Zoekopdracht wissen",
   "toast.tryAgainPlease": "Probeer het opnieuw.",
   "toast.voiceUnavailableTitle": "Stem nog niet beschikbaar voor deze taal",
   "toast.voiceUnavailableHint":
@@ -157,7 +161,7 @@ export const NL: Partial<Record<UiKey, string>> = {
   "lang.speakMy": "Vertel in mijn",
   "lang.language": "taal",
   "lang.current": "Huidig",
-  "lang.searchPlaceholder": "Zoek in 37 talen…",
+  "lang.searchPlaceholder": "Zoek in {count} talen…",
   "lang.tapHint":
     "Tik op een taal om direct te wisselen. De vertellersstem wordt ingesteld op de eerste beschikbare stem voor die taal.",
   "lang.noMatches": "Geen talen gevonden",

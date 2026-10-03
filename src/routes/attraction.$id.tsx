@@ -1772,35 +1772,44 @@ function SaveActionTile({
   label: string;
   ariaLabel: string;
 }) {
-  const tileRef = useRef<HTMLButtonElement>(null);
-  // When already saved we DON'T render a label (the filled BookmarkCheck
-  // is unambiguous); pass an empty string so the hook short-circuits
-  // and stays out of the way.
-  const labelFits = useLabelFits(tileRef, saved ? "" : label, { padding: 6 });
+  /* Beka 2026-10-03 — "Save ღილაკზე ტექსტი გადმოდებულია, საერთოდ
+     დამალე ტექსტი და მხოლოდ იკონკა დატოვე."
+   *
+   * The label is gone. It was already conditional (`labelFits`, via
+   * useLabelFits), but that measurement is a best-effort fit check in
+   * a 64 px tile, and in the longer locales — Georgian "შენახვა",
+   * German "Speichern", Turkish "Kaydet" — it kept guessing wrong and
+   * letting the word spill past the border.
+   *
+   * Dropping it entirely is the better answer anyway, not just the
+   * easier one: the tile sits in a row of icon-only actions, the
+   * bookmark glyph is universally understood, and a one-word caption
+   * at 9 px adds nothing a traveller reads. The saved state was
+   * ALREADY label-free for exactly this reason — this just makes the
+   * unsaved state consistent with it.
+   *
+   * Accessibility is unaffected: `aria-label` carries the translated
+   * action for screen readers, and `aria-pressed` carries the state.
+   * The `label` prop is kept in the signature and fed into aria so
+   * callers don't change and the string stays translated.
+   */
   return (
     <button
-      ref={tileRef}
       onClick={onToggle}
-      aria-label={ariaLabel}
+      aria-label={ariaLabel || label}
       aria-pressed={saved}
-      className={`grid w-[64px] place-items-center rounded-2xl border px-1.5 py-2 transition-smooth ${
+      title={label}
+      className={`grid w-[64px] place-items-center rounded-2xl border px-1.5 py-3 transition-smooth ${
         saved
           ? "border-primary/60 bg-primary/15 text-primary"
           : "border-border/70 bg-card text-foreground hover:border-primary/40"
       }`}
     >
-      <span className="flex flex-col items-center gap-1">
-        {saved ? (
-          <BookmarkCheck className="h-5 w-5 fill-current" />
-        ) : (
-          <Bookmark className="h-4 w-4" />
-        )}
-        {!saved && labelFits && (
-          <span className="text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] whitespace-nowrap">
-            {label}
-          </span>
-        )}
-      </span>
+      {saved ? (
+        <BookmarkCheck className="h-5 w-5 fill-current" />
+      ) : (
+        <Bookmark className="h-5 w-5" />
+      )}
     </button>
   );
 }

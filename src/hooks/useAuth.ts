@@ -21,17 +21,48 @@ import { supabase } from "@/integrations/supabase/client";
  * web, a corrupt blob on disk, an LRU shadow of a localStorage entry
  * — none of these should block the user from signing out.
  */
+/**
+ * Keys that belong to the DEVICE, not the account — kept across sign-out.
+ * Beka 2026-10-03.
+ *
+ * The wipe below used to take every `tg.*` key, which produced two
+ * bugs that looked unrelated and were the same mistake:
+ *
+ *   - Signing out reset the UI language back to English. Beka: "ენის
+ *     სეტინგები უნდა იყოს ტელეფონზე ჩამახსოვრებული და არა უზერზე".
+ *     Which account you hold doesn't change which language you read.
+ *
+ *   - Signing out re-armed the notification seed, so the onboarding
+ *     tips were re-created and the badge went back to "2" every time.
+ *     Beka: "ნოტიფიკეიშენი ლოგაუთზე ახლდება და ისევ 2 ეწერება".
+ *
+ * The test for this list: would a second person picking up this phone
+ * be harmed or confused by the value surviving? Language, theme and
+ * "I already saw the welcome tips" are preferences of whoever holds
+ * the device. Saved tours, trips, cached guides and audio are the
+ * previous USER'S content and must still be wiped.
+ */
+const DEVICE_SCOPED_KEYS = new Set([
+  "tg.lang", // UI + content language
+  "tg.theme", // dark / light
+  "tg.notifications.v1", // the notification list itself
+  "tg.notifications.seeded.v1", // "welcome tips already shown once"
+  "tg.attractionHint", // one-off UI coach mark
+]);
+
 async function clearAllLocalUserData(): Promise<void> {
   if (typeof window === "undefined") return;
 
-  // 1. localStorage — wipe every Lokali key. We match by prefix
-  //    rather than enumerating known keys so future-added caches
-  //    don't silently leak across users.
+  // 1. localStorage — wipe every Lokali key EXCEPT the device-scoped
+  //    ones above. We match by prefix rather than enumerating known
+  //    keys so future-added caches don't silently leak across users;
+  //    the allowlist is the deliberate, reviewed exception to that.
   try {
     const keysToWipe: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
       if (!k) continue;
+      if (DEVICE_SCOPED_KEYS.has(k)) continue;
       // Prefixes Lokali has used historically:
       //   tg.*         — saved tours, guide cache, language, etc.
       //   lokali.*     — newer Capacitor-aware writes
@@ -52,16 +83,41 @@ async function clearAllLocalUserData(): Promise<void> {
     /* localStorage unavailable — nothing to clear */
   }
 
-  // 2. Capacitor Preferences mirror (native only). We clear the
-  //    whole Preferences namespace rather than per-key because the
-  //    set of keys is implementation-detail and the user is signing
-  //    out — they don't need ANY remembered preference to bleed
-  //    into the next account.
+  // 2. Capacitor Preferences mirror (native only).
+  //
+  //    This used to call Preferences.clear(), which wiped the whole
+  //    namespace. Beka 2026-10-03: that took two things with it that
+  //    are NOT the signed-out user's to lose.
+  //
+  //      lokali.review.v1 — the Play Store review-prompt state. Wiping
+  //      it re-arms the prompt, so a user who signs out could be asked
+  //      to rate the app a second time. Google's own guidance is to
+  //      ask once; asking again is the one behaviour that annoys.
+  //
+  //      The device preferences mirrored from localStorage (language,
+  //      theme) — same reasoning as DEVICE_SCOPED_KEYS above.
+  //
+  //    So we now remove keys individually and keep that short list.
   try {
     const { Capacitor } = await import("@capacitor/core");
     if (Capacitor.isNativePlatform()) {
       const { Preferences } = await import("@capacitor/preferences");
-      await Preferences.clear();
+      const KEEP = new Set([
+        "lokali.review.v1",
+        "tg.lang",
+        "tg.theme",
+        "lokali.lang",
+        "lokali.theme",
+      ]);
+      const { keys } = await Preferences.keys();
+      for (const k of keys) {
+        if (KEEP.has(k)) continue;
+        try {
+          await Preferences.remove({ key: k });
+        } catch {
+          /* keep going — one bad key must not abort the sign-out */
+        }
+      }
     }
   } catch {
     /* plugin missing or not native */

@@ -47,6 +47,26 @@ export function getStoredLang(): string {
   }
 }
 
+/**
+ * Has this device EXPLICITLY chosen a language?
+ *
+ * Beka 2026-10-03. `getStoredLang()` folds "nothing stored" and
+ * "stored as English" into the same `"en"`, which is right for
+ * rendering and wrong for deciding whether a signed-in profile may
+ * seed the language. Without this distinction the seed either never
+ * applies (if you treat "en" as a choice) or overrides a deliberate
+ * pick of English (if you don't) — and the second is the bug Beka
+ * reported from the other direction.
+ */
+export function hasStoredLang(): boolean {
+  if (!isBrowser()) return false;
+  try {
+    return Boolean(localStorage.getItem(STORAGE_KEY));
+  } catch {
+    return false;
+  }
+}
+
 export function setStoredLang(code: string) {
   if (!isBrowser()) return;
   const norm = normalizeLang(code);
@@ -395,6 +415,15 @@ export const UI_STRINGS = {
   "toast.speechUnsupported": "Speech not supported on this device",
   "toast.couldNotLoadGuide": "Couldn't load the guide",
   "toast.tryAgainPlease": "Please try again.",
+  // Audio failures, Beka 2026-10-03. Before this, the toast printed
+  // the raw upstream error — a traveller in a museum was shown
+  //   HTTP 502: {"error":"Azure Speech 401","detail":""}
+  // These three strings replace that. The split matters because the
+  // right ADVICE differs: a quota needs waiting, a rejected key needs
+  // us, and neither is fixed by "try again".
+  "toast.audioUnavailableTitle": "Audio isn't available right now",
+  "toast.audioQuotaHint": "We've hit today's narration limit. Please try again later.",
+  "toast.audioOurSideHint": "This is a problem on our side — we're already looking into it. The written guide still works.",
   // Surfaced when the TTS upstream rejects the request because the
   // chosen language has no voice configured (e.g., Azure ka-GE not
   // enabled in n8n). Hint points the user to switch language as a
@@ -418,7 +447,13 @@ export const UI_STRINGS = {
   "lang.speakMy": "Speak my",
   "lang.language": "language",
   "lang.current": "Current",
-  "lang.searchPlaceholder": "Search 37 languages…",
+  // Beka 2026-10-03: the count was hard-coded as "37" here and in all
+  // 44 locale files, and had been wrong for months — the catalog grew
+  // past it and nobody updates a number buried in 45 translations.
+  // Parameterised so it can never drift again; language.tsx passes the
+  // live count. Same treatment as home.everyLang.title.
+  "lang.searchPlaceholder": "Search {count} languages…",
+  "lang.clearSearch": "Clear search",
   "lang.tapHint":
     "Tap a language to switch instantly. Your narrator voice will reset to the first match for that locale.",
   "lang.noMatches": "No languages match",

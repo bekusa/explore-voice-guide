@@ -383,7 +383,30 @@ function RootComponent() {
   return (
     <>
       <Outlet />
-      <Toaster richColors position="top-center" />
+      {/* Beka 2026-10-03 — "ენის ცვლილებაზე ზემოთა საინფორმაციო არ
+          ჩახურა". No duration was ever set here, so every toast used
+          sonner's default. That default is long for a banner pinned
+          over the top of the screen, and the language toast is fired
+          immediately before a navigation — so it reappears on the
+          destination page and reads as stuck rather than as the tail
+          of the last one.
+
+          4 s is long enough to read a short confirmation and short
+          enough that it is gone by the time the next screen settles.
+          `closeButton` gives an explicit way out: the toast sits at
+          the very top on mobile, over the back arrow, and until now
+          there was no way to dismiss it by hand at all — tapping it
+          did nothing.
+
+          This applies to every toast in the app, which is intended:
+          the same "won't go away" complaint would have been true of
+          any of them. */}
+      <Toaster
+        richColors
+        position="top-center"
+        duration={4000}
+        closeButton
+      />
     </>
   );
 }

@@ -139,6 +139,10 @@ export const DE: Partial<Record<UiKey, string>> = {
   "toast.libCleared": "Offline-Bibliothek geleert",
   "toast.speechUnsupported": "Sprachausgabe wird auf diesem Gerät nicht unterstützt",
   "toast.couldNotLoadGuide": "Guide konnte nicht geladen werden",
+  "toast.audioUnavailableTitle": "Audio ist gerade nicht verfügbar",
+  "toast.audioQuotaHint": "Das heutige Erzähl-Limit ist erreicht. Bitte später erneut versuchen.",
+  "toast.audioOurSideHint": "Das liegt an uns — wir sehen es uns schon an. Der geschriebene Guide funktioniert weiterhin.",
+  "lang.clearSearch": "Suche löschen",
   "toast.tryAgainPlease": "Bitte versuch es noch einmal.",
   "toast.voiceUnavailableTitle": "Stimme für diese Sprache noch nicht verfügbar",
   "toast.voiceUnavailableHint":
@@ -157,7 +161,7 @@ export const DE: Partial<Record<UiKey, string>> = {
   "lang.speakMy": "Sprich meine",
   "lang.language": "Sprache",
   "lang.current": "Aktuell",
-  "lang.searchPlaceholder": "37 Sprachen durchsuchen…",
+  "lang.searchPlaceholder": "{count} Sprachen durchsuchen…",
   "lang.tapHint":
     "Tippe auf eine Sprache, um sofort zu wechseln. Deine Erzählerstimme wird auf den ersten Treffer dieser Sprache zurückgesetzt.",
   "lang.noMatches": "Keine Sprachen gefunden",

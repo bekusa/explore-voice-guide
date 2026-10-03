@@ -1031,9 +1031,22 @@ function VoiceList({
               >
                 <span className="flex flex-1 flex-col leading-tight">
                   <span className="text-[14px] font-semibold">{v.display}</span>
+                  {/* Beka 2026-10-03 — "ენების ვოსზე მოვაშორო სიტყვა
+                      ქლაუდი". The "· Cloud" suffix is gone.
+
+                      It was never information the listener could use:
+                      every voice in this list is a cloud voice, so the
+                      word distinguished nothing and just described our
+                      plumbing. Gender is the one attribute that
+                      actually differs between the rows, so it stands
+                      on its own now.
+
+                      The `voice.cloud` key stays in i18n (translated
+                      in all 44 locales) in case a future list mixes
+                      on-device voices with cloud ones, where the
+                      distinction WOULD mean something. */}
                   <span className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                    {v.gender === "female" ? t("voice.female") : t("voice.male")} ·{" "}
-                    {t("voice.cloud")}
+                    {v.gender === "female" ? t("voice.female") : t("voice.male")}
                   </span>
                 </span>
                 {isActive && (

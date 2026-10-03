@@ -139,6 +139,10 @@ export const RU: Partial<Record<UiKey, string>> = {
   "toast.libCleared": "Офлайн-библиотека очищена",
   "toast.speechUnsupported": "Речь не поддерживается на этом устройстве",
   "toast.couldNotLoadGuide": "Не удалось загрузить аудиогид",
+  "toast.audioUnavailableTitle": "Аудио сейчас недоступно",
+  "toast.audioQuotaHint": "Достигнут сегодняшний лимит озвучивания. Попробуйте позже.",
+  "toast.audioOurSideHint": "Это проблема на нашей стороне — мы уже разбираемся. Текстовый гид работает.",
+  "lang.clearSearch": "Очистить поиск",
   "toast.tryAgainPlease": "Пожалуйста, попробуй ещё раз.",
   "toast.voiceUnavailableTitle": "Голос для этого языка пока недоступен",
   "toast.voiceUnavailableHint":
@@ -156,7 +160,7 @@ export const RU: Partial<Record<UiKey, string>> = {
   "lang.speakMy": "Говори на моём",
   "lang.language": "языке",
   "lang.current": "Текущий",
-  "lang.searchPlaceholder": "Поиск среди 37 языков…",
+  "lang.searchPlaceholder": "Поиск среди {count} языков…",
   "lang.tapHint":
     "Нажми на язык, чтобы переключиться мгновенно. Голос рассказчика сменится на первый доступный для этого языка.",
   "lang.noMatches": "Нет совпадений",
