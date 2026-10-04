@@ -165,11 +165,30 @@ export async function maybeAskForReview(opts: {
     if (s.bestRating < GOOD_RATING) return false;
     if (s.lastErrorAt && Date.now() - s.lastErrorAt < ERROR_COOLDOWN_MS) return false;
 
-    // Dynamic import so the plugin is not pulled into the web bundle,
-    // where it does not exist.
-    const mod = await import("@capacitor-community/in-app-review");
-    const InAppReview = (mod as { InAppReview?: { requestReview: () => Promise<void> } })
-      .InAppReview;
+    /* Dynamic import so the plugin is never pulled into the web
+     * bundle, where it does not exist.
+     *
+     * The module specifier is deliberately held in a variable rather
+     * than written inline. Beka 2026-10-03: with it inline,
+     * `tsc --noEmit` fails on any machine where the package is not
+     * installed —
+     *   TS2307: Cannot find module '@capacitor-community/in-app-review'
+     * — and that is a genuinely optional NATIVE-only dependency. A
+     * web-only checkout, a fresh clone, or a CI job that skips native
+     * deps would all have had their type-check blocked by a plugin
+     * they correctly do not have.
+     *
+     * Hiding the specifier behind a variable stops TypeScript
+     * resolving it at compile time while leaving the runtime
+     * behaviour identical: on native the plugin loads, elsewhere the
+     * import throws and the catch below turns it into "skip the
+     * prompt", which is exactly right.
+     */
+    const pluginId = "@capacitor-community/in-app-review";
+    const mod = (await import(/* @vite-ignore */ pluginId)) as {
+      InAppReview?: { requestReview: () => Promise<void> };
+    };
+    const InAppReview = mod.InAppReview;
     if (!InAppReview) return false;
 
     // Mark BEFORE the call, not after. If requestReview throws midway
