@@ -36,7 +36,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { LoadingMessages } from "@/components/LoadingMessages";
-import { InlineAudioPanel } from "@/components/InlineAudioPanel";
+import { startNarration } from "@/lib/narrationPlayer";
 import { MobileFrame } from "@/components/MobileFrame";
 import { UnescoBadge } from "@/components/UnescoBadge";
 import { PracticalInfo } from "@/components/PracticalInfo";
@@ -804,7 +804,6 @@ function AttractionPage() {
   // Inline audio player state. Replaces the old /player page — Play
   // now opens a sticky panel at the bottom of this screen so the user
   // can keep reading while listening, instead of teleporting away.
-  const [playerOpen, setPlayerOpen] = useState(false);
   const openPlayer = () => {
     if (starting) return;
     if (!script) {
@@ -838,7 +837,14 @@ function AttractionPage() {
     // sharp-impact. No-op on the web.
     void haptic("heavy");
     setStarting(true);
-    setPlayerOpen(true);
+    // Hand the script to the global player. Re-tapping Listen for the
+    // same place is a no-op inside the store, so coming back to this
+    // page and pressing it again does not restart from 0:00.
+    startNarration({
+      name: attraction?.name ?? fallbackName,
+      script: fullScript || script,
+      language,
+    });
     // Tiny timeout so the gold button gets a brief loader flicker on
     // first press — feels more responsive than instant.
     setTimeout(() => setStarting(false), 250);
@@ -851,22 +857,11 @@ function AttractionPage() {
     : null;
 
   return (
-    <MobileFrame
-      // The audio player is rendered as a sibling of the scrolling
-      // content (not inside it) so it floats above the TabBar at
-      // every scroll position — Beka's request: "მცურავი და არ
-      // სჭირდებოდეს ჩასქროლვა".
-      floatingPanel={
-        playerOpen ? (
-          <InlineAudioPanel
-            name={a?.name ?? fallbackName}
-            script={fullScript || script}
-            language={language}
-            onClose={() => setPlayerOpen(false)}
-          />
-        ) : null
-      }
-    >
+    // The audio player is no longer passed in here. MobileFrame
+    // renders it from the global narration store, which is what lets
+    // it keep playing (and stay visible) when the user switches tabs
+    // — Beka 2026-10-04. Opening it is startNarration(), below.
+    <MobileFrame>
       <div className="relative min-h-full bg-background pb-10 text-foreground">
         {/* Hero — carousel when we have a multi-photo gallery from
             Wikipedia's media-list, single image otherwise. The
@@ -1235,10 +1230,10 @@ function AttractionPage() {
           <div ref={guideEndRef} aria-hidden="true" className="h-8" />
         )}
 
-        {/* The audio player itself lives in MobileFrame's floatingPanel
-            slot — see the prop on the wrapping <MobileFrame> above.
-            That keeps it visible at any scroll position instead of
-            buried at the end of the page. */}
+        {/* The audio player itself is rendered by MobileFrame from the
+            global narration store — nothing for this page to mount.
+            That keeps it visible at any scroll position, and on any
+            other tab the user wanders off to. */}
       </div>
     </MobileFrame>
   );

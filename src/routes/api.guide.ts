@@ -5,6 +5,7 @@ import { translateGuidePayload } from "@/lib/translatePayload.server";
 import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
 import { buildGuideSystem, buildGuideUser } from "@/lib/prompts";
 import { normalizeToCanonicalEnglish } from "@/lib/normalizeAttractionName.server";
+import { describeThrown, logError } from "@/lib/errorLog.server";
 
 /**
  * /api/guide — Cloudflare Worker route that calls Anthropic Claude
@@ -28,6 +29,9 @@ export const Route = createFileRoute("/api/guide")({
     handlers: {
       OPTIONS: async () => corsPreflight(),
       POST: async ({ request }) => {
+        // See the catch block: this timestamp is what distinguishes a
+        // fast upstream rejection from a slow Worker-budget timeout.
+        const startedAt = Date.now();
         const rawBody = await request.text();
         const rawKey = extractGuideKey(rawBody);
         const userLang = rawKey?.language ?? "en";
@@ -123,10 +127,31 @@ export const Route = createFileRoute("/api/guide")({
 
           return jsonResponse(parsed, 200, "MISS");
         } catch (err) {
-          // Anthropic call failed (key missing, rate limit, network)
-          // — return an empty guide with a generic error string so the
-          // client renders gracefully. Full error stays server-side.
-          console.warn("[api.guide] upstream error", err);
+          /* This is the "Couldn't load this place · Please try again"
+           * the user sees. Beka 2026-10-04 asked for it to be logged —
+           * until now this branch only did a console.warn, so a failed
+           * guide left no trace anywhere.
+           *
+           * As with /api/attractions: a throw here does not prove
+           * Anthropic failed. Cross-check `api_logs` for the same
+           * minute — if the model call succeeded there, the fault is
+           * downstream (JSON parse, translation, normalisation, or the
+           * Worker's ~100 s budget), and `durationMs` tells you which. */
+          const { message, kind } = describeThrown(err);
+          await logError({
+            service: "guide",
+            route: "/api/guide",
+            kind,
+            message,
+            durationMs: Date.now() - startedAt,
+            context: {
+              name: key?.name ?? null,
+              city: key?.city ?? null,
+              language: key?.language ?? null,
+              interest: key?.interest ?? null,
+              hint: "User saw \"Couldn't load this place\". Compare with api_logs at the same timestamp to tell a model failure from a downstream one.",
+            },
+          });
           return new Response(
             JSON.stringify({
               script: "",

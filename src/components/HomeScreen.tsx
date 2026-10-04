@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -18,7 +18,8 @@ import { useSelectedDestination } from "@/hooks/useSelectedDestination";
 import { useT, useTranslated, useUiLang } from "@/hooks/useT";
 import { getMuseumStrings } from "@/lib/museumTranslations";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
-import { InlineAudioPanel } from "@/components/InlineAudioPanel";
+import { useIsNarrating } from "@/hooks/useNarration";
+import { startNarration } from "@/lib/narrationPlayer";
 import { MobileFrame } from "@/components/MobileFrame";
 import type { UiKey } from "@/lib/i18n";
 import { DESTINATIONS, type Destination } from "@/lib/destinations";
@@ -124,13 +125,30 @@ export function HomeScreen() {
     LANGUAGES.find((l) => l.code === "en-US") ??
     LANGUAGES[0];
   const [query, setQuery] = useState("");
+  /** Live DOM access to the search box — see the IME notes below. */
+  const searchRef = useRef<HTMLInputElement>(null);
+  /**
+   * Is there something to search for?
+   *
+   * Deliberately NOT `query.trim()` inline in the JSX. Keeping it as
+   * one named value means the button's appearance and `submitSearch`'s
+   * guard can never drift apart — which is what made the Georgian-input
+   * bug read as "the button is broken" instead of "your text didn't
+   * register".
+   */
+  const hasQuery = query.trim().length > 0;
   const [heroIdx, setHeroIdx] = useState(0);
   const [mounted, setMounted] = useState(false);
-  // True while the Listen panel is open — pauses the 7-second hero
+  // True while a narration is running — pauses the 7-second hero
   // rotation so the city behind the playing audio doesn't swap mid-
   // narration (Beka's spec — "თუ დაჭერილია Listen ენაზე Hero უნდა
   // ჩერდებოდეს რომ არ გაწყდეს ვოისი").
-  const [listening, setListening] = useState(false);
+  //
+  // Read from the global store rather than local state (2026-10-04):
+  // the player now outlives this screen, so if the user wanders back
+  // home with a guide still playing, the hero must stay put and
+  // Listen must stay disabled — which local state could not know.
+  const listening = useIsNarrating();
   // Set true the moment the user taps an arrow or a dot — auto-
   // rotation then stops for the rest of the session. Same UX as the
   // attraction-page photo carousel: surprise movement after someone
@@ -195,7 +213,14 @@ export function HomeScreen() {
 
   async function submitSearch(e: React.FormEvent) {
     e.preventDefault();
-    const q = query.trim();
+    /* Read the DOM, not just React state. Beka 2026-10-04.
+     *
+     * With an IME (Georgian, Japanese, Chinese…) the input can hold
+     * text that React's `query` has not caught up with yet — the
+     * composition commits on the same tick as the submit. Taking the
+     * live value first means pressing Go always searches what the
+     * user can actually see in the box, whatever the script. */
+    const q = (searchRef.current?.value ?? query).trim();
     if (!q) return;
     // Stage-0 routing — Beka 2026-06-21 UX spec.
     // Before: every submitted query went to /results (city list).
@@ -221,20 +246,10 @@ export function HomeScreen() {
     navigate({ to: "/results", search: { q } });
   }
 
-  // Build the InlineAudioPanel slot when the user has tapped Listen
-  // on the hero. The script is the pre-translated heroBlurb for the
-  // currently visible city; closing the panel resumes the rotation.
-  const heroFloatingPanel = listening ? (
-    <InlineAudioPanel
-      name={heroCity}
-      script={heroBlurb}
-      language={lang}
-      onClose={() => setListening(false)}
-    />
-  ) : null;
-
   return (
-    <MobileFrame floatingPanel={heroFloatingPanel}>
+    // No floatingPanel prop — MobileFrame renders the player from the
+    // global narration store, so it keeps playing across tabs.
+    <MobileFrame>
       <div className="relative min-h-full w-full bg-background text-foreground">
         {/* ─── HERO ─── */}
         <section
@@ -449,7 +464,9 @@ export function HomeScreen() {
             <div className="mt-6 flex flex-wrap items-center gap-2.5">
               <button
                 type="button"
-                onClick={() => setListening(true)}
+                onClick={() =>
+                  startNarration({ name: heroCity, script: heroBlurb, language: lang })
+                }
                 disabled={listening}
                 aria-label={t("attr.listen")}
                 className="inline-flex h-12 items-center gap-2 rounded-full bg-gradient-gold px-6 text-[13px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-glow transition-smooth active:scale-95 hover:scale-[1.03] disabled:opacity-60"
@@ -495,8 +512,34 @@ export function HomeScreen() {
           >
             <Search className="h-4 w-4 shrink-0 text-primary" />
             <input
+              ref={searchRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              /* Beka 2026-10-04 — "როცა ვწერ ფოთი არ ინთება ღილაკი,
+                 და როცა ვწერ ინგლისურად poti — მაშინ ინთება."
+               *
+               * Non-Latin keyboards (Georgian, Japanese, Chinese,
+               * Korean…) type through an IME: keystrokes form a
+               * COMPOSITION that the browser may not commit to the
+               * input's value — and therefore may not fire `change`
+               * for — until the user accepts the word. Latin typing
+               * commits every keystroke, which is why "poti" lit the
+               * button and "ფოთი" did not.
+               *
+               * `onInput` fires during composition where `onChange`
+               * may not, and `onCompositionEnd` catches the commit on
+               * the engines that suppress both. Between them the
+               * state tracks what is actually on screen in every
+               * script. `submitSearch` additionally reads the DOM
+               * value as the source of truth, so even if React state
+               * lags by a frame the search still runs.
+               *
+               * This is an accessibility-of-language issue, not a
+               * cosmetic one: for an app whose entire premise is "in
+               * your own language", a search box that only works in
+               * English is the worst possible bug. */
+              onInput={(e) => setQuery((e.target as HTMLInputElement).value)}
+              onCompositionEnd={(e) => setQuery(e.currentTarget.value)}
               placeholder={t("home.searchPlaceholder")}
               enterKeyHint="search"
               autoComplete="off"
@@ -534,7 +577,24 @@ export function HomeScreen() {
                 did not. The arrow stays alongside the word as the
                 direction cue. `w-auto px-4` lets the pill grow for the
                 few locales that need a third or fourth character. */}
-            {query.trim() ? (
+            {/* Beka 2026-10-04 — the button is ALWAYS a submit button
+                now. It used to swap between a <button> (when the query
+                looked non-empty to React) and a <Link to="/destinations">
+                (when it looked empty).
+
+                That swap is what made the IME bug so confusing: with a
+                Georgian composition in flight, React still thought the
+                field was empty, so the control rendered as the muted
+                BROWSE link — tapping it navigated to the destinations
+                list instead of searching, which reads as "the button
+                doesn't work" rather than "your text hasn't registered".
+
+                One control, one behaviour: it submits. It is merely
+                dimmed while there is nothing to search for, and the
+                form's own `if (!q) return` guard handles the empty
+                case. Browse is still one tap away via the city cards
+                and the Explore tab. */}
+            {hasQuery ? (
               <button
                 type="submit"
                 aria-label={t("home.search")}
@@ -544,14 +604,14 @@ export function HomeScreen() {
                 <ArrowRight className="h-3.5 w-3.5 shrink-0" />
               </button>
             ) : (
-              <Link
-                to="/destinations"
-                aria-label={t("home.browse")}
+              <button
+                type="submit"
+                aria-label={t("home.search")}
                 className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-4 text-[12px] font-bold uppercase tracking-[0.14em] text-muted-foreground transition-smooth hover:text-foreground"
               >
                 <span>{t("home.go")}</span>
                 <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-              </Link>
+              </button>
             )}
           </form>
 

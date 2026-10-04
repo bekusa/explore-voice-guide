@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -15,8 +15,9 @@ import {
   User,
 } from "lucide-react";
 import { LoadingMessages } from "@/components/LoadingMessages";
-import { InlineAudioPanel } from "@/components/InlineAudioPanel";
 import { MobileFrame } from "@/components/MobileFrame";
+import { useIsNarrating } from "@/hooks/useNarration";
+import { getNarrationState, startNarration, stopNarration } from "@/lib/narrationPlayer";
 import { toast } from "sonner";
 import { ATTRACTIONS_BY_ID, ROLES_META, TIME_MACHINE_ROLES } from "@/lib/timeMachineData";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
@@ -90,11 +91,16 @@ function TimeMachineSimulationPage() {
   const [error, setError] = useState<string | null>(null);
   const [reloadTick, setReloadTick] = useState(0);
 
-  // Audio panel mount state — lifted up to the page so the panel can
-  // sit in MobileFrame's floatingPanel slot (sticky just above the
-  // TabBar) instead of inline in the action row. Same pattern as
-  // /attraction/$id.
-  const [audioOpen, setAudioOpen] = useState(false);
+  // Is a narration running? Read from the global store rather than
+  // local state — the player is shared across the whole app now, so
+  // "is the player up" is not this page's fact to own. Used only to
+  // disable Play while something is already being read aloud.
+  const audioOpen = useIsNarrating();
+  /* Which script THIS page handed to the player, if any. Needed
+   * because the role-change cleanup below must stop the narration it
+   * started and nothing else: a guide the user started on another
+   * page has to survive arriving here. */
+  const startedScriptRef = useRef<string | null>(null);
 
   // Auth gate — listening to a simulation costs Azure TTS the same
   // way listening to an attraction does, so we apply the same
@@ -118,7 +124,10 @@ function TimeMachineSimulationPage() {
       });
       return;
     }
-    setAudioOpen(true);
+    // heroTitle / ttsScript are declared further down; this runs on
+    // click, long after they exist.
+    startedScriptRef.current = ttsScript;
+    startNarration({ name: heroTitle, script: ttsScript, language: lang });
   };
 
   // Role picker dropdown state.
@@ -155,9 +164,14 @@ function TimeMachineSimulationPage() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    // Close any open audio panel from the previous role/script — its
-    // blob references stale TTS output for a different narrative.
-    setAudioOpen(false);
+    // The role or language changed, so the player may still be
+    // reading the PREVIOUS role's script — stop it; the audio is a
+    // different narrative now. Only if it is ours, though: the player
+    // is global, and a guide the user started elsewhere must survive
+    // arriving on this page.
+    const mine = startedScriptRef.current;
+    if (mine && getNarrationState().request?.script === mine) stopNarration();
+    startedScriptRef.current = null;
     fetch("/api/time-machine", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -235,17 +249,10 @@ function TimeMachineSimulationPage() {
     });
   };
 
-  const floatingPanel = audioOpen ? (
-    <InlineAudioPanel
-      name={heroTitle}
-      script={ttsScript}
-      language={lang}
-      onClose={() => setAudioOpen(false)}
-    />
-  ) : null;
-
   return (
-    <MobileFrame floatingPanel={floatingPanel}>
+    // No floatingPanel prop any more — MobileFrame renders the player
+    // from the global narration store so it survives tab changes.
+    <MobileFrame>
       <div className="relative min-h-full bg-background pb-10 text-foreground">
         {/* ─── Hero ─── */}
         <section className="relative h-[420px] w-full overflow-hidden">
@@ -365,10 +372,10 @@ function ActionRow({
   return (
     <section className="px-6 -mt-2 relative z-20">
       <div className="flex items-stretch gap-2.5">
-        {/* Play — primary, large, gold. Opens the InlineAudioPanel
-            in the MobileFrame floatingPanel slot. Disabled while the
-            simulation is still streaming or when the panel is already
-            mounted (audio is autoplaying inside it). */}
+        {/* Play — primary, large, gold. Starts the global narration,
+            which MobileFrame then shows above the TabBar. Disabled
+            while the simulation is still streaming, or while anything
+            is already being narrated (one player at a time). */}
         <button
           onClick={onPlay}
           disabled={disabled || audioOpen}

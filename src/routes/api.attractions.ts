@@ -6,6 +6,7 @@ import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
 import { buildAttractionsSystem, buildAttractionsUser } from "@/lib/prompts";
 import { normalizeToCanonicalEnglish } from "@/lib/normalizeAttractionName.server";
 import { resolveCoords } from "@/lib/resolveCoords.server";
+import { describeThrown, logError } from "@/lib/errorLog.server";
 
 /**
  * /api/attractions — Cloudflare Worker route that calls Anthropic
@@ -47,6 +48,10 @@ export const Route = createFileRoute("/api/attractions")({
     handlers: {
       OPTIONS: async () => corsPreflight(),
       POST: async ({ request }) => {
+        // Stamped at entry so the error log can report how long we got
+        // before failing — the one number that separates "Anthropic
+        // said no" (fast) from "the Worker ran out of budget" (slow).
+        const startedAt = Date.now();
         const rawBody = await request.text();
         const rawKey = extractAttractionsKey(rawBody);
         const userLang = rawKey?.language ?? "en";
@@ -179,11 +184,32 @@ export const Route = createFileRoute("/api/attractions")({
 
           return jsonResponse(withCanonical(parsed, key.query), 200, "MISS");
         } catch (err) {
-          // Anthropic call failed (key missing, rate limit, network,
-          // …) — return an empty list with a generic `error` field so
-          // the client renders a graceful "nothing found" instead of a
-          // broken page. Full error stays server-side.
-          console.warn("[api.attractions] upstream error", err);
+          /* This is the "AI is temporarily busy" the user sees.
+           * Beka 2026-10-04 asked for it to be logged — it was the
+           * single most-reported error with the least evidence behind
+           * it, because this branch only did a console.warn.
+           *
+           * Worth knowing when reading these rows: a failure here is
+           * NOT necessarily Anthropic. `api_logs` showed 77 calls and
+           * zero failures over the three days Beka hit this, so the
+           * throw is at least as likely to come from AFTER the model
+           * returned — JSON parsing, the translation step, or the
+           * Worker running out of its ~100 s budget while assembling
+           * the response. `stage` and `durationMs` below are what
+           * separate those cases. */
+          const { message, kind } = describeThrown(err);
+          await logError({
+            service: "attractions",
+            route: "/api/attractions",
+            kind,
+            message,
+            durationMs: Date.now() - startedAt,
+            context: {
+              query: key?.query ?? null,
+              language: key?.language ?? null,
+              hint: "User saw 'AI is temporarily busy'. Check api_logs for the same minute: if Anthropic succeeded there, the failure is downstream (parse/translate/worker-timeout), not the model.",
+            },
+          });
           return new Response(
             JSON.stringify({
               attractions: [],

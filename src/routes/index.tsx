@@ -20,9 +20,10 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-// MobileFrame moved INSIDE HomeScreen so the home page can pass its
-// own floatingPanel (the hero Listen audio player). The outer route
-// is now a thin shell — head metadata + the component.
+// MobileFrame lives INSIDE HomeScreen (it originally moved there so
+// the home page could pass its own audio-player slot; the player is
+// global now, but HomeScreen still owns the frame). The outer route
+// is a thin shell — head metadata + the component.
 // Entity markup (2026-09-20, SEO/GEO strategy): tells search and AI engines
 // which "Lokali" this is — several unrelated apps share the name.
 // Rendered server-side in the body; Google reads JSON-LD anywhere.

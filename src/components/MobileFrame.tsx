@@ -3,6 +3,8 @@ import { Sparkles } from "lucide-react";
 import { TabBar } from "@/components/TabBar";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { PlayStoreBanner } from "@/components/PlayStoreBanner";
+import { InlineAudioPanel } from "@/components/InlineAudioPanel";
+import { useIsNarrating } from "@/hooks/useNarration";
 import { useT } from "@/hooks/useT";
 
 /**
@@ -13,21 +15,28 @@ import { useT } from "@/hooks/useT";
  * consistent across every page. Pass `hideTabBar` for fullscreen
  * flows (auth, onboarding, player overlays) that shouldn't show it.
  *
- * `floatingPanel` is a separate slot rendered as a SIBLING of the
- * scrolling content (not inside it) and pinned just above the TabBar.
- * Use it for persistent UI like the audio player that has to stay
- * visible without forcing the user to scroll back up. Plain `fixed`
- * positioning didn't work here — the desktop preview crops to a 420px
- * phone-shaped container, and a viewport-fixed element drops out of
- * that frame entirely. Anchoring at this level keeps the panel inside
- * the phone on desktop and at the screen edge on mobile in one go.
+ * The audio player is rendered HERE, from the global narration store,
+ * rather than passed in by each page (Beka 2026-10-04: "გადავედი სხვა
+ * ტაბზე … აუდიო პლეერი რომ დატოვო ჩართული"). It used to be a
+ * `floatingPanel` prop that /attraction, /tm-sim and the home hero
+ * each filled in; leaving a page therefore unmounted the player and
+ * killed playback. Now any page that wraps itself in MobileFrame shows
+ * the running narration automatically, and the audio element itself
+ * lives outside React entirely (see lib/narrationPlayer.ts).
+ *
+ * It sits as a SIBLING of the scrolling content (not inside it),
+ * pinned just above the TabBar, so it stays visible without forcing
+ * the user to scroll back up. Plain `fixed` positioning didn't work
+ * here — the desktop preview crops to a 420px phone-shaped container,
+ * and a viewport-fixed element drops out of that frame entirely.
+ * Anchoring at this level keeps the panel inside the phone on desktop
+ * and at the screen edge on mobile in one go.
  */
 export function MobileFrame({
   children,
   hideTabBar = false,
   hideAiFooter = false,
   showAiFooter = false,
-  floatingPanel,
 }: {
   children: ReactNode;
   hideTabBar?: boolean;
@@ -40,21 +49,23 @@ export function MobileFrame({
   /** Opt IN to the "AI Generated Content" fineprint. Off by default —
    *  it now lives only on the Profile (Settings) page. */
   showAiFooter?: boolean;
-  floatingPanel?: ReactNode;
 }) {
+  // Is a narration running right now? Drives both the player and the
+  // extra bottom padding, on every page, with no prop threading.
+  const narrating = useIsNarrating();
   // Reserve room at the bottom of the scroll area so the last item
   // doesn't sit underneath the TabBar (56 px tap zone + at least
   // 16 px below it for Android gesture bar / iPhone home indicator)
-  // and, when present, the floating panel above it. max() guards
+  // and, when present, the audio player above it. max() guards
   // against Android edge-to-edge cases where env() resolves to 0.
   // Numbers stay in sync with TabBar's height calculation — when
   // editing one, update the other.
   const bottomPad =
-    !hideTabBar && floatingPanel
+    !hideTabBar && narrating
       ? "pb-[calc(280px+max(16px,env(safe-area-inset-bottom)))]"
       : !hideTabBar
         ? "pb-[calc(56px+max(16px,env(safe-area-inset-bottom)))]"
-        : floatingPanel
+        : narrating
           ? "pb-[calc(200px+max(16px,env(safe-area-inset-bottom)))]"
           : "";
   return (
@@ -90,7 +101,7 @@ export function MobileFrame({
               hideAiFooter kept as a suppression override for safety. */}
           {showAiFooter && !hideAiFooter && <AiGeneratedFooter />}
         </div>
-        {floatingPanel && (
+        {narrating && (
           <div
             className={`absolute inset-x-0 z-30 ${
               hideTabBar
@@ -98,15 +109,15 @@ export function MobileFrame({
                 : "bottom-[calc(56px+max(16px,env(safe-area-inset-bottom)))]"
             }`}
           >
-            {floatingPanel}
+            <InlineAudioPanel />
           </div>
         )}
         {/* "Get it on Google Play" pill — WEB visitors only (the
             component self-hides inside the Capacitor app + after
-            dismissal). Pinned above the TabBar, below floatingPanel's
+            dismissal). Pinned above the TabBar, below the player's
             z-30 so the audio player wins when both are up. Beka
             2026-07-31, production launch. */}
-        {!floatingPanel && (
+        {!narrating && (
           <div
             className={`absolute inset-x-0 z-20 ${
               hideTabBar

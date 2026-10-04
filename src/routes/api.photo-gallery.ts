@@ -116,8 +116,33 @@ function looksLikePhoto(filename: string): boolean {
     "emblem",
     "signature",
     // Cartography & diagrams.
+    //
+    // Beka 2026-10-04 saw location maps in the Poti galleries. The
+    // underlying cause was a wrong ARTICLE (now fixed by the
+    // relevance gate above), but the filename patterns below were
+    // also too narrow to catch Wikipedia's actual map conventions —
+    // a city article's locator map is typically named like
+    //   "Georgia location map.svg" / "Poti locator.png" /
+    //   "Karte Poti.jpg" / "Mapa de Poti.png"
+    // none of which match a bare "_map"/"map_" substring once the
+    // separator differs. These additions close that gap, and matter
+    // beyond Poti: every city and region article carries one.
     "_map",
     "map_",
+    "map-",
+    "-map",
+    " map",
+    "map.",
+    "locator",
+    "location_map",
+    "locationmap",
+    "karte",
+    "mapa",
+    "carte_",
+    "mappa",
+    "topographic",
+    "satellite_image",
+    "orthophoto",
     "plan_of",
     "floor_plan",
     "floorplan",
@@ -277,7 +302,13 @@ function isGenericName(name: string | null | undefined): boolean {
 async function resolveWikiTitle(
   q: string,
   lang: string,
-): Promise<{ title: string; lang: string } | null> {
+  /**
+   * The city we appended to `q` for disambiguation, if any. Passed so
+   * the relevance gate can ignore it: the city name is OUR word, not
+   * evidence that the article is about the right subject.
+   */
+  city?: string | null,
+): Promise<{ title: string; lang: string; confidence: "exact" | "search" } | null> {
   const langs = lang === "en" ? ["en"] : [lang, "en"];
   for (const l of langs) {
     // Stage 1 — direct exact-title via REST summary.
@@ -290,7 +321,10 @@ async function resolveWikiTitle(
       if (r.ok) {
         const data = (await r.json()) as WikiSummaryResponse;
         if (data.title && data.type !== "disambiguation") {
-          return { title: data.title.replace(/\s+/g, "_"), lang: l };
+          // Exact-title hit: Wikipedia has an article named exactly
+          // what we asked for. This is the only tier we trust enough
+          // to show a full gallery from.
+          return { title: data.title.replace(/\s+/g, "_"), lang: l, confidence: "exact" };
         }
       }
     } catch {
@@ -308,28 +342,96 @@ async function resolveWikiTitle(
       if (r.ok) {
         const data = (await r.json()) as WikiSearchResponse;
         const title = data.query?.search?.[0]?.title;
-        if (title) return { title: title.replace(/\s+/g, "_"), lang: l };
+        // Relevance gate — Beka 2026-10-04. /api/photo has always had
+        // this check; the GALLERY did not, which is backwards: a
+        // gallery multiplies a wrong match by five.
+        if (title && titleMatchesQuery(title, q, city)) {
+          return { title: title.replace(/\s+/g, "_"), lang: l, confidence: "search" };
+        }
       }
     } catch {
       /* fall through */
     }
 
-    // Stage 3 — full-text search. Last resort.
-    try {
-      const url =
-        `https://${l}.wikipedia.org/w/api.php?action=query&format=json&list=search` +
-        `&srsearch=${encodeURIComponent(q)}&srlimit=1&origin=*`;
-      const r = await fetch(url, { headers: WIKI_HEADERS });
-      if (r.ok) {
-        const data = (await r.json()) as WikiSearchResponse;
-        const title = data.query?.search?.[0]?.title;
-        if (title) return { title: title.replace(/\s+/g, "_"), lang: l };
-      }
-    } catch {
-      /* try next language */
-    }
+    /* Stage 3 — full-text search. DELIBERATELY REMOVED for galleries.
+     * Beka 2026-10-04: "ფოთის ლაითჰაუსზე საერთოდ გაურკვეველი
+     * სურათები და რუკებია… არ მინდა მარტო ამის გასწორება, მინდა
+     * ლოგიკის გასწორება."
+     *
+     * This was the bug, and it was structural rather than about one
+     * place. Full-text search returns the first article that MENTIONS
+     * the words — for "Poti Lighthouse" that is the article about the
+     * city of Poti, or its port. We then pulled up to five images out
+     * of THAT article's media list. Wikipedia city articles are full
+     * of location maps, coats of arms and unrelated civic photos,
+     * which is exactly the "unclear pictures and maps" he saw.
+     *
+     * One wrong article therefore produced five wrong pictures, and
+     * the gallery looked authoritative while being entirely unrelated.
+     *
+     * The honest behaviour when we cannot identify the subject is to
+     * show NOTHING here and let the single-photo path (/api/photo,
+     * which has its own stricter checks plus a Google Places
+     * fallback) supply one image. One correct photo beats five
+     * confident-looking wrong ones — which is precisely what Beka
+     * asked for: "თუ ეგეთები უნდა ეძიო მაშინ საერთოდ 1 სურათი
+     * გქონდეს."
+     */
   }
   return null;
+}
+
+/**
+ * Does a Wikipedia article title plausibly describe the thing we
+ * asked for? Mirrors the check in api.photo.ts.
+ *
+ * The test is deliberately simple: the title must share at least one
+ * SIGNIFICANT word with the query — 4+ characters, and not a city
+ * qualifier we appended ourselves. That is enough to reject the
+ * classic failures ("Poti Lighthouse" → "Poti", "Burj Khalifa Dubai"
+ * → "Burj Khalifa/Dubai Mall Metro Station") without being so strict
+ * that legitimate disambiguated titles get dropped.
+ */
+function titleMatchesQuery(title: string, query: string, city?: string | null): boolean {
+  const norm = (s: string) =>
+    s
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9\s]/g, " ")
+      .split(/\s+/)
+      .filter(Boolean);
+
+  const titleWords = new Set(norm(title));
+  // Words we appended ourselves for disambiguation are NOT evidence.
+  const cityWords = new Set(city ? norm(city) : []);
+
+  const subjectWords = norm(query).filter(
+    (w) => w.length >= 4 && !cityWords.has(w),
+  );
+  // Nothing distinctive to test (query was only a city name, say) —
+  // then this is not a specific subject and a gallery is not safe.
+  if (subjectWords.length === 0) return false;
+
+  /* EVERY distinguishing word must be in the title, not just one.
+   *
+   * `.some()` was the trap: for "Poti Lighthouse" the Wikipedia
+   * article "Poti" — the CITY — shares the word "poti", so a
+   * some()-based check passes it and we happily pull five photos of a
+   * port town plus its location map. That is the exact bug.
+   *
+   * Requiring all of them ("lighthouse" must appear too) rejects the
+   * city article while still accepting the legitimate disambiguated
+   * forms we care about: "The Lacemaker (Vermeer)" contains
+   * "lacemaker", "Narikala Fortress" contains both words.
+   *
+   * Strict is the right default HERE specifically: this gate guards a
+   * five-image gallery, where one wrong article becomes five wrong
+   * pictures. The single-photo path can afford to be more forgiving
+   * because its mistake costs one image and it has a Google fallback
+   * behind it.
+   */
+  return subjectWords.every((w) => titleWords.has(w));
 }
 
 /**
@@ -455,15 +557,16 @@ export const Route = createFileRoute("/api/photo-gallery")({
         // (Eiffel Tower, Mtatsminda Park) stay on the bare-first path
         // — those have canonical articles at the exact title and the
         // city qualifier only adds noise.
-        let title: { title: string; lang: string } | null = null;
+        let title: { title: string; lang: string; confidence: "exact" | "search" } | null =
+          null;
         const lowerQ = q.toLowerCase();
         const cityInQ = city && lowerQ.includes(city.toLowerCase());
         if (isGenericName(q) && city && !cityInQ) {
-          title = await resolveWikiTitle(`${q} ${city}`, lang);
+          title = await resolveWikiTitle(`${q} ${city}`, lang, city);
         }
-        if (!title) title = await resolveWikiTitle(q, lang);
+        if (!title) title = await resolveWikiTitle(q, lang, city);
         if (!title && city && !cityInQ) {
-          title = await resolveWikiTitle(`${q} ${city}`, lang);
+          title = await resolveWikiTitle(`${q} ${city}`, lang, city);
         }
         if (!title) {
           return corsJson(
@@ -473,6 +576,32 @@ export const Route = createFileRoute("/api/photo-gallery")({
         }
 
         let urls = await fetchMediaList(title.title, title.lang);
+
+        /* CONFIDENCE DECIDES HOW MANY. Beka 2026-10-04.
+         *
+         * "თუ ეგეთები უნდა ეძიო მაშინ საერთოდ 1 სურათი გქონდეს" —
+         * if the lookup has to guess, show one picture, not a gallery.
+         *
+         * Two tiers:
+         *   exact  — Wikipedia has an article at precisely this title.
+         *            We are as sure as we can be; show the full set.
+         *   search — we found it through a search that merely passed
+         *            the relevance gate. Plausible, not certain, so we
+         *            show ONE image: the article's lead photo.
+         *
+         * Why one and not zero: the lead image is the single most
+         * likely image to be the subject, and a page with one slightly
+         * generic photo still reads as a real place. It is the fifth
+         * photo — the section illustration, the location map, the
+         * coat of arms — that makes a gallery look broken, because a
+         * carousel implies "these are all pictures of this place".
+         *
+         * This is the rule, not a patch for Poti: any attraction whose
+         * name does not have its own Wikipedia article now degrades to
+         * a single image instead of five borrowed ones. */
+        if (title.confidence === "search" && urls.length > 1) {
+          urls = urls.slice(0, 1);
+        }
         // Azure Blob mirror — same as /api/photo. Each Wikipedia /
         // Google Places URL gets fetched ONCE, uploaded to our blob
         // container, and from then on we hand out the blob URL.
