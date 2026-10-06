@@ -23,6 +23,7 @@ import {
   WifiOff,
   Wifi,
   CheckCircle2,
+  LogIn,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
@@ -565,6 +566,43 @@ function SettingsPage() {
               that doesn't force a sign-out.
             ▸ Real (email/OAuth) users see the existing Account block
               with their email + editable display name. */}
+        {/* ▸ SIGNED OUT entirely (user === null) → "Sign in".
+         *
+         * Beka 2026-10-06: "ახალ ვერსიაში გაქრა დალოგინების ფუნქცია."
+         * He was right, and it was my regression. On 2026-10-03 I
+         * pointed the Profile tab at /settings for EVERYONE so the
+         * theme toggle would be reachable while logged out — it had
+         * been sending signed-out users to /auth. But every account
+         * block on this page is gated behind `user`, and a fully
+         * signed-out visitor has `user === null`: the identity card
+         * is hidden, the guest-upgrade card is hidden, and /auth is
+         * linked from nowhere else a signed-out person can reach
+         * (only /trips, /trip/$id and the password-reset screens).
+         * So the tab change silently walled off sign-in.
+         *
+         * Keeping both requirements: device preferences stay reachable
+         * without an account, AND there is a door back to /auth. */}
+        {!user && (
+          <Group title={t("set.account")}>
+            <Link
+              to="/auth"
+              className="flex items-start gap-3 px-4 py-4 transition-smooth hover:bg-secondary/40"
+            >
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow">
+                <LogIn className="h-4 w-4" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="text-[14px] font-semibold leading-tight">
+                  {t("auth.signIn")}
+                </div>
+                <p className="mt-1 text-[11.5px] leading-snug text-muted-foreground">
+                  {t("auth.subtitle")}
+                </p>
+              </div>
+              <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />
+            </Link>
+          </Group>
+        )}
         {user && user.is_anonymous && (
           <Group title={t("set.account")}>
             <Link
@@ -588,6 +626,23 @@ function SettingsPage() {
                 </p>
               </div>
               <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />
+            </Link>
+            {/* A guest who ALREADY has an account needs a different
+             *  door. /auth/upgrade attaches an email to this anonymous
+             *  user; it cannot log them into an account that exists.
+             *  Without this row their only option was to sign out
+             *  first — and sign-out is buried further down the page. */}
+            <Link
+              to="/auth"
+              className="flex items-center gap-3 px-4 py-3.5 transition-smooth hover:bg-secondary/40"
+            >
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-card text-muted-foreground">
+                <LogIn className="h-3.5 w-3.5" />
+              </span>
+              <span className="min-w-0 flex-1 text-[13.5px] font-medium">
+                {t("auth.signIn")}
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
             </Link>
           </Group>
         )}

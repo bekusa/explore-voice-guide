@@ -68,6 +68,8 @@ function LanguagePage() {
   const navigate = useNavigate();
   const t = useT();
   const [query, setQuery] = useState("");
+  /** Blanks the placeholder while the field has focus — see the JSX. */
+  const [searchFocused, setSearchFocused] = useState(false);
   // Seed `active` from localStorage instead of hardcoded "ka". The
   // hardcoded default plus a strict `code === active` find() meant
   // anonymous visitors landed on LANGUAGES[0] = Arabic. Now we read
@@ -211,12 +213,29 @@ function LanguagePage() {
         <div className="mt-6 px-6">
           <div className="flex items-center gap-3 rounded-full border border-border bg-card px-5 py-3">
             <Search className="h-4 w-4 text-muted-foreground" strokeWidth={2.2} />
+            {/* Beka 2026-10-06: "როდესაც ძიების ველზე ვდგები, ძველი
+                დეფაულტ ტექსტი არ იშლება და კურსორიც ცუდად ხატია."
+
+                Two things. The hint is a `placeholder`, which by
+                default survives until you actually type — so tapping
+                in left "Search 45 languages" sitting under a blinking
+                caret, which reads as a field that failed to clear.
+                Blanking it on focus makes the tap feel like it did
+                something. And the caret looked wrong because `h-auto
+                p-0` collapsed the field to the bare text line, giving
+                the caret no box to live in; an explicit h-6/leading-6
+                gives it one, and caret-primary makes it gold instead
+                of a thin grey sliver on a dark card. */}
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={t("lang.searchPlaceholder", { count: LANGUAGE_COUNT })}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+              placeholder={
+                searchFocused ? "" : t("lang.searchPlaceholder", { count: LANGUAGE_COUNT })
+              }
               autoComplete="off"
-              className="h-auto border-0 bg-transparent p-0 text-[13px] shadow-none focus-visible:ring-0"
+              className="h-6 border-0 bg-transparent p-0 text-[13px] leading-6 shadow-none caret-primary focus-visible:ring-0"
             />
             {/* Clear button. Beka 2026-10-03: "ენის ცვლილებისას ძიებაში
                 ტექსტი არ იშლება" — after picking a language the typed

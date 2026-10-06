@@ -124,19 +124,38 @@ export function HomeScreen() {
     LANGUAGES.find((l) => l.code.split("-")[0].toLowerCase() === prefix) ??
     LANGUAGES.find((l) => l.code === "en-US") ??
     LANGUAGES[0];
-  const [query, setQuery] = useState("");
   /** Live DOM access to the search box — see the IME notes below. */
   const searchRef = useRef<HTMLInputElement>(null);
   /**
-   * Is there something to search for?
+   * The search box is UNCONTROLLED on purpose, and this boolean is the
+   * only thing React tracks about it.
    *
-   * Deliberately NOT `query.trim()` inline in the JSX. Keeping it as
-   * one named value means the button's appearance and `submitSearch`'s
-   * guard can never drift apart — which is what made the Georgian-input
-   * bug read as "the button is broken" instead of "your text didn't
-   * register".
+   * Beka 2026-10-06 reported two bugs that turned out to be one:
+   *   #1 "ქართულად რომ ვეძებ, Go ღილაკი არ არის აქტიური"
+   *   #2 "ჰერო იცვლება სხვა სურათზე — მაშინ იშლება ჩაწერილი ტექსტი"
+   *
+   * Both came from `value={query}` on an input being fed by an IME.
+   * Non-Latin keyboards (Georgian, Japanese, Chinese, Korean) assemble
+   * characters through a COMPOSITION: the half-finished text lives in
+   * the DOM node, and React is not handed a value for it. So `query`
+   * stayed empty, which left the Go pill in its muted state (#1) — and
+   * the instant ANY unrelated re-render happened, React's controlled-
+   * value reconciliation wrote the stale `query` back into the DOM and
+   * erased what had been typed. The 7-second hero rotation is exactly
+   * such a re-render, which is why the text disappeared by itself (#2)
+   * and why the button lit up only "sometimes".
+   *
+   * My earlier attempt added onInput + onCompositionEnd and KEPT the
+   * input controlled. That could never have worked: the problem was
+   * never which event we listen to — it is that React owns the DOM
+   * value and overwrites the composition buffer underneath the user.
+   *
+   * Uncontrolled removes the conflict at its root: React never writes
+   * to the field, so nothing can erase a composition. The worst case
+   * now is a cosmetically-muted button, never lost text, because
+   * `submitSearch` reads the DOM rather than this state.
    */
-  const hasQuery = query.trim().length > 0;
+  const [hasQuery, setHasQuery] = useState(false);
   const [heroIdx, setHeroIdx] = useState(0);
   const [mounted, setMounted] = useState(false);
   // True while a narration is running — pauses the 7-second hero
@@ -157,6 +176,18 @@ export function HomeScreen() {
 
   // Defer client-only state (notifications) until after hydration.
   useEffect(() => setMounted(true), []);
+
+  /* Clear the search box when the user switches language.
+   *
+   * Beka asked for this on 2026-10-03 ("ენის ცვლილებისას ძიებაში
+   * ტექსტი არ იშლება") — a half-typed Georgian query is meaningless
+   * once you have switched to Spanish. It needs doing by hand now:
+   * the field is uncontrolled, so no React state change can empty it.
+   * Harmless on first mount, where the field is already blank. */
+  useEffect(() => {
+    if (searchRef.current) searchRef.current.value = "";
+    setHasQuery(false);
+  }, [lang]);
 
   // Slow rotation through featured cinematic shots. Skipped while
   // the user is listening (Listen panel open) OR has manually swiped
@@ -213,14 +244,11 @@ export function HomeScreen() {
 
   async function submitSearch(e: React.FormEvent) {
     e.preventDefault();
-    /* Read the DOM, not just React state. Beka 2026-10-04.
-     *
-     * With an IME (Georgian, Japanese, Chinese…) the input can hold
-     * text that React's `query` has not caught up with yet — the
-     * composition commits on the same tick as the submit. Taking the
-     * live value first means pressing Go always searches what the
-     * user can actually see in the box, whatever the script. */
-    const q = (searchRef.current?.value ?? query).trim();
+    /* The DOM is the single source of truth for what the user typed —
+     * the field is uncontrolled (see `hasQuery` above), so there is no
+     * React copy to fall back to. This is deliberate: with an IME the
+     * DOM is the only place the composed text ever existed. */
+    const q = (searchRef.current?.value ?? "").trim();
     if (!q) return;
     // Stage-0 routing — Beka 2026-06-21 UX spec.
     // Before: every submitted query went to /results (city list).
@@ -513,33 +541,25 @@ export function HomeScreen() {
             <Search className="h-4 w-4 shrink-0 text-primary" />
             <input
               ref={searchRef}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              /* Beka 2026-10-04 — "როცა ვწერ ფოთი არ ინთება ღილაკი,
-                 და როცა ვწერ ინგლისურად poti — მაშინ ინთება."
+              /* NO `value` prop — the field is uncontrolled. That is
+               * the whole fix for the Georgian-input bugs; see the
+               * `hasQuery` comment above for why a controlled value
+               * and an IME cannot coexist.
                *
-               * Non-Latin keyboards (Georgian, Japanese, Chinese,
-               * Korean…) type through an IME: keystrokes form a
-               * COMPOSITION that the browser may not commit to the
-               * input's value — and therefore may not fire `change`
-               * for — until the user accepts the word. Latin typing
-               * commits every keystroke, which is why "poti" lit the
-               * button and "ფოთი" did not.
-               *
-               * `onInput` fires during composition where `onChange`
-               * may not, and `onCompositionEnd` catches the commit on
-               * the engines that suppress both. Between them the
-               * state tracks what is actually on screen in every
-               * script. `submitSearch` additionally reads the DOM
-               * value as the source of truth, so even if React state
-               * lags by a frame the search still runs.
+               * These three only drive the Go pill's appearance.
+               * `compositionupdate` is the important one: it fires
+               * while a Georgian syllable is still being assembled,
+               * which is precisely the window where the other two can
+               * stay silent. Nothing here writes to the input, so a
+               * missed event costs a dim button and never the text.
                *
                * This is an accessibility-of-language issue, not a
                * cosmetic one: for an app whose entire premise is "in
-               * your own language", a search box that only works in
-               * English is the worst possible bug. */
-              onInput={(e) => setQuery((e.target as HTMLInputElement).value)}
-              onCompositionEnd={(e) => setQuery(e.currentTarget.value)}
+               * your own language", a search box that behaves worse
+               * in Georgian than in English is the worst possible bug. */
+              onInput={(e) => setHasQuery(e.currentTarget.value.trim().length > 0)}
+              onCompositionUpdate={(e) => setHasQuery(e.currentTarget.value.trim().length > 0)}
+              onCompositionEnd={(e) => setHasQuery(e.currentTarget.value.trim().length > 0)}
               placeholder={t("home.searchPlaceholder")}
               enterKeyHint="search"
               autoComplete="off"
@@ -594,25 +614,24 @@ export function HomeScreen() {
                 form's own `if (!q) return` guard handles the empty
                 case. Browse is still one tap away via the city cards
                 and the Explore tab. */}
-            {hasQuery ? (
-              <button
-                type="submit"
-                aria-label={t("home.search")}
-                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-gradient-gold px-4 text-[12px] font-bold uppercase tracking-[0.14em] text-primary-foreground transition-smooth active:scale-95 hover:scale-105"
-              >
-                <span>{t("home.go")}</span>
-                <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-              </button>
-            ) : (
-              <button
-                type="submit"
-                aria-label={t("home.search")}
-                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-4 text-[12px] font-bold uppercase tracking-[0.14em] text-muted-foreground transition-smooth hover:text-foreground"
-              >
-                <span>{t("home.go")}</span>
-                <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-              </button>
-            )}
+            {/* ONE button, not two branches. Beka 2026-10-06: the two
+                copies differed only in styling, and keeping them apart
+                is how "the button does not light up" turned into a
+                second bug on top of the IME one. Now only a class
+                string changes, so appearance can no longer disagree
+                with behaviour. */}
+            <button
+              type="submit"
+              aria-label={t("home.search")}
+              className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-4 text-[12px] font-bold uppercase tracking-[0.14em] transition-smooth ${
+                hasQuery
+                  ? "bg-gradient-gold text-primary-foreground active:scale-95 hover:scale-105"
+                  : "border border-border bg-secondary/60 text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <span>{t("home.go")}</span>
+              <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+            </button>
           </form>
 
           {/* "Available in every language" card — option 1a from the

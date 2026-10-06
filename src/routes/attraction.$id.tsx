@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLabelFits } from "@/hooks/useLabelFits";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import "leaflet/dist/leaflet.css";
 import {
@@ -17,6 +16,7 @@ import {
   Loader2,
   Bookmark,
   BookmarkCheck,
+  CheckCircle2,
   Download,
   Lightbulb,
   Eye,
@@ -1706,9 +1706,10 @@ function ActionRow({
           </span>
         </button>
 
-        {/* Save — secondary outline. Label collapses to icon-only when
-            the translated string is too long for the 64-px tile
-            (Georgian, German, etc) via the useLabelFits hook. */}
+        {/* Save — secondary outline, icon only. The label it still
+            takes is used for aria + the hover tooltip, so the string
+            stays translated; see SaveActionTile for why the caption
+            itself is gone. */}
         <SaveActionTile
           saved={saved}
           onToggle={toggleSave}
@@ -1750,11 +1751,13 @@ function ActionRow({
 }
 
 /**
- * 64-px square action tile with auto-collapsing label. The label is
- * rendered only when `useLabelFits` decides it can fit inside the
- * tile without overflowing — otherwise the icon stands alone. Beka's
- * spec (2026-06-09, Option F): icon + label, collapse to icon-only
- * on overflow.
+ * 64-px square icon-only action tile.
+ *
+ * Originally (Beka 2026-06-09, Option F) this showed icon + label and
+ * collapsed to icon-only when `useLabelFits` measured an overflow.
+ * That measurement was never reliable across 45 locales, so both this
+ * tile and DownloadActionTile dropped their captions; the `label` prop
+ * survives for aria and the tooltip.
  */
 function SaveActionTile({
   saved,
@@ -1822,32 +1825,39 @@ function DownloadActionTile({
   label: string;
   ariaLabel: string;
 }) {
-  const tileRef = useRef<HTMLButtonElement>(null);
-  const labelFits = useLabelFits(tileRef, label, { padding: 6 });
+  /* Icon only — the caption is gone. Beka 2026-10-06: "get თუ
+   * download ღილაკი გადმოსულია იკონკის გარეთ. მინდა რომ მანდ ტექსტი
+   * საერთოდ ამოცვალო და მხოლოდ იკონკა დატოვო."
+   *
+   * This tile still used `useLabelFits`, which measures the rendered
+   * word and hides it when it would not fit. Measuring is guesswork at
+   * 9 px across 45 locales — it kept deciding that "Herunterladen" or
+   * "Télécharger" fit, and the word spilled past the border. The Save
+   * tile next to it hit the identical problem and was fixed the same
+   * way; this makes the pair consistent.
+   *
+   * Accessibility is unchanged: `aria-label` carries the translated
+   * action and `title` gives sighted users a hover tooltip, so the
+   * string stays translated and callers keep passing `label`. */
   return (
     <button
-      ref={tileRef}
       onClick={onClick}
       disabled={downloading}
-      aria-label={ariaLabel}
-      className={`grid w-[64px] place-items-center rounded-2xl border px-1.5 py-2 transition-smooth disabled:opacity-80 ${
+      aria-label={ariaLabel || label}
+      title={label}
+      className={`grid w-[64px] place-items-center rounded-2xl border px-1.5 py-3 transition-smooth disabled:opacity-80 ${
         cached
           ? "border-emerald-400/50 bg-emerald-500/10 text-emerald-200"
           : "border-border/70 bg-card text-foreground hover:border-primary/40"
       }`}
     >
-      <span className="flex flex-col items-center gap-1">
-        {downloading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <Download className="h-4 w-4" />
-        )}
-        {labelFits && (
-          <span className="text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] whitespace-nowrap">
-            {label}
-          </span>
-        )}
-      </span>
+      {downloading ? (
+        <Loader2 className="h-5 w-5 animate-spin" />
+      ) : cached ? (
+        <CheckCircle2 className="h-5 w-5" />
+      ) : (
+        <Download className="h-5 w-5" />
+      )}
     </button>
   );
 }
@@ -1925,22 +1935,39 @@ function InterestPicker({
           {INTERESTS.map((it) => {
             const active = current === it.id;
             return (
+              /* Tall tiles with a big glyph, not flat text pills.
+               * Beka 2026-10-06: "მინდა Tilt the Guide-ის ღილაკები
+               * შევცვალოთ, რამდენად შესაძლებელია იყოს მაღალი და
+               * ბუთქუჩა იკონკები."
+               *
+               * Fixed 78×92 so every tile is the same size whatever
+               * the locale does to the word, and the label is
+               * line-clamped to two lines instead of being allowed to
+               * push the tile wider — the overflow trap that the Save
+               * and Download tiles both fell into. Dropped the
+               * uppercase + wide tracking for the same reason: it
+               * inflates Georgian and German by a third. */
               <button
                 key={it.id}
                 type="button"
                 role="radio"
                 aria-checked={active}
+                title={t(it.key)}
                 onClick={() => {
                   if (!active) onPick(it.id);
                 }}
-                className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] transition-smooth ${
+                className={`shrink-0 flex h-[92px] w-[78px] flex-col items-center justify-center gap-1.5 rounded-2xl border px-1.5 transition-smooth ${
                   active
                     ? "border-primary/60 bg-primary/15 text-primary shadow-soft"
                     : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
                 }`}
               >
-                <span aria-hidden>{it.emoji}</span>
-                {t(it.key)}
+                <span aria-hidden className="text-[28px] leading-none">
+                  {it.emoji}
+                </span>
+                <span className="line-clamp-2 text-center text-[10px] font-semibold leading-tight">
+                  {t(it.key)}
+                </span>
               </button>
             );
           })}

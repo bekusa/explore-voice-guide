@@ -465,3 +465,54 @@ html:not(.light) .map-dark .leaflet-control-attribution a {
     animation: none;
   }
 }
+
+/* ───────────────────────────────────────────────────────────────────
+   Toast tones.
+
+   Beka 2026-10-06: "ერორების და შეტყობინებების ტექსტი არის წითლად.
+   რაც ძალიან აგრესიულია. შეცვალე ფერი."
+
+   The cause was `richColors` on <Toaster>, which paints errors in
+   Sonner's own stock red. That red is a cold hue (~25-30° at full
+   chroma) dropped into a palette built entirely from warm espresso
+   and gold — so it did not just read as loud, it read as foreign.
+
+   `richColors` is now off and these tones replace it. They keep the
+   three states distinguishable at a glance, which is the point of
+   colouring them at all, but at roughly a third of the chroma and on
+   the palette's own warm hues. An error a traveller meets standing in
+   a museum should inform, not alarm: most of ours are "the narration
+   didn't load, try again", not data loss.
+   ─────────────────────────────────────────────────────────────────── */
+.lokali-toast-error {
+  background: oklch(0.26 0.055 35) !important;
+  color: oklch(0.9 0.06 50) !important;
+  border-color: oklch(0.42 0.08 35) !important;
+}
+.lokali-toast-success {
+  background: oklch(0.26 0.04 150) !important;
+  color: oklch(0.9 0.06 150) !important;
+  border-color: oklch(0.42 0.07 150) !important;
+}
+.lokali-toast-warning {
+  background: oklch(0.27 0.05 75) !important;
+  color: oklch(0.91 0.07 85) !important;
+  border-color: oklch(0.45 0.09 75) !important;
+}
+/* Daylight theme — same hues, inverted lightness so the text stays
+   legible on parchment instead of glowing. */
+.light .lokali-toast-error {
+  background: oklch(0.96 0.025 40) !important;
+  color: oklch(0.42 0.12 32) !important;
+  border-color: oklch(0.82 0.07 40) !important;
+}
+.light .lokali-toast-success {
+  background: oklch(0.96 0.025 150) !important;
+  color: oklch(0.4 0.09 150) !important;
+  border-color: oklch(0.82 0.06 150) !important;
+}
+.light .lokali-toast-warning {
+  background: oklch(0.96 0.03 85) !important;
+  color: oklch(0.44 0.1 70) !important;
+  border-color: oklch(0.84 0.08 80) !important;
+}

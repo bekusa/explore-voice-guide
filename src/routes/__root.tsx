@@ -401,12 +401,12 @@ function RootComponent() {
           This applies to every toast in the app, which is intended:
           the same "won't go away" complaint would have been true of
           any of them. */}
-      <Toaster
-        richColors
-        position="top-center"
-        duration={4000}
-        closeButton
-      />
+      {/* `richColors` removed 2026-10-06. It was what painted errors in
+          Sonner's stock saturated red — a cold hue in a palette made of
+          warm espresso and gold, which is why Beka read it as
+          aggressive. The three states are still colour-coded, now via
+          .lokali-toast-* in styles.css at about a third the chroma. */}
+      <Toaster position="top-center" duration={4000} closeButton />
     </>
   );
 }
