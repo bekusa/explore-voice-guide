@@ -168,3 +168,8 @@
 # 2) trailing slash -> flat .html (Cloudflare Workers has no directory index)
 /explore/:lang/:city/:attr/ /explore/:lang/:city/:attr.html 301
 /explore/:lang/:city/ /explore/:lang/:city.html 301
+
+# 3) Journal (/blog) — Workers has no directory index, so the blog
+#    home is a flat file at /blog.html. Articles are flat already.
+/blog/ /blog.html 301
+/blog /blog.html 301
