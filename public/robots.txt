@@ -5,92 +5,128 @@
 # AI answer engines (these fetch pages to build cited answers)
 User-agent: OAI-SearchBot
 Allow: /explore/
+Allow: /blog/
+Allow: /blog.html
 Allow: /about/
 Disallow: /api/
 
 User-agent: ChatGPT-User
 Allow: /explore/
+Allow: /blog/
+Allow: /blog.html
 Allow: /about/
 Disallow: /api/
 
 User-agent: PerplexityBot
 Allow: /explore/
+Allow: /blog/
+Allow: /blog.html
 Allow: /about/
 Disallow: /api/
 
 User-agent: Perplexity-User
 Allow: /explore/
+Allow: /blog/
+Allow: /blog.html
 Allow: /about/
 Disallow: /api/
 
 User-agent: Claude-User
 Allow: /explore/
+Allow: /blog/
+Allow: /blog.html
 Allow: /about/
 Disallow: /api/
 
 User-agent: Claude-SearchBot
 Allow: /explore/
+Allow: /blog/
+Allow: /blog.html
 Allow: /about/
 Disallow: /api/
 
 User-agent: Amazonbot
 Allow: /explore/
+Allow: /blog/
+Allow: /blog.html
 Allow: /about/
 Disallow: /api/
 
 User-agent: Applebot
 Allow: /explore/
+Allow: /blog/
+Allow: /blog.html
 Allow: /about/
 Disallow: /api/
 
 # AI training crawlers
 User-agent: ClaudeBot
 Allow: /explore/
+Allow: /blog/
+Allow: /blog.html
 Allow: /about/
 Disallow: /api/
 
 User-agent: GPTBot
 Allow: /explore/
+Allow: /blog/
+Allow: /blog.html
 Allow: /about/
 Disallow: /api/
 
 User-agent: CCBot
 Allow: /explore/
+Allow: /blog/
+Allow: /blog.html
 Allow: /about/
 Disallow: /api/
 
 User-agent: Google-Extended
 Allow: /explore/
+Allow: /blog/
+Allow: /blog.html
 Allow: /about/
 Disallow: /api/
 
 User-agent: Baiduspider
 Allow: /explore/
+Allow: /blog/
+Allow: /blog.html
 Allow: /about/
 Disallow: /api/
 
 # Standard search engines
 User-agent: Googlebot
 Allow: /explore/
+Allow: /blog/
+Allow: /blog.html
 Disallow: /api/
 Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /explore/
+Allow: /blog/
+Allow: /blog.html
 Disallow: /api/
 Crawl-delay: 1
 
 User-agent: Slurp
 Allow: /explore/
+Allow: /blog/
+Allow: /blog.html
 Disallow: /api/
 
 User-agent: DuckDuckBot
 Allow: /explore/
+Allow: /blog/
+Allow: /blog.html
 Disallow: /api/
 
 # Default — block API endpoints
 User-agent: *
 Allow: /explore/
+Allow: /blog/
+Allow: /blog.html
 Allow: /about/
 Allow: /sitemap*.xml
 Allow: /llms.txt
@@ -101,6 +137,7 @@ Disallow: /admin/
 # Sitemaps for search engines
 Sitemap: https://lokali.travel/sitemap.xml
 Sitemap: https://lokali.travel/sitemap-explore.xml
+Sitemap: https://lokali.travel/sitemap-blog.xml
 
 # IndexNow (Bing, Yandex, Seznam, Naver) — key file lives at
 # https://lokali.travel/a7f3c91e5b2d48069c1fa73e8d2b5064.txt

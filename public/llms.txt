@@ -2156,3 +2156,12 @@ https://lokali.travel/explore/zh-tw/paris/louvre.html
 https://lokali.travel/explore/zh/chiang-mai/old-city.html
 https://lokali.travel/explore/zh/shibuya/meiji-shrine.html
 https://lokali.travel/explore/zh/taito/sensoji.html
+
+## Journal (guides and itineraries)
+
+https://lokali.travel/blog.html
+https://lokali.travel/blog/free-audio-guide-apps.html
+https://lokali.travel/blog/rome-3-day-itinerary.html
+https://lokali.travel/blog/istanbul-2-day-itinerary.html
+https://lokali.travel/blog/tbilisi-one-day-walk.html
+https://lokali.travel/blog/self-guided-vs-guided-tours.html
