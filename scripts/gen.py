@@ -12,8 +12,14 @@ from collections import defaultdict
 sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 from lib import key,slug
 
-LANG=sys.argv[1]; D=importlib.import_module(sys.argv[2]); WD=os.path.dirname(os.path.abspath(__file__))
-EXP='/sessions/affectionate-awesome-planck/mnt/explore-voice-guide/public/explore'
+LANG=sys.argv[1]; D=importlib.import_module(sys.argv[2])
+# WD is the DATA directory: the guide export (g_*.json), facts.json, photos.json,
+# todo.json and the page assets lifted from an existing EN page. It is not the
+# repo -- those files are build inputs, not source. Set GEN_DATA_DIR to point at
+# it; EXPLORE_DIR points at public/explore in the checkout.
+WD=os.environ.get('GEN_DATA_DIR') or os.path.dirname(os.path.abspath(__file__))
+EXP=os.environ.get('EXPLORE_DIR') or os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),'public','explore')
 OUT=os.path.join(EXP,LANG); EN=os.path.join(EXP,'en')
 BASE='https://lokali.travel'; EDIT=BASE+'/about/editorial-process.html'
 PLAY=(f'https://play.google.com/store/apps/details?id=app.lokali.travel'
@@ -24,6 +30,10 @@ ICM=open(f'{WD}/ic_map.svg',encoding='utf-8').read()
 PBAR=(open(f'{WD}/playbar.html',encoding='utf-8').read()
       .replace('utm_campaign=en',f'utm_campaign={LANG}')
       .replace('>Get the app<','>'+D.UI['getapp']+'<'))
+# Non-Latin languages must transliterate before slugging, otherwise slug()
+# strips every character and every page in a city collides on one empty name.
+# A strings module supplies translit(); Latin-script languages need none.
+SLUG=lambda s: slug(getattr(D,'translit',lambda x:x)(s))
 NL='\n'; esc=lambda s: html.escape(s or '',quote=True); txt=lambda s: html.escape(s or '',quote=False)
 mins=lambda s: max(1,round((s or 0)/60))
 def dist(a,b): return math.hypot((a[1]-b[1])*111*math.cos(math.radians(a[0])),(a[0]-b[0])*111)
@@ -73,6 +83,8 @@ def build():
         best=max(rs,key=lambda r:len(json.dumps(r['payload'],ensure_ascii=False)))
         p=best['payload']
         if not (p.get('script') and p.get('title')): continue
+        if not SLUG(p['title']):
+            print('  SKIP empty slug:',p['title']); continue
         fx=facts.get(k) or {}
         la=lo=None
         if fx.get('lat') and fx.get('lng'): la,lo=round(float(fx['lat']),4),round(float(fx['lng']),4)
@@ -86,13 +98,29 @@ def build():
             city=slug(db[0]) if db else None
         if not city or city not in meta: continue
         m=meta[city]
-        out.append({'key':k,'title':p['title'].strip(),'slug':slug(p['title']),'city':city,
+        out.append({'key':k,'title':p['title'].strip(),'slug':SLUG(p['title']),'city':city,
           'city_disp':m[3],'country':CN.get(m[0],m[1]),'country_slug':m[0],'cc':m[2],
           'lat':la,'lng':lo,'type':fx.get('type'),'category':fx.get('category'),
           'visit':D.dur(fx.get('duration')),'dur_sec':p.get('estimated_duration_seconds'),
           'script':p.get('script'),'key_facts':p.get('key_facts') or [],
           'look_for':p.get('look_for') or [],'tips':p.get('tips') or [],'image':photo(k,m[3])})
-    return out
+    # The database holds alias rows ('duden waterfall' / 'duden waterfalls',
+    # 'ortakoy' / 'ortakoy mosque'), and some distinct places share one localised
+    # title in a given language. Either way they slug to the same filename, so the
+    # second write used to silently overwrite the first while the city hub still
+    # listed both. Keep the richest payload per slug and report the rest.
+    seen={}; dropped=[]
+    for a in out:
+        sk=(a['city'],a['slug'])
+        if sk in seen:
+            keep=max(seen[sk],a,key=lambda x:len(x['script'] or ''))
+            dropped.append((sk,(seen[sk] if keep is a else a)['key']))
+            seen[sk]=keep
+        else: seen[sk]=a
+    if dropped:
+        print(f'  slug collisions dropped: {len(dropped)}')
+        json.dump(dropped,open(f'{WD}/collisions.json','w'),ensure_ascii=False,indent=1)
+    return list(seen.values())
 
 def answer(a):
     t=a['title']; tp=D.type_phrase(a['type']); where=f"{a['city_disp']}, {a['country']}"
@@ -236,11 +264,18 @@ def hub(cs,items):
     items=sorted(items,key=lambda x:x['title']); a=items[0]; n=len(items)
     city=a['city_disp']; url=f"{BASE}/explore/{LANG}/{cs}.html"
     names=', '.join(i['title'] for i in items[:3])
-    title=D.HUB_TITLE.format(city=city,n=n)
-    if len(title)>64: title=D.HUB_TITLE_SHORT.format(city=city,n=n)
-    desc=D.HUB_DESC.format(n=n,city=city,names=names)
+    # Languages with grammatical number agreement (Russian: 1 аудиогид /
+    # 2 аудиогида / 5 аудиогидов) cannot be served by a plain format string, so a
+    # strings module may supply hub_text() and build the three strings itself.
+    if hasattr(D,'hub_text'):
+        title,desc,intro=D.hub_text(city,n,names)
+        if len(title)>64 and hasattr(D,'hub_text_short'): title=D.hub_text_short(city,n)
+    else:
+        title=D.HUB_TITLE.format(city=city,n=n)
+        if len(title)>64: title=D.HUB_TITLE_SHORT.format(city=city,n=n)
+        desc=D.HUB_DESC.format(n=n,city=city,names=names)
+        intro=D.HUB_INTRO.format(n=n,city=city)
     if len(desc)>158: desc=desc[:155].rsplit(' ',1)[0]+'…'
-    intro=D.HUB_INTRO.format(n=n,city=city)
     F=D.hub_faq(city,n)
     g={"@context":"https://schema.org","@graph":[
       {"@type":"TouristDestination","name":city,"url":url,"inLanguage":LANG,"description":intro,
