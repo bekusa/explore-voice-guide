@@ -228,12 +228,23 @@ for root,members in comp.items():
 print(f'pages to rewrite: {len(plan)}')
 
 # ----------------------------------------------------------------- 6. write them
+def atomic_write(path,text):
+    """Write via a temp file + os.replace.
+
+    A plain open(path,'w') truncates first and fills second. The mount is slow
+    enough that a long pass can be killed between those two steps, which is how
+    five pages ended up as zero-byte files. os.replace is atomic, so a page is
+    either its old self or its new self, never empty.
+    """
+    tmp=path+'.tmp'
+    with open(tmp,'w',encoding='utf-8') as fh: fh.write(text)
+    os.replace(tmp,path)
+
 def wr(item):
     rel,s=item
-    p=os.path.join(EXP,rel)
-    open(p,'w',encoding='utf-8').write(s)
+    atomic_write(os.path.join(EXP,rel),s)
     twin=os.path.join(EXP,rel[:-5],'index.html')
-    if os.path.exists(twin): open(twin,'w',encoding='utf-8').write(s)
+    if os.path.exists(twin): atomic_write(twin,s)
 if not DRY and plan:
     with ThreadPoolExecutor(32) as ex: list(ex.map(wr,plan.items()))
     print('written')
