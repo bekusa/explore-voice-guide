@@ -177,7 +177,13 @@ def answer(a):
     where=getattr(D,'where',lambda c,k: f'{c}, {k}')(a['city_disp'],a['country'])
     SEP=getattr(D,'SEP',' '); STOP=getattr(D,'STOP','.')
     t=a['title']; tp=D.type_phrase(a['type'])
-    P=[D.SENT['is'].format(t=t,tp=tp,where=where) if tp else D.SENT['in'].format(t=t,where=where)]
+    # Korean particles (은/는, 이/가) depend on the last syllable of the name, so
+    # the strings module can ask for them by including {eun} in its sentence.
+    kw=dict(t=t,tp=tp,where=where)
+    for k in ('eun','iga','eul'):
+        f=getattr(D,{'eun':'EUN','iga':'I_GA','eul':'EUL'}[k],None)
+        if f: kw[k]=f(t)
+    P=[D.SENT['is'].format(**kw) if tp else D.SENT['in'].format(**kw)]
     kf=(a['key_facts'] or [None])[0]
     s=(kf or re.split(r'(?<=[.!?\u3002])\s*',a['script'] or '')[0]).strip().rstrip('.\u3002!?\uff01\uff1f ')
     if s: P.append(s+STOP)
