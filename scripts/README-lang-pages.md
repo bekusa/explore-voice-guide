@@ -7,8 +7,9 @@ word for word. The only per-language thing in this folder is the template
 chrome — section headings, table labels, FAQ wording, and the one sentence
 frame that wraps DB facts — which lives in a small strings module.
 
-Built so far: `en` (1,491), `tr` (109), `de` (113), `es` (111), `fr` (113),
-`ru` (120). 2,139 indexable URLs in total.
+Built so far: `en` (1,494), `ka` (195), `de` (175), `ru` (172), `nl` (167),
+`zh-cn` (167), `fr` (163), `pl` (163), `es` (161), `tr` (138). 2,704 indexable
+URLs in total.
 
 ## Run
 
@@ -91,7 +92,10 @@ Copy `frstr.py` and translate ~15 labels. Three parts need real care:
    harder (vowel harmony plus the possessive-compound buffer: `Topkapı Sarayı`
    + locative → `Sarayı'nda`, not `Sarayı'da`) so it has its own `trlib.py`.
 
-2. **`translit(s)` for any non-Latin script.** Without it `slug()` strips the
+2. **Non-Latin scripts: either `translit(s)` or `USE_EN_SLUG`.**
+   `USE_EN_SLUG = True` puts the pages on the English slug, which is what the
+   older v3 pages already use (`explore/zh-cn/istanbul/hagia-sophia.html`) and
+   what `ka` and `zh-cn` do. Otherwise supply `translit(s)`: Without it `slug()` strips the
    whole title, every page in a city lands on the same empty filename and they
    overwrite each other — this is exactly what happened on the first Russian
    run (138 pages collapsed into 47 files called `.html`). `gen.py` now refuses
@@ -99,8 +103,25 @@ Copy `frstr.py` and translate ~15 labels. Three parts need real care:
    has to be supplied. See `rustr.translit`.
 
 3. **`hub_text()` / `hub_faq()` if the language has number agreement.** A plain
-   format string cannot say *1 аудиогид / 2 аудиогида / 5 аудиогидов*. Define
+   format string cannot say *1 аудиогид / 2 аудиогида / 5 аудиогидов*, or
+   *1 bezpłatny audioprzewodnik / 2 bezpłatne / 5 bezpłatnych*. Define
    `hub_text(city,n,names)` and gen.py will use it instead of `HUB_*`.
+
+4. **Word order and punctuation hooks, for anything that is not Latin prose.**
+   `where(city,country)` builds the location phrase (Chinese wants
+   `Istanbul（土耳其）`, not `Istanbul, 土耳其`); `more_heading(city)` and
+   `guides_in(country)` build the two headings that glue a name onto a label,
+   because "<label> <City>" is a Latin word order with a Latin space in it;
+   `SEP` and `STOP` set the sentence separator and full stop (Chinese: `''`
+   and `。`); `MAXDESC` and `MAXTITLE` narrow the length budget, since a
+   Chinese character is about twice as wide as a Latin one (zh-cn uses 78/34
+   against the 158/62 default).
+
+5. **Languages that decline place names** (Georgian, Polish, Russian) state the
+   location after a colon in the nominative — `Lokalizacja: Istanbul, Turcja`,
+   `მდებარეობა: Istanbul, თურქეთი` — and put the attraction name before a colon
+   in FAQ questions, because the database stores city names in Latin script and
+   they cannot take a case ending.
 
 Also note: Russian FAQ questions use nominative-safe colon constructions
 (`{X}: сколько времени нужно на осмотр?`) because attraction names cannot be
@@ -112,7 +133,10 @@ than re-translating. ⚠️ Hindi is an exception — its v3 headings were left 
 English, so check before trusting them.
 
 `destr.py` was reconstructed from the live `/explore/de/` pages after the
-original was lost; it reproduces the shipped wording exactly.
+original was lost; it reproduces the shipped wording exactly. ⚠️ Georgian is a
+second Hindi: the v3 `ka` pages have English headings ("The story", "Key facts")
+and one page titled from the *French* name, so nothing there was worth lifting —
+`kastr.py` is written fresh.
 
 ## After generating
 

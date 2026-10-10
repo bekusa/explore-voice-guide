@@ -67,11 +67,41 @@ url2rel={v:k for k,v in pages.items()}
 lang_of=lambda rel: rel.split('/',1)[0]
 print(f'pages on disk: {len(pages)}')
 
+# Reading three thousand pages one at a time off the mount takes minutes; in
+# parallel it takes seconds, and every stage below wants the whole tree anyway.
+# Reading the tree is the slow part (a few thousand files off a network mount).
+# LINK_PAGE_CACHE lets a first run pay that cost once and later runs reuse it;
+# the cache is keyed by the exact file list, so a changed tree rebuilds it.
+import pickle,hashlib
+CACHE=os.environ.get('LINK_PAGE_CACHE')
+SIG=hashlib.sha1('\n'.join(sorted(pages)).encode()).hexdigest()
 cache={}
-def read(rel):
-    if rel not in cache:
-        cache[rel]=open(os.path.join(EXP,rel),encoding='utf-8',errors='ignore').read()
-    return cache[rel]
+HEAD_BYTES=48000     # every page's </head> sits well inside this
+def _load(rel):
+    for _ in range(4):
+        try: return rel,open(os.path.join(EXP,rel),encoding='utf-8',errors='ignore').read(HEAD_BYTES)
+        except OSError: pass
+    return rel,''
+if CACHE and os.path.exists(CACHE):
+    sig,cache=pickle.load(open(CACHE,'rb'))
+    if sig!=SIG: cache={}
+if not cache:
+    with ThreadPoolExecutor(48) as _ex: cache=dict(_ex.map(_load,pages))
+    if CACHE: pickle.dump((SIG,cache),open(CACHE,'wb'))
+print(f'pages read: {len(cache)}')
+short=[k for k,v in cache.items() if '</head>' not in v]
+if short: sys.exit(f'{len(short)} pages have no </head> within {HEAD_BYTES} chars: {short[:3]}')
+
+def full(rel):
+    """The cache only holds each page's head; rewriting needs the whole file."""
+    for _ in range(4):
+        try: return open(os.path.join(EXP,rel),encoding='utf-8',errors='ignore').read()
+        except OSError: pass
+    raise OSError(rel)
+if any(not v for v in cache.values()):
+    bad=[k for k,v in cache.items() if not v]
+    sys.exit(f'could not read {len(bad)} pages, first: {bad[:3]}')
+def read(rel): return cache[rel]
 
 # ------------------------------------------------ 2. recover groups from edges
 ALT=re.compile(r'<link rel="alternate" hreflang="([^"]+)" href="([^"]+)"\s*/?>')
@@ -94,15 +124,26 @@ def norm(u):
 # from the gen.py manifests below instead. Every other language's edges came from
 # the DB-driven v3 build and are authoritative.
 BATCH={os.path.basename(os.path.dirname(a)) for a in sys.argv[1:] if a.endswith('built.json')}
-print(f'batch languages re-derived from manifests: {sorted(BATCH) or "none"}')
+# Only the pages a manifest actually rebuilds have untrustworthy links. Earlier
+# this ignored every edge touching a batch language, which orphaned that
+# language's older v3 pages -- fr/es/ru/istanbul/hagia-sophia.html lost their
+# hreflang entirely, because they are not in any manifest and nothing else was
+# left to connect them.
+REBUILT=set()
+for man in [a for a in sys.argv[1:] if a.endswith('built.json')]:
+    lg=os.path.basename(os.path.dirname(man))
+    for a in json.load(open(man,encoding='utf-8')):
+        REBUILT.add(f"{lg}/{a['city']}/{a['slug']}.html")
+        REBUILT.add(f"{lg}/{a['city']}.html")
+print(f'batch languages: {sorted(BATCH) or "none"}   pages re-derived from manifests: {len(REBUILT)}')
 edges=skipped=0
 for rel in pages:
-    if lang_of(rel) in BATCH: continue
+    if rel in REBUILT: continue
     for hl,href in ALT.findall(read(rel)):
         if hl=='x-default': continue
         t=url2rel.get(norm(href))
         if not t: continue
-        if lang_of(t) in BATCH: skipped+=1; continue
+        if t in REBUILT: skipped+=1; continue
         union(rel,t); edges+=1
 print(f'edges recovered from existing hreflang: {edges} (stale batch edges ignored: {skipped})')
 
@@ -150,20 +191,33 @@ for man in [a for a in sys.argv[1:] if a.endswith('built.json')]:
 print(f'manifest attachments: {dict(attached)}  no EN page: {len(unmatched)}')
 json.dump(unmatched,open(os.path.join(os.path.dirname(os.path.abspath(__file__)),'no-en-sibling.json'),'w'),ensure_ascii=False,indent=1)
 
-# hubs that share the EN slug are the same hub
+# Anything sitting on exactly the English path is the English page's twin. The
+# v3 generator put every language on the English slug, so this reconnects pages
+# that carry no hreflang of their own -- hubs, country pages, and the older
+# attraction pages in languages that have since been rebuilt on local slugs.
+same=0
 for rel in pages:
     p=rel.split('/')
     if p[0]=='en': continue
-    en=None
-    if len(p)==2: en=f'en/{p[1]}'
-    elif len(p)==3 and p[1]=='country': en=f'en/country/{p[2]}'
-    if en and en in pages: union(rel,en)
+    en='en/'+'/'.join(p[1:])
+    if en in pages and find(rel)!=find(en): union(rel,en); same+=1
+print(f'pages joined by sharing the English path: {same}')
 
 comp=defaultdict(list)
 for rel in pages: comp[find(rel)].append(rel)
 print(f'components: {len(comp)}   size histogram: {sorted(Counter(len(v) for v in comp.values()).items())}')
 
-NOIDX=lambda rel: 'name="robots" content="noindex' in read(rel)
+CANON_RE=re.compile(r'<link rel="canonical" href="([^"]+)">')
+def ALIASED(rel):
+    """True when a page is not its own canonical target.
+
+    A duplicate that already points at the page we keep (tr/istanbul/
+    hagia-sophia.html -> ayasofya.html) must stay out of hreflang and out of the
+    sitemap, exactly like a noindexed one -- and must not be reported as a
+    conflict, because it is the resolution of one."""
+    m=CANON_RE.search(read(rel))
+    return bool(m) and norm(m.group(1))!=f'{BASE}/explore/{rel}'
+NOIDX=lambda rel: 'name="robots" content="noindex' in read(rel) or ALIASED(rel)
 
 # ----------------------------------------------------------- 4. sanity: 1 per lang
 bad=[]
@@ -209,23 +263,36 @@ HDR=re.compile(r'(<header class="topbar"><a href="https://lokali\.travel" class=
                r'(.*?)(</header>)',re.S)
 CANON=re.compile(r'(<link rel="canonical" href="[^"]*">)')
 
+# The mount is slow enough that planning a few thousand rewrites can outrun the
+# shell's time limit, and planning means reading each changed page in full. The
+# pass is idempotent, so cap the batch and run again until it reports 0.
+LIMIT=int(os.environ.get('LINK_LIMIT') or 0)
 plan={}
 for root,members in comp.items():
+    if LIMIT and len(plan)>=LIMIT: break
     blk,byl,order=altblock(members)
     for m in members:
-        s=read(m)
-        cur='\n'.join(x.group(0) for x in re.finditer(r'<link rel="alternate"[^>]*>',s))
+        # Decide from the cached head whether anything changes; only pages that
+        # really change are read in full, which keeps a no-op run cheap.
+        h=read(m)
+        want_alt='' if (len(order)<2 or NOIDX(m)) else blk
+        have_alt='\n'.join(x.group(0) for x in re.finditer(r'<link rel="alternate"[^>]*>',h))
+        menu=langmenu(byl,order,lang_of(m))
+        hm=HDR.search(h)
+        if have_alt==want_alt and hm and hm.group(2)==menu: continue
+        s=full(m)
         new=s
         new=re.sub(r'<link rel="alternate"[^>]*>\n?','',new)
         # A noindexed page gets no hreflang at all. It cannot be the self-reference
         # of a group it was excluded from, and Google ignores an annotation set
         # that does not contain the page carrying it.
-        if len(order)>1 and not NOIDX(m):
+        if want_alt:
             new=CANON.sub(lambda mo: mo.group(1)+'\n'+blk,new,count=1)
-        menu=langmenu(byl,order,lang_of(m))
         new=HDR.sub(lambda mo: mo.group(1)+menu+mo.group(3),new,count=1)
         if new!=s: plan[m]=new
-print(f'pages to rewrite: {len(plan)}')
+# The mount writes slowly enough that a big plan can outrun the shell's time
+# limit. The pass is idempotent, so cap the batch and run again until it says 0.
+print(f'pages to rewrite this pass: {len(plan)}'+(' (capped)' if LIMIT and len(plan)>=LIMIT else ''))
 
 # ----------------------------------------------------------------- 6. write them
 def atomic_write(path,text):
@@ -247,6 +314,10 @@ def wr(item):
     if os.path.exists(twin): atomic_write(twin,s)
 if not DRY and plan:
     with ThreadPoolExecutor(32) as ex: list(ex.map(wr,plan.items()))
+    for rel,txt in plan.items(): cache[rel]=txt[:HEAD_BYTES]
+    if CACHE:
+        with open(CACHE+'.tmp','wb') as fh: pickle.dump((SIG,cache),fh)
+        os.replace(CACHE+'.tmp',CACHE)
     print('written')
 
 # ------------------------------------------------------- 7. sitemap + llms.txt

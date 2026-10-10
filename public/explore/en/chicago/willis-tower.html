@@ -51,4 +51,161 @@ h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-si
 .verified b{color:var(--green);font-weight:600}
 .verified a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
 .cta-row{display:flex;gap:10px;margin-top:16px}
-.cta{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#fdc357,#f67f2f);color:#110c08;border-radius:16px;padding:12px 18px;text-decorat
+.cta{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#fdc357,#f67f2f);color:#110c08;border-radius:16px;padding:12px 18px;text-decoration:none;box-shadow:0 0 60px -16px #f5b75b8c}
+.cta .play{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:rgba(17,12,8,.15);color:#110c08}
+.cta .lbl{display:flex;flex-direction:column;line-height:1.1}
+.cta .lbl small{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;opacity:.75}
+.cta .lbl b{font-size:16px;font-weight:700}
+.sec{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-size:22px;color:var(--fg);margin:34px 0 12px}
+table.facts-tbl{width:100%;border-collapse:collapse;margin-top:6px;font-size:14px}
+table.facts-tbl th,table.facts-tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+table.facts-tbl th{color:var(--muted);font-weight:600;width:42%;white-space:nowrap}
+table.facts-tbl td{color:var(--body)}
+table.facts-tbl tr:last-child th,table.facts-tbl tr:last-child td{border-bottom:none}
+.tour p{font-size:15.5px;color:var(--body);line-height:1.85;margin:0 0 15px}
+.chips .item{display:flex;align-items:flex-start;gap:9px;border-radius:14px;padding:10px 14px;font-size:13.5px;line-height:1.45;margin:0 0 9px;width:fit-content;max-width:100%}
+.chips .item svg{flex-shrink:0;margin-top:2px}
+.facts .item{background:rgba(29,158,117,.09);border:1px solid rgba(93,202,165,.3);color:#a7e6d1}
+.facts .item svg{color:var(--green)}
+.look .item{background:rgba(55,138,221,.09);border:1px solid rgba(133,183,235,.3);color:#bcd8f4}
+.look .item svg{color:var(--blue)}
+.tips .item{background:rgba(250,188,5,.08);border:1px solid rgba(250,188,5,.3);color:#ffc955}
+.tips .item svg{color:#f5b75b}
+.faq h3{font-size:15px;font-weight:600;color:var(--fg);margin:18px 0 7px;line-height:1.4}
+.faq h3:first-child{margin-top:4px}
+.faq p{font-size:14.5px;color:var(--body);line-height:1.75;margin:0}
+.nearby{display:grid;gap:8px;margin-top:6px}
+.nearby a{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 14px;text-decoration:none;color:var(--body);font-size:14px}
+.nearby a:hover{border-color:var(--gold);color:var(--gold)}
+.nearby .km{margin-left:auto;color:var(--muted);font-size:12px;white-space:nowrap}
+.mapcard a{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;text-decoration:none;color:var(--fg);font-weight:600;font-size:14.5px}
+.mapcard a:hover{border-color:var(--gold)}
+.mapcard .ic{color:var(--gold);display:flex}
+.mapcard .arr{margin-left:auto;color:var(--muted)}
+.map-note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.srcbox{margin-top:8px;font-size:13px;color:var(--muted);line-height:1.8}
+.srcbox a{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(245,183,91,.35)}
+footer{border-top:1px solid var(--border);margin-top:40px;padding-top:20px;color:var(--muted);font-size:12.5px;line-height:1.9}
+footer a{color:var(--gold);text-decoration:none}
+.appbar-cta{position:fixed;bottom:20px;left:20px;right:20px;display:none;z-index:50}
+.appbar-cta.show{display:block}
+.appbar-cta .pill{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.4);max-width:600px;margin:0 auto}
+.appbar-cta a{display:flex;align-items:center;gap:8px;flex:1;text-decoration:none;color:var(--fg)}
+.appbar-cta svg{width:32px;height:32px;flex-shrink:0}
+.appbar-cta .lb{display:flex;flex-direction:column;line-height:1.1}
+.appbar-cta .lb small{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.appbar-cta .lb b{font-size:15px;font-weight:700;color:var(--gold)}
+.appbar-cta .x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:4px 8px;margin-left:auto}
+</style>
+</head>
+<body>
+<div class="page">
+<header class="topbar"><a href="https://lokali.travel" class="brand">Lokali</a></header>
+<nav class="crumbs" aria-label="Breadcrumb"><a href="https://lokali.travel">Lokali</a> <span class="sep">&rsaquo;</span> <a href="https://lokali.travel/explore/index.html">Explore</a> <span class="sep">&rsaquo;</span> <a href="https://lokali.travel/explore/en/country/united-states.html">United States</a> <span class="sep">&rsaquo;</span> <a href="https://lokali.travel/explore/en/chicago.html">Chicago</a> <span class="sep">&rsaquo;</span> <span>Willis Tower</span></nav>
+<div class="hero-img"><img src="https://upload.wikimedia.org/wikipedia/commons/7/7d/Sears_Tower%2C_Wacker_Drive_and_Jackson_Boulevard%2C_Chicago%2C_IL_-_54189600901.jpg?utm_source=en.wikipedia.org&amp;utm_campaign=api&amp;utm_content=thumbnail_unscaled" alt="Willis Tower, Chicago" loading="eager" width="600" height="480"><div class="ov"></div><span class="badge">Free audio guide</span></div>
+<h1>Willis Tower</h1>
+<p class="geoline">41.8789&deg; N &middot; 87.6359&deg; W &middot; Skyscraper</p>
+<p class="answer">Willis Tower is a skyscraper in Chicago, United States. Once the world&#39;s tallest building, this 110-story 1973 tower dominates the skyline. Most visitors spend 1–2 hours here. The free Lokali audio guide runs 5 minutes.</p>
+<p class="verified">&#10003; <b>Verified August 2026</b> &middot; <a href="https://lokali.travel/about/editorial-process.html">how we write these guides</a></p>
+<div class="cta-row">
+<a href="https://lokali.travel" class="cta"><span class="play">&#9654;</span><span class="lbl"><small>Begin</small><b>Open the Lokali app</b></span></a>
+</div>
+<section>
+<h2 class="sec">Visitor facts</h2>
+<table class="facts-tbl"><tbody>
+<tr><th>Time needed</th><td>1–2 hours</td></tr>
+<tr><th>Lokali audio guide</th><td>5 min &middot; free</td></tr>
+<tr><th>Type</th><td>Skyscraper</td></tr>
+<tr><th>Best for</th><td>Photography</td></tr>
+<tr><th>Location</th><td>Chicago, United States</td></tr>
+<tr><th>Coordinates</th><td><span translate="no">41.8789, -87.6359</span></td></tr>
+<tr><th>Languages</th><td>45, in the Lokali app</td></tr>
+</tbody></table>
+</section>
+<section>
+<h2 class="sec">The story</h2>
+<div class="tour">
+<p>You tilt your head back and the building keeps going. Black steel rises floor over floor until the top seems to lean against the clouds. This is Willis Tower. For many years it was the tallest building in the world. Stand at its base on a windy day and you can feel how small a single person is beside it. The wind here is rarely still.</p>
+<p>The tower was finished in 1973. It was built for Sears, Roebuck and Company, then one of the largest retailers in the country. For decades people knew it as the Sears Tower. The company needed room for thousands of workers, and it wanted a single home for all of them gathered under one roof. Its dark glass and steel set it apart from every neighbor.</p>
+<p>The design came from the firm Skidmore, Owings and Merrill. The architect was Bruce Graham. The engineer was Fazlur Rahman Khan. Khan&#39;s idea changed how very tall buildings are made. He thought of the tower as a bundle of nine square tubes, pressed together and rising as one strong frame. It used far less steel than older towers of the same height.</p>
+<p>You can read that idea on the skyline. The nine tubes do not all reach the same height. Some stop partway up. Others continue higher. As they fall away at different levels, the tower steps inward as it climbs. This is why the top looks narrower than the base, and why the shape is so easy to recognize from far off. From certain streets you can count the steps in its outline.</p>
+<p>The numbers are large. The tower has 110 stories. It stands about 1,450 feet to the roof. From 1973 until 1998 it held the title of the tallest building in the world. Even after taller towers rose elsewhere, it remained the tallest in its own country for many more years after that. Two tall white antennas rise from the roof and add to its height.</p>
+<p>In 2009 the building took a new name. A firm called Willis agreed to lease space here, and as part of that deal the tower became Willis Tower. Many people in Chicago still call it by the old name out of long habit. Both names point to the same dark giant standing on the skyline.</p>
+<p>Most visitors come for the view. An express elevator climbs to the Skydeck on the 103rd floor. Your ears may pop on the way up. The ride is quick. When the doors open, the whole region spreads out below you, and on a clear day the flat land runs all the way to the edge of sight. Hold the rail as the floor numbers climb.</p>
+<p>From this height the city turns into a map. Streets become thin lines. Cars become slow dots. The lake fills the eastern side with open water and meets the sky at a hard, level line. Boats leave white trails that slowly fade behind them. Trains crawl in and out of the center of the city. To the west, the streets run in a flat grid until they fade into haze.</p>
+<p>The Skydeck holds a famous test of nerve. Glass boxes called the Ledge push out from the side of the building. Their floors are clear glass. Step onto one and there is nothing below your feet but air and, far down, the street. Some visitors walk straight out. Others cannot make themselves let go of the frame. The glass is thick and strong, but the mind still hesitates.</p>
+<p>Weather changes the visit completely. On a bright morning you can see for miles. When clouds move in low, the top floors can sit inside the mist, and the windows turn soft and white. The building also sways a little in strong wind. The motion is slight, and it is built into the design on purpose. Plan around the forecast if you can.</p>
+<p>Down at street level the tower meets the city in shadow. Its base is plain and dark. People hurry past without looking up, long used to its size. Only visitors tend to stop and crane their necks. To those who work here, the tallest tower around is simply the place where the working day begins. At night the upper floors glow against the dark.</p>
+<p>A tall building changes how you see a place. From the ground, the city is all around you and hard to grasp. From the top, it lies open and quiet, almost gentle. Riding back down, the streets rise up to meet you, and the noise returns. You step out knowing the city from two heights now, and both of them are true. The memory of that wide, silent view stays with you for days.</p>
+</div>
+</section>
+<section>
+<h2 class="sec">Key facts</h2>
+<div class="chips facts">
+<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>Completed in 1973 as the Sears Tower headquarters.</span></div>
+<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>Stands 110 stories and about 1,450 feet tall.</span></div>
+<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>World&#39;s tallest building from 1973 until 1998.</span></div>
+<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>Engineered by Fazlur Rahman Khan using bundled tubes.</span></div>
+<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>Renamed Willis Tower in 2009 after a lease.</span></div>
+</div>
+</section>
+<section>
+<h2 class="sec">What to look for</h2>
+<div class="chips look">
+<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>The stepped setbacks where the nine tubes end.</span></div>
+<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>Lake Michigan meeting the sky in a line.</span></div>
+<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>Streets shrinking to thin lines far below you.</span></div>
+<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>Your feet above open air on the Ledge.</span></div>
+</div>
+</section>
+<section>
+<h2 class="sec">Practical tips</h2>
+<div class="chips tips">
+<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>Buy Skydeck tickets ahead to avoid long waits.</span></div>
+<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>Visit near sunset for both daylight and city lights.</span></div>
+<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>Choose a clear day for the widest possible views.</span></div>
+<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>Step onto the Ledge glass boxes if you dare.</span></div>
+</div>
+</section>
+<section>
+<h2 class="sec">Common questions</h2>
+<div class="faq">
+<h3>How long do you need at Willis Tower?</h3>
+<p>Plan 1–2 hours. That is the time most visitors spend at Willis Tower. The free Lokali audio guide adds about 5 minutes of narration you can listen to as you walk, so it fits inside your visit rather than adding to it.</p>
+<h3>Is there a free audio guide to Willis Tower?</h3>
+<p>Yes &mdash; the Lokali app narrates Willis Tower free of charge in 45 languages. It covers the history, what to look for on site and practical tips, and it works offline once downloaded.</p>
+<h3>Where is Willis Tower?</h3>
+<p>Willis Tower is in Chicago, United States, at 41.8789, -87.6359. Tap the map link on this page for directions from where you are.</p>
+<h3>What should you know before visiting Willis Tower?</h3>
+<p>Buy Skydeck tickets ahead to avoid long waits.</p>
+<h3>What is Willis Tower known for?</h3>
+<p>Completed in 1973 as the Sears Tower headquarters.</p>
+<h3>What is the best time to visit Willis Tower?</h3>
+<p>Visit in late afternoon to catch both daylight views and the city lights coming on.</p>
+</div>
+</section>
+<section>
+<h2 class="sec">More to see in Chicago</h2>
+<div class="nearby">
+<a href="https://lokali.travel/explore/en/chicago/chicago-cultural-center.html">Chicago Cultural Center<span class="km">0.9 km</span></a>
+<a href="https://lokali.travel/explore/en/chicago/art-institute-of-chicago.html">Art Institute of Chicago<span class="km">1.0 km</span></a>
+<a href="https://lokali.travel/explore/en/chicago/bean-cloud-gate.html">The Bean (Cloud Gate)<span class="km">1.1 km</span></a>
+<a href="https://lokali.travel/explore/en/chicago/grant-park.html">Grant Park<span class="km">1.1 km</span></a>
+<a href="https://lokali.travel/explore/en/chicago/chicago-architecture-center-river-cruise.html">Chicago Architecture Center River Cruise<span class="km">1.6 km</span></a>
+<a href="https://lokali.travel/explore/en/chicago/navy-pier.html">Navy Pier<span class="km">2.7 km</span></a>
+</div>
+<p class="map-note" style="margin-top:10px"><a href="https://lokali.travel/explore/en/chicago.html">All free audio guides in Chicago &rsaquo;</a></p>
+</section>
+<section>
+<h2 class="sec">On the map</h2>
+<div class="mapcard"><a href="https://www.google.com/maps/search/?api=1&query=41.8789%2C-87.6359" target="_blank" rel="noopener noreferrer"><span class="ic"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2.9 6.4-6.4 2.9 2.9-6.4z"/></svg></span>Open in Google Maps<span class="arr">&rsaquo;</span></a></div>
+<p class="map-note">Opens directions to Willis Tower from your location.</p>
+</section>
+
+<footer>
+<a href="https://lokali.travel/explore/index.html">All cities</a> &middot; <a href="https://lokali.travel/explore/en/country/united-states.html">Audio guides in United States</a> &middot; <a href="https://lokali.travel/explore/en/chicago.html">Chicago</a> &middot; <a href="https://lokali.travel/about/editorial-process.html">Editorial process</a>
+</footer>
+<div class="appbar-cta" id="gpb"><div class="pill"><a href="https://play.google.com/store/apps/details?id=app.lokali.travel&amp;utm_source=seo&amp;utm_medium=explore&amp;utm_campaign=en&amp;utm_content=chicago" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 48 48" width="24" height="24" style="flex-shrink:0"><path d="M24,24 L12,35 L12,13 Z" fill="#00B0FF"/><path d="M24,24 L36,35 L36,13 Z" fill="#00E676"/><path d="M24,24 L12,13 L24,3 Z" fill="#FFC400"/><path d="M24,24 L36,13 L24,3 Z" fill="#FF3D57"/></svg><span class="lb"><small>Google Play</small><b>Get the app</b></span></a><button class="x" aria-label="Dismiss" onclick="try{localStorage.setItem('lokali.playbanner.dismissed.v1','1')}catch(e){};document.getElementById('gpb').classList.remove('show')">&#10005;</button></div></div><script>(function(){var d=false;try{d=localStorage.getItem("lokali.playbanner.dismissed.v1")==="1"}catch(e){}if(!window.Capacitor&&!d){document.getElementById("gpb").classList.add("show")}})();</script>
+</div>
+</body>
+</html>

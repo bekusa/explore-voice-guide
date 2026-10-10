@@ -34,6 +34,42 @@ PBAR=(open(f'{WD}/playbar.html',encoding='utf-8').read()
 # strips every character and every page in a city collides on one empty name.
 # A strings module supplies translit(); Latin-script languages need none.
 SLUG=lambda s: slug(getattr(D,'translit',lambda x:x)(s))
+# Scripts differ in how much fits a SERP: 158 Latin characters and 158 Chinese
+# characters are not the same width, so a strings module may narrow the budget.
+MAXDESC=getattr(D,'MAXDESC',158); MAXTITLE=getattr(D,'MAXTITLE',62)
+_ABBR=re.compile(r'(?:^|\s)(?:\w{1,2}|Dr|Mrs|Jr|bzw|ca|etc|vgl)\.$',re.UNICODE)
+def shrink(d,limit):
+    """Trim to whole sentences, keeping the Lokali line if it still fits.
+
+    The free-guide sentence is last and is exactly what a SERP cuts off, so it
+    gets first claim on the budget -- but only when real sentences fit in front
+    of it, otherwise the page would say nothing about the place itself."""
+    if len(d)<=limit: return d
+    # The "are there sentences here at all?" guard has to know CJK punctuation,
+    # or every Chinese description falls straight through to a blunt cut.
+    if not re.search(r'[.!?\u3002\uff01\uff1f]',d): return d[:limit-1].rstrip()+'\u2026'
+    parts=re.split(r'(?<=[.!?\u3002\uff01\uff1f])\s*',d.strip()); S=[]
+    for x in parts:
+        if not x: continue
+        if S and _ABBR.search(S[-1]): S[-1]+=' '+x
+        else: S.append(x)
+    def fill(seq,lim):
+        k=''
+        for x in seq:
+            c=(k+(' ' if k and k[-1] not in '\u3002\uff01\uff1f' else '')+x).strip()
+            if len(c)<=lim: k=c
+            else: break
+        return k
+    hook=S[-1] if len(S)>1 and 'Lokali' in S[-1] else None
+    if hook:
+        k=fill(S[:-1],limit-len(hook)-1)
+        if k: return k+('' if k[-1] in '\u3002\uff01\uff1f' else ' ')+hook
+    k=fill(S,limit)
+    return k or re.sub(r'[\s\u2014\u2013,;:-]+$','',d[:limit-1].rsplit(' ',1)[0])+'\u2026'
+# "<label> <City>" is a Latin word order with a Latin space in it. Georgian wants
+# the city first and Chinese wants no space at all, so both headings are hooks.
+MORE=lambda city: getattr(D,'more_heading',lambda c: f'{D.SEC["more"]} {c}')(city)
+GUIDES_IN=lambda k: getattr(D,'guides_in',lambda x: f'{D.UI["guidesin"]} {x}')(k)
 NL='\n'; esc=lambda s: html.escape(s or '',quote=True); txt=lambda s: html.escape(s or '',quote=False)
 mins=lambda s: max(1,round((s or 0)/60))
 def dist(a,b): return math.hypot((a[1]-b[1])*111*math.cos(math.radians(a[0])),(a[0]-b[0])*111)
@@ -49,6 +85,12 @@ photos=defaultdict(list)
 for p in json.load(open(f'{WD}/photos.json')):
     q=p['cache_key'].split('|'); photos[key(q[-1])].append((key(' '.join(q[1:-1])),p['url']))
 
+# Languages written in a non-Latin script cannot make a readable slug out of
+# their own title, and their existing pages already sit on the English slug
+# (explore/zh-cn/istanbul/hagia-sophia.html). A strings module sets USE_EN_SLUG
+# so new pages land in the same place instead of inventing a romanisation.
+USE_EN_SLUG=getattr(D,'USE_EN_SLUG',False)
+enslug={}
 meta={}; pts=defaultdict(list)
 for city in os.listdir(EN):
     d=os.path.join(EN,city)
@@ -62,6 +104,7 @@ for city in os.listdir(EN):
             cl=re.search(r'"addressLocality":\s*"([^"]+)"',t)
             if cd and cc: meta[city]=[cd.group(1),cd.group(2),cc.group(1),cl.group(1) if cl else city.title()]
             first=False
+        enslug.setdefault(key(f[:-5].replace('-',' ')),(city,f[:-5]))
         fx=facts.get(key(f[:-5].replace('-',' ')))
         if fx and fx.get('lat'): pts[city].append((float(fx['lat']),float(fx['lng'])))
 cent={c:(st.median([p[0] for p in v]),st.median([p[1] for p in v])) for c,v in pts.items() if c in meta and v}
@@ -83,7 +126,7 @@ def build():
         best=max(rs,key=lambda r:len(json.dumps(r['payload'],ensure_ascii=False)))
         p=best['payload']
         if not (p.get('script') and p.get('title')): continue
-        if not SLUG(p['title']):
+        if not getattr(D,'USE_EN_SLUG',False) and not SLUG(p['title']):
             print('  SKIP empty slug:',p['title']); continue
         fx=facts.get(k) or {}
         la=lo=None
@@ -98,7 +141,14 @@ def build():
             city=slug(db[0]) if db else None
         if not city or city not in meta: continue
         m=meta[city]
-        out.append({'key':k,'title':p['title'].strip(),'slug':SLUG(p['title']),'city':city,
+        sg=SLUG(p['title'])
+        if USE_EN_SLUG:
+            en=enslug.get(k)
+            if not en: continue                      # no English page -> no slug to borrow
+            city,sg=en[0],en[1]
+            if city not in meta: continue
+            m=meta[city]                             # the English page decides the city too
+        out.append({'key':k,'title':p['title'].strip(),'slug':sg,'city':city,
           'city_disp':m[3],'country':CN.get(m[0],m[1]),'country_slug':m[0],'cc':m[2],
           'lat':la,'lng':lo,'type':fx.get('type'),'category':fx.get('category'),
           'visit':D.dur(fx.get('duration')),'dur_sec':p.get('estimated_duration_seconds'),
@@ -123,16 +173,19 @@ def build():
     return list(seen.values())
 
 def answer(a):
-    t=a['title']; tp=D.type_phrase(a['type']); where=f"{a['city_disp']}, {a['country']}"
+    # "City, Country" is a Latin convention; Chinese wants "City（Country）".
+    where=getattr(D,'where',lambda c,k: f'{c}, {k}')(a['city_disp'],a['country'])
+    SEP=getattr(D,'SEP',' '); STOP=getattr(D,'STOP','.')
+    t=a['title']; tp=D.type_phrase(a['type'])
     P=[D.SENT['is'].format(t=t,tp=tp,where=where) if tp else D.SENT['in'].format(t=t,where=where)]
     kf=(a['key_facts'] or [None])[0]
-    s=(kf or re.split(r'(?<=[.!?])\s+',a['script'] or '')[0]).strip().rstrip('.')
-    if s: P.append(s+'.')
+    s=(kf or re.split(r'(?<=[.!?\u3002])\s*',a['script'] or '')[0]).strip().rstrip('.\u3002!?\uff01\uff1f ')
+    if s: P.append(s+STOP)
     if len(' '.join(P).split())<40 and len(a['key_facts'])>1:
-        P.append(a['key_facts'][1].strip().rstrip('.')+'.')
+        P.append(a['key_facts'][1].strip().rstrip('.\u3002!?\uff01\uff1f ')+STOP)
     if a['visit']: P.append(D.SENT['spend'].format(vis=a['visit']))
     P.append(D.SENT['runs'].format(n=mins(a['dur_sec'])))
-    return ' '.join(P)
+    return SEP.join(P)
 
 def head(title,desc,url,img,g,noindex=False):
     L=['<!DOCTYPE html>',f'<html lang="{LANG}" dir="ltr">','<head>','<meta charset="utf-8">',
@@ -178,9 +231,9 @@ def page(a,nearby):
     ans=answer(a)
     F=D.faq(t,city,a['country'],a['visit'],mins(a['dur_sec']),a['tips'],a['key_facts'],a['lat'],a['lng'])
     title=D.TITLE.format(t=t,city=city)
-    if len(title)>62: title=D.TITLE_SHORT.format(t=t)
-    if len(title)>62: title=f"{t} — Lokali"
-    desc=ans if len(ans)<=300 else ans[:297].rsplit(' ',1)[0]+'…'
+    if len(title)>MAXTITLE: title=D.TITLE_SHORT.format(t=t)
+    if len(title)>MAXTITLE: title=f"{t} — Lokali"
+    desc=shrink(ans,MAXDESC)
     ta={"@type":"TouristAttraction","@id":url+"#attraction","name":t,"description":ans,"url":url,
         "isAccessibleForFree":True,"publicAccess":True,"inLanguage":LANG}
     if a['image']: ta["image"]=html.unescape(a['image'])
@@ -240,7 +293,7 @@ def page(a,nearby):
     for q,aa in F: L.append(f'<h3>{txt(q)}</h3>{NL}<p>{txt(aa)}</p>')
     L.append('</div>'+NL+'</section>')
     if nearby:
-        L.append(f'<section>{NL}<h2 class="sec">{D.SEC["more"]} {txt(city)}</h2>{NL}<div class="nearby">')
+        L.append(f'<section>{NL}<h2 class="sec">{txt(MORE(city))}</h2>{NL}<div class="nearby">')
         for nm,sl,km in nearby[:6]:
             L.append(f'<a href="{BASE}/explore/{LANG}/{cs}/{sl}.html">{txt(nm)}<span class="km">{km:.1f} km</span></a>')
         L.append('</div>'+NL+'</section>')
@@ -251,7 +304,7 @@ def page(a,nearby):
           f'rel="noopener noreferrer"><span class="ic">{ICM}</span>{D.UI["maps"]}'
           f'<span class="arr">&rsaquo;</span></a></div>{NL}'
           f'<p class="map-note">{D.SENT["route"].format(t=txt(t))}</p>{NL}</section>')
-    cf=(f'<a href="{BASE}/explore/en/country/{a["country_slug"]}.html">{D.UI["guidesin"]} {txt(a["country"])}</a> &middot; '
+    cf=(f'<a href="{BASE}/explore/en/country/{a["country_slug"]}.html">{txt(GUIDES_IN(a["country"]))}</a> &middot; '
         if a['country_slug'] in HAVE_C else '')
     L.append(f'{NL}<footer>{NL}<a href="{BASE}/explore/index.html">{D.UI["allcities"]}</a> &middot; '
              + cf + f'<a href="{BASE}/explore/{LANG}/{cs}.html">{txt(city)}</a> &middot; '
@@ -269,13 +322,13 @@ def hub(cs,items):
     # strings module may supply hub_text() and build the three strings itself.
     if hasattr(D,'hub_text'):
         title,desc,intro=D.hub_text(city,n,names)
-        if len(title)>64 and hasattr(D,'hub_text_short'): title=D.hub_text_short(city,n)
+        if len(title)>MAXTITLE+2 and hasattr(D,'hub_text_short'): title=D.hub_text_short(city,n)
     else:
         title=D.HUB_TITLE.format(city=city,n=n)
-        if len(title)>64: title=D.HUB_TITLE_SHORT.format(city=city,n=n)
+        if len(title)>MAXTITLE+2: title=D.HUB_TITLE_SHORT.format(city=city,n=n)
         desc=D.HUB_DESC.format(n=n,city=city,names=names)
         intro=D.HUB_INTRO.format(n=n,city=city)
-    if len(desc)>158: desc=desc[:155].rsplit(' ',1)[0]+'…'
+    desc=shrink(desc,MAXDESC)
     F=D.hub_faq(city,n)
     g={"@context":"https://schema.org","@graph":[
       {"@type":"TouristDestination","name":city,"url":url,"inLanguage":LANG,"description":intro,
@@ -288,7 +341,7 @@ def hub(cs,items):
     img=next((i['image'] for i in items if i['image']),None)
     L=[head(title,desc,url,img,g,noindex=n<2), crumb(a), f'<h1>{txt(city)}</h1>',
        f'<p class="answer">{txt(intro)}</p>', verified(), cta(cs),
-       f'<section>{NL}<h2 class="sec">{D.SEC["more"]} {txt(city)}</h2>{NL}<div class="nearby">']
+       f'<section>{NL}<h2 class="sec">{txt(MORE(city))}</h2>{NL}<div class="nearby">']
     for i in items:
         L.append(f'<a href="{BASE}/explore/{LANG}/{cs}/{i["slug"]}.html">{txt(i["title"])}'
                  f'<span class="km">{mins(i["dur_sec"])} {D.UI["min"]}</span></a>')
