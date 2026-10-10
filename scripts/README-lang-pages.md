@@ -7,8 +7,9 @@ word for word. The only per-language thing in this folder is the template
 chrome — section headings, table labels, FAQ wording, and the one sentence
 frame that wraps DB facts — which lives in a small strings module.
 
-Built so far: `en`, `ka`, `de`, `ru`, `nl`, `zh-cn`, `fr`, `pl`, `es`, `it`,
-`id`, `uk`, `az`, `tr` — fourteen languages, 3,229 indexable URLs.
+Built so far: `en`, `ka`, `ru`, `de`, `nl`, `fr`, `zh-cn`, `pl`, `ar`, `es`,
+`fa`, `az`, `id`, `it`, `ja`, `ko`, `uk`, `bg`, `he`, `tr` — twenty languages,
+**4,012 indexable URLs**.
 
 ## Run
 
@@ -106,7 +107,10 @@ Copy `frstr.py` and translate ~15 labels. Three parts need real care:
    *1 bezpłatny audioprzewodnik / 2 bezpłatne / 5 bezpłatnych*. Define
    `hub_text(city,n,names)` and gen.py will use it instead of `HUB_*`.
 
-4. **Word order and punctuation hooks, for anything that is not Latin prose.**
+4. **`DIR = 'rtl'` for right-to-left languages** (`ar`, `fa`, `he`). gen.py
+   writes it onto `<html>`; without it the page renders left-to-right.
+
+5. **Word order and punctuation hooks, for anything that is not Latin prose.**
    `where(city,country)` builds the location phrase (Chinese wants
    `Istanbul（土耳其）`, not `Istanbul, 土耳其`); `more_heading(city)` and
    `guides_in(country)` build the two headings that glue a name onto a label,
@@ -116,7 +120,12 @@ Copy `frstr.py` and translate ~15 labels. Three parts need real care:
    Chinese character is about twice as wide as a Latin one (zh-cn uses 78/34
    against the 158/62 default).
 
-5. **Languages that decline place names** (Georgian, Polish, Russian) state the
+6. **Korean particles.** 은/는 and 이/가 depend on whether the preceding
+   syllable ends in a consonant. Writing "은(는)" everywhere is the mark of an
+   untranslated template; `kostr.py` computes it from the Hangul code point and
+   gen.py passes it into the sentence as `{eun}`.
+
+7. **Languages that decline place names** (Georgian, Polish, Russian) state the
    location after a colon in the nominative — `Lokalizacja: Istanbul, Turcja`,
    `მდებარეობა: Istanbul, თურქეთი` — and put the attraction name before a colon
    in FAQ questions, because the database stores city names in Latin script and

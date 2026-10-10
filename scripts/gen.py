@@ -362,9 +362,15 @@ def hub(cs,items):
     return NL.join(L)
 
 def wr(rel,h):
+    # Write via a temp file + os.replace. A plain open(path,'w') truncates first
+    # and fills second, so a run killed between those two steps leaves a
+    # zero-byte page -- which is exactly how bg/edirne/dzhamiya-selimie.html
+    # ended up empty. os.replace is atomic: old file or new file, never nothing.
     for p in (os.path.join(OUT,rel), os.path.join(OUT,rel[:-5],'index.html')):
         os.makedirs(os.path.dirname(p),exist_ok=True)
-        open(p,'w',encoding='utf-8').write(h)
+        t=p+'.tmp'
+        with open(t,'w',encoding='utf-8') as fh: fh.write(h)
+        os.replace(t,p)
 
 if __name__=='__main__':
     items=build(); print("buildable:",len(items))

@@ -293,6 +293,14 @@ for root,members in comp.items():
 # The mount writes slowly enough that a big plan can outrun the shell's time
 # limit. The pass is idempotent, so cap the batch and run again until it says 0.
 print(f'pages to rewrite this pass: {len(plan)}'+(' (capped)' if LIMIT and len(plan)>=LIMIT else ''))
+# On a slow mount a large plan cannot be computed and written inside one shell
+# call. LINK_DUMP_PLAN writes the plan out so a separate pass can apply it in
+# chunks without recomputing the whole component model each time.
+DUMP=os.environ.get('LINK_DUMP_PLAN')
+if DUMP:
+    with open(DUMP,'wb') as fh: pickle.dump(plan,fh)
+    print(f'plan written to {DUMP}; apply it, then run again to refresh the sitemap')
+    sys.exit(0)
 
 # ----------------------------------------------------------------- 6. write them
 def atomic_write(path,text):
