@@ -7,9 +7,8 @@ word for word. The only per-language thing in this folder is the template
 chrome — section headings, table labels, FAQ wording, and the one sentence
 frame that wraps DB facts — which lives in a small strings module.
 
-Built so far: `en` (1,494), `ka` (195), `de` (175), `ru` (172), `nl` (167),
-`zh-cn` (167), `fr` (163), `pl` (163), `es` (161), `tr` (138). 2,704 indexable
-URLs in total.
+Built so far: `en`, `ka`, `de`, `ru`, `nl`, `zh-cn`, `fr`, `pl`, `es`, `it`,
+`id`, `uk`, `az`, `tr` — fourteen languages, 3,229 indexable URLs.
 
 ## Run
 
@@ -133,10 +132,9 @@ than re-translating. ⚠️ Hindi is an exception — its v3 headings were left 
 English, so check before trusting them.
 
 `destr.py` was reconstructed from the live `/explore/de/` pages after the
-original was lost; it reproduces the shipped wording exactly. ⚠️ Georgian is a
-second Hindi: the v3 `ka` pages have English headings ("The story", "Key facts")
-and one page titled from the *French* name, so nothing there was worth lifting —
-`kastr.py` is written fresh.
+original was lost; it reproduces the shipped wording exactly. ⚠️ Hindi is not the only language whose v3 pages were left in English: `ka` and
+`az` are the same, and the Georgian Hagia Sophia page was even titled from the
+*French* name. Check before lifting; `kastr.py` and `azstr.py` are written fresh.
 
 ## After generating
 
@@ -149,6 +147,12 @@ and one page titled from the *French* name, so nothing there was worth lifting �
 - build a page for a language that has no guide row — no machine translation
 - invent coordinates; a page with no lat/lng simply has no map, no geo schema
   and no "where is it" question
+- publish a second page for an attraction that already has one. The v3
+  generator put every language on the English slug, so a rich hand-built page
+  may already sit at `<city>/<en-slug>.html`; gen.py skips the attraction rather
+  than adding a localised-slug twin. (This was found the hard way — the first
+  batches produced duplicate Louvre, Hagia Sophia and Blue Mosque pages in six
+  languages, all since canonicalised onto the richer original.)
 - publish two pages for one slug. The DB holds alias rows (`duden waterfall` /
   `duden waterfalls`, `ortakoy` / `ortakoy mosque`) and in some languages two
   genuinely different places share one localised title. `gen.py` keeps the
@@ -165,6 +169,12 @@ and one page titled from the *French* name, so nothing there was worth lifting �
   impression data which to keep before canonicalising one into the other. Do
   **not** merge Düden — `duden-waterfalls` (upper) and `düden-waterfall`
   (lower) are 2.6 km apart and genuinely different.
-- meta descriptions run to ~300 characters on 1,653 pages across the whole tree
-  (EN included, and predating these batches). Google truncates the snippet at
-  ~160 and Bing flags it. Worth one deliberate pass, not a per-batch fix.
+- 56 attractions have no photo anywhere in `cached_photos`, so their pages ship
+  without an image in every language. That is a database gap, not a matching
+  bug: a looser name match over all 35,760 photo rows recovered exactly one.
+- `zh-cn/paris/louvre.html` is 5,646 characters against 11,039 for the
+  Traditional Chinese twin. The Louvre project's Simplified Chinese text is
+  simply shorter; nothing in the pipeline truncated it.
+- Non-ASCII URLs (`en/istanbul/gülhane-park.html`) are **fine**. They serve 200,
+  they are in the sitemap, and Google handles percent-encoded UTF-8. Renaming
+  them would abandon indexed URLs for cosmetics — leave them alone.

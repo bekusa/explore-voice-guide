@@ -371,6 +371,12 @@ if __name__=='__main__':
                 exist.add(os.path.relpath(os.path.join(r,f),OUT).replace(os.sep,'/')[:-5])
     n=h_=0
     for a in items:
+        # The v3 generator put every language on the English slug, so a rich
+        # hand-built page may already exist at <city>/<en-slug>.html. Building a
+        # second page on a localised slug would publish the same attraction at
+        # two URLs; the existing page wins.
+        en=enslug.get(a['key'])
+        if en and en[0]==a['city'] and f"{en[0]}/{en[1]}" in exist: continue
         if f"{a['city']}/{a['slug']}" in exist: continue
         sib=sorted(((x['title'],x['slug'],dist((a['lat'],a['lng']),(x['lat'],x['lng'])))
                     for x in by[a['city']] if x is not a and a['lat'] is not None and x['lat'] is not None),
