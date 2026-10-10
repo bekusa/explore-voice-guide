@@ -54,15 +54,22 @@ NAMES={'en':'English','fr':'Français','de':'Deutsch','es':'Español','it':'Ital
 RTL={'ar','he','fa','ur'}
 
 # ------------------------------------------------------------- 1. index on disk
+# Walking several thousand files on a network mount is slow enough to dominate
+# the run. LINK_PAGE_LIST points at a cached list; delete it after adding pages.
 pages={}
-for lang in sorted(os.listdir(EXP)):
-    d=os.path.join(EXP,lang)
-    if not os.path.isdir(d): continue
-    for root,dirs,files in os.walk(d):
-        for f in files:
-            if not f.endswith('.html') or f=='index.html': continue
-            rel=os.path.relpath(os.path.join(root,f),EXP).replace(os.sep,'/')
-            pages[rel]=f'{BASE}/explore/{rel}'
+LIST=os.environ.get('LINK_PAGE_LIST')
+if LIST and os.path.exists(LIST):
+    for rel in json.load(open(LIST)): pages[rel]=f'{BASE}/explore/{rel}'
+else:
+    for lang in sorted(os.listdir(EXP)):
+        d=os.path.join(EXP,lang)
+        if not os.path.isdir(d): continue
+        for root,dirs,files in os.walk(d):
+            for f in files:
+                if not f.endswith('.html') or f=='index.html': continue
+                rel=os.path.relpath(os.path.join(root,f),EXP).replace(os.sep,'/')
+                pages[rel]=f'{BASE}/explore/{rel}'
+    if LIST: json.dump(sorted(pages),open(LIST,'w'))
 url2rel={v:k for k,v in pages.items()}
 lang_of=lambda rel: rel.split('/',1)[0]
 print(f'pages on disk: {len(pages)}')

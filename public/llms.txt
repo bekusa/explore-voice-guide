@@ -14,7 +14,7 @@ https://play.google.com/store/apps/details?id=app.lokali.travel
 ## Browse
 https://lokali.travel/explore/index.html
 
-## Canonical URLs (4012 total)
+## Canonical URLs (3997 total)
 
 https://lokali.travel/about/editorial-process.html
 https://lokali.travel/explore/af/istanbul.html
@@ -52,7 +52,6 @@ https://lokali.travel/explore/ar/bergama/pergamon-acropolis.html
 https://lokali.travel/explore/ar/beyoğlu.html
 https://lokali.travel/explore/ar/beyoğlu/galata-tower.html
 https://lokali.travel/explore/ar/beyoğlu/istiklal-avenue.html
-https://lokali.travel/explore/ar/beyoğlu/istiklal-street.html
 https://lokali.travel/explore/ar/beyoğlu/karaköy.html
 https://lokali.travel/explore/ar/beşiktaş.html
 https://lokali.travel/explore/ar/beşiktaş/dolmabahçe-palace.html
@@ -120,7 +119,6 @@ https://lokali.travel/explore/ar/istanbul/princes-islands.html
 https://lokali.travel/explore/ar/istanbul/rahmi-m-koç-museum.html
 https://lokali.travel/explore/ar/istanbul/rumeli-fortress.html
 https://lokali.travel/explore/ar/istanbul/spice-bazaar.html
-https://lokali.travel/explore/ar/istanbul/sultanahmet-square.html
 https://lokali.travel/explore/ar/istanbul/süleymaniye-mosque.html
 https://lokali.travel/explore/ar/istanbul/topkapi-palace.html
 https://lokali.travel/explore/ar/istanbul/çemberlitaş-hamamı.html
@@ -766,7 +764,6 @@ https://lokali.travel/explore/en/berlin/unter-den-linden.html
 https://lokali.travel/explore/en/beyoğlu.html
 https://lokali.travel/explore/en/beyoğlu/galata-tower.html
 https://lokali.travel/explore/en/beyoğlu/istiklal-avenue.html
-https://lokali.travel/explore/en/beyoğlu/istiklal-street.html
 https://lokali.travel/explore/en/beyoğlu/karaköy.html
 https://lokali.travel/explore/en/beşiktaş.html
 https://lokali.travel/explore/en/beşiktaş/dolmabahçe-palace.html
@@ -1192,7 +1189,6 @@ https://lokali.travel/explore/en/istanbul/princes-islands.html
 https://lokali.travel/explore/en/istanbul/rahmi-m-koç-museum.html
 https://lokali.travel/explore/en/istanbul/rumeli-fortress.html
 https://lokali.travel/explore/en/istanbul/spice-bazaar.html
-https://lokali.travel/explore/en/istanbul/sultanahmet-square.html
 https://lokali.travel/explore/en/istanbul/süleymaniye-mosque.html
 https://lokali.travel/explore/en/istanbul/topkapi-palace.html
 https://lokali.travel/explore/en/istanbul/çemberlitaş-hamamı.html
@@ -2042,7 +2038,6 @@ https://lokali.travel/explore/fa/bergama/pergamon-acropolis.html
 https://lokali.travel/explore/fa/beyoğlu.html
 https://lokali.travel/explore/fa/beyoğlu/galata-tower.html
 https://lokali.travel/explore/fa/beyoğlu/istiklal-avenue.html
-https://lokali.travel/explore/fa/beyoğlu/istiklal-street.html
 https://lokali.travel/explore/fa/beyoğlu/karaköy.html
 https://lokali.travel/explore/fa/beşiktaş.html
 https://lokali.travel/explore/fa/beşiktaş/dolmabahçe-palace.html
@@ -2109,7 +2104,6 @@ https://lokali.travel/explore/fa/istanbul/princes-islands.html
 https://lokali.travel/explore/fa/istanbul/rahmi-m-koç-museum.html
 https://lokali.travel/explore/fa/istanbul/rumeli-fortress.html
 https://lokali.travel/explore/fa/istanbul/spice-bazaar.html
-https://lokali.travel/explore/fa/istanbul/sultanahmet-square.html
 https://lokali.travel/explore/fa/istanbul/süleymaniye-mosque.html
 https://lokali.travel/explore/fa/istanbul/topkapi-palace.html
 https://lokali.travel/explore/fa/istanbul/çemberlitaş-hamamı.html
@@ -2323,7 +2317,6 @@ https://lokali.travel/explore/he/bergama/pergamon-acropolis.html
 https://lokali.travel/explore/he/beyoğlu.html
 https://lokali.travel/explore/he/beyoğlu/galata-tower.html
 https://lokali.travel/explore/he/beyoğlu/istiklal-avenue.html
-https://lokali.travel/explore/he/beyoğlu/istiklal-street.html
 https://lokali.travel/explore/he/beşiktaş.html
 https://lokali.travel/explore/he/beşiktaş/dolmabahçe-palace.html
 https://lokali.travel/explore/he/beşiktaş/ortakoy-mosque.html
@@ -2740,7 +2733,6 @@ https://lokali.travel/explore/ja/bergama/pergamon-acropolis.html
 https://lokali.travel/explore/ja/beyoğlu.html
 https://lokali.travel/explore/ja/beyoğlu/galata-tower.html
 https://lokali.travel/explore/ja/beyoğlu/istiklal-avenue.html
-https://lokali.travel/explore/ja/beyoğlu/istiklal-street.html
 https://lokali.travel/explore/ja/beyoğlu/karaköy.html
 https://lokali.travel/explore/ja/beşiktaş.html
 https://lokali.travel/explore/ja/beşiktaş/dolmabahçe-palace.html
@@ -2807,7 +2799,6 @@ https://lokali.travel/explore/ja/istanbul/princes-islands.html
 https://lokali.travel/explore/ja/istanbul/rahmi-m-koç-museum.html
 https://lokali.travel/explore/ja/istanbul/rumeli-fortress.html
 https://lokali.travel/explore/ja/istanbul/spice-bazaar.html
-https://lokali.travel/explore/ja/istanbul/sultanahmet-square.html
 https://lokali.travel/explore/ja/istanbul/süleymaniye-mosque.html
 https://lokali.travel/explore/ja/istanbul/topkapi-palace.html
 https://lokali.travel/explore/ja/istanbul/çemberlitaş-hamamı.html
@@ -2879,7 +2870,6 @@ https://lokali.travel/explore/ka/bergama/pergamon-acropolis.html
 https://lokali.travel/explore/ka/beyoğlu.html
 https://lokali.travel/explore/ka/beyoğlu/galata-tower.html
 https://lokali.travel/explore/ka/beyoğlu/istiklal-avenue.html
-https://lokali.travel/explore/ka/beyoğlu/istiklal-street.html
 https://lokali.travel/explore/ka/beyoğlu/karaköy.html
 https://lokali.travel/explore/ka/beşiktaş.html
 https://lokali.travel/explore/ka/beşiktaş/dolmabahçe-palace.html
@@ -2951,7 +2941,6 @@ https://lokali.travel/explore/ka/istanbul/princes-islands.html
 https://lokali.travel/explore/ka/istanbul/rahmi-m-koç-museum.html
 https://lokali.travel/explore/ka/istanbul/rumeli-fortress.html
 https://lokali.travel/explore/ka/istanbul/spice-bazaar.html
-https://lokali.travel/explore/ka/istanbul/sultanahmet-square.html
 https://lokali.travel/explore/ka/istanbul/süleymaniye-mosque.html
 https://lokali.travel/explore/ka/istanbul/topkapi-palace.html
 https://lokali.travel/explore/ka/istanbul/çemberlitaş-hamamı.html
@@ -3040,7 +3029,6 @@ https://lokali.travel/explore/ko/bergama/pergamon-acropolis.html
 https://lokali.travel/explore/ko/beyoğlu.html
 https://lokali.travel/explore/ko/beyoğlu/galata-tower.html
 https://lokali.travel/explore/ko/beyoğlu/istiklal-avenue.html
-https://lokali.travel/explore/ko/beyoğlu/istiklal-street.html
 https://lokali.travel/explore/ko/beyoğlu/karaköy.html
 https://lokali.travel/explore/ko/beşiktaş.html
 https://lokali.travel/explore/ko/beşiktaş/dolmabahçe-palace.html
@@ -3107,7 +3095,6 @@ https://lokali.travel/explore/ko/istanbul/princes-islands.html
 https://lokali.travel/explore/ko/istanbul/rahmi-m-koç-museum.html
 https://lokali.travel/explore/ko/istanbul/rumeli-fortress.html
 https://lokali.travel/explore/ko/istanbul/spice-bazaar.html
-https://lokali.travel/explore/ko/istanbul/sultanahmet-square.html
 https://lokali.travel/explore/ko/istanbul/süleymaniye-mosque.html
 https://lokali.travel/explore/ko/istanbul/topkapi-palace.html
 https://lokali.travel/explore/ko/istanbul/çemberlitaş-hamamı.html
@@ -3911,7 +3898,6 @@ https://lokali.travel/explore/zh-cn/bergama/pergamon-acropolis.html
 https://lokali.travel/explore/zh-cn/beyoğlu.html
 https://lokali.travel/explore/zh-cn/beyoğlu/galata-tower.html
 https://lokali.travel/explore/zh-cn/beyoğlu/istiklal-avenue.html
-https://lokali.travel/explore/zh-cn/beyoğlu/istiklal-street.html
 https://lokali.travel/explore/zh-cn/beyoğlu/karaköy.html
 https://lokali.travel/explore/zh-cn/beşiktaş.html
 https://lokali.travel/explore/zh-cn/beşiktaş/dolmabahçe-palace.html
@@ -3980,7 +3966,6 @@ https://lokali.travel/explore/zh-cn/istanbul/princes-islands.html
 https://lokali.travel/explore/zh-cn/istanbul/rahmi-m-koç-museum.html
 https://lokali.travel/explore/zh-cn/istanbul/rumeli-fortress.html
 https://lokali.travel/explore/zh-cn/istanbul/spice-bazaar.html
-https://lokali.travel/explore/zh-cn/istanbul/sultanahmet-square.html
 https://lokali.travel/explore/zh-cn/istanbul/süleymaniye-mosque.html
 https://lokali.travel/explore/zh-cn/istanbul/topkapi-palace.html
 https://lokali.travel/explore/zh-cn/istanbul/çemberlitaş-hamamı.html
