@@ -188,7 +188,7 @@ def answer(a):
     return SEP.join(P)
 
 def head(title,desc,url,img,g,noindex=False):
-    L=['<!DOCTYPE html>',f'<html lang="{LANG}" dir="ltr">','<head>','<meta charset="utf-8">',
+    L=['<!DOCTYPE html>',f'<html lang="{LANG}" dir="{getattr(D,"DIR","ltr")}">','<head>','<meta charset="utf-8">',
      '<meta name="viewport" content="width=device-width, initial-scale=1">',
      '<meta name="theme-color" content="#110c08">',f'<title>{esc(title)}</title>',
      f'<meta name="description" content="{esc(desc)}">',f'<link rel="canonical" href="{url}">']
