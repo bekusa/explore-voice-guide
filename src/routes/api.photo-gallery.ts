@@ -406,30 +406,58 @@ function titleMatchesQuery(title: string, query: string, city?: string | null): 
   // Words we appended ourselves for disambiguation are NOT evidence.
   const cityWords = new Set(city ? norm(city) : []);
 
-  const subjectWords = norm(query).filter(
+  /* Generic place-type words are NOT evidence and NOT requirements.
+   *
+   * Beka 2026-10-11: "Metekhi church-ის ფეიჯზე სურათი არ წამოიღო,
+   * ადრე მოჰქონდა. სხვებიც არ მოაქვს." My 2026-10-04 gate did this.
+   * Wikipedia titles the article "Metekhi", not "Metekhi Church", so
+   * requiring EVERY query word meant "church" was missing from the
+   * title and the whole gallery was rejected. The same killed
+   * "Narikala Fortress" (article "Narikala"), "Jvari Monastery",
+   * and every other X-Cathedral / Y-Museum in the app.
+   *
+   * My comment back then even claimed "Narikala Fortress contains
+   * both words" — true of the QUERY, which is not what this function
+   * compares. It compares the query against the TITLE.
+   *
+   * Splitting the two kinds of word keeps the Poti fix intact:
+   *   "Poti Lighthouse" → city word "poti" dropped, "lighthouse"
+   *      generic → NO proper noun left → reject (the city article
+   *      must not supply a gallery). ✅ still fixed
+   *   "Metekhi Church"  → "metekhi" is a proper noun and IS in the
+   *      title → accept. ✅ now works
+   */
+  const GENERIC_PLACE_WORDS = new Set([
+    "church", "cathedral", "basilica", "chapel", "monastery", "convent",
+    "mosque", "temple", "shrine", "synagogue", "museum", "gallery",
+    "fortress", "castle", "palace", "citadel", "tower", "bridge",
+    "park", "garden", "square", "street", "avenue", "market", "bazaar",
+    "lighthouse", "beach", "lake", "river", "mountain", "island",
+    "ruins", "monument", "memorial", "statue", "theatre", "theater",
+    "stadium", "station", "district", "quarter", "house", "hall",
+  ]);
+
+  const significant = norm(query).filter(
     (w) => w.length >= 4 && !cityWords.has(w),
   );
-  // Nothing distinctive to test (query was only a city name, say) —
-  // then this is not a specific subject and a gallery is not safe.
+  // Proper nouns only — the words that actually identify the subject.
+  const subjectWords = significant.filter((w) => !GENERIC_PLACE_WORDS.has(w));
+  // Nothing distinctive to test (query was only a city name, or only
+  // generic type words like "Poti Lighthouse" once the city is
+  // removed) — not a specific subject, so a gallery is not safe.
   if (subjectWords.length === 0) return false;
 
-  /* EVERY distinguishing word must be in the title, not just one.
+  /* EVERY proper noun must appear in the title, not just one.
    *
-   * `.some()` was the trap: for "Poti Lighthouse" the Wikipedia
-   * article "Poti" — the CITY — shares the word "poti", so a
-   * some()-based check passes it and we happily pull five photos of a
-   * port town plus its location map. That is the exact bug.
+   * `.some()` was the original trap: "Poti Lighthouse" vs the article
+   * "Poti" — the CITY — share the word "poti", so a some()-based
+   * check passed and we pulled five photos of a port town plus its
+   * location map. Requiring all of them is what rejects that.
    *
-   * Requiring all of them ("lighthouse" must appear too) rejects the
-   * city article while still accepting the legitimate disambiguated
-   * forms we care about: "The Lacemaker (Vermeer)" contains
-   * "lacemaker", "Narikala Fortress" contains both words.
-   *
-   * Strict is the right default HERE specifically: this gate guards a
-   * five-image gallery, where one wrong article becomes five wrong
-   * pictures. The single-photo path can afford to be more forgiving
-   * because its mistake costs one image and it has a Google fallback
-   * behind it.
+   * Strict is right HERE specifically: this gate guards a five-image
+   * gallery, where one wrong article becomes five wrong pictures. The
+   * single-photo path can afford to be more forgiving — its mistake
+   * costs one image and it has a Google fallback behind it.
    */
   return subjectWords.every((w) => titleWords.has(w));
 }

@@ -1956,13 +1956,16 @@ function InterestPicker({
                 onClick={() => {
                   if (!active) onPick(it.id);
                 }}
-                className={`shrink-0 flex h-[92px] w-[78px] flex-col items-center justify-center gap-1.5 rounded-2xl border px-1.5 transition-smooth ${
+                /* 92 → 76 px tall (Beka 2026-10-11: "ცოტა სიმაღლეში
+                 * დააპატარავე"). Width and the 2-line clamp stay, so
+                 * the locale-overflow guarantee is unchanged. */
+                className={`shrink-0 flex h-[76px] w-[78px] flex-col items-center justify-center gap-1 rounded-2xl border px-1.5 transition-smooth ${
                   active
                     ? "border-primary/60 bg-primary/15 text-primary shadow-soft"
                     : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
                 }`}
               >
-                <span aria-hidden className="text-[28px] leading-none">
+                <span aria-hidden className="text-[24px] leading-none">
                   {it.emoji}
                 </span>
                 <span className="line-clamp-2 text-center text-[10px] font-semibold leading-tight">

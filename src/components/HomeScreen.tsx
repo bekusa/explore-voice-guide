@@ -558,7 +558,29 @@ export function HomeScreen() {
                * your own language", a search box that behaves worse
                * in Georgian than in English is the worst possible bug. */
               onInput={(e) => setHasQuery(e.currentTarget.value.trim().length > 0)}
-              onCompositionUpdate={(e) => setHasQuery(e.currentTarget.value.trim().length > 0)}
+              /* `e.data`, NOT `e.currentTarget.value`. Beka 2026-10-11:
+               * "ქართულად ვწერ — არ ყვითლდება; ინგლისურად პირველივე
+               * ასოს მერე ყვითლდება."
+               *
+               * I reproduced this against the live site: while a
+               * composition is in flight the element's own `.value` is
+               * still EMPTY — the half-formed syllable lives only on
+               * the event's `data`. My previous version read `.value`
+               * here, so it computed "".trim().length > 0 → false and
+               * the pill stayed grey until compositionend. Latin input
+               * never composes, so it lit up on the first keystroke:
+               * exactly the asymmetry he described.
+               *
+               * Concatenating both sources covers either behaviour —
+               * engines that leave `.value` empty during composition
+               * and engines that fill it in as they go. We only test
+               * for non-emptiness, so counting a character twice is
+               * harmless. */
+              onCompositionUpdate={(e) =>
+                setHasQuery(
+                  `${e.currentTarget.value ?? ""}${e.data ?? ""}`.trim().length > 0,
+                )
+              }
               onCompositionEnd={(e) => setHasQuery(e.currentTarget.value.trim().length > 0)}
               placeholder={t("home.searchPlaceholder")}
               enterKeyHint="search"

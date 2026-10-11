@@ -214,7 +214,7 @@ def clean_html(raw):
     return s.result()
 
 
-def plain(raw, limit=4000):
+def plain(raw, limit=200000):
     t = re.sub(r"<[^>]+>", " ", raw or "")
     t = html.unescape(t)
     return re.sub(r"\s+", " ", t).strip()[:limit]

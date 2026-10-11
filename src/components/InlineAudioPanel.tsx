@@ -188,14 +188,26 @@ export function InlineAudioPanel() {
         }
       }
 
-      // 30 s AbortController timeout (Beka 2026-06-11 audit). Azure
-      // Speech occasionally hangs the connection without returning —
-      // without a hard timeout the panel sits in "generating" state
-      // forever, blocking the play button. 30 s is generous: the
-      // p99 for a 1500-word script is under 8 s, so anything past
-      // 30 s is genuinely stuck.
+      /* Client timeout MUST outlast the server's. Beka 2026-10-11:
+       * "ვერ ჩავტვირთე მეტეხის ვოისი. Couldn't load the guide."
+       *
+       * This was 30 s while /api/tts waits 45 s (TTS_TIMEOUT_MS). So
+       * anything Azure took 30-45 s on produced the worst possible
+       * outcome: the browser walked away first, the user got the
+       * vague "try again" toast, and because the SERVER never got to
+       * return its classified error, `logError` never ran — the
+       * failure left no trace at all. That is exactly what we saw:
+       * his report, and zero rows in error_logs.
+       *
+       * 55 s lets the server always lose the race first, so its
+       * reason (auth / quota / timeout) reaches both the toast and
+       * the logs. The panel still cannot hang forever: this abort is
+       * the backstop for a connection that dies without any reply.
+       *
+       * Keep this ABOVE api.tts.ts's TTS_TIMEOUT_MS when editing
+       * either one. */
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30_000);
+      const timeout = setTimeout(() => controller.abort(), 55_000);
       let res: Response;
       try {
         res = await fetch("/api/tts", {
