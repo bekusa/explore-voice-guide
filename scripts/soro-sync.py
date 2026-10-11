@@ -409,11 +409,17 @@ def article_html(it, css):
 
 
 def card_html(it):
+    """Index card. Keep the <img class="th"> + <span class="tx"> wrapper in
+    step with the hand-built cards in blog.html — the index stylesheet lays
+    the card out as a flex row and a card without them collapses."""
     url = f"{SITE}/blog/{it['slug']}.html"
-    return (f'<a class="card" href="{url}"><span class="kicker">{esc(it["kicker"])}</span>'
+    img = (f'<img class="th" src="{esc(it["image"])}" alt="" width="104" '
+           f'height="104" loading="lazy" decoding="async">')
+    return (f'<a class="card" href="{url}">{img}<span class="tx">'
+            f'<span class="kicker">{esc(it["kicker"])}</span>'
             f'<h3>{esc(it["title"])}</h3><p>{esc(it["desc"])}</p>'
             f'<div class="m"><span>{reading_time(it["text"])} min read</span>'
-            f'<span>Published {esc(it["date"])}</span></div></a>')
+            f'<span>Published {esc(it["date"])}</span></div></span></a>')
 
 
 # ------------------------------------------------------------- index/sitemap
