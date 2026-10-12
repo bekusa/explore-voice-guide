@@ -25,6 +25,7 @@ import { Route as MapRouteImport } from './routes/map'
 import { Route as LanguageRouteImport } from './routes/language'
 import { Route as DestinationsRouteImport } from './routes/destinations'
 import { Route as DeleteAccountRouteImport } from './routes/delete-account'
+import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TripIdRouteImport } from './routes/trip.$id'
@@ -127,6 +128,11 @@ const DestinationsRoute = DestinationsRouteImport.update({
 const DeleteAccountRoute = DeleteAccountRouteImport.update({
   id: '/delete-account',
   path: '/delete-account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -248,6 +254,7 @@ const ApiAccountDeleteRoute = ApiAccountDeleteRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/blog': typeof BlogRoute
   '/delete-account': typeof DeleteAccountRoute
   '/destinations': typeof DestinationsRouteWithChildren
   '/language': typeof LanguageRoute
@@ -289,6 +296,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/blog': typeof BlogRoute
   '/delete-account': typeof DeleteAccountRoute
   '/destinations': typeof DestinationsRouteWithChildren
   '/language': typeof LanguageRoute
@@ -331,6 +339,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/blog': typeof BlogRoute
   '/delete-account': typeof DeleteAccountRoute
   '/destinations': typeof DestinationsRouteWithChildren
   '/language': typeof LanguageRoute
@@ -374,6 +383,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/blog'
     | '/delete-account'
     | '/destinations'
     | '/language'
@@ -415,6 +425,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/blog'
     | '/delete-account'
     | '/destinations'
     | '/language'
@@ -456,6 +467,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/blog'
     | '/delete-account'
     | '/destinations'
     | '/language'
@@ -498,6 +510,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRouteWithChildren
+  BlogRoute: typeof BlogRoute
   DeleteAccountRoute: typeof DeleteAccountRoute
   DestinationsRoute: typeof DestinationsRouteWithChildren
   LanguageRoute: typeof LanguageRoute
@@ -646,6 +659,13 @@ declare module '@tanstack/react-router' {
       path: '/delete-account'
       fullPath: '/delete-account'
       preLoaderRoute: typeof DeleteAccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -839,6 +859,7 @@ const DestinationsRouteWithChildren = DestinationsRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
+  BlogRoute: BlogRoute,
   DeleteAccountRoute: DeleteAccountRoute,
   DestinationsRoute: DestinationsRouteWithChildren,
   LanguageRoute: LanguageRoute,
