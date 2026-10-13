@@ -30,6 +30,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TripIdRouteImport } from './routes/trip.$id'
 import { Route as TShareIdRouteImport } from './routes/t.$shareId'
+import { Route as ExploreSplatRouteImport } from './routes/explore.$'
 import { Route as DestinationsSlugRouteImport } from './routes/destinations.$slug'
 import { Route as AuthUpgradeRouteImport } from './routes/auth.upgrade'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
@@ -153,6 +154,11 @@ const TripIdRoute = TripIdRouteImport.update({
 const TShareIdRoute = TShareIdRouteImport.update({
   id: '/t/$shareId',
   path: '/t/$shareId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExploreSplatRoute = ExploreSplatRouteImport.update({
+  id: '/explore/$',
+  path: '/explore/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DestinationsSlugRoute = DestinationsSlugRouteImport.update({
@@ -288,6 +294,7 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/upgrade': typeof AuthUpgradeRoute
   '/destinations/$slug': typeof DestinationsSlugRoute
+  '/explore/$': typeof ExploreSplatRoute
   '/t/$shareId': typeof TShareIdRoute
   '/trip/$id': typeof TripIdRoute
   '/api/account/delete': typeof ApiAccountDeleteRoute
@@ -330,6 +337,7 @@ export interface FileRoutesByTo {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/upgrade': typeof AuthUpgradeRoute
   '/destinations/$slug': typeof DestinationsSlugRoute
+  '/explore/$': typeof ExploreSplatRoute
   '/t/$shareId': typeof TShareIdRoute
   '/trip/$id': typeof TripIdRoute
   '/api/account/delete': typeof ApiAccountDeleteRoute
@@ -373,6 +381,7 @@ export interface FileRoutesById {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/upgrade': typeof AuthUpgradeRoute
   '/destinations/$slug': typeof DestinationsSlugRoute
+  '/explore/$': typeof ExploreSplatRoute
   '/t/$shareId': typeof TShareIdRoute
   '/trip/$id': typeof TripIdRoute
   '/api/account/delete': typeof ApiAccountDeleteRoute
@@ -417,6 +426,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/upgrade'
     | '/destinations/$slug'
+    | '/explore/$'
     | '/t/$shareId'
     | '/trip/$id'
     | '/api/account/delete'
@@ -459,6 +469,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/upgrade'
     | '/destinations/$slug'
+    | '/explore/$'
     | '/t/$shareId'
     | '/trip/$id'
     | '/api/account/delete'
@@ -501,6 +512,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/upgrade'
     | '/destinations/$slug'
+    | '/explore/$'
     | '/t/$shareId'
     | '/trip/$id'
     | '/api/account/delete'
@@ -541,6 +553,7 @@ export interface RootRouteChildren {
   ApiTripShareRoute: typeof ApiTripShareRoute
   ApiTtsRoute: typeof ApiTtsRoute
   AttractionIdRoute: typeof AttractionIdRoute
+  ExploreSplatRoute: typeof ExploreSplatRoute
   TShareIdRoute: typeof TShareIdRoute
   TripIdRoute: typeof TripIdRoute
   ApiAccountDeleteRoute: typeof ApiAccountDeleteRoute
@@ -694,6 +707,13 @@ declare module '@tanstack/react-router' {
       path: '/t/$shareId'
       fullPath: '/t/$shareId'
       preLoaderRoute: typeof TShareIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explore/$': {
+      id: '/explore/$'
+      path: '/explore/$'
+      fullPath: '/explore/$'
+      preLoaderRoute: typeof ExploreSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/destinations/$slug': {
@@ -890,6 +910,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTripShareRoute: ApiTripShareRoute,
   ApiTtsRoute: ApiTtsRoute,
   AttractionIdRoute: AttractionIdRoute,
+  ExploreSplatRoute: ExploreSplatRoute,
   TShareIdRoute: TShareIdRoute,
   TripIdRoute: TripIdRoute,
   ApiAccountDeleteRoute: ApiAccountDeleteRoute,
@@ -898,12 +919,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
