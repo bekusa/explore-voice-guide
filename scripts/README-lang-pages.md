@@ -8,8 +8,17 @@ chrome — section headings, table labels, FAQ wording, and the one sentence
 frame that wraps DB facts — which lives in a small strings module.
 
 Built so far: `en`, `ka`, `ru`, `de`, `nl`, `fr`, `zh-cn`, `pl`, `ar`, `es`,
-`fa`, `az`, `id`, `it`, `ja`, `ko`, `uk`, `bg`, `he`, `tr` — twenty languages,
-**4,012 indexable URLs**.
+`fa`, `az`, `id`, `it`, `ja`, `ko`, `uk`, `bg`, `he`, `tr`, plus (2026-10-13)
+`hr sr cs hu ro pt-br af da nb sv fi el hy vi ms sw th zh-tw hi mr bn ta te ur`
+— 44 languages, **6,610 URLs in sitemap-explore.xml**.
+
+The 2026-10-13 languages use `xstr.py` + `xstr_data.py` (one label table) instead
+of a hand-written module each. Their sentence frames are "Label: value" and
+"<Name>: question?", so no noun-gender or case tables are needed, and every
+page sits on the English slug (`USE_EN_SLUG`).
+
+After gen.py, run `lk_restyle.py` on the new files (see README-explore-design.md),
+then `link-langs.py`.
 
 ## Run
 

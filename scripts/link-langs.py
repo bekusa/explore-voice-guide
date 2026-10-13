@@ -268,6 +268,8 @@ def langmenu(byl,order,me):
 
 HDR=re.compile(r'(<header class="topbar"><a href="https://lokali\.travel" class="brand">Lokali</a>)'
                r'(.*?)(</header>)',re.S)
+# lk-design pages (lk_restyle.py) carry the menu inside the new topbar instead.
+HDR2=re.compile(r'(<div class="tb-right">)(.*?)(<a class="getapp")',re.S)
 CANON=re.compile(r'(<link rel="canonical" href="[^"]*">)')
 
 # The mount is slow enough that planning a few thousand rewrites can outrun the
@@ -285,7 +287,7 @@ for root,members in comp.items():
         want_alt='' if (len(order)<2 or NOIDX(m)) else blk
         have_alt='\n'.join(x.group(0) for x in re.finditer(r'<link rel="alternate"[^>]*>',h))
         menu=langmenu(byl,order,lang_of(m))
-        hm=HDR.search(h)
+        hm=HDR.search(h) or HDR2.search(h)
         if have_alt==want_alt and hm and hm.group(2)==menu: continue
         s=full(m)
         new=s
@@ -295,7 +297,8 @@ for root,members in comp.items():
         # that does not contain the page carrying it.
         if want_alt:
             new=CANON.sub(lambda mo: mo.group(1)+'\n'+blk,new,count=1)
-        new=HDR.sub(lambda mo: mo.group(1)+menu+mo.group(3),new,count=1)
+        if HDR.search(new): new=HDR.sub(lambda mo: mo.group(1)+menu+mo.group(3),new,count=1)
+        else: new=HDR2.sub(lambda mo: mo.group(1)+menu+mo.group(3),new,count=1)
         if new!=s: plan[m]=new
 # The mount writes slowly enough that a big plan can outrun the shell's time
 # limit. The pass is idempotent, so cap the batch and run again until it says 0.
