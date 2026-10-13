@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja" dir="ltr">
 <head>
+<meta name="lk-design" content="1">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#110c08">
@@ -74,155 +75,10 @@ if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t
 window.__toggleTheme=function(){var h=document.documentElement;var cur=h.getAttribute('data-theme');
 var isLight=cur?cur==='light':window.matchMedia('(prefers-color-scheme: light)').matches;
 var next=isLight?'dark':'light';h.setAttribute('data-theme',next);try{localStorage.setItem('lokali.theme',next)}catch(e){}};})();</script>
-<style>
-:root{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--fg);font-family:'Inter',ui-sans-serif,system-ui,sans-serif;line-height:1.65;-webkit-font-smoothing:antialiased}
-.page{max-width:620px;margin:0 auto;padding:0 20px 120px}
-a{color:var(--gold)}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 0 12px}
-.brand{font-family:'Playfair Display',ui-serif,Georgia,serif;font-size:21px;font-weight:600;color:var(--fg);text-decoration:none}
-.lang-dd{position:relative}
-.lang-dd summary{list-style:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);padding:6px 13px;border-radius:999px;border:1px solid var(--border);display:inline-flex;align-items:center;gap:6px}
-.lang-dd summary::-webkit-details-marker{display:none}
-.lang-dd summary::after{content:"\25BE";font-size:9px;opacity:.8}
-.lang-dd[open] summary{color:var(--fg);border-color:var(--gold)}
-.lang-menu{position:absolute;right:0;top:calc(100% + 6px);min-width:190px;max-height:320px;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:6px;z-index:60;box-shadow:0 14px 34px rgba(0,0,0,.55)}
-.lang-menu a{display:block;padding:8px 12px;border-radius:8px;font-size:13px;color:var(--body);text-decoration:none}
-.lang-menu a:hover{background:rgba(245,183,91,.1)}
-.lang-menu a.active{color:var(--gold);font-weight:600}
-nav.crumbs{font-size:12.5px;color:var(--muted);margin:2px 0 14px;line-height:1.9}
-nav.crumbs a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent}
-nav.crumbs a:hover{color:var(--gold);border-bottom-color:var(--gold)}
-nav.crumbs .sep{opacity:.5;margin:0 5px}
-.hero-img{position:relative;border-radius:20px;overflow:hidden;aspect-ratio:5/4;background:var(--card)}
-.hero-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.hero-img .ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(17,12,8,0) 0%,rgba(17,12,8,.35) 55%,rgba(17,12,8,.92) 100%)}
-.badge{position:absolute;left:14px;bottom:14px;display:inline-flex;align-items:center;gap:6px;background:rgba(17,12,8,.55);border:1px solid rgba(245,183,91,.4);color:var(--gold);text-transform:uppercase;letter-spacing:1.6px;font-size:10px;font-weight:700;padding:6px 11px;border-radius:999px;backdrop-filter:blur(6px)}
-h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-size:36px;line-height:1.08;margin-top:16px}
-.geoline{font-size:11.5px;color:var(--muted);letter-spacing:.4px;margin-top:8px}
-.answer{margin-top:14px;padding:15px 17px;background:rgba(245,183,91,.06);border:1px solid rgba(245,183,91,.28);border-left:3px solid var(--gold);border-radius:12px;font-size:15.5px;color:var(--fg);line-height:1.7}
-[dir="rtl"] .answer{border-left:1px solid rgba(245,183,91,.28);border-right:3px solid var(--gold)}
-.verified{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:11.5px;color:var(--muted)}
-.verified b{color:var(--green);font-weight:600}
-.verified a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
-.cta-row{display:flex;gap:10px;margin-top:16px}
-.cta{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#fdc357,#f67f2f);color:#110c08;border-radius:16px;padding:12px 18px;text-decoration:none;box-shadow:0 0 60px -16px #f5b75b8c}
-.cta .play{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:rgba(17,12,8,.15);color:#110c08}
-.cta .lbl{display:flex;flex-direction:column;line-height:1.1}
-.cta .lbl small{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;opacity:.75}
-.cta .lbl b{font-size:16px;font-weight:700}
-.sec{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-size:22px;color:var(--fg);margin:34px 0 12px}
-table.facts-tbl{width:100%;border-collapse:collapse;margin-top:6px;font-size:14px}
-table.facts-tbl th,table.facts-tbl td{text-align:start;padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
-table.facts-tbl th{color:var(--muted);font-weight:600;width:42%}
-table.facts-tbl td{color:var(--body)}
-table.facts-tbl tr:last-child th,table.facts-tbl tr:last-child td{border-bottom:none}
-.tour p{font-size:15.5px;color:var(--body);line-height:1.85;margin:0 0 15px}
-.chips .item{display:flex;align-items:flex-start;gap:9px;border-radius:14px;padding:10px 14px;font-size:13.5px;line-height:1.45;margin:0 0 9px;width:fit-content;max-width:100%}
-.chips .item svg{flex-shrink:0;margin-top:2px}
-.facts .item{background:rgba(29,158,117,.09);border:1px solid rgba(93,202,165,.3);color:#a7e6d1}
-.facts .item svg{color:var(--green)}
-.look .item{background:rgba(55,138,221,.09);border:1px solid rgba(133,183,235,.3);color:#bcd8f4}
-.look .item svg{color:var(--blue)}
-.tips .item{background:rgba(250,188,5,.08);border:1px solid rgba(250,188,5,.3);color:#ffc955}
-.tips .item svg{color:#f5b75b}
-.faq h3{font-size:15px;font-weight:600;color:var(--fg);margin:18px 0 7px;line-height:1.4}
-.faq h3:first-child{margin-top:4px}
-.faq p{font-size:14.5px;color:var(--body);line-height:1.75;margin:0}
-.nearby{display:grid;gap:8px;margin-top:6px}
-.nearby a{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 14px;text-decoration:none;color:var(--body);font-size:14px}
-.nearby a:hover{border-color:var(--gold);color:var(--gold)}
-.nearby .km{margin-inline-start:auto;color:var(--muted);font-size:12px;white-space:nowrap}
-.mapcard a{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;text-decoration:none;color:var(--fg);font-weight:600;font-size:14.5px}
-.mapcard a:hover{border-color:var(--gold)}
-.mapcard .ic{color:var(--gold);display:flex}
-.mapcard .arr{margin-inline-start:auto;color:var(--muted)}
-.map-note{font-size:12.5px;color:var(--muted);margin-top:8px}
-.srcbox{margin-top:8px;font-size:13px;color:var(--muted);line-height:1.8}
-.srcbox a{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(245,183,91,.35)}
-footer{border-top:1px solid var(--border);margin-top:40px;padding-top:20px;color:var(--muted);font-size:12.5px;line-height:1.9}
-footer a{color:var(--gold);text-decoration:none}
-.appbar-cta{position:fixed;bottom:20px;left:20px;right:20px;display:none;z-index:50}
-.appbar-cta.show{display:block}
-.appbar-cta .pill{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.4);max-width:600px;margin:0 auto}
-.appbar-cta a{display:flex;align-items:center;gap:8px;flex:1;text-decoration:none;color:var(--fg)}
-.appbar-cta svg{width:32px;height:32px;flex-shrink:0}
-.appbar-cta .lb{display:flex;flex-direction:column;line-height:1.1}
-.appbar-cta .lb small{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
-.appbar-cta .lb b{font-size:15px;font-weight:700;color:var(--gold)}
-.appbar-cta .x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:4px 8px;margin-inline-start:auto}
-
-/* ---- v2: theme system ---- */
-:root{--num:#f5b75b}
-@media (prefers-color-scheme: light){
-:root:not([data-theme="dark"]){--bg:#faf6ef;--fg:#1d1710;--muted:#7a6c5d;--border:#e5dccd;--gold:#b07818;--card:#ffffff;--body:#3a3128;--green:#1d7a54;--blue:#2563a8}
-:root:not([data-theme="dark"]) .hero-img .ov{background:linear-gradient(180deg,rgba(250,246,239,0) 0%,rgba(17,12,8,.05) 55%,rgba(17,12,8,.55) 100%)}
-:root:not([data-theme="dark"]) .facts .item{background:rgba(29,122,84,.07);color:#1d5c40}
-:root:not([data-theme="dark"]) .look .item{background:rgba(37,99,168,.06);color:#1e4f86}
-:root:not([data-theme="dark"]) .tips .item{background:rgba(176,120,24,.07);color:#8a5c10}
-:root:not([data-theme="dark"]) .answer{background:rgba(176,120,24,.06)}
-}
-[data-theme="light"]{--bg:#faf6ef;--fg:#1d1710;--muted:#7a6c5d;--border:#e5dccd;--gold:#b07818;--card:#ffffff;--body:#3a3128;--green:#1d7a54;--blue:#2563a8}
-[data-theme="light"] .hero-img .ov{background:linear-gradient(180deg,rgba(250,246,239,0) 0%,rgba(17,12,8,.05) 55%,rgba(17,12,8,.55) 100%)}
-[data-theme="light"] .facts .item{background:rgba(29,122,84,.07);color:#1d5c40}
-[data-theme="light"] .look .item{background:rgba(37,99,168,.06);color:#1e4f86}
-[data-theme="light"] .tips .item{background:rgba(176,120,24,.07);color:#8a5c10}
-[data-theme="light"] .answer{background:rgba(176,120,24,.06)}
-[data-theme="dark"]{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
-.tb-right{display:flex;align-items:center;gap:8px}
-.theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:999px;width:30px;height:30px;font-size:14px;cursor:pointer;line-height:1}
-.theme-btn:hover{color:var(--gold);border-color:var(--gold)}
-/* ---- eyebrow + toc ---- */
-.eyebrow{font-size:10.5px;font-weight:700;letter-spacing:2.4px;color:var(--gold);margin:34px 0 0;opacity:.85}
-.eyebrow + .sec{margin-top:2px}
-.toc{display:flex;gap:8px;overflow-x:auto;margin:20px -20px 0;padding:4px 20px 8px;position:sticky;top:0;background:var(--bg);z-index:40;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.toc::-webkit-scrollbar{display:none}
-.toc a{flex:none;font-size:12px;font-weight:600;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:6px 13px;text-decoration:none;white-space:nowrap}
-.toc a:hover{color:var(--gold);border-color:var(--gold)}
-section{scroll-margin-top:52px}
-/* ---- stats strip ---- */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px}
-.st{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 10px;text-align:center}
-.st b{display:block;font-family:'Playfair Display',ui-serif,Georgia,serif;font-size:19px;font-weight:600;color:var(--gold);letter-spacing:.3px}
-.st span{display:block;font-size:9.5px;line-height:1.35;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.6px}
-@media(max-width:430px){.stats{grid-template-columns:repeat(2,1fr)}}
-/* ---- masterpiece cards ---- */
-.mp-grid{display:grid;gap:10px;margin-top:6px}
-.mp-card{display:flex;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 16px}
-.mp-card:hover{border-color:var(--gold)}
-.mp-num{font-family:'Playfair Display',ui-serif,Georgia,serif;font-size:22px;color:var(--gold);opacity:.55;font-weight:500;line-height:1.2;flex:none}
-.mp-body h3{font-size:15.5px;font-weight:600;color:var(--fg);line-height:1.35}
-.mp-artist{font-size:12px;color:var(--gold);margin-top:1px}
-.mp-brief{font-size:13.5px;color:var(--body);line-height:1.6;margin-top:5px}
-.mp-meta{font-size:11.5px;color:var(--muted);margin-top:6px;letter-spacing:.2px}
-/* ---- all-50 table ---- */
-.all50{margin-top:14px;border:1px solid var(--border);border-radius:14px;overflow:hidden}
-.all50 summary{cursor:pointer;list-style:none;padding:13px 16px;font-size:14px;font-weight:600;color:var(--fg);display:flex;align-items:center;gap:8px}
-.all50 summary::-webkit-details-marker{display:none}
-.all50 summary::after{content:"\25BE";margin-inline-start:auto;color:var(--muted);font-size:11px}
-.all50[open] summary::after{content:"\25B4"}
-.all50[open] summary{border-bottom:1px solid var(--border);color:var(--gold)}
-.all50 .cnt{background:rgba(245,183,91,.14);color:var(--gold);font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px}
-.tbl-wrap{overflow-x:auto}
-table.w50{width:100%;border-collapse:collapse;font-size:12.5px;min-width:520px}
-table.w50 th{position:sticky;top:0;background:var(--card);color:var(--muted);font-weight:600;text-align:start;padding:9px 12px;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.7px}
-table.w50 td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--body);vertical-align:top}
-table.w50 tr:last-child td{border-bottom:none}
-table.w50 tr:nth-child(even) td{background:rgba(128,110,90,.045)}
-table.w50 td:first-child{font-weight:600;color:var(--fg)}
-table.w50 .era{white-space:nowrap;color:var(--muted)}
-table.w50 .room{color:var(--gold);font-size:11.5px;white-space:nowrap}
-
-</style>
+<link rel="stylesheet" href="/explore/assets/lk-1.css">
 </head>
 <body>
-<div class="page">
-<div class="topbar">
-<a href="https://lokali.travel" class="brand">Lokali</a>
-<div class="tb-right">
-<button class="theme-btn" onclick="__toggleTheme()" aria-label="theme">&#9681;</button>
-<details class="lang-dd">
+<header class="topbar"><div class="wrap"><a class="brand" href="https://lokali.travel/">Lokali</a><nav class="nav"><a href="https://lokali.travel/explore/index.html" class="on">Explore</a></nav><div class="tb-right"><details class="lang-dd">
 <summary>日本語</summary>
 <nav class="lang-menu">
 <a href="https://lokali.travel/explore/en/paris/louvre.html" hreflang="en" lang="en">English</a>
@@ -271,194 +127,22 @@ table.w50 .room{color:var(--gold);font-size:11.5px;white-space:nowrap}
 <a href="https://lokali.travel/explore/af/paris/louvre.html" hreflang="af" lang="af">Afrikaans</a>
 <a href="https://lokali.travel/explore/ka/paris/louvre.html" hreflang="ka" lang="ka">ქართული</a>
 </nav>
-</details>
-</div>
-</div>
+</details><a class="getapp" href="https://play.google.com/store/apps/details?id=app.lokali.travel&amp;utm_source=seo&amp;utm_medium=explore&amp;utm_campaign=topbar-ja" rel="nofollow" target="_blank">アプリをダウンロード</a></div></div></header>
+<main class="wrap">
 <nav class="crumbs" aria-label="Breadcrumb"><a href="https://lokali.travel">Lokali</a> <span class="sep">&rsaquo;</span> <a href="https://lokali.travel/explore/index.html">Explore</a> <span class="sep">&rsaquo;</span> <a href="https://lokali.travel/explore/en/country/france.html">France</a> <span class="sep">&rsaquo;</span> <a href="https://lokali.travel/explore/en/paris.html">Paris</a> <span class="sep">&rsaquo;</span> <span>ルーヴル美術館</span></nav>
-<div class="hero-img"><img src="https://lokali.travel/images/museums/louvre.jpg" alt="ルーヴル美術館, Paris" loading="eager" width="600" height="480"><div class="ov"></div><span class="badge">オーディオガイド</span></div>
-<h1>ルーヴル美術館</h1>
-<p class="geoline">48.8606&deg; N &middot; 2.3352&deg; E &middot; 美術館</p>
-<p class="answer">ルーヴル美術館は世界最大かつ最も来館者の多い美術館で、パリのセーヌ川沿いにある旧王宮に位置します。モナ・リザ、ミロのヴィーナス、サモトラケのニケなどの見どころには2〜4時間を見込みましょう。無料のLokaliオーディオガイドが45言語で、オフラインでも無料でその物語を語ります。</p>
+<section class="hero noimg"><span class="ov"></span><div class="hero-copy"><span class="badge">オーディオガイド</span><h1>ルーヴル美術館</h1><p class="geo">48.8606&deg; N &middot; 2.3352&deg; E &middot; 美術館</p><div class="btns"><a class="btn gold" href="https://lokali.travel" rel="nofollow" target="_blank"><span class="pl">&#9654;</span>Lokaliアプリを開く</a><a class="btn ghost" href="https://lokali.travel/explore/en/paris.html">Paris &rarr;</a></div></div></section>
+<div class="narrow" style="margin:0 auto">
+<p class="lead">ルーヴル美術館は世界最大かつ最も来館者の多い美術館で、パリのセーヌ川沿いにある旧王宮に位置します。モナ・リザ、ミロのヴィーナス、サモトラケのニケなどの見どころには2〜4時間を見込みましょう。無料のLokaliオーディオガイドが45言語で、オフラインでも無料でその物語を語ります。</p>
 <p class="verified">&#10003; <b>確認済み 09.2026</b> &middot; <a href="https://lokali.travel/about/editorial-process.html">ガイドの制作方法</a> &middot; <a href="https://lokali.travel/explore/ja/paris/louvre-light.html">&#9889; 軽量版</a></p>
-<div class="stats"><div class="st"><b>35&#8239;000</b><span>点の展示作品</span></div><div class="st"><b>380&#8239;000</b><span>点の収蔵品</span></div><div class="st"><b>72&#8239;735</b><span>m² の展示面積</span></div><div class="st"><b>8</b><span>の学芸部門</span></div></div>
-<div class="cta-row">
-<a href="https://lokali.travel" class="cta"><span class="play">&#9654;</span><span class="lbl"><small>はじめる</small><b>Lokaliアプリを開く</b></span></a>
+
 </div>
-<nav class="toc" aria-label="このページの内容"><a href="#masterpieces">名作とその展示場所</a><a href="#story">物語</a><a href="#facts">主な事実</a><a href="#tips">実用的なヒント</a><a href="#faq">よくある質問</a><a href="#map">地図で見る</a></nav>
-<section id="masterpieces">
-<p class="eyebrow">01</p>
-<h2 class="sec">名作とその展示場所</h2>
-<div class="mp-grid">
-<div class="mp-card"><span class="mp-num">01</span><div class="mp-body"><h3>モナ・リザ</h3><p class="mp-artist">Leonardo da Vinci</p><p class="mp-brief">レオナルドが描いたリザ・ゲラルディーニの肖像。移ろう表情によって世界で最も有名な絵画となった。</p><p class="mp-meta">1503-1519 &middot; <span translate="no">Denon Wing, Level 1, Salle 711</span></p></div></div>
-<div class="mp-card"><span class="mp-num">02</span><div class="mp-body"><h3>カナの婚礼</h3><p class="mp-artist">Paolo Veronese</p><p class="mp-brief">ヴェロネーゼによる壮大なヴェネツィアの宴会図。モナ・リザの真向かいに掛かる、ルーヴル最大の絵画。</p><p class="mp-meta">1562-1563 &middot; <span translate="no">Denon Wing, Level 1, Salle 711</span></p></div></div>
-<div class="mp-card"><span class="mp-num">03</span><div class="mp-body"><h3>ミロのヴィーナス</h3><p class="mp-brief">1820年にミロス島で発見されたヘレニズム期の大理石のアフロディーテ。失われた両腕こそが有名。</p><p class="mp-meta">150-125 BCE &middot; <span translate="no">Sully Wing, Level 0, Salle 345</span></p></div></div>
-<div class="mp-card"><span class="mp-num">04</span><div class="mp-body"><h3>サモトラケのニケ</h3><p class="mp-brief">Daru階段の上、船の舳先に舞い降りる翼のニケ。衣は海風に押しつけられ、体に張りついている。</p><p class="mp-meta">200-175 BCE &middot; <span translate="no">Denon Wing, Level 1, Salle 703</span></p></div></div>
-<div class="mp-card"><span class="mp-num">05</span><div class="mp-body"><h3>メデューズ号の筏</h3><p class="mp-artist">Théodore Géricault</p><p class="mp-brief">ジェリコーが描いた1816年の実際の難破スキャンダル。遺体安置所で死体を研究して描かれた記念碑的作品。</p><p class="mp-meta">1818-1819 &middot; <span translate="no">Denon Wing, Level 1, Salle 700</span></p></div></div>
-<div class="mp-card"><span class="mp-num">06</span><div class="mp-body"><h3>ナポレオンの戴冠式</h3><p class="mp-artist">Jacques-Louis David</p><p class="mp-brief">ダヴィッドによる壁一面の儀式画。ナポレオン自らがジョゼフィーヌに冠を授け、宮廷の一部は画家の創作である。</p><p class="mp-meta">1805-1807 &middot; <span translate="no">Denon Wing, Level 1, Salle 702</span></p></div></div>
-<div class="mp-card"><span class="mp-num">07</span><div class="mp-body"><h3>民衆を導く自由の女神</h3><p class="mp-artist">Eugène Delacroix</p><p class="mp-brief">ドラクロワの自由の女神が、1830年七月革命のバリケードを越えて三色旗を掲げる。</p><p class="mp-meta">1830 &middot; <span translate="no">Denon Wing, Level 1, Salle 700</span></p></div></div>
-<div class="mp-card"><span class="mp-num">08</span><div class="mp-body"><h3>アモルの接吻で蘇るプシュケ</h3><p class="mp-artist">Antonio Canova</p><p class="mp-brief">カノーヴァの大理石は口づけの直前の瞬間をとらえ、石が肌に見えるまで磨き上げられている。</p><p class="mp-meta">1787-1793 &middot; <span translate="no">Denon Wing, Level 0, Salle 403</span></p></div></div>
-<div class="mp-card"><span class="mp-num">09</span><div class="mp-body"><h3>レースを編む女</h3><p class="mp-artist">Johannes Vermeer</p><p class="mp-brief">フェルメールの最小にして最も凝縮された絵画。レース編みの枕に身をかがめる若い女性。</p><p class="mp-meta">1669-1670 &middot; <span translate="no">Richelieu Wing, Level 2, Salle 837</span></p></div></div>
-<div class="mp-card"><span class="mp-num">10</span><div class="mp-body"><h3>書記座像</h3><p class="mp-brief">古代エジプトの彩色石灰岩の役人像。象嵌された水晶の目は4,500年を経た今も生きているかのよう。</p><p class="mp-meta">2675-2545 BCE &middot; <span translate="no">Sully Wing, Level 1, Salle 635</span></p></div></div>
-<div class="mp-card"><span class="mp-num">11</span><div class="mp-body"><h3>タニスの大スフィンクス</h3><p class="mp-brief">ファラオの頭を持つ約5メートルの花崗岩のライオン。エジプト美術展示室の入口を守っている。</p><p class="mp-meta">2675-2545 BCE or 1900-1865 BCE &middot; <span translate="no">Sully Wing, Level -1, Salle 338</span></p></div></div>
-<div class="mp-card"><span class="mp-num">12</span><div class="mp-body"><h3>ハンムラビ法典</h3><p class="mp-brief">バビロンの法を楔形文字で刻んだ玄武岩の石碑。地上最古の法典のひとつ。</p><p class="mp-meta">1792-1750 BCE &middot; <span translate="no">Richelieu Wing, Level 0, Salle 227</span></p></div></div>
-</div>
-<details class="all50"><summary>全50点のハイライト(展示室番号つき) <span class="cnt">50</span></summary><div class="tbl-wrap"><table class="w50"><thead><tr><th>作品</th><th>作者</th><th>時代</th><th>展示室</th></tr></thead><tbody>
-<tr><td>Lady of Auxerre</td><td>Cretan, Greek Archaic period</td><td class="era">640-620 BCE</td><td class="room" translate="no">Denon Wing, Level -1, Salle 170</td></tr>
-<tr><td>Psyche Revived by Cupid&#39;s Kiss</td><td>Antonio Canova</td><td class="era">1787-1793</td><td class="room" translate="no">Denon Wing, Level 0, Salle 403</td></tr>
-<tr><td>The Dying Slave and The Rebellious Slave</td><td>Michelangelo</td><td class="era">1513-1515</td><td class="room" translate="no">Denon Wing, Level 0, Salle 403</td></tr>
-<tr><td>The Nymph of Fontainebleau</td><td>Benvenuto Cellini</td><td class="era">1542-1543</td><td class="room" translate="no">Denon Wing, Level 1, Escalier Mollien</td></tr>
-<tr><td>Liberty Leading the People</td><td>Eugène Delacroix</td><td class="era">1830</td><td class="room" translate="no">Denon Wing, Level 1, Salle 700</td></tr>
-<tr><td>The Death of Sardanapalus</td><td>Eugène Delacroix</td><td class="era">1827</td><td class="room" translate="no">Denon Wing, Level 1, Salle 700</td></tr>
-<tr><td>The Raft of the Medusa</td><td>Théodore Géricault</td><td class="era">1818-1819</td><td class="room" translate="no">Denon Wing, Level 1, Salle 700</td></tr>
-<tr><td>Grande Odalisque</td><td>Jean-Auguste-Dominique Ingres</td><td class="era">1814</td><td class="room" translate="no">Denon Wing, Level 1, Salle 702</td></tr>
-<tr><td>The Coronation of Napoleon</td><td>Jacques-Louis David</td><td class="era">1805-1807</td><td class="room" translate="no">Denon Wing, Level 1, Salle 702</td></tr>
-<tr><td>The Intervention of the Sabine Women</td><td>Jacques-Louis David</td><td class="era">1799</td><td class="room" translate="no">Denon Wing, Level 1, Salle 702</td></tr>
-<tr><td>The Oath of the Horatii</td><td>Jacques-Louis David</td><td class="era">1784-1785</td><td class="room" translate="no">Denon Wing, Level 1, Salle 702</td></tr>
-<tr><td>Winged Victory of Samothrace</td><td></td><td class="era">200-175 BCE</td><td class="room" translate="no">Denon Wing, Level 1, Salle 703</td></tr>
-<tr><td>The Galerie d&#39;Apollon</td><td>Charles Le Brun, Eugène Delacroix and others</td><td class="era">1661-1851</td><td class="room" translate="no">Denon Wing, Level 1, Salle 705</td></tr>
-<tr><td>The Battle of San Romano: The Counterattack of Micheletto da Cotignola</td><td>Paolo Uccello</td><td class="era">c. 1435-1440</td><td class="room" translate="no">Denon Wing, Level 1, Salle 708</td></tr>
-<tr><td>The Virgin and Child with Saint Anne</td><td>Leonardo da Vinci</td><td class="era">1503-1519</td><td class="room" translate="no">Denon Wing, Level 1, Salle 710</td></tr>
-<tr><td>Virgin of the Rocks</td><td>Leonardo da Vinci</td><td class="era">1483-1494</td><td class="room" translate="no">Denon Wing, Level 1, Salle 710</td></tr>
-<tr><td>Mona Lisa</td><td>Leonardo da Vinci</td><td class="era">1503-1519</td><td class="room" translate="no">Denon Wing, Level 1, Salle 711</td></tr>
-<tr><td>The Wedding Feast at Cana</td><td>Paolo Veronese</td><td class="era">1562-1563</td><td class="room" translate="no">Denon Wing, Level 1, Salle 711</td></tr>
-<tr><td>Portrait of Baldassare Castiglione</td><td>Raphael</td><td class="era">c. 1514-1515</td><td class="room" translate="no">Denon Wing, Level 1, Salle 712</td></tr>
-<tr><td>The Death of the Virgin</td><td>Caravaggio</td><td class="era">1601-1606</td><td class="room" translate="no">Denon Wing, Level 1, Salle 712</td></tr>
-<tr><td>The Clubfooted Boy</td><td>Jusepe de Ribera</td><td class="era">1642</td><td class="room" translate="no">Denon Wing, Level 1, Salle 718</td></tr>
-<tr><td>The Young Beggar</td><td>Bartolomé Esteban Murillo</td><td class="era">1647-1648</td><td class="room" translate="no">Denon Wing, Level 1, Salle 718</td></tr>
-<tr><td>Marly Horses</td><td>Guillaume Coustou</td><td class="era">1745</td><td class="room" translate="no">Richelieu Wing, Level -1, Cour Marly</td></tr>
-<tr><td>Code of Hammurabi</td><td></td><td class="era">1792-1750 BCE</td><td class="room" translate="no">Richelieu Wing, Level 0, Salle 227</td></tr>
-<tr><td>Victory Stele of Naram-Sin</td><td>Akkadian, Mesopotamia</td><td class="era">2254-2218 BCE</td><td class="room" translate="no">Richelieu Wing, Level 0, Salle 228</td></tr>
-<tr><td>Human-Headed Winged Bull</td><td>Neo-Assyrian</td><td class="era">721-705 BCE</td><td class="room" translate="no">Richelieu Wing, Level 0, Salle 229</td></tr>
-<tr><td>The Barberini Ivory</td><td>Byzantine, carved in Constantinople</td><td class="era">c. 525-550</td><td class="room" translate="no">Richelieu Wing, Level 1, Salle 501</td></tr>
-<tr><td>The Harbaville Triptych</td><td>Byzantine, Romanos group workshop in Constantinople</td><td class="era">c. 940-960</td><td class="room" translate="no">Richelieu Wing, Level 1, Salle 501</td></tr>
-<tr><td>Suger&#39;s Eagle</td><td>Goldsmiths working for Abbot Suger of Saint-Denis</td><td class="era">before 1147</td><td class="room" translate="no">Richelieu Wing, Level 1, Salle 502</td></tr>
-<tr><td>The Moneylender and His Wife</td><td>Quentin Metsys</td><td class="era">1514</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 814</td></tr>
-<tr><td>The Ship of Fools</td><td>Hieronymus Bosch</td><td class="era">c. 1490-1500</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 815</td></tr>
-<tr><td>The Madonna of Chancellor Rolin</td><td>Jan van Eyck</td><td class="era">c. 1430-1435</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 818</td></tr>
-<tr><td>Gabrielle d&#39;Estrées and One of Her Sisters</td><td>School of Fontainebleau</td><td class="era">1575-1600</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 824</td></tr>
-<tr><td>The Astronomer</td><td>Johannes Vermeer</td><td class="era">1668</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 837</td></tr>
-<tr><td>The Lacemaker</td><td>Johannes Vermeer</td><td class="era">1669-1670</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 837</td></tr>
-<tr><td>Bathsheba at Her Bath</td><td>Rembrandt</td><td class="era">1654</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 844</td></tr>
-<tr><td>Self-Portrait at the Easel</td><td>Rembrandt van Rijn</td><td class="era">1660</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 844</td></tr>
-<tr><td>Great Sphinx of Tanis</td><td></td><td class="era">2675-2545 BCE or 1900-1865 BCE</td><td class="room" translate="no">Sully Wing, Level -1, Salle 338</td></tr>
-<tr><td>Frieze of Archers</td><td>Achaemenid Persian</td><td class="era">522-486 BCE</td><td class="room" translate="no">Sully Wing, Level 0, Salle 307</td></tr>
-<tr><td>The Dendera Zodiac</td><td>Egyptian, late Ptolemaic period</td><td class="era">50 BCE</td><td class="room" translate="no">Sully Wing, Level 0, Salle 325</td></tr>
-<tr><td>Venus de Milo</td><td></td><td class="era">150-125 BCE</td><td class="room" translate="no">Sully Wing, Level 0, Salle 345</td></tr>
-<tr><td>Borghese Gladiator</td><td>Agasias of Ephesos</td><td class="era">100 BCE</td><td class="room" translate="no">Sully Wing, Level 0, Salle 348</td></tr>
-<tr><td>Seated Scribe</td><td></td><td class="era">2675-2545 BCE</td><td class="room" translate="no">Sully Wing, Level 1, Salle 635</td></tr>
-<tr><td>Sarcophagus of the Spouses</td><td>Etruscan, Cerveteri</td><td class="era">520-510 BCE</td><td class="room" translate="no">Sully Wing, Level 1, Salle 663</td></tr>
-<tr><td>The Cheat with the Ace of Diamonds</td><td>Georges de La Tour</td><td class="era">1636-1640</td><td class="room" translate="no">Sully Wing, Level 2, Salle 912</td></tr>
-<tr><td>The Magdalene with the Night Light</td><td>Georges de La Tour</td><td class="era">1642-1644</td><td class="room" translate="no">Sully Wing, Level 2, Salle 912</td></tr>
-<tr><td>Pilgrimage to the Island of Cythera</td><td>Jean-Antoine Watteau</td><td class="era">1717</td><td class="room" translate="no">Sully Wing, Level 2, Salle 917</td></tr>
-<tr><td>The Ray</td><td>Jean-Siméon Chardin</td><td class="era">1728</td><td class="room" translate="no">Sully Wing, Level 2, Salle 919</td></tr>
-<tr><td>Portrait of Monsieur Bertin</td><td>Jean-Auguste-Dominique Ingres</td><td class="era">1832</td><td class="room" translate="no">Sully Wing, Level 2, Salle 940</td></tr>
-<tr><td>The Turkish Bath</td><td>Jean-Auguste-Dominique Ingres</td><td class="era">1862</td><td class="room" translate="no">Sully Wing, Level 2, Salle 940</td></tr>
-</tbody></table></div></details>
-</section>
-<section id="story">
-<p class="eyebrow">02</p>
-<h2 class="sec">物語</h2>
-<div class="tour">
-<p>中庭の中央あたりで、少しの間だけ立ち止まってみましょう。耳を澄ませば、いくつもの異なる言語が同時に、あちこちから聞こえてくることに気づくはずです。旅行者たちのスーツケースの車輪が、敷き詰められた石畳の上でガラガラと乾いた音を立てながら通り過ぎていきます。どこか遠くの一角では、団体客を率いるガイドが、人混みの喧騒に負けないよう声を張り上げています。その中庭のちょうど中央には、ガラスと金属で組み上げられた巨大なピラミッドがそびえ立っています。周囲の三方を、この地に何世紀もの歳月をかけて築かれてきた古い宮殿の壁がぐるりと取り囲んでいます。その圧倒的な規模を頭と心でしっかり受け止めるには、少しばかり時間が必要でしょう。この中庭そのものが驚くほど広々としていて、それを取り巻く建物もまた、見渡す限り長く続いています。まずは頭上を見上げて、細かく彫刻が施された石造りのファサードをじっくりと眺めてください。それから今度は視線をゆっくりと下げ、足元近くにあるガラスの表面に目を向けてみましょう。あの重厚な石の壁は数百年という長い時間をかけて少しずつ積み上げられてきたものですが、目の前のガラスはずっと新しく、1980年代に加えられたものです。</p>
-<p>すべての物語は、実は地下から始まります。今から遡ることおよそ1190年頃、フィリップ2世、通称「尊厳王」と呼ばれた国王が、ちょうどこの場所に一つの要塞を築きました。当時のパリは今よりもずっと小さな街で、この要塞はセーヌ川を経由して街へと入り込む敵の侵入路を見張り、守る役割を担っていました。ところがその建物は、やがて長い年月のうちに人々の記憶から姿を消し、地上からは完全に見えなくなってしまいました。時代が下って1980年代、地下で行われていたある大規模な工事の最中に、考古学者たちが偶然その要塞の基礎部分を掘り当てたのです。おかげで今日では、来館者は階段を下りて実際にその場所まで足を運び、自分の目で確かめることができます。中世に築かれたこの礎石は、現在の美術館の地下部分にそのまま保存されています。ぜひその古い石にできるだけ近づいて、じっくりと観察してみてください。表面はざらざらと粗く、質感も荒々しく、色合いも頭上にそびえる後世の壁よりはるかに黒っぽく、時の重みを感じさせます。</p>
-<p>もっとも、この要塞はいつまでも要塞のままではありませんでした。その後に続いたフランスの歴代の王たちは、この同じ場所で何度も何度も増改築を繰り返していきました。敷地を少しずつ広げ、新たな翼棟を次々と付け加え、当初は防御のためだけに存在していた建物を、次第に権威と美を見せつけるための建物へと作り変えていったのです。1364年までには、この場所はすでに正式な王家の住居として使われるようになっており、その後も何世紀にもわたって拡張が続けられました。歴代の統治者はそれぞれ自分自身の時代の痕跡をこの場所に残したいと望んだため、結果として建物全体の様式は決して一つに統一されていません。建物の外側に沿ってゆっくり歩いてみれば、その積み重なった変化を自分の目ではっきりと確認できるはずです。ある部分のファサードは驚くほど簡素で重々しく、装飾もほとんど見られません。一方で別の部分には、優美な円柱や精緻に彫刻された人物像、そして奥行きのある深い窓枠が施されています。つまりこの宮殿は、実質的にはひとつの建物というより、非常に長い年月をかけて少しずつ継ぎ足され、つなぎ合わされてきた、数多くの建物の集合体なのです。</p>
-<p>そして、やがてフランス革命という大きな歴史のうねりがやってきました。1793年、この宮殿はついに一般市民に開かれた公共の美術館として、その扉を開きました。この年号は、最初に耳にしたときに感じるよりも、実ははるかに重大な意味を持っています。それまで王家の美術コレクションは、基本的には宮廷の人々だけのために大切に保管されており、一般の人々の目に触れる機会はごくまれにしか設けられていませんでした。しかしこの時をもって、ようやく普通の市民が自ら足を運んで館内に入り、かつては王たちだけが所有していた数々の絵画を、自分の目でじっくりと眺めることができるようになったのです。この画期的な考え方はやがてヨーロッパ全土へと広がっていきました。その後、各国に設立された多くの国立美術館も、後を追うようにして同じ運営のモデルを取り入れていきました。ですから、あなたが今こうしてここで入場の列に並んでいるとき、あなたは知らず知らずのうちに、もともと一つの政治的な行動として始まった大きな出来事の続きに、静かに加わっていることになるのです。美術というものは、王侯貴族だけのものではなく、広く民衆のものであると、この場所で高らかに宣言されたのでした。</p>
-<p>それに比べると、あのガラスのピラミッドはずっと新しい存在です。建築家イオ・ミン・ペイの手によって設計されたこの構造物は、1989年に正式に完成し、一般に公開されました。実を言うと、公開された当初は多くのパリ市民がこのピラミッドを快く思っていませんでした。ガラスと鋼鉄でできた現代的な構造物が、由緒ある王家の宮殿のすぐそばに置かれるのはふさわしくないと、口々に反対の声を上げていたのです。しかし時が経つにつれて、そうした不満の声は次第に静まっていきました。実際のところ、このピラミッドは美術館が抱えていた現実的な課題を見事に解決したからです。館内には、来館者を迷わせないはっきりとした一つの正面入口と、押し寄せる大勢の人混みをきちんと受け入れられる広々とした地下空間とが、どうしても必要だったのです。ぜひピラミッドのすぐそばまで近づいて、そのガラス板を通して向こう側を覗き込んでみてください。使われているガラスは特別に高い透明度を出すよう作られているため、その奥に広がる古い時代の石造りのファサードを、はっきりと見通すことができます。この美術館を訪れる人の多くは、たった一枚の絵画を目当てにやってきます。</p>
-<p>フランス語では「ラ・ジョコンド」とも呼ばれるあの有名な「モナ・リザ」は、巨匠レオナルド・ダ・ヴィンチによって描かれた作品です。実際に目にすると、多くの人が想像していたよりもずっと小さな絵であることに驚かされます。この絵は防弾ガラスの奥にしっかりと保護されて掛けられており、一日のうちほとんどどの時間帯を選んでも、絵の前には常に多くの人だかりができています。館内を移動するときは、地図に頼るよりも、掲げられている案内表示をたどっていくほうが分かりやすいでしょう。この絵が展示された部屋の中では、たいてい一本の行列が絵の正面に設けられた柵のところまでずっと伸びています。行列自体は思いのほか速く進んでいくので、あなたが柵の最前列に立っていられる時間は、実はそれほど長くありません。もっと後方から、混雑を避けてゆったりと眺めるという楽しみ方もできます。さて、ここからが多くの人を驚かせる興味深い話です。</p>
-<p>1911年、このモナ・リザは何者かによって盗まれるという事件が起きました。かつて美術館内でガラスの取り付け作業に従事していたことのある、あるイタリア人の職人が、壁からこの絵をひそかに外し、そのまま堂々と館の外へ持ち去ってしまったのです。この盗難は、しばらくのあいだ誰にも気づかれることがありませんでした。絵はなんと二年以上にもわたって行方が分からないままとなり、その間、多くの人々が壁にぽっかりと残された空白の場所をわざわざ見に訪れたと言われています。その後、絵は隣国イタリアで無事に発見され、ルーヴルへと返還されました。多くの歴史家たちは、実はこの劇的な盗難事件こそが、この絵を世界中で知られる存在へと押し上げた最大のきっかけだったのだと分析しています。事件が起きる以前も高く評価されてはいたものの、当時はまだ誰もが必ず見たいと熱望するような、そこまで特別な絵ではなかったのです。人気で二番目の座をめぐって、二つの彫刻作品が互いに競い合っています。</p>
-<p>「ミロのヴィーナス」は、両腕を失ったギリシャ時代の大理石でできた女性像です。1820年にこの像が地中から発掘された時点で、すでに両腕は失われ、見つかっていませんでした。もう一方の「サモトラケのニケ」は、まるで船の舳先のような形に彫られた台座の上に堂々と立っています。彼女もまた、頭部と両腕を欠いています。それでも不思議なことに、今まさに前へと進み続けているかのような躍動感を漂わせています。身にまとう衣は、まるで強い風がその布地を体にぴったりと押し付けているかのように、生き生きと彫り込まれています。その衣の細かなひだは、正面からだけでなく、ぜひ横に回り込んで側面からもじっくり眺めてみてください。この美術館の収蔵品は、ヨーロッパという枠をはるかに超えて世界中に広がっています。</p>
-<p>古代エジプトを扱う数々の展示室には、棺や彫像、そして当時の人々が実際に使っていた日用品などが数多く並んでいます。さらに、古代オリエント地域の文化を紹介する展示室も設けられています。加えて、ギリシャやローマの彫刻作品、イスラム世界の美術品、フランスの家具や優美な装飾品なども幅広く所蔵されています。改修工事のために一時的に閉鎖されている展示室もありますので、訪れる予定の日にどの部屋が実際に開いているのか、あらかじめ確認しておくとよいでしょう。絵画の収蔵範囲は19世紀半ばあたりまでで区切られており、それより後の時代の美術作品は、パリ市内にある別の美術館へと収められています。つまりこの場所は、実際には単一の美術館というよりも、一つの屋根、一枚の入場券、そして果てしなく長く続く廊下のネットワークを共有しながら緩やかにつながった、複数の美術館の集合体だと考えるほうが正しいのかもしれません。古代オリエントの展示室の中には、わざわざ足を延ばしてでも見る価値のある品が一つあります。それが「ハンムラビ法典」の石碑です。ステラという言葉は、垂直に立てて置かれた、表面に文字や図像が彫刻された石の板のことを指します。</p>
-<p>この石碑には、古代メソポタミアの時代に定められた実に長大な法律の一覧が、くさび形をした文字によって石の表面に丹念に刻み込まれています。その内容は、交易のルールから家族に関わる問題、財産の扱い、さらには犯罪に対する罰則にまで及んでいます。ぜひ石碑のすぐそばまで近づいて、その最上部に目を向けてみてください。椅子に腰かけた神とおぼしき人物が、直立する王に対して権威の象徴となる品を手渡している場面が彫られています。彫りそのものは決して深くありませんが、それでも細部の表現は今なお驚くほど鮮明に見て取ることができます。この壮大な建物も、実は常に美術品でいっぱいだったわけではありません。第二次世界大戦の最中、館の職員たちは特に価値の高い作品を急いで丁寧に梱包し、パリの街の外へと運び出しました。</p>
-<p>数々の絵画はトラックの荷台に積まれて運搬され、都市部から遠く離れた田舎の邸宅にひそかに隠されました。移動させるにはあまりにも大きすぎる彫刻作品については、元の場所に据え置いたまま、周囲を厳重に保護する措置が取られました。長期間にわたって、本来なら作品が飾られているはずの展示室には、空っぽの額縁と土のうだけが並ぶという異様な光景が広がっていたのです。館の外へと避難していたそれらの作品は、戦争が終わった後、無事にすべて元の場所へと戻ってきました。ある展示室が混雑していると感じたときには、ぜひこの歴史を思い出してみてください。目の前の人混みは、実は歓迎すべき良い兆候でもあるのです。ここで、この美術館の規模についてひとつ心に留めておいてほしいことがあります。とてもではありませんが、この膨大な収蔵品のすべてを一度の訪問だけで見終えることはできません。</p>
-<p>展示室は総延長で数キロメートルにも及び、たとえ強い決意を持ってすべての部屋を歩いて回ろうとしても、実際には何日もかかってしまうでしょう。そしてそれを無理に実行しようとすると、結局は体力ばかりが消耗し、心も疲れ果て、決して楽しい思い出にはなりません。それよりも、あらかじめ本当に見たい三つか四つの作品だけを選んでおくことをおすすめします。それらの場所へと焦らずゆっくり歩いていき、その途中でふと目に留まったものがあれば、遠慮なく自由に立ち止まってみてください。この美術館で過ごす本当に素晴らしい時間というものは、たいてい計画とは関係なく、たまたま入り込んだ静かな展示室で、当初の予定よりもずっと長く腰を落ち着けてしまうことから生まれるものなのです。それでは、今あなたが立っているまさにその場所で、もう一度ゆっくりと深呼吸をしてみましょう。あなたを取り囲むこの宮殿は、今もなお、はるか昔の中庭や、どこまでも長く続く翼棟の面影をしっかりと保ち続けています。</p>
-<p>かつて歴代の国王たちはこの場所で食事を楽しみ、兵士たちは誇りを持ってこれらの壁を守り続け、画家たちはここに自分自身のアトリエを構えて創作に励んでいました。そして今、その扉は入場券さえ持っていれば、誰にでも等しく開かれています。この館内に収められた数々の品々は、遠くエジプトやギリシャ、メソポタミア、そしてヨーロッパの半分もの地域から、それぞれ長い旅路をたどって、最終的にこのひとつの場所へとたどり着いたのです。もう一度だけ、古い石とガラスが静かに寄り添うその光景を、目に焼き付けておきましょう。そうしたら、いよいよ中へと足を踏み入れて、あなた自身が心から愛おしいと感じられるものを、ひとつ見つけ出してください。</p>
-</div>
-</section>
-<section id="facts">
-<p class="eyebrow">03</p>
-<h2 class="sec">来館情報</h2>
-<table class="facts-tbl"><tbody>
-<tr><th>所要時間</th><td>2〜4時間（見どころ）</td></tr>
-<tr><th>Lokali</th><td>オーディオガイド &middot; 8 min &middot; 45 &#127760;</td></tr>
-<tr><th>美術館</th><td>Paris, France</td></tr>
-<tr><th>M&eacute;tro</th><td><span translate="no">Palais-Royal &ndash; Mus&eacute;e du Louvre (1, 7)</span></td></tr>
-<tr><th><span translate="no">GPS</span></th><td><span translate="no">48.8606, 2.3352</span></td></tr>
-<tr><th>公式サイト</th><td><a href="https://www.louvre.fr/en" rel="noopener nofollow" target="_blank">louvre.fr</a></td></tr>
-</tbody></table>
-</section>
-<section id="keyfacts">
-<p class="eyebrow">04</p>
-<h2 class="sec">主な事実</h2>
-<div class="chips facts">
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>1190年頃からこの場所には要塞が建っていた。</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>この宮殿は1793年に公共の美術館として開館した。</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>建築家イオ・ミン・ペイによるガラスのピラミッドは1989年に完成した。</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>モナ・リザは1911年に盗まれた。</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>ハンムラビ法典の石碑は古代メソポタミアのものである。</span></div>
-</div>
-</section>
-<section id="look">
-<p class="eyebrow">05</p>
-<h2 class="sec">注目ポイント</h2>
-<div class="chips look">
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>サモトラケのニケの衣に彫られた、風に押された襞。</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>かつてミロのヴィーナスの腕が付いていた、折れた接合部分。</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>石碑の上部に彫られた、座った人物像。</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>ピラミッドのガラス越しに見える、古い石造りのファサード。</span></div>
-</div>
-</section>
-<section id="tips">
-<p class="eyebrow">06</p>
-<h2 class="sec">実用的なヒント</h2>
-<div class="chips tips">
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>夏はすべての来館者に予約が必要なので、来館前にオンラインで入場時間枠を予約しましょう。</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>ルートを計画する前に、美術館の公式サイトで展示室の閉鎖情報を確認しましょう。</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>一度外に出ると再入場はできないので、見たいものは一度の訪問ですべて見ておきましょう。</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>地下にある中世の礎石を見に行きましょう。</span></div>
-</div>
-</section>
-<section id="faq">
-<p class="eyebrow">07</p>
-<h2 class="sec">よくある質問</h2>
-<div class="faq">
-<h3>ルーヴルにはどのくらいの時間が必要ですか？</h3>
-<p>見どころには2〜4時間を見込みましょう。初めての来館なら通常3時間以上は必要です。すべて見るには何日もかかるため、いくつかの翼を選んでゆっくり歩きましょう。Lokaliの無料8分オーディオガイドが道中の物語を語ります。</p>
-<h3>ルーヴル美術館で見逃せないものは?</h3>
-<p>まずは「モナ・リザ」(Denon Wing, Salle 711)、Daru階段の上の「サモトラケのニケ」、そして「ミロのヴィーナス」から。あとはこのページの表から選びましょう。各作品には翼と展示室が記載されているので、数分で自分だけのルートが作れます。</p>
-<h3>ルーヴル美術館の無料オーディオガイドはありますか？</h3>
-<p>はい。Lokaliアプリがルーヴル美術館について45言語で無料で語ります — 歴史、注目ポイント、実用的なヒント。ダウンロード後はオフラインでも使えます。</p>
-<h3>Lokaliは美術館のオーディオガイドとどう違いますか？</h3>
-<p>美術館では現地で9言語の音声機器を貸し出しています。Lokaliはあなた自身のスマホで45言語、無料で動作し、ダウンロード後はオフラインでも使え、到着前から聴くこともできます。</p>
-</div>
-</section>
-<section id="near">
-<p class="eyebrow">08</p>
-<h2 class="sec">パリのその他の見どころ</h2>
-<div class="nearby">
-<a href="https://lokali.travel/explore/en/paris/musée-dorsay.html">Musée d&#39;Orsay<span class="km">0.6 km</span></a>
-<a href="https://lokali.travel/explore/en/paris/sainte-chapelle.html">Sainte-Chapelle<span class="km">1.0 km</span></a>
-<a href="https://lokali.travel/explore/en/paris/notre-dame-cathedral.html">Notre-Dame Cathedral<span class="km">1.4 km</span></a>
-<a href="https://lokali.travel/explore/en/paris/latin-quarter.html">Latin Quarter<span class="km">1.4 km</span></a>
-<a href="https://lokali.travel/explore/en/paris/montmartre.html">Montmartre<span class="km">3.0 km</span></a>
-<a href="https://lokali.travel/explore/en/paris/sacré-cœur-basilica.html">Sacré-Cœur Basilica<span class="km">3.0 km</span></a>
-</div>
-<p class="map-note" style="margin-top:10px"><a href="https://lokali.travel/explore/en/paris.html">パリの無料オーディオガイド一覧 &rsaquo;</a></p>
-</section>
-<section id="map">
-<p class="eyebrow">09</p>
-<h2 class="sec">地図で見る</h2>
-<div class="mapcard"><a href="https://www.google.com/maps/search/?api=1&query=48.8606%2C2.3352" target="_blank" rel="noopener noreferrer"><span class="ic"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2.9 6.4-6.4 2.9 2.9-6.4z"/></svg></span>Googleマップで開く<span class="arr">&rsaquo;</span></a></div>
-<p class="map-note">現在地からルーヴル美術館への道順を開きます。</p>
-</section>
-<section id="ref">
-<p class="eyebrow">10</p>
-<h2 class="sec">参照</h2>
-<div class="srcbox">ルーヴル美術館: <a href="https://en.wikipedia.org/wiki/Louvre" rel="nofollow noopener" target="_blank">Wikipedia</a> &middot; <a href="https://www.wikidata.org/wiki/Q19675" rel="nofollow noopener" target="_blank">Wikidata</a> &middot; <a href="https://www.louvre.fr/en" rel="nofollow noopener" target="_blank">公式サイト</a></div>
-</section>
+
+<section class="apppanel noimg"><div class="ap-copy"><span class="eyebrow">無料 &middot; 45言語 &middot; オフライン</span><h3>ガイドを<em>持ち歩こう</em></h3><p>旅の前にダウンロード。オフラインで使え、無料で、あなたの言語で案内します。</p><div class="btns"><a class="btn gold" href="https://lokali.travel" rel="nofollow" target="_blank"><span class="pl">&#9654;</span>Lokaliアプリを開く</a><a class="btn ghost" href="https://lokali.travel/">ブラウザで試す</a></div></div></section>
 <footer>
 <a href="https://lokali.travel/explore/index.html">すべての都市</a> &middot; <a href="https://lokali.travel/explore/en/country/france.html">フランスのオーディオガイド</a> &middot; <a href="https://lokali.travel/explore/en/paris.html">Paris</a> &middot; <a href="https://lokali.travel/explore/ja/paris/louvre-light.html">軽量版</a> &middot; <a href="https://lokali.travel/about/editorial-process.html">編集プロセス</a>
 </footer>
+</main>
 <div class="appbar-cta" id="gpb"><div class="pill"><a href="https://play.google.com/store/apps/details?id=app.lokali.travel&amp;utm_source=seo&amp;utm_medium=explore&amp;utm_campaign=ja&amp;utm_content=louvre" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 48 48" width="24" height="24" style="flex-shrink:0"><path d="M24,24 L12,35 L12,13 Z" fill="#00B0FF"/><path d="M24,24 L36,35 L36,13 Z" fill="#00E676"/><path d="M24,24 L12,13 L24,3 Z" fill="#FFC400"/><path d="M24,24 L36,13 L24,3 Z" fill="#FF3D57"/></svg><span class="lb"><small>Google Play</small><b>アプリをダウンロード</b></span></a><button class="x" aria-label="Dismiss" onclick="try{localStorage.setItem('lokali.playbanner.dismissed.v1','1')}catch(e){};document.getElementById('gpb').classList.remove('show')">&#10005;</button></div></div><script>(function(){var d=false;try{d=localStorage.getItem("lokali.playbanner.dismissed.v1")==="1"}catch(e){}if(!window.Capacitor&&!d){document.getElementById("gpb").classList.add("show")}})();</script>
-</div>
-<div id="lk-install" style="position:fixed;left:0;right:0;bottom:0;z-index:9999;display:flex;align-items:center;gap:12px;padding:11px 16px;background:rgba(17,12,8,.97);border-top:1px solid #352c25;backdrop-filter:blur(10px);font-family:Inter,system-ui,sans-serif"><span style="flex:1;color:#e7ddcf;font-size:14px;line-height:1.35">このガイドを聴く — 無料、あなたの言語で。</span><a href="https://play.google.com/store/apps/details?id=app.lokali.travel&amp;utm_source=seo&amp;utm_medium=explore&amp;utm_campaign=ja&amp;utm_content=louvre" rel="nofollow" style="flex:none;background:linear-gradient(103deg,#f5d38a,#d4a03c);color:#1a1206;font-weight:700;font-size:14px;text-decoration:none;padding:9px 16px;border-radius:100px;white-space:nowrap">アプリを入手</a><button onclick="this.parentNode.remove()" aria-label="close" style="flex:none;background:none;border:none;color:#6f6252;font-size:19px;line-height:1;cursor:pointer;padding:0 2px">&times;</button></div><script>if(window.Capacitor){var e=document.getElementById("lk-install");e&&e.remove();}</script></body>
+
+</body>
 </html>

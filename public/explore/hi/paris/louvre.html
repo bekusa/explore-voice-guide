@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="hi" dir="ltr">
 <head>
+<meta name="lk-design" content="1">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#110c08">
@@ -74,155 +75,10 @@ if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t
 window.__toggleTheme=function(){var h=document.documentElement;var cur=h.getAttribute('data-theme');
 var isLight=cur?cur==='light':window.matchMedia('(prefers-color-scheme: light)').matches;
 var next=isLight?'dark':'light';h.setAttribute('data-theme',next);try{localStorage.setItem('lokali.theme',next)}catch(e){}};})();</script>
-<style>
-:root{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--fg);font-family:'Inter',ui-sans-serif,system-ui,sans-serif;line-height:1.65;-webkit-font-smoothing:antialiased}
-.page{max-width:620px;margin:0 auto;padding:0 20px 120px}
-a{color:var(--gold)}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 0 12px}
-.brand{font-family:'Playfair Display',ui-serif,Georgia,serif;font-size:21px;font-weight:600;color:var(--fg);text-decoration:none}
-.lang-dd{position:relative}
-.lang-dd summary{list-style:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);padding:6px 13px;border-radius:999px;border:1px solid var(--border);display:inline-flex;align-items:center;gap:6px}
-.lang-dd summary::-webkit-details-marker{display:none}
-.lang-dd summary::after{content:"\25BE";font-size:9px;opacity:.8}
-.lang-dd[open] summary{color:var(--fg);border-color:var(--gold)}
-.lang-menu{position:absolute;right:0;top:calc(100% + 6px);min-width:190px;max-height:320px;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:6px;z-index:60;box-shadow:0 14px 34px rgba(0,0,0,.55)}
-.lang-menu a{display:block;padding:8px 12px;border-radius:8px;font-size:13px;color:var(--body);text-decoration:none}
-.lang-menu a:hover{background:rgba(245,183,91,.1)}
-.lang-menu a.active{color:var(--gold);font-weight:600}
-nav.crumbs{font-size:12.5px;color:var(--muted);margin:2px 0 14px;line-height:1.9}
-nav.crumbs a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent}
-nav.crumbs a:hover{color:var(--gold);border-bottom-color:var(--gold)}
-nav.crumbs .sep{opacity:.5;margin:0 5px}
-.hero-img{position:relative;border-radius:20px;overflow:hidden;aspect-ratio:5/4;background:var(--card)}
-.hero-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.hero-img .ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(17,12,8,0) 0%,rgba(17,12,8,.35) 55%,rgba(17,12,8,.92) 100%)}
-.badge{position:absolute;left:14px;bottom:14px;display:inline-flex;align-items:center;gap:6px;background:rgba(17,12,8,.55);border:1px solid rgba(245,183,91,.4);color:var(--gold);text-transform:uppercase;letter-spacing:1.6px;font-size:10px;font-weight:700;padding:6px 11px;border-radius:999px;backdrop-filter:blur(6px)}
-h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-size:36px;line-height:1.08;margin-top:16px}
-.geoline{font-size:11.5px;color:var(--muted);letter-spacing:.4px;margin-top:8px}
-.answer{margin-top:14px;padding:15px 17px;background:rgba(245,183,91,.06);border:1px solid rgba(245,183,91,.28);border-left:3px solid var(--gold);border-radius:12px;font-size:15.5px;color:var(--fg);line-height:1.7}
-[dir="rtl"] .answer{border-left:1px solid rgba(245,183,91,.28);border-right:3px solid var(--gold)}
-.verified{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:11.5px;color:var(--muted)}
-.verified b{color:var(--green);font-weight:600}
-.verified a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
-.cta-row{display:flex;gap:10px;margin-top:16px}
-.cta{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#fdc357,#f67f2f);color:#110c08;border-radius:16px;padding:12px 18px;text-decoration:none;box-shadow:0 0 60px -16px #f5b75b8c}
-.cta .play{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:rgba(17,12,8,.15);color:#110c08}
-.cta .lbl{display:flex;flex-direction:column;line-height:1.1}
-.cta .lbl small{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;opacity:.75}
-.cta .lbl b{font-size:16px;font-weight:700}
-.sec{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-size:22px;color:var(--fg);margin:34px 0 12px}
-table.facts-tbl{width:100%;border-collapse:collapse;margin-top:6px;font-size:14px}
-table.facts-tbl th,table.facts-tbl td{text-align:start;padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
-table.facts-tbl th{color:var(--muted);font-weight:600;width:42%}
-table.facts-tbl td{color:var(--body)}
-table.facts-tbl tr:last-child th,table.facts-tbl tr:last-child td{border-bottom:none}
-.tour p{font-size:15.5px;color:var(--body);line-height:1.85;margin:0 0 15px}
-.chips .item{display:flex;align-items:flex-start;gap:9px;border-radius:14px;padding:10px 14px;font-size:13.5px;line-height:1.45;margin:0 0 9px;width:fit-content;max-width:100%}
-.chips .item svg{flex-shrink:0;margin-top:2px}
-.facts .item{background:rgba(29,158,117,.09);border:1px solid rgba(93,202,165,.3);color:#a7e6d1}
-.facts .item svg{color:var(--green)}
-.look .item{background:rgba(55,138,221,.09);border:1px solid rgba(133,183,235,.3);color:#bcd8f4}
-.look .item svg{color:var(--blue)}
-.tips .item{background:rgba(250,188,5,.08);border:1px solid rgba(250,188,5,.3);color:#ffc955}
-.tips .item svg{color:#f5b75b}
-.faq h3{font-size:15px;font-weight:600;color:var(--fg);margin:18px 0 7px;line-height:1.4}
-.faq h3:first-child{margin-top:4px}
-.faq p{font-size:14.5px;color:var(--body);line-height:1.75;margin:0}
-.nearby{display:grid;gap:8px;margin-top:6px}
-.nearby a{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 14px;text-decoration:none;color:var(--body);font-size:14px}
-.nearby a:hover{border-color:var(--gold);color:var(--gold)}
-.nearby .km{margin-inline-start:auto;color:var(--muted);font-size:12px;white-space:nowrap}
-.mapcard a{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;text-decoration:none;color:var(--fg);font-weight:600;font-size:14.5px}
-.mapcard a:hover{border-color:var(--gold)}
-.mapcard .ic{color:var(--gold);display:flex}
-.mapcard .arr{margin-inline-start:auto;color:var(--muted)}
-.map-note{font-size:12.5px;color:var(--muted);margin-top:8px}
-.srcbox{margin-top:8px;font-size:13px;color:var(--muted);line-height:1.8}
-.srcbox a{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(245,183,91,.35)}
-footer{border-top:1px solid var(--border);margin-top:40px;padding-top:20px;color:var(--muted);font-size:12.5px;line-height:1.9}
-footer a{color:var(--gold);text-decoration:none}
-.appbar-cta{position:fixed;bottom:20px;left:20px;right:20px;display:none;z-index:50}
-.appbar-cta.show{display:block}
-.appbar-cta .pill{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.4);max-width:600px;margin:0 auto}
-.appbar-cta a{display:flex;align-items:center;gap:8px;flex:1;text-decoration:none;color:var(--fg)}
-.appbar-cta svg{width:32px;height:32px;flex-shrink:0}
-.appbar-cta .lb{display:flex;flex-direction:column;line-height:1.1}
-.appbar-cta .lb small{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
-.appbar-cta .lb b{font-size:15px;font-weight:700;color:var(--gold)}
-.appbar-cta .x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:4px 8px;margin-inline-start:auto}
-
-/* ---- v2: theme system ---- */
-:root{--num:#f5b75b}
-@media (prefers-color-scheme: light){
-:root:not([data-theme="dark"]){--bg:#faf6ef;--fg:#1d1710;--muted:#7a6c5d;--border:#e5dccd;--gold:#b07818;--card:#ffffff;--body:#3a3128;--green:#1d7a54;--blue:#2563a8}
-:root:not([data-theme="dark"]) .hero-img .ov{background:linear-gradient(180deg,rgba(250,246,239,0) 0%,rgba(17,12,8,.05) 55%,rgba(17,12,8,.55) 100%)}
-:root:not([data-theme="dark"]) .facts .item{background:rgba(29,122,84,.07);color:#1d5c40}
-:root:not([data-theme="dark"]) .look .item{background:rgba(37,99,168,.06);color:#1e4f86}
-:root:not([data-theme="dark"]) .tips .item{background:rgba(176,120,24,.07);color:#8a5c10}
-:root:not([data-theme="dark"]) .answer{background:rgba(176,120,24,.06)}
-}
-[data-theme="light"]{--bg:#faf6ef;--fg:#1d1710;--muted:#7a6c5d;--border:#e5dccd;--gold:#b07818;--card:#ffffff;--body:#3a3128;--green:#1d7a54;--blue:#2563a8}
-[data-theme="light"] .hero-img .ov{background:linear-gradient(180deg,rgba(250,246,239,0) 0%,rgba(17,12,8,.05) 55%,rgba(17,12,8,.55) 100%)}
-[data-theme="light"] .facts .item{background:rgba(29,122,84,.07);color:#1d5c40}
-[data-theme="light"] .look .item{background:rgba(37,99,168,.06);color:#1e4f86}
-[data-theme="light"] .tips .item{background:rgba(176,120,24,.07);color:#8a5c10}
-[data-theme="light"] .answer{background:rgba(176,120,24,.06)}
-[data-theme="dark"]{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
-.tb-right{display:flex;align-items:center;gap:8px}
-.theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:999px;width:30px;height:30px;font-size:14px;cursor:pointer;line-height:1}
-.theme-btn:hover{color:var(--gold);border-color:var(--gold)}
-/* ---- eyebrow + toc ---- */
-.eyebrow{font-size:10.5px;font-weight:700;letter-spacing:2.4px;color:var(--gold);margin:34px 0 0;opacity:.85}
-.eyebrow + .sec{margin-top:2px}
-.toc{display:flex;gap:8px;overflow-x:auto;margin:20px -20px 0;padding:4px 20px 8px;position:sticky;top:0;background:var(--bg);z-index:40;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.toc::-webkit-scrollbar{display:none}
-.toc a{flex:none;font-size:12px;font-weight:600;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:6px 13px;text-decoration:none;white-space:nowrap}
-.toc a:hover{color:var(--gold);border-color:var(--gold)}
-section{scroll-margin-top:52px}
-/* ---- stats strip ---- */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px}
-.st{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 10px;text-align:center}
-.st b{display:block;font-family:'Playfair Display',ui-serif,Georgia,serif;font-size:19px;font-weight:600;color:var(--gold);letter-spacing:.3px}
-.st span{display:block;font-size:9.5px;line-height:1.35;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.6px}
-@media(max-width:430px){.stats{grid-template-columns:repeat(2,1fr)}}
-/* ---- masterpiece cards ---- */
-.mp-grid{display:grid;gap:10px;margin-top:6px}
-.mp-card{display:flex;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 16px}
-.mp-card:hover{border-color:var(--gold)}
-.mp-num{font-family:'Playfair Display',ui-serif,Georgia,serif;font-size:22px;color:var(--gold);opacity:.55;font-weight:500;line-height:1.2;flex:none}
-.mp-body h3{font-size:15.5px;font-weight:600;color:var(--fg);line-height:1.35}
-.mp-artist{font-size:12px;color:var(--gold);margin-top:1px}
-.mp-brief{font-size:13.5px;color:var(--body);line-height:1.6;margin-top:5px}
-.mp-meta{font-size:11.5px;color:var(--muted);margin-top:6px;letter-spacing:.2px}
-/* ---- all-50 table ---- */
-.all50{margin-top:14px;border:1px solid var(--border);border-radius:14px;overflow:hidden}
-.all50 summary{cursor:pointer;list-style:none;padding:13px 16px;font-size:14px;font-weight:600;color:var(--fg);display:flex;align-items:center;gap:8px}
-.all50 summary::-webkit-details-marker{display:none}
-.all50 summary::after{content:"\25BE";margin-inline-start:auto;color:var(--muted);font-size:11px}
-.all50[open] summary::after{content:"\25B4"}
-.all50[open] summary{border-bottom:1px solid var(--border);color:var(--gold)}
-.all50 .cnt{background:rgba(245,183,91,.14);color:var(--gold);font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px}
-.tbl-wrap{overflow-x:auto}
-table.w50{width:100%;border-collapse:collapse;font-size:12.5px;min-width:520px}
-table.w50 th{position:sticky;top:0;background:var(--card);color:var(--muted);font-weight:600;text-align:start;padding:9px 12px;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.7px}
-table.w50 td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--body);vertical-align:top}
-table.w50 tr:last-child td{border-bottom:none}
-table.w50 tr:nth-child(even) td{background:rgba(128,110,90,.045)}
-table.w50 td:first-child{font-weight:600;color:var(--fg)}
-table.w50 .era{white-space:nowrap;color:var(--muted)}
-table.w50 .room{color:var(--gold);font-size:11.5px;white-space:nowrap}
-
-</style>
+<link rel="stylesheet" href="/explore/assets/lk-1.css">
 </head>
 <body>
-<div class="page">
-<div class="topbar">
-<a href="https://lokali.travel" class="brand">Lokali</a>
-<div class="tb-right">
-<button class="theme-btn" onclick="__toggleTheme()" aria-label="theme">&#9681;</button>
-<details class="lang-dd">
+<header class="topbar"><div class="wrap"><a class="brand" href="https://lokali.travel/">Lokali</a><nav class="nav"><a href="https://lokali.travel/explore/index.html" class="on">Explore</a></nav><div class="tb-right"><details class="lang-dd">
 <summary>हिन्दी</summary>
 <nav class="lang-menu">
 <a href="https://lokali.travel/explore/en/paris/louvre.html" hreflang="en" lang="en">English</a>
@@ -271,194 +127,22 @@ table.w50 .room{color:var(--gold);font-size:11.5px;white-space:nowrap}
 <a href="https://lokali.travel/explore/af/paris/louvre.html" hreflang="af" lang="af">Afrikaans</a>
 <a href="https://lokali.travel/explore/ka/paris/louvre.html" hreflang="ka" lang="ka">ქართული</a>
 </nav>
-</details>
-</div>
-</div>
+</details><a class="getapp" href="https://play.google.com/store/apps/details?id=app.lokali.travel&amp;utm_source=seo&amp;utm_medium=explore&amp;utm_campaign=topbar-hi" rel="nofollow" target="_blank">ऐप डाउनलोड करें</a></div></div></header>
+<main class="wrap">
 <nav class="crumbs" aria-label="Breadcrumb"><a href="https://lokali.travel">Lokali</a> <span class="sep">&rsaquo;</span> <a href="https://lokali.travel/explore/index.html">Explore</a> <span class="sep">&rsaquo;</span> <a href="https://lokali.travel/explore/en/country/france.html">France</a> <span class="sep">&rsaquo;</span> <a href="https://lokali.travel/explore/en/paris.html">Paris</a> <span class="sep">&rsaquo;</span> <span>लूव्र संग्रहालय</span></nav>
-<div class="hero-img"><img src="https://lokali.travel/images/museums/louvre.jpg" alt="लूव्र संग्रहालय, Paris" loading="eager" width="600" height="480"><div class="ov"></div><span class="badge">ऑडियो गाइड</span></div>
-<h1>लूव्र संग्रहालय</h1>
-<p class="geoline">48.8606&deg; N &middot; 2.3352&deg; E &middot; कला संग्रहालय</p>
-<p class="answer">लूव्र संग्रहालय दुनिया का सबसे बड़ा और सबसे अधिक देखा जाने वाला कला संग्रहालय है, जो पेरिस में सीन नदी के किनारे एक पूर्व शाही महल में स्थित है। मुख्य कृतियों के लिए 2–4 घंटे रखें — मोना लिसा, वीनस डी मिलो, विंग्ड विक्ट्री। मुफ़्त Lokali ऑडियो गाइड इसकी कहानी 45 भाषाओं में, ऑफ़लाइन और बिना किसी शुल्क के सुनाता है।</p>
+<section class="hero noimg"><span class="ov"></span><div class="hero-copy"><span class="badge">ऑडियो गाइड</span><h1>लूव्र संग्रहालय</h1><p class="geo">48.8606&deg; N &middot; 2.3352&deg; E &middot; कला संग्रहालय</p><div class="btns"><a class="btn gold" href="https://lokali.travel" rel="nofollow" target="_blank"><span class="pl">&#9654;</span>Lokali ऐप खोलें</a><a class="btn ghost" href="https://lokali.travel/explore/en/paris.html">Paris &rarr;</a></div></div></section>
+<div class="narrow" style="margin:0 auto">
+<p class="lead">लूव्र संग्रहालय दुनिया का सबसे बड़ा और सबसे अधिक देखा जाने वाला कला संग्रहालय है, जो पेरिस में सीन नदी के किनारे एक पूर्व शाही महल में स्थित है। मुख्य कृतियों के लिए 2–4 घंटे रखें — मोना लिसा, वीनस डी मिलो, विंग्ड विक्ट्री। मुफ़्त Lokali ऑडियो गाइड इसकी कहानी 45 भाषाओं में, ऑफ़लाइन और बिना किसी शुल्क के सुनाता है।</p>
 <p class="verified">&#10003; <b>सत्यापित 09.2026</b> &middot; <a href="https://lokali.travel/about/editorial-process.html">हम ये गाइड कैसे लिखते हैं</a> &middot; <a href="https://lokali.travel/explore/hi/paris/louvre-light.html">&#9889; हल्का संस्करण</a></p>
-<div class="stats"><div class="st"><b>35&#8239;000</b><span>प्रदर्शित कृतियाँ</span></div><div class="st"><b>380&#8239;000</b><span>संग्रह में वस्तुएँ</span></div><div class="st"><b>72&#8239;735</b><span>m² गैलरी क्षेत्र</span></div><div class="st"><b>8</b><span>क्यूरेटोरियल विभाग</span></div></div>
-<div class="cta-row">
-<a href="https://lokali.travel" class="cta"><span class="play">&#9654;</span><span class="lbl"><small>शुरू करें</small><b>Lokali ऐप खोलें</b></span></a>
+
 </div>
-<nav class="toc" aria-label="इस पृष्ठ पर"><a href="#masterpieces">उत्कृष्ट कृतियाँ और वे कहाँ मिलेंगी</a><a href="#story">कहानी</a><a href="#facts">मुख्य तथ्य</a><a href="#tips">व्यावहारिक सुझाव</a><a href="#faq">सामान्य प्रश्न</a><a href="#map">मानचित्र पर</a></nav>
-<section id="masterpieces">
-<p class="eyebrow">01</p>
-<h2 class="sec">उत्कृष्ट कृतियाँ और वे कहाँ मिलेंगी</h2>
-<div class="mp-grid">
-<div class="mp-card"><span class="mp-num">01</span><div class="mp-body"><h3>मोना लिसा</h3><p class="mp-artist">Leonardo da Vinci</p><p class="mp-brief">लियोनार्दो द्वारा बनाया लिसा घेरार्दिनी का चित्र, जिसकी बदलती भाव-भंगिमा ने इसे दुनिया की सबसे प्रसिद्ध पेंटिंग बना दिया।</p><p class="mp-meta">1503-1519 &middot; <span translate="no">Denon Wing, Level 1, Salle 711</span></p></div></div>
-<div class="mp-card"><span class="mp-num">02</span><div class="mp-body"><h3>काना का विवाह-भोज</h3><p class="mp-artist">Paolo Veronese</p><p class="mp-brief">वेरोनेज़े का विशाल वेनिसी भोज मोना लिसा के ठीक सामने टँगा है — लूव्र की सबसे बड़ी पेंटिंग।</p><p class="mp-meta">1562-1563 &middot; <span translate="no">Denon Wing, Level 1, Salle 711</span></p></div></div>
-<div class="mp-card"><span class="mp-num">03</span><div class="mp-body"><h3>वीनस डी मिलो</h3><p class="mp-brief">1820 में मिलोस द्वीप पर मिली हेलेनिस्टिक संगमरमर की एफ़्रोडाइट, जो अपनी गुम भुजाओं के लिए ही प्रसिद्ध है।</p><p class="mp-meta">150-125 BCE &middot; <span translate="no">Sully Wing, Level 0, Salle 345</span></p></div></div>
-<div class="mp-card"><span class="mp-num">04</span><div class="mp-body"><h3>समोथ्रेस की विंग्ड विक्ट्री</h3><p class="mp-brief">दारू सीढ़ियों के शीर्ष पर जहाज़ के अगले भाग पर उतरती पंखोंवाली नीके, जिसके वस्त्र समुद्री हवा से शरीर से चिपके हैं।</p><p class="mp-meta">200-175 BCE &middot; <span translate="no">Denon Wing, Level 1, Salle 703</span></p></div></div>
-<div class="mp-card"><span class="mp-num">05</span><div class="mp-body"><h3>मेडूसा का बेड़ा</h3><p class="mp-artist">Théodore Géricault</p><p class="mp-brief">1816 के एक वास्तविक जहाज़-दुर्घटना कांड पर जेरिको का विशाल चित्र, जिसे उसने मुर्दाघरों में शवों का अध्ययन कर बनाया।</p><p class="mp-meta">1818-1819 &middot; <span translate="no">Denon Wing, Level 1, Salle 700</span></p></div></div>
-<div class="mp-card"><span class="mp-num">06</span><div class="mp-body"><h3>नेपोलियन का राज्याभिषेक</h3><p class="mp-artist">Jacques-Louis David</p><p class="mp-brief">दाविद का दीवार-जितना बड़ा समारोह, जिसमें नेपोलियन स्वयं जोसेफ़िन को ताज पहनाता है — एक ऐसे दरबार के सामने जिसका कुछ हिस्सा चित्रकार की कल्पना था।</p><p class="mp-meta">1805-1807 &middot; <span translate="no">Denon Wing, Level 1, Salle 702</span></p></div></div>
-<div class="mp-card"><span class="mp-num">07</span><div class="mp-body"><h3>स्वतंत्रता जनता का नेतृत्व करती हुई</h3><p class="mp-artist">Eugène Delacroix</p><p class="mp-brief">देलाक्रुआ की स्वतंत्रता 1830 की जुलाई क्रांति की बैरिकेडों के ऊपर तिरंगा थामे आगे बढ़ती है।</p><p class="mp-meta">1830 &middot; <span translate="no">Denon Wing, Level 1, Salle 700</span></p></div></div>
-<div class="mp-card"><span class="mp-num">08</span><div class="mp-body"><h3>क्यूपिड के चुंबन से जागी साइकी</h3><p class="mp-artist">Antonio Canova</p><p class="mp-brief">कानोवा का संगमरमर चुंबन से ठीक पहले का क्षण थामे है, इतना चमकाया हुआ कि पत्थर त्वचा-सा लगता है।</p><p class="mp-meta">1787-1793 &middot; <span translate="no">Denon Wing, Level 0, Salle 403</span></p></div></div>
-<div class="mp-card"><span class="mp-num">09</span><div class="mp-body"><h3>द लेसमेकर</h3><p class="mp-artist">Johannes Vermeer</p><p class="mp-brief">वर्मीर की सबसे छोटी और सबसे एकाग्र पेंटिंग: लेस के तकिये पर झुकी एक युवा स्त्री।</p><p class="mp-meta">1669-1670 &middot; <span translate="no">Richelieu Wing, Level 2, Salle 837</span></p></div></div>
-<div class="mp-card"><span class="mp-num">10</span><div class="mp-body"><h3>बैठा हुआ लिपिक</h3><p class="mp-brief">प्राचीन मिस्र का रँगा हुआ चूना-पत्थर का अधिकारी, जिसकी जड़ी हुई स्फटिक आँखें 4,500 साल बाद भी जीवित लगती हैं।</p><p class="mp-meta">2675-2545 BCE &middot; <span translate="no">Sully Wing, Level 1, Salle 635</span></p></div></div>
-<div class="mp-card"><span class="mp-num">11</span><div class="mp-body"><h3>तानिस का महान स्फिंक्स</h3><p class="mp-brief">फ़राओ के सिर वाला लगभग पाँच मीटर लंबा ग्रेनाइट सिंह, जो मिस्री दीर्घाओं के प्रवेश की रखवाली करता है।</p><p class="mp-meta">2675-2545 BCE or 1900-1865 BCE &middot; <span translate="no">Sully Wing, Level -1, Salle 338</span></p></div></div>
-<div class="mp-card"><span class="mp-num">12</span><div class="mp-body"><h3>हम्मूराबी की संहिता</h3><p class="mp-brief">बेसाल्ट स्तंभ जिस पर बेबीलोन के कानून कीलाक्षर लिपि में अंकित हैं — धरती के सबसे पुराने विधिक ग्रंथों में से एक।</p><p class="mp-meta">1792-1750 BCE &middot; <span translate="no">Richelieu Wing, Level 0, Salle 227</span></p></div></div>
-</div>
-<details class="all50"><summary>कक्ष संख्या के साथ सभी 50 प्रमुख कृतियाँ <span class="cnt">50</span></summary><div class="tbl-wrap"><table class="w50"><thead><tr><th>कृति</th><th>कलाकार</th><th>काल</th><th>कक्ष</th></tr></thead><tbody>
-<tr><td>Lady of Auxerre</td><td>Cretan, Greek Archaic period</td><td class="era">640-620 BCE</td><td class="room" translate="no">Denon Wing, Level -1, Salle 170</td></tr>
-<tr><td>Psyche Revived by Cupid&#39;s Kiss</td><td>Antonio Canova</td><td class="era">1787-1793</td><td class="room" translate="no">Denon Wing, Level 0, Salle 403</td></tr>
-<tr><td>The Dying Slave and The Rebellious Slave</td><td>Michelangelo</td><td class="era">1513-1515</td><td class="room" translate="no">Denon Wing, Level 0, Salle 403</td></tr>
-<tr><td>The Nymph of Fontainebleau</td><td>Benvenuto Cellini</td><td class="era">1542-1543</td><td class="room" translate="no">Denon Wing, Level 1, Escalier Mollien</td></tr>
-<tr><td>Liberty Leading the People</td><td>Eugène Delacroix</td><td class="era">1830</td><td class="room" translate="no">Denon Wing, Level 1, Salle 700</td></tr>
-<tr><td>The Death of Sardanapalus</td><td>Eugène Delacroix</td><td class="era">1827</td><td class="room" translate="no">Denon Wing, Level 1, Salle 700</td></tr>
-<tr><td>The Raft of the Medusa</td><td>Théodore Géricault</td><td class="era">1818-1819</td><td class="room" translate="no">Denon Wing, Level 1, Salle 700</td></tr>
-<tr><td>Grande Odalisque</td><td>Jean-Auguste-Dominique Ingres</td><td class="era">1814</td><td class="room" translate="no">Denon Wing, Level 1, Salle 702</td></tr>
-<tr><td>The Coronation of Napoleon</td><td>Jacques-Louis David</td><td class="era">1805-1807</td><td class="room" translate="no">Denon Wing, Level 1, Salle 702</td></tr>
-<tr><td>The Intervention of the Sabine Women</td><td>Jacques-Louis David</td><td class="era">1799</td><td class="room" translate="no">Denon Wing, Level 1, Salle 702</td></tr>
-<tr><td>The Oath of the Horatii</td><td>Jacques-Louis David</td><td class="era">1784-1785</td><td class="room" translate="no">Denon Wing, Level 1, Salle 702</td></tr>
-<tr><td>Winged Victory of Samothrace</td><td></td><td class="era">200-175 BCE</td><td class="room" translate="no">Denon Wing, Level 1, Salle 703</td></tr>
-<tr><td>The Galerie d&#39;Apollon</td><td>Charles Le Brun, Eugène Delacroix and others</td><td class="era">1661-1851</td><td class="room" translate="no">Denon Wing, Level 1, Salle 705</td></tr>
-<tr><td>The Battle of San Romano: The Counterattack of Micheletto da Cotignola</td><td>Paolo Uccello</td><td class="era">c. 1435-1440</td><td class="room" translate="no">Denon Wing, Level 1, Salle 708</td></tr>
-<tr><td>The Virgin and Child with Saint Anne</td><td>Leonardo da Vinci</td><td class="era">1503-1519</td><td class="room" translate="no">Denon Wing, Level 1, Salle 710</td></tr>
-<tr><td>Virgin of the Rocks</td><td>Leonardo da Vinci</td><td class="era">1483-1494</td><td class="room" translate="no">Denon Wing, Level 1, Salle 710</td></tr>
-<tr><td>Mona Lisa</td><td>Leonardo da Vinci</td><td class="era">1503-1519</td><td class="room" translate="no">Denon Wing, Level 1, Salle 711</td></tr>
-<tr><td>The Wedding Feast at Cana</td><td>Paolo Veronese</td><td class="era">1562-1563</td><td class="room" translate="no">Denon Wing, Level 1, Salle 711</td></tr>
-<tr><td>Portrait of Baldassare Castiglione</td><td>Raphael</td><td class="era">c. 1514-1515</td><td class="room" translate="no">Denon Wing, Level 1, Salle 712</td></tr>
-<tr><td>The Death of the Virgin</td><td>Caravaggio</td><td class="era">1601-1606</td><td class="room" translate="no">Denon Wing, Level 1, Salle 712</td></tr>
-<tr><td>The Clubfooted Boy</td><td>Jusepe de Ribera</td><td class="era">1642</td><td class="room" translate="no">Denon Wing, Level 1, Salle 718</td></tr>
-<tr><td>The Young Beggar</td><td>Bartolomé Esteban Murillo</td><td class="era">1647-1648</td><td class="room" translate="no">Denon Wing, Level 1, Salle 718</td></tr>
-<tr><td>Marly Horses</td><td>Guillaume Coustou</td><td class="era">1745</td><td class="room" translate="no">Richelieu Wing, Level -1, Cour Marly</td></tr>
-<tr><td>Code of Hammurabi</td><td></td><td class="era">1792-1750 BCE</td><td class="room" translate="no">Richelieu Wing, Level 0, Salle 227</td></tr>
-<tr><td>Victory Stele of Naram-Sin</td><td>Akkadian, Mesopotamia</td><td class="era">2254-2218 BCE</td><td class="room" translate="no">Richelieu Wing, Level 0, Salle 228</td></tr>
-<tr><td>Human-Headed Winged Bull</td><td>Neo-Assyrian</td><td class="era">721-705 BCE</td><td class="room" translate="no">Richelieu Wing, Level 0, Salle 229</td></tr>
-<tr><td>The Barberini Ivory</td><td>Byzantine, carved in Constantinople</td><td class="era">c. 525-550</td><td class="room" translate="no">Richelieu Wing, Level 1, Salle 501</td></tr>
-<tr><td>The Harbaville Triptych</td><td>Byzantine, Romanos group workshop in Constantinople</td><td class="era">c. 940-960</td><td class="room" translate="no">Richelieu Wing, Level 1, Salle 501</td></tr>
-<tr><td>Suger&#39;s Eagle</td><td>Goldsmiths working for Abbot Suger of Saint-Denis</td><td class="era">before 1147</td><td class="room" translate="no">Richelieu Wing, Level 1, Salle 502</td></tr>
-<tr><td>The Moneylender and His Wife</td><td>Quentin Metsys</td><td class="era">1514</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 814</td></tr>
-<tr><td>The Ship of Fools</td><td>Hieronymus Bosch</td><td class="era">c. 1490-1500</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 815</td></tr>
-<tr><td>The Madonna of Chancellor Rolin</td><td>Jan van Eyck</td><td class="era">c. 1430-1435</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 818</td></tr>
-<tr><td>Gabrielle d&#39;Estrées and One of Her Sisters</td><td>School of Fontainebleau</td><td class="era">1575-1600</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 824</td></tr>
-<tr><td>The Astronomer</td><td>Johannes Vermeer</td><td class="era">1668</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 837</td></tr>
-<tr><td>The Lacemaker</td><td>Johannes Vermeer</td><td class="era">1669-1670</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 837</td></tr>
-<tr><td>Bathsheba at Her Bath</td><td>Rembrandt</td><td class="era">1654</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 844</td></tr>
-<tr><td>Self-Portrait at the Easel</td><td>Rembrandt van Rijn</td><td class="era">1660</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 844</td></tr>
-<tr><td>Great Sphinx of Tanis</td><td></td><td class="era">2675-2545 BCE or 1900-1865 BCE</td><td class="room" translate="no">Sully Wing, Level -1, Salle 338</td></tr>
-<tr><td>Frieze of Archers</td><td>Achaemenid Persian</td><td class="era">522-486 BCE</td><td class="room" translate="no">Sully Wing, Level 0, Salle 307</td></tr>
-<tr><td>The Dendera Zodiac</td><td>Egyptian, late Ptolemaic period</td><td class="era">50 BCE</td><td class="room" translate="no">Sully Wing, Level 0, Salle 325</td></tr>
-<tr><td>Venus de Milo</td><td></td><td class="era">150-125 BCE</td><td class="room" translate="no">Sully Wing, Level 0, Salle 345</td></tr>
-<tr><td>Borghese Gladiator</td><td>Agasias of Ephesos</td><td class="era">100 BCE</td><td class="room" translate="no">Sully Wing, Level 0, Salle 348</td></tr>
-<tr><td>Seated Scribe</td><td></td><td class="era">2675-2545 BCE</td><td class="room" translate="no">Sully Wing, Level 1, Salle 635</td></tr>
-<tr><td>Sarcophagus of the Spouses</td><td>Etruscan, Cerveteri</td><td class="era">520-510 BCE</td><td class="room" translate="no">Sully Wing, Level 1, Salle 663</td></tr>
-<tr><td>The Cheat with the Ace of Diamonds</td><td>Georges de La Tour</td><td class="era">1636-1640</td><td class="room" translate="no">Sully Wing, Level 2, Salle 912</td></tr>
-<tr><td>The Magdalene with the Night Light</td><td>Georges de La Tour</td><td class="era">1642-1644</td><td class="room" translate="no">Sully Wing, Level 2, Salle 912</td></tr>
-<tr><td>Pilgrimage to the Island of Cythera</td><td>Jean-Antoine Watteau</td><td class="era">1717</td><td class="room" translate="no">Sully Wing, Level 2, Salle 917</td></tr>
-<tr><td>The Ray</td><td>Jean-Siméon Chardin</td><td class="era">1728</td><td class="room" translate="no">Sully Wing, Level 2, Salle 919</td></tr>
-<tr><td>Portrait of Monsieur Bertin</td><td>Jean-Auguste-Dominique Ingres</td><td class="era">1832</td><td class="room" translate="no">Sully Wing, Level 2, Salle 940</td></tr>
-<tr><td>The Turkish Bath</td><td>Jean-Auguste-Dominique Ingres</td><td class="era">1862</td><td class="room" translate="no">Sully Wing, Level 2, Salle 940</td></tr>
-</tbody></table></div></details>
-</section>
-<section id="story">
-<p class="eyebrow">02</p>
-<h2 class="sec">कहानी</h2>
-<div class="tour">
-<p>एक पल के लिए आँगन में स्थिर खड़े हो जाइए। आप एक साथ कई भाषाएँ सुन सकते हैं। सूटकेस के पहिए पत्थरों पर खड़खड़ाते हैं। कहीं दूर एक गाइड भीड़ के शोर से ऊपर अपनी आवाज़ उठाती है। बीच में काँच और धातु से बना एक पिरामिड खड़ा है। पुराने महल की दीवारें तीन तरफ से इसे घेरे हुए हैं। इस विशालता को समझने में थोड़ा समय लगता है। यह आँगन चौड़ा है, और इमारतें लंबी हैं। ऊपर देखिए, नक्काशीदार पत्थर के अग्रभागों को। फिर नीचे देखिए, काँच को। ये दीवारें कई शताब्दियों में बनी हैं। काँच 1980 के दशक का है।</p>
-<p>कहानी ज़मीन के नीचे से शुरू होती है। लगभग 1190 में, फिलिप ऑगस्टस नामक एक राजा ने इस जगह एक किला बनवाया था। उस समय पेरिस छोटा था, और यह किला शहर तक जाने वाले नदी मार्ग की रक्षा करता था। वह इमारत सदियों तक ग़ायब रही। फिर, 1980 के दशक में निर्माण कार्य के दौरान, पुरातत्वविदों ने इसकी नींव खोज निकाली। आज आप नीचे जाकर इसे देख सकते हैं। मध्यकालीन नींव संग्रहालय के तहखाने में स्थित है। पुराने पत्थर के पास जाइए। यह खुरदरा है, और आपके सिर के ऊपर की दीवारों से कहीं अधिक गहरे रंग का है।</p>
-<p>किला किला नहीं रह गया। फ्रांसीसी राजा इस स्थान पर लगातार पुनर्निर्माण करते रहे। उन्होंने इसे चौड़ा किया, नए पंख जोड़े, और रक्षा को प्रदर्शन में बदल दिया। 1364 तक यह एक शाही निवास बन चुका था, और सदियों तक विस्तार करता रहा। हर शासक अपनी छाप छोड़ना चाहता था, इसलिए शैलियाँ आपस में मेल नहीं खातीं। बाहर की तरफ़ चलिए और आपको बदलाव दिखेंगे। कुछ अग्रभाग सादे और भारी हैं। दूसरों पर स्तंभ, नक्काशीदार आकृतियाँ और गहरे खिड़की के फ्रेम हैं। यह महल असल में बहुत सी इमारतों का समूह है, जो बहुत लंबे समय में एक साथ जुड़ी हैं।</p>
-<p>फिर फ्रांसीसी क्रांति आई। 1793 में महल एक सार्वजनिक संग्रहालय के रूप में खुला। यह तारीख़ पहली नज़र में लगने से कहीं ज़्यादा मायने रखती है। शाही संग्रह ज़्यादातर दरबार के लिए ही रखा जाता था, और आम जनता को कभी-कभार ही दिखाया जाता था। अब आम लोग अंदर जाकर उन पेंटिंग्स को देख सकते थे जो कभी राजाओं की थीं। यह विचार पूरे यूरोप में फैल गया। बाद में कई राष्ट्रीय संग्रहालयों ने इसी मॉडल को अपनाया। इसलिए जब आप यहाँ कतार में खड़े होते हैं, तो आप किसी ऐसी चीज़ में शामिल हो रहे हैं जिसकी शुरुआत एक राजनीतिक कदम के रूप में हुई थी। यह घोषित किया गया था कि कला जनता की है।</p>
-<p>काँच का पिरामिड कहीं अधिक नया है। इसे वास्तुकार आई. एम. पेई ने डिज़ाइन किया था, और यह 1989 में खुला। शुरुआत में कई पेरिसवासियों को यह पसंद नहीं आया। उनका तर्क था कि काँच और स्टील का एक शाही महल के पास कोई स्थान नहीं है। धीरे-धीरे शिकायतें कम हो गईं। पिरामिड ने एक वास्तविक समस्या हल की, क्योंकि संग्रहालय को एक स्पष्ट प्रवेश द्वार और भीड़ को समाने के लिए नीचे एक बड़ी जगह की ज़रूरत थी। इसके पास जाइए और शीशों से देखिए। काँच को विशेष रूप से बहुत साफ़ बनाया गया था, ताकि आप उसके पार पुराने पत्थर के अग्रभाग देख सकें।</p>
-<p>अधिकतर आगंतुक एक ही पेंटिंग के लिए आते हैं। मोना लीसा, जिसे फ्रेंच में ला जोकोंड कहा जाता है, लियोनार्दो दा विंची द्वारा बनाई गई थी। यह लोगों की अपेक्षा से छोटी है। यह काँच के पीछे टंगी है, और दिन के लगभग हर समय इसके सामने भीड़ खड़ी रहती है। नक़्शे के बजाय संकेतों का पीछा कीजिए। कमरे में आमतौर पर एक कतार पेंटिंग के सामने की बाड़ तक जाती है। कतार तेज़ी से आगे बढ़ती है, इसलिए सामने आपका समय छोटा होता है। आप थोड़ा पीछे से भी देख सकते हैं, जहाँ कम लोग खड़े होते हैं।</p>
-<p>यहाँ वह हिस्सा है जो लोगों को चौंकाता है। 1911 में यह पेंटिंग चोरी हो गई थी। संग्रहालय में काँच लगाने वाले एक इतालवी मज़दूर ने इसे दीवार से उतारा और बाहर चला गया। यह चोरी तुरंत पकड़ में नहीं आई। यह पेंटिंग दो साल से अधिक समय तक ग़ायब रही, और भीड़ दीवार पर बनी उस खाली जगह को देखने आती रही। यह इटली में मिली और वापस लाई गई। कई इतिहासकारों का तर्क है कि इसी चोरी ने इसे प्रसिद्ध बनाया। उससे पहले इसकी सराहना तो होती थी, लेकिन यह वह पेंटिंग नहीं थी जिसे हर कोई देखना चाहता था।</p>
-<p>दूसरे स्थान के लिए दो मूर्तियाँ होड़ में हैं। वीनस डी मिलो एक ग्रीक संगमरमर की स्त्री-आकृति है, जिसकी दोनों भुजाएँ नहीं हैं। जब 1820 में यह मूर्ति खोदकर निकाली गई थी, तब भी भुजाएँ ग़ायब थीं। सैमोथ्रेस की पंखयुक्त विजय एक जहाज़ के अगले हिस्से के आकार में तराशे गए पत्थर पर खड़ी है। उसका भी न सिर है, न भुजाएँ। फिर भी वह ऐसी लगती है मानो आगे बढ़ रही हो। उसके वस्त्र इस तरह तराशे गए हैं मानो हवा कपड़े को उसके शरीर पर दबा रही हो। इन सिलवटों को केवल सामने से नहीं, बल्कि बग़ल से भी देखिए।</p>
-<p>यह संग्रह यूरोप से कहीं आगे तक फैला है। यहाँ प्राचीन मिस्र के कमरे हैं, जिनमें ताबूत, मूर्तियाँ और रोज़मर्रा की वस्तुएँ हैं। प्राचीन निकट पूर्व की दीर्घाएँ भी हैं। इसमें ग्रीक और रोमन मूर्तिकला, इस्लामी कला, फ्रेंच फ़र्नीचर और सजावटी वस्तुएँ भी शामिल हैं। कुछ खंड नवीनीकरण के लिए बंद रहते हैं, इसलिए जिस दिन आप आएँ उस दिन जाँच लें कि कौन-से कमरे खुले हैं। पेंटिंग्स उन्नीसवीं सदी के मध्य तक की हैं। बाद की कला शहर के अन्य संग्रहालयों में चली गई। इसलिए यह जगह असल में एक संग्रहालय नहीं है। यह कई संग्रहालय हैं जो एक छत, एक टिकट, और गलियारों की एक बहुत लंबी प्रणाली साझा करते हैं।</p>
-<p>निकट पूर्व के कमरों में एक वस्तु देखने लायक है, भले ही उसके लिए थोड़ा रास्ता बदलना पड़े। यह हम्मुराबी संहिता है, एक स्टील, यानी नक्काशीदार पत्थर का एक खड़ा स्लैब। इस पर प्राचीन मेसोपोटामिया के क़ानूनों की एक लंबी सूची है, जो पच्चर के आकार की लिपि में पत्थर पर उकेरी गई है। यह पाठ व्यापार, पारिवारिक मामलों, संपत्ति और दंड को कवर करता है। पास जाकर पत्थर के ऊपरी हिस्से को देखिए। एक बैठी हुई आकृति खड़े राजा को अधिकार का प्रतीक सौंप रही है। नक्काशी उथली है, लेकिन विवरण अभी भी स्पष्ट है।</p>
-<p>यह इमारत हमेशा भरी नहीं रही। दूसरे विश्व युद्ध के दौरान, कर्मचारियों ने सबसे मूल्यवान कृतियों को पैक कर पेरिस से बाहर भेज दिया था। पेंटिंग्स ट्रकों में यात्रा करके शहर से दूर देहाती घरों में छिपाई गई थीं। जो मूर्तियाँ हिलाने के लिए बहुत बड़ी थीं, उन्हें उनकी जगह पर ही सुरक्षित रखा गया था। लंबे समय तक दीर्घाओं में केवल ख़ाली फ़्रेम और रेत की बोरियाँ रहीं। जो कृतियाँ इमारत से बाहर गई थीं, वे बाद में वापस आ गईं। जब कोई कमरा भीड़भाड़ भरा लगे, तो यह याद रखने लायक बात है। भीड़ असल में एक अच्छा संकेत है।</p>
-<p>अब आकार के बारे में एक चेतावनी। आप यह सब एक ही यात्रा में नहीं देख सकते। दीर्घाएँ कई किलोमीटर तक फैली हैं, और हर कमरे से दृढ़ता से गुज़रने वाली सैर में कई दिन लग जाएँगे। ऐसा करने की कोशिश लोगों को थका और असंतुष्ट कर देती है। इसके बजाय तीन या चार चीज़ें चुनिए। धीरे-धीरे उनकी ओर चलिए, और रास्ते में जो भी आपकी नज़र में आए, वहाँ रुकने दीजिए अपने आप को। यहाँ के सबसे अच्छे पल आमतौर पर किसी शांत कमरे में भटकने और योजना से कहीं अधिक समय वहाँ रुकने से मिलते हैं।</p>
-<p>तो जहाँ आप खड़े हैं, वहीं एक साँस लीजिए। आपके चारों ओर महल अभी भी अपने पुराने आँगनों और लंबे पंखों का आकार बनाए हुए है। राजाओं ने यहाँ भोजन किया। सैनिकों ने इन दीवारों की रक्षा की। चित्रकारों के स्टूडियो अंदर हुआ करते थे। अब टिकट रखने वाले किसी भी व्यक्ति के लिए दरवाज़े खुले हैं। अंदर की वस्तुएँ मिस्र, ग्रीस, मेसोपोटामिया और आधे यूरोप से यात्रा करके एक ही जगह पर पहुँची हैं। पत्थर और काँच को एक बार फिर साथ देखिए। फिर अंदर जाइए और कोई एक ऐसी चीज़ खोजिए जिसे आप पसंद करते हैं।</p>
-</div>
-</section>
-<section id="facts">
-<p class="eyebrow">03</p>
-<h2 class="sec">आगंतुक जानकारी</h2>
-<table class="facts-tbl"><tbody>
-<tr><th>आवश्यक समय</th><td>2–4 घंटे (मुख्य कृतियां)</td></tr>
-<tr><th>Lokali</th><td>ऑडियो गाइड &middot; 8 min &middot; 45 &#127760;</td></tr>
-<tr><th>कला संग्रहालय</th><td>Paris, France</td></tr>
-<tr><th>M&eacute;tro</th><td><span translate="no">Palais-Royal &ndash; Mus&eacute;e du Louvre (1, 7)</span></td></tr>
-<tr><th><span translate="no">GPS</span></th><td><span translate="no">48.8606, 2.3352</span></td></tr>
-<tr><th>आधिकारिक वेबसाइट</th><td><a href="https://www.louvre.fr/en" rel="noopener nofollow" target="_blank">louvre.fr</a></td></tr>
-</tbody></table>
-</section>
-<section id="keyfacts">
-<p class="eyebrow">04</p>
-<h2 class="sec">मुख्य तथ्य</h2>
-<div class="chips facts">
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>लगभग 1190 से इस स्थान पर एक किला मौजूद था।</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>महल 1793 में एक सार्वजनिक संग्रहालय के रूप में खुला।</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>वास्तुकार आई. एम. पेई का काँच का पिरामिड 1989 में खुला।</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>मोना लीसा 1911 में चोरी हो गई थी।</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>हम्मुराबी संहिता का स्टील प्राचीन मेसोपोटामिया से आया था।</span></div>
-</div>
-</section>
-<section id="look">
-<p class="eyebrow">05</p>
-<h2 class="sec">क्या देखें</h2>
-<div class="chips look">
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>सैमोथ्रेस की पंखयुक्त विजय के वस्त्रों पर हवा से दबी नक्काशीदार सिलवटें।</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>टूटे हुए जोड़, जहाँ कभी वीनस डी मिलो की भुजाएँ लगी थीं।</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>स्टील के शीर्ष पर उकेरी गई एक बैठी हुई आकृति।</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>पिरामिड के काँच के फलकों से दिखते पुराने पत्थर के अग्रभाग।</span></div>
-</div>
-</section>
-<section id="tips">
-<p class="eyebrow">06</p>
-<h2 class="sec">व्यावहारिक सुझाव</h2>
-<div class="chips tips">
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>आने से पहले ऑनलाइन एक निर्धारित समय की एंट्री बुक कर लें, क्योंकि गर्मियों में हर किसी को आरक्षण चाहिए होता है।</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>अपना रास्ता तय करने से पहले कमरों के बंद होने की जानकारी के लिए संग्रहालय की वेबसाइट देख लें।</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>जो कुछ भी देखना चाहते हैं, एक ही बार में देख लें, क्योंकि बाहर निकलने के बाद आप दोबारा अंदर नहीं आ सकते।</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>तहखाने में मध्यकालीन नींव देखने ज़रूर जाएँ।</span></div>
-</div>
-</section>
-<section id="faq">
-<p class="eyebrow">07</p>
-<h2 class="sec">सामान्य प्रश्न</h2>
-<div class="faq">
-<h3>लूव्र में कितना समय चाहिए?</h3>
-<p>मुख्य कृतियों के लिए 2–4 घंटे रखें। पहली यात्रा में आमतौर पर कम से कम 3 घंटे लगते हैं; सब कुछ देखने में दिनों लगेंगे, इसलिए कुछ विंग चुनें और धीरे चलें। Lokali का मुफ़्त 8 मिनट का ऑडियो गाइड रास्ते में कहानी सुनाता है।</p>
-<h3>लूव्र में क्या देखना बिल्कुल न भूलें?</h3>
-<p>शुरुआत मोना लिसा से करें (Denon विंग, Salle 711), फिर दारू सीढ़ियों के शीर्ष पर विंग्ड विक्ट्री और वीनस डी मिलो देखें। इसके बाद इस पृष्ठ की तालिका से चुनें — हर कृति के साथ उसका विंग और कक्ष दिया गया है, ताकि आप मिनटों में अपना मार्ग बना सकें।</p>
-<h3>क्या लूव्र संग्रहालय के लिए मुफ़्त ऑडियो गाइड है?</h3>
-<p>हां। Lokali ऐप 45 भाषाओं में मुफ़्त लूव्र संग्रहालय के बारे में बताता है — इतिहास, क्या देखें और व्यावहारिक सुझाव। डाउनलोड के बाद ऑफ़लाइन काम करता है।</p>
-<h3>Lokali संग्रहालय के अपने ऑडियो गाइड से कैसे अलग है?</h3>
-<p>संग्रहालय 9 भाषाओं में ऑडियो डिवाइस किराए पर देता है। Lokali आपके अपने फ़ोन पर 45 भाषाओं में मुफ़्त चलता है, डाउनलोड के बाद ऑफ़लाइन काम करता है, और आप पहुंचने से पहले भी सुन सकते हैं।</p>
-</div>
-</section>
-<section id="near">
-<p class="eyebrow">08</p>
-<h2 class="sec">पेरिस में और क्या देखें</h2>
-<div class="nearby">
-<a href="https://lokali.travel/explore/en/paris/musée-dorsay.html">Musée d&#39;Orsay<span class="km">0.6 km</span></a>
-<a href="https://lokali.travel/explore/en/paris/sainte-chapelle.html">Sainte-Chapelle<span class="km">1.0 km</span></a>
-<a href="https://lokali.travel/explore/en/paris/notre-dame-cathedral.html">Notre-Dame Cathedral<span class="km">1.4 km</span></a>
-<a href="https://lokali.travel/explore/en/paris/latin-quarter.html">Latin Quarter<span class="km">1.4 km</span></a>
-<a href="https://lokali.travel/explore/en/paris/montmartre.html">Montmartre<span class="km">3.0 km</span></a>
-<a href="https://lokali.travel/explore/en/paris/sacré-cœur-basilica.html">Sacré-Cœur Basilica<span class="km">3.0 km</span></a>
-</div>
-<p class="map-note" style="margin-top:10px"><a href="https://lokali.travel/explore/en/paris.html">पेरिस के सभी मुफ़्त ऑडियो गाइड &rsaquo;</a></p>
-</section>
-<section id="map">
-<p class="eyebrow">09</p>
-<h2 class="sec">मानचित्र पर</h2>
-<div class="mapcard"><a href="https://www.google.com/maps/search/?api=1&query=48.8606%2C2.3352" target="_blank" rel="noopener noreferrer"><span class="ic"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2.9 6.4-6.4 2.9 2.9-6.4z"/></svg></span>Google मानचित्र में खोलें<span class="arr">&rsaquo;</span></a></div>
-<p class="map-note">आपके स्थान से लूव्र संग्रहालय तक का रास्ता खोलता है।</p>
-</section>
-<section id="ref">
-<p class="eyebrow">10</p>
-<h2 class="sec">संदर्भ</h2>
-<div class="srcbox">लूव्र संग्रहालय: <a href="https://en.wikipedia.org/wiki/Louvre" rel="nofollow noopener" target="_blank">Wikipedia</a> &middot; <a href="https://www.wikidata.org/wiki/Q19675" rel="nofollow noopener" target="_blank">Wikidata</a> &middot; <a href="https://www.louvre.fr/en" rel="nofollow noopener" target="_blank">आधिकारिक वेबसाइट</a></div>
-</section>
+
+<section class="apppanel noimg"><div class="ap-copy"><span class="eyebrow">मुफ़्त &middot; 45 भाषाएँ &middot; ऑफ़लाइन</span><h3>गाइड <em>साथ ले जाएँ</em></h3><p>यात्रा से पहले डाउनलोड करें। ऑफ़लाइन, मुफ़्त और आपकी भाषा में।</p><div class="btns"><a class="btn gold" href="https://lokali.travel" rel="nofollow" target="_blank"><span class="pl">&#9654;</span>Lokali ऐप खोलें</a><a class="btn ghost" href="https://lokali.travel/">ब्राउज़र में आज़माएँ</a></div></div></section>
 <footer>
 <a href="https://lokali.travel/explore/index.html">सभी शहर</a> &middot; <a href="https://lokali.travel/explore/en/country/france.html">फ़्रांस में ऑडियो गाइड</a> &middot; <a href="https://lokali.travel/explore/en/paris.html">Paris</a> &middot; <a href="https://lokali.travel/explore/hi/paris/louvre-light.html">हल्का संस्करण</a> &middot; <a href="https://lokali.travel/about/editorial-process.html">संपादकीय प्रक्रिया</a>
 </footer>
+</main>
 <div class="appbar-cta" id="gpb"><div class="pill"><a href="https://play.google.com/store/apps/details?id=app.lokali.travel&amp;utm_source=seo&amp;utm_medium=explore&amp;utm_campaign=hi&amp;utm_content=louvre" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 48 48" width="24" height="24" style="flex-shrink:0"><path d="M24,24 L12,35 L12,13 Z" fill="#00B0FF"/><path d="M24,24 L36,35 L36,13 Z" fill="#00E676"/><path d="M24,24 L12,13 L24,3 Z" fill="#FFC400"/><path d="M24,24 L36,13 L24,3 Z" fill="#FF3D57"/></svg><span class="lb"><small>Google Play</small><b>ऐप डाउनलोड करें</b></span></a><button class="x" aria-label="Dismiss" onclick="try{localStorage.setItem('lokali.playbanner.dismissed.v1','1')}catch(e){};document.getElementById('gpb').classList.remove('show')">&#10005;</button></div></div><script>(function(){var d=false;try{d=localStorage.getItem("lokali.playbanner.dismissed.v1")==="1"}catch(e){}if(!window.Capacitor&&!d){document.getElementById("gpb").classList.add("show")}})();</script>
-</div>
-<div id="lk-install" style="position:fixed;left:0;right:0;bottom:0;z-index:9999;display:flex;align-items:center;gap:12px;padding:11px 16px;background:rgba(17,12,8,.97);border-top:1px solid #352c25;backdrop-filter:blur(10px);font-family:Inter,system-ui,sans-serif"><span style="flex:1;color:#e7ddcf;font-size:14px;line-height:1.35">यह गाइड सुनें — मुफ़्त, अपनी भाषा में।</span><a href="https://play.google.com/store/apps/details?id=app.lokali.travel&amp;utm_source=seo&amp;utm_medium=explore&amp;utm_campaign=hi&amp;utm_content=louvre" rel="nofollow" style="flex:none;background:linear-gradient(103deg,#f5d38a,#d4a03c);color:#1a1206;font-weight:700;font-size:14px;text-decoration:none;padding:9px 16px;border-radius:100px;white-space:nowrap">ऐप पाएं</a><button onclick="this.parentNode.remove()" aria-label="close" style="flex:none;background:none;border:none;color:#6f6252;font-size:19px;line-height:1;cursor:pointer;padding:0 2px">&times;</button></div><script>if(window.Capacitor){var e=document.getElementById("lk-install");e&&e.remove();}</script></body>
+
+</body>
 </html>

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
+<meta name="lk-design" content="1">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#110c08">
@@ -21,99 +22,18 @@
 <script type="application/ld+json">
 {"@context": "https://schema.org", "@graph": [{"@type": "TouristAttraction", "@id": "https://lokali.travel/explore/en/gqeberha/bayworld.html#attraction", "name": "Bayworld", "description": "Bayworld is a marine science museum and aquarium complex on the beachfront featuring live dolphin and seal shows, an oceanarium, and a snake park. It is in Gqeberha, South Africa. Most visitors spend 2–3 hours here. The free Lokali audio guide runs 5 minutes.", "url": "https://lokali.travel/explore/en/gqeberha/bayworld.html", "isAccessibleForFree": true, "publicAccess": true, "inLanguage": "en", "geo": {"@type": "GeoCoordinates", "latitude": -33.9711, "longitude": 25.5976}, "hasMap": "https://www.google.com/maps/search/?api=1&query=-33.9711%2C25.5976", "address": {"@type": "PostalAddress", "addressLocality": "Gqeberha", "addressCountry": "ZA"}, "additionalType": "Museum", "image": "https://lokaliphotos.blob.core.windows.net/attractions/4590306b7a074f17b3a5d528249f774743860705.jpg"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Lokali", "item": "https://lokali.travel"}, {"@type": "ListItem", "position": 2, "name": "Explore", "item": "https://lokali.travel/explore/index.html"}, {"@type": "ListItem", "position": 3, "name": "South Africa", "item": "https://lokali.travel/explore/en/country/south-africa.html"}, {"@type": "ListItem", "position": 4, "name": "Gqeberha", "item": "https://lokali.travel/explore/en/gqeberha.html"}, {"@type": "ListItem", "position": 5, "name": "Bayworld", "item": "https://lokali.travel/explore/en/gqeberha/bayworld.html"}]}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How long do you need at Bayworld?", "acceptedAnswer": {"@type": "Answer", "text": "Plan 2–3 hours. That is the time most visitors spend at Bayworld. The free Lokali audio guide adds about 5 minutes of narration you can listen to as you walk, so it fits inside your visit rather than adding to it."}}, {"@type": "Question", "name": "Is there a free audio guide to Bayworld?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — the Lokali app narrates Bayworld free of charge in 45 languages. It covers the history, what to look for on site and practical tips, and it works offline once downloaded."}}, {"@type": "Question", "name": "Where is Bayworld?", "acceptedAnswer": {"@type": "Answer", "text": "Bayworld is in Gqeberha, South Africa, at -33.9711, 25.5976. Tap the map link on this page for directions from where you are."}}, {"@type": "Question", "name": "What should you know before visiting Bayworld?", "acceptedAnswer": {"@type": "Answer", "text": "Ask staff which sections are open today."}}, {"@type": "Question", "name": "What is Bayworld known for?", "acceptedAnswer": {"@type": "Answer", "text": "Port Elizabeth Museum is South Africa third oldest."}}, {"@type": "Question", "name": "What is the best time to visit Bayworld?", "acceptedAnswer": {"@type": "Answer", "text": "The dolphin shows run on fixed schedules; check timing before arrival."}}]}]}
 </script>
-<style>
-:root{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--fg);font-family:'Inter',ui-sans-serif,system-ui,sans-serif;line-height:1.65;-webkit-font-smoothing:antialiased}
-.page{max-width:620px;margin:0 auto;padding:0 20px 120px}
-a{color:var(--gold)}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 0 12px}
-.brand{font-family:'Playfair Display',ui-serif,Georgia,serif;font-size:21px;font-weight:600;color:var(--fg);text-decoration:none}
-.lang-dd{position:relative}
-.lang-dd summary{list-style:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);padding:6px 13px;border-radius:999px;border:1px solid var(--border);display:inline-flex;align-items:center;gap:6px}
-.lang-dd summary::-webkit-details-marker{display:none}
-.lang-dd summary::after{content:"\25BE";font-size:9px;opacity:.8}
-.lang-dd[open] summary{color:var(--fg);border-color:var(--gold)}
-.lang-menu{position:absolute;right:0;top:calc(100% + 6px);min-width:170px;max-height:300px;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:6px;z-index:60;box-shadow:0 14px 34px rgba(0,0,0,.55)}
-.lang-menu a{display:block;padding:9px 12px;border-radius:8px;font-size:13px;color:var(--body);text-decoration:none}
-.lang-menu a.active{color:var(--gold);font-weight:600}
-nav.crumbs{font-size:12.5px;color:var(--muted);margin:2px 0 14px;line-height:1.9}
-nav.crumbs a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent}
-nav.crumbs a:hover{color:var(--gold);border-bottom-color:var(--gold)}
-nav.crumbs .sep{opacity:.5;margin:0 5px}
-.hero-img{position:relative;border-radius:20px;overflow:hidden;aspect-ratio:5/4;background:var(--card)}
-.hero-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.hero-img .ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(17,12,8,0) 0%,rgba(17,12,8,.35) 55%,rgba(17,12,8,.92) 100%)}
-.badge{position:absolute;left:14px;bottom:14px;display:inline-flex;align-items:center;gap:6px;background:rgba(17,12,8,.55);border:1px solid rgba(245,183,91,.4);color:var(--gold);text-transform:uppercase;letter-spacing:1.6px;font-size:10px;font-weight:700;padding:6px 11px;border-radius:999px;backdrop-filter:blur(6px)}
-h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-size:36px;line-height:1.08;margin-top:16px}
-.geoline{font-size:11.5px;color:var(--muted);letter-spacing:.4px;margin-top:8px}
-.answer{margin-top:14px;padding:15px 17px;background:rgba(245,183,91,.06);border:1px solid rgba(245,183,91,.28);border-left:3px solid var(--gold);border-radius:12px;font-size:15.5px;color:var(--fg);line-height:1.7}
-.verified{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:11.5px;color:var(--muted)}
-.verified b{color:var(--green);font-weight:600}
-.verified a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
-.cta-row{display:flex;gap:10px;margin-top:16px}
-.cta{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#fdc357,#f67f2f);color:#110c08;border-radius:16px;padding:12px 18px;text-decoration:none;box-shadow:0 0 60px -16px #f5b75b8c}
-.cta .play{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:rgba(17,12,8,.15);color:#110c08}
-.cta .lbl{display:flex;flex-direction:column;line-height:1.1}
-.cta .lbl small{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;opacity:.75}
-.cta .lbl b{font-size:16px;font-weight:700}
-.sec{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-size:22px;color:var(--fg);margin:34px 0 12px}
-table.facts-tbl{width:100%;border-collapse:collapse;margin-top:6px;font-size:14px}
-table.facts-tbl th,table.facts-tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
-table.facts-tbl th{color:var(--muted);font-weight:600;width:42%;white-space:nowrap}
-table.facts-tbl td{color:var(--body)}
-table.facts-tbl tr:last-child th,table.facts-tbl tr:last-child td{border-bottom:none}
-.tour p{font-size:15.5px;color:var(--body);line-height:1.85;margin:0 0 15px}
-.chips .item{display:flex;align-items:flex-start;gap:9px;border-radius:14px;padding:10px 14px;font-size:13.5px;line-height:1.45;margin:0 0 9px;width:fit-content;max-width:100%}
-.chips .item svg{flex-shrink:0;margin-top:2px}
-.facts .item{background:rgba(29,158,117,.09);border:1px solid rgba(93,202,165,.3);color:#a7e6d1}
-.facts .item svg{color:var(--green)}
-.look .item{background:rgba(55,138,221,.09);border:1px solid rgba(133,183,235,.3);color:#bcd8f4}
-.look .item svg{color:var(--blue)}
-.tips .item{background:rgba(250,188,5,.08);border:1px solid rgba(250,188,5,.3);color:#ffc955}
-.tips .item svg{color:#f5b75b}
-.faq h3{font-size:15px;font-weight:600;color:var(--fg);margin:18px 0 7px;line-height:1.4}
-.faq h3:first-child{margin-top:4px}
-.faq p{font-size:14.5px;color:var(--body);line-height:1.75;margin:0}
-.nearby{display:grid;gap:8px;margin-top:6px}
-.nearby a{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 14px;text-decoration:none;color:var(--body);font-size:14px}
-.nearby a:hover{border-color:var(--gold);color:var(--gold)}
-.nearby .km{margin-left:auto;color:var(--muted);font-size:12px;white-space:nowrap}
-.mapcard a{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;text-decoration:none;color:var(--fg);font-weight:600;font-size:14.5px}
-.mapcard a:hover{border-color:var(--gold)}
-.mapcard .ic{color:var(--gold);display:flex}
-.mapcard .arr{margin-left:auto;color:var(--muted)}
-.map-note{font-size:12.5px;color:var(--muted);margin-top:8px}
-.srcbox{margin-top:8px;font-size:13px;color:var(--muted);line-height:1.8}
-.srcbox a{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(245,183,91,.35)}
-footer{border-top:1px solid var(--border);margin-top:40px;padding-top:20px;color:var(--muted);font-size:12.5px;line-height:1.9}
-footer a{color:var(--gold);text-decoration:none}
-.appbar-cta{position:fixed;bottom:20px;left:20px;right:20px;display:none;z-index:50}
-.appbar-cta.show{display:block}
-.appbar-cta .pill{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.4);max-width:600px;margin:0 auto}
-.appbar-cta a{display:flex;align-items:center;gap:8px;flex:1;text-decoration:none;color:var(--fg)}
-.appbar-cta svg{width:32px;height:32px;flex-shrink:0}
-.appbar-cta .lb{display:flex;flex-direction:column;line-height:1.1}
-.appbar-cta .lb small{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
-.appbar-cta .lb b{font-size:15px;font-weight:700;color:var(--gold)}
-.appbar-cta .x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:4px 8px;margin-left:auto}
-</style>
+<link rel="stylesheet" href="/explore/assets/lk-1.css">
 </head>
 <body>
-<div class="page">
-<header class="topbar"><a href="https://lokali.travel" class="brand">Lokali</a></header>
+<header class="topbar"><div class="wrap"><a class="brand" href="https://lokali.travel/">Lokali</a><nav class="nav"><a href="https://lokali.travel/explore/index.html" class="on">Explore</a><a href="https://lokali.travel/blog.html">Journal</a></nav><div class="tb-right"><a class="getapp" href="https://play.google.com/store/apps/details?id=app.lokali.travel&amp;utm_source=seo&amp;utm_medium=explore&amp;utm_campaign=topbar-en" rel="nofollow" target="_blank">Get the app</a></div></div></header>
+<main class="wrap">
 <nav class="crumbs" aria-label="Breadcrumb"><a href="https://lokali.travel">Lokali</a> <span class="sep">&rsaquo;</span> <a href="https://lokali.travel/explore/index.html">Explore</a> <span class="sep">&rsaquo;</span> <a href="https://lokali.travel/explore/en/country/south-africa.html">South Africa</a> <span class="sep">&rsaquo;</span> <a href="https://lokali.travel/explore/en/gqeberha.html">Gqeberha</a> <span class="sep">&rsaquo;</span> <span>Bayworld</span></nav>
-
-<div class="hero-img"><img src="https://lokaliphotos.blob.core.windows.net/attractions/4590306b7a074f17b3a5d528249f774743860705.jpg" alt="Bayworld" loading="eager" width="600" height="480"><div class="ov"></div><span class="badge">Free audio guide</span></div>
-<h1>Bayworld</h1>
-<p class="geoline">33.9711&deg; S &middot; 25.5976&deg; E &middot; Museum</p>
-<p class="answer">Bayworld is a marine science museum and aquarium complex on the beachfront featuring live dolphin and seal shows, an oceanarium, and a snake park. It is in Gqeberha, South Africa. Most visitors spend 2–3 hours here. The free Lokali audio guide runs 5 minutes.</p>
+<section class="hero"><img src="https://lokaliphotos.blob.core.windows.net/attractions/4590306b7a074f17b3a5d528249f774743860705.jpg" alt="Bayworld" fetchpriority="high" decoding="async"><span class="ov"></span><div class="hero-copy"><span class="badge">Free audio guide</span><h1>Bayworld</h1><p class="geo">33.9711&deg; S &middot; 25.5976&deg; E &middot; Museum</p><div class="btns"><a class="btn gold" href="https://lokali.travel" rel="nofollow" target="_blank"><span class="pl">&#9654;</span>Open the Lokali app</a><a class="btn ghost" href="https://lokali.travel/explore/en/gqeberha.html">Gqeberha &rarr;</a></div></div></section>
+<div class="narrow" style="margin:0 auto">
+<p class="lead">Bayworld is a marine science museum and aquarium complex on the beachfront featuring live dolphin and seal shows, an oceanarium, and a snake park. It is in Gqeberha, South Africa. Most visitors spend 2–3 hours here. The free Lokali audio guide runs 5 minutes.</p>
 <p class="verified">&#10003; <b>Verified August 2026</b> &middot; <a href="https://lokali.travel/about/editorial-process.html">how we write these guides</a></p>
-<div class="cta-row">
-<a href="https://lokali.travel" class="cta"><span class="play">&#9654;</span><span class="lbl"><small>Begin</small><b>Open the Lokali app</b></span></a>
-</div>
 <section>
-<h2 class="sec">Visitor facts</h2>
+<span class="eyebrow" style="margin-top:48px">At a glance</span><h2 class="sec" style="margin-bottom:16px">Visitor facts</h2>
 <table class="facts-tbl"><tbody>
 <tr><th>Time needed</th><td>2–3 hours</td></tr>
 <tr><th>Lokali audio guide</th><td>5 min &middot; free</td></tr>
@@ -123,10 +43,9 @@ footer a{color:var(--gold);text-decoration:none}
 <tr><th>Coordinates</th><td><span translate="no">-33.9711, 25.5976</span></td></tr>
 <tr><th>Languages</th><td>45, in the Lokali app</td></tr>
 </tbody></table>
-</section>
-<section>
-<h2 class="sec">The story</h2>
-<div class="tour">
+</section><section>
+<span class="eyebrow" style="margin-top:48px">The guide</span><h2 class="sec" style="margin-bottom:16px">The story</h2>
+<div class="prose">
 <p>You step in off the beachfront road, out of the sea wind, into cool and quiet halls. The light is low. Glass cases line the walls. Inside them lie old bones, ship models, and the long skin of a snake. The air smells faintly of old wood and floor polish. This is Bayworld, a museum complex on the Humewood shore of the city.</p>
 <p>Bayworld is not one museum but several gathered together. At its center is the Port Elizabeth Museum. This is one of the oldest museums in South Africa, the third oldest in the whole country. It has been collecting and showing the natural and human history of this coast for well over a century. Generations of this city have walked these same halls as children.</p>
 <p>The museum keeps growing and changing. The foundation stone of the present building was laid on the eleventh of November, 1958. But parts of the collection are far older than that. A determined director named Fitzsimons was already gathering specimens here as early as 1906, building the heart of what you see today. He had a special love for snakes, and it shaped the whole museum.</p>
@@ -141,9 +60,8 @@ footer a{color:var(--gold);text-decoration:none}
 <p>The setting matters too. Bayworld stands on Marine Drive, right on the Humewood beachfront. When you step back outside, the sea is there in front of you. The same bay that fills the cases inside stretches out wide and bright beyond the road. Gulls turn overhead, and the surf works steadily at the sand.</p>
 <p>Stand for a moment between the doors and the water. Inside are the bones, the ships, and the snakes, the gathered memory of this whole coast. Outside is the living sea that made all of it. Bayworld is the quiet place where the two finally meet.</p>
 </div>
-</section>
-<section>
-<h2 class="sec">Key facts</h2>
+</section><section>
+<span class="eyebrow" style="margin-top:48px">Good to know</span><h2 class="sec" style="margin-bottom:16px">Key facts</h2>
 <div class="chips facts">
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>Port Elizabeth Museum is South Africa third oldest</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>Snake park opened in 1919, first of its kind</span></div>
@@ -151,27 +69,24 @@ footer a{color:var(--gold);text-decoration:none}
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>Number 7 Castle Hill joined the complex in 1968</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>Director Fitzsimons gathered specimens here from 1906</span></div>
 </div>
-</section>
-<section>
-<h2 class="sec">What to look for</h2>
+</section><section>
+<span class="eyebrow" style="margin-top:48px">Look closer</span><h2 class="sec" style="margin-bottom:16px">What to look for</h2>
 <div class="chips look">
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>Dinosaur fossils and casts in the halls</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>Living snakes resting behind thick glass</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>The old settler rooms of Castle Hill</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>Whale bones pulled from Algoa Bay</span></div>
 </div>
-</section>
-<section>
-<h2 class="sec">Practical tips</h2>
+</section><section>
+<span class="eyebrow" style="margin-top:48px">Before you go</span><h2 class="sec" style="margin-bottom:16px">Practical tips</h2>
 <div class="chips tips">
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>Ask staff which sections are open today</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>Allow about two hours for the full complex</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>Combine your visit with the Humewood beachfront</span></div>
 <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>Read the snake signs before any country walks</span></div>
 </div>
-</section>
-<section>
-<h2 class="sec">Common questions</h2>
+</section><section>
+<span class="eyebrow" style="margin-top:48px">Questions</span><h2 class="sec" style="margin-bottom:16px">Common questions</h2>
 <div class="faq">
 <h3>How long do you need at Bayworld?</h3>
 <p>Plan 2–3 hours. That is the time most visitors spend at Bayworld. The free Lokali audio guide adds about 5 minutes of narration you can listen to as you walk, so it fits inside your visit rather than adding to it.</p>
@@ -186,25 +101,19 @@ footer a{color:var(--gold);text-decoration:none}
 <h3>What is the best time to visit Bayworld?</h3>
 <p>The dolphin shows run on fixed schedules; check timing before arrival.</p>
 </div>
-</section>
-<section>
-<h2 class="sec">More to see in Gqeberha</h2>
-<div class="nearby">
-<a href="https://lokali.travel/explore/en/gqeberha/nelson-mandela-bay-stadium.html">Nelson Mandela Bay Stadium<span class="km">1.4 km</span></a>
-<a href="https://lokali.travel/explore/en/gqeberha/donkin-reserve.html">Donkin Reserve<span class="km">1.5 km</span></a>
-</div>
-<p class="map-note" style="margin-top:10px"><a href="https://lokali.travel/explore/en/gqeberha.html">All free audio guides in Gqeberha &rsaquo;</a></p>
-</section>
-<section>
-<h2 class="sec">On the map</h2>
+</section><section>
+<span class="eyebrow" style="margin-top:48px">Location</span><h2 class="sec" style="margin-bottom:16px">On the map</h2>
 <div class="mapcard"><a href="https://www.google.com/maps/search/?api=1&query=-33.9711%2C25.5976" target="_blank" rel="noopener noreferrer"><span class="ic"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2.9 6.4-6.4 2.9 2.9-6.4z"/></svg></span>Open in Google Maps<span class="arr">&rsaquo;</span></a></div>
 <p class="map-note">Opens directions to Bayworld from your location.</p>
 </section>
-
+</div>
+<section><div class="shead"><div><span class="eyebrow">Nearby</span><h2>More to see in Gqeberha</h2></div><a class="seeall" href="https://lokali.travel/explore/en/gqeberha.html">Gqeberha &rarr;</a></div><div class="rail"><a class="pcard" href="https://lokali.travel/explore/en/gqeberha/nelson-mandela-bay-stadium.html"><img src="https://upload.wikimedia.org/wikipedia/commons/9/9b/Nelson_Mandela_Stadium_in_Port_Elizabeth_%28cropped%29.jpg" alt="Nelson Mandela Bay Stadium" loading="eager" decoding="async" width="500" height="625"><span class="cov"></span><span class="meta"><b>Nelson Mandela Bay Stadium</b><small>1.4 km</small></span></a><a class="pcard" href="https://lokali.travel/explore/en/gqeberha/donkin-reserve.html"><img src="https://lokaliphotos.blob.core.windows.net/attractions/d3540e59b7ac9f45b83c5b77f6af25ec9e82f3b5.jpg" alt="Donkin Reserve" loading="eager" decoding="async" width="500" height="625"><span class="cov"></span><span class="meta"><b>Donkin Reserve</b><small>1.5 km</small></span></a></div></section>
+<section class="apppanel"><div class="ap-copy"><span class="eyebrow">Free &middot; 45 languages &middot; offline</span><h3>Hear Bayworld <em>in your language</em></h3><p>The full story, narrated, in 45 languages. Download it before you go and it plays offline, at your own pace, with no ticket and no tour group.</p><div class="btns"><a class="btn gold" href="https://lokali.travel" rel="nofollow" target="_blank"><span class="pl">&#9654;</span>Get the Lokali app</a><a class="btn ghost" href="https://lokali.travel/">Try it in the browser</a></div></div><div class="ap-img"><img src="https://lokaliphotos.blob.core.windows.net/attractions/4590306b7a074f17b3a5d528249f774743860705.jpg" alt="" loading="lazy" decoding="async"></div></section>
 <footer>
 <a href="https://lokali.travel/explore/index.html">All cities</a> &middot; <a href="https://lokali.travel/explore/en/country/south-africa.html">Audio guides in South Africa</a> &middot; <a href="https://lokali.travel/explore/en/gqeberha.html">Gqeberha</a> &middot; <a href="https://lokali.travel/about/editorial-process.html">Editorial process</a>
 </footer>
+</main>
 <div class="appbar-cta" id="gpb"><div class="pill"><a href="https://play.google.com/store/apps/details?id=app.lokali.travel&amp;utm_source=seo&amp;utm_medium=explore&amp;utm_campaign=en&amp;utm_content=gqeberha" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 48 48" width="24" height="24" style="flex-shrink:0"><path d="M24,24 L12,35 L12,13 Z" fill="#00B0FF"/><path d="M24,24 L36,35 L36,13 Z" fill="#00E676"/><path d="M24,24 L12,13 L24,3 Z" fill="#FFC400"/><path d="M24,24 L36,13 L24,3 Z" fill="#FF3D57"/></svg><span class="lb"><small>Google Play</small><b>Get the app</b></span></a><button class="x" aria-label="Dismiss" onclick="try{localStorage.setItem('lokali.playbanner.dismissed.v1','1')}catch(e){};document.getElementById('gpb').classList.remove('show')">&#10005;</button></div></div><script>(function(){var d=false;try{d=localStorage.getItem("lokali.playbanner.dismissed.v1")==="1"}catch(e){}if(!window.Capacitor&&!d){document.getElementById("gpb").classList.add("show")}})();</script>
-</div>
+
 </body>
 </html>

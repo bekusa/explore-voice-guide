@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="it" dir="ltr">
 <head>
+<meta name="lk-design" content="1">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#110c08">
@@ -74,155 +75,10 @@ if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t
 window.__toggleTheme=function(){var h=document.documentElement;var cur=h.getAttribute('data-theme');
 var isLight=cur?cur==='light':window.matchMedia('(prefers-color-scheme: light)').matches;
 var next=isLight?'dark':'light';h.setAttribute('data-theme',next);try{localStorage.setItem('lokali.theme',next)}catch(e){}};})();</script>
-<style>
-:root{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--fg);font-family:'Inter',ui-sans-serif,system-ui,sans-serif;line-height:1.65;-webkit-font-smoothing:antialiased}
-.page{max-width:620px;margin:0 auto;padding:0 20px 120px}
-a{color:var(--gold)}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 0 12px}
-.brand{font-family:'Playfair Display',ui-serif,Georgia,serif;font-size:21px;font-weight:600;color:var(--fg);text-decoration:none}
-.lang-dd{position:relative}
-.lang-dd summary{list-style:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);padding:6px 13px;border-radius:999px;border:1px solid var(--border);display:inline-flex;align-items:center;gap:6px}
-.lang-dd summary::-webkit-details-marker{display:none}
-.lang-dd summary::after{content:"\25BE";font-size:9px;opacity:.8}
-.lang-dd[open] summary{color:var(--fg);border-color:var(--gold)}
-.lang-menu{position:absolute;right:0;top:calc(100% + 6px);min-width:190px;max-height:320px;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:6px;z-index:60;box-shadow:0 14px 34px rgba(0,0,0,.55)}
-.lang-menu a{display:block;padding:8px 12px;border-radius:8px;font-size:13px;color:var(--body);text-decoration:none}
-.lang-menu a:hover{background:rgba(245,183,91,.1)}
-.lang-menu a.active{color:var(--gold);font-weight:600}
-nav.crumbs{font-size:12.5px;color:var(--muted);margin:2px 0 14px;line-height:1.9}
-nav.crumbs a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent}
-nav.crumbs a:hover{color:var(--gold);border-bottom-color:var(--gold)}
-nav.crumbs .sep{opacity:.5;margin:0 5px}
-.hero-img{position:relative;border-radius:20px;overflow:hidden;aspect-ratio:5/4;background:var(--card)}
-.hero-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.hero-img .ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(17,12,8,0) 0%,rgba(17,12,8,.35) 55%,rgba(17,12,8,.92) 100%)}
-.badge{position:absolute;left:14px;bottom:14px;display:inline-flex;align-items:center;gap:6px;background:rgba(17,12,8,.55);border:1px solid rgba(245,183,91,.4);color:var(--gold);text-transform:uppercase;letter-spacing:1.6px;font-size:10px;font-weight:700;padding:6px 11px;border-radius:999px;backdrop-filter:blur(6px)}
-h1{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-size:36px;line-height:1.08;margin-top:16px}
-.geoline{font-size:11.5px;color:var(--muted);letter-spacing:.4px;margin-top:8px}
-.answer{margin-top:14px;padding:15px 17px;background:rgba(245,183,91,.06);border:1px solid rgba(245,183,91,.28);border-left:3px solid var(--gold);border-radius:12px;font-size:15.5px;color:var(--fg);line-height:1.7}
-[dir="rtl"] .answer{border-left:1px solid rgba(245,183,91,.28);border-right:3px solid var(--gold)}
-.verified{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:11.5px;color:var(--muted)}
-.verified b{color:var(--green);font-weight:600}
-.verified a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
-.cta-row{display:flex;gap:10px;margin-top:16px}
-.cta{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#fdc357,#f67f2f);color:#110c08;border-radius:16px;padding:12px 18px;text-decoration:none;box-shadow:0 0 60px -16px #f5b75b8c}
-.cta .play{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:rgba(17,12,8,.15);color:#110c08}
-.cta .lbl{display:flex;flex-direction:column;line-height:1.1}
-.cta .lbl small{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;opacity:.75}
-.cta .lbl b{font-size:16px;font-weight:700}
-.sec{font-family:'Playfair Display',ui-serif,Georgia,serif;font-weight:500;font-size:22px;color:var(--fg);margin:34px 0 12px}
-table.facts-tbl{width:100%;border-collapse:collapse;margin-top:6px;font-size:14px}
-table.facts-tbl th,table.facts-tbl td{text-align:start;padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
-table.facts-tbl th{color:var(--muted);font-weight:600;width:42%}
-table.facts-tbl td{color:var(--body)}
-table.facts-tbl tr:last-child th,table.facts-tbl tr:last-child td{border-bottom:none}
-.tour p{font-size:15.5px;color:var(--body);line-height:1.85;margin:0 0 15px}
-.chips .item{display:flex;align-items:flex-start;gap:9px;border-radius:14px;padding:10px 14px;font-size:13.5px;line-height:1.45;margin:0 0 9px;width:fit-content;max-width:100%}
-.chips .item svg{flex-shrink:0;margin-top:2px}
-.facts .item{background:rgba(29,158,117,.09);border:1px solid rgba(93,202,165,.3);color:#a7e6d1}
-.facts .item svg{color:var(--green)}
-.look .item{background:rgba(55,138,221,.09);border:1px solid rgba(133,183,235,.3);color:#bcd8f4}
-.look .item svg{color:var(--blue)}
-.tips .item{background:rgba(250,188,5,.08);border:1px solid rgba(250,188,5,.3);color:#ffc955}
-.tips .item svg{color:#f5b75b}
-.faq h3{font-size:15px;font-weight:600;color:var(--fg);margin:18px 0 7px;line-height:1.4}
-.faq h3:first-child{margin-top:4px}
-.faq p{font-size:14.5px;color:var(--body);line-height:1.75;margin:0}
-.nearby{display:grid;gap:8px;margin-top:6px}
-.nearby a{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 14px;text-decoration:none;color:var(--body);font-size:14px}
-.nearby a:hover{border-color:var(--gold);color:var(--gold)}
-.nearby .km{margin-inline-start:auto;color:var(--muted);font-size:12px;white-space:nowrap}
-.mapcard a{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;text-decoration:none;color:var(--fg);font-weight:600;font-size:14.5px}
-.mapcard a:hover{border-color:var(--gold)}
-.mapcard .ic{color:var(--gold);display:flex}
-.mapcard .arr{margin-inline-start:auto;color:var(--muted)}
-.map-note{font-size:12.5px;color:var(--muted);margin-top:8px}
-.srcbox{margin-top:8px;font-size:13px;color:var(--muted);line-height:1.8}
-.srcbox a{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(245,183,91,.35)}
-footer{border-top:1px solid var(--border);margin-top:40px;padding-top:20px;color:var(--muted);font-size:12.5px;line-height:1.9}
-footer a{color:var(--gold);text-decoration:none}
-.appbar-cta{position:fixed;bottom:20px;left:20px;right:20px;display:none;z-index:50}
-.appbar-cta.show{display:block}
-.appbar-cta .pill{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.4);max-width:600px;margin:0 auto}
-.appbar-cta a{display:flex;align-items:center;gap:8px;flex:1;text-decoration:none;color:var(--fg)}
-.appbar-cta svg{width:32px;height:32px;flex-shrink:0}
-.appbar-cta .lb{display:flex;flex-direction:column;line-height:1.1}
-.appbar-cta .lb small{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
-.appbar-cta .lb b{font-size:15px;font-weight:700;color:var(--gold)}
-.appbar-cta .x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:4px 8px;margin-inline-start:auto}
-
-/* ---- v2: theme system ---- */
-:root{--num:#f5b75b}
-@media (prefers-color-scheme: light){
-:root:not([data-theme="dark"]){--bg:#faf6ef;--fg:#1d1710;--muted:#7a6c5d;--border:#e5dccd;--gold:#b07818;--card:#ffffff;--body:#3a3128;--green:#1d7a54;--blue:#2563a8}
-:root:not([data-theme="dark"]) .hero-img .ov{background:linear-gradient(180deg,rgba(250,246,239,0) 0%,rgba(17,12,8,.05) 55%,rgba(17,12,8,.55) 100%)}
-:root:not([data-theme="dark"]) .facts .item{background:rgba(29,122,84,.07);color:#1d5c40}
-:root:not([data-theme="dark"]) .look .item{background:rgba(37,99,168,.06);color:#1e4f86}
-:root:not([data-theme="dark"]) .tips .item{background:rgba(176,120,24,.07);color:#8a5c10}
-:root:not([data-theme="dark"]) .answer{background:rgba(176,120,24,.06)}
-}
-[data-theme="light"]{--bg:#faf6ef;--fg:#1d1710;--muted:#7a6c5d;--border:#e5dccd;--gold:#b07818;--card:#ffffff;--body:#3a3128;--green:#1d7a54;--blue:#2563a8}
-[data-theme="light"] .hero-img .ov{background:linear-gradient(180deg,rgba(250,246,239,0) 0%,rgba(17,12,8,.05) 55%,rgba(17,12,8,.55) 100%)}
-[data-theme="light"] .facts .item{background:rgba(29,122,84,.07);color:#1d5c40}
-[data-theme="light"] .look .item{background:rgba(37,99,168,.06);color:#1e4f86}
-[data-theme="light"] .tips .item{background:rgba(176,120,24,.07);color:#8a5c10}
-[data-theme="light"] .answer{background:rgba(176,120,24,.06)}
-[data-theme="dark"]{--bg:#110c08;--fg:#f9f4ec;--muted:#a99c8e;--border:#352c25;--gold:#f5b75b;--card:#1b1510;--body:#e7ddcf;--green:#5dcaa5;--blue:#85b7eb}
-.tb-right{display:flex;align-items:center;gap:8px}
-.theme-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:999px;width:30px;height:30px;font-size:14px;cursor:pointer;line-height:1}
-.theme-btn:hover{color:var(--gold);border-color:var(--gold)}
-/* ---- eyebrow + toc ---- */
-.eyebrow{font-size:10.5px;font-weight:700;letter-spacing:2.4px;color:var(--gold);margin:34px 0 0;opacity:.85}
-.eyebrow + .sec{margin-top:2px}
-.toc{display:flex;gap:8px;overflow-x:auto;margin:20px -20px 0;padding:4px 20px 8px;position:sticky;top:0;background:var(--bg);z-index:40;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.toc::-webkit-scrollbar{display:none}
-.toc a{flex:none;font-size:12px;font-weight:600;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:6px 13px;text-decoration:none;white-space:nowrap}
-.toc a:hover{color:var(--gold);border-color:var(--gold)}
-section{scroll-margin-top:52px}
-/* ---- stats strip ---- */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px}
-.st{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 10px;text-align:center}
-.st b{display:block;font-family:'Playfair Display',ui-serif,Georgia,serif;font-size:19px;font-weight:600;color:var(--gold);letter-spacing:.3px}
-.st span{display:block;font-size:9.5px;line-height:1.35;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.6px}
-@media(max-width:430px){.stats{grid-template-columns:repeat(2,1fr)}}
-/* ---- masterpiece cards ---- */
-.mp-grid{display:grid;gap:10px;margin-top:6px}
-.mp-card{display:flex;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 16px}
-.mp-card:hover{border-color:var(--gold)}
-.mp-num{font-family:'Playfair Display',ui-serif,Georgia,serif;font-size:22px;color:var(--gold);opacity:.55;font-weight:500;line-height:1.2;flex:none}
-.mp-body h3{font-size:15.5px;font-weight:600;color:var(--fg);line-height:1.35}
-.mp-artist{font-size:12px;color:var(--gold);margin-top:1px}
-.mp-brief{font-size:13.5px;color:var(--body);line-height:1.6;margin-top:5px}
-.mp-meta{font-size:11.5px;color:var(--muted);margin-top:6px;letter-spacing:.2px}
-/* ---- all-50 table ---- */
-.all50{margin-top:14px;border:1px solid var(--border);border-radius:14px;overflow:hidden}
-.all50 summary{cursor:pointer;list-style:none;padding:13px 16px;font-size:14px;font-weight:600;color:var(--fg);display:flex;align-items:center;gap:8px}
-.all50 summary::-webkit-details-marker{display:none}
-.all50 summary::after{content:"\25BE";margin-inline-start:auto;color:var(--muted);font-size:11px}
-.all50[open] summary::after{content:"\25B4"}
-.all50[open] summary{border-bottom:1px solid var(--border);color:var(--gold)}
-.all50 .cnt{background:rgba(245,183,91,.14);color:var(--gold);font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px}
-.tbl-wrap{overflow-x:auto}
-table.w50{width:100%;border-collapse:collapse;font-size:12.5px;min-width:520px}
-table.w50 th{position:sticky;top:0;background:var(--card);color:var(--muted);font-weight:600;text-align:start;padding:9px 12px;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.7px}
-table.w50 td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--body);vertical-align:top}
-table.w50 tr:last-child td{border-bottom:none}
-table.w50 tr:nth-child(even) td{background:rgba(128,110,90,.045)}
-table.w50 td:first-child{font-weight:600;color:var(--fg)}
-table.w50 .era{white-space:nowrap;color:var(--muted)}
-table.w50 .room{color:var(--gold);font-size:11.5px;white-space:nowrap}
-
-</style>
+<link rel="stylesheet" href="/explore/assets/lk-1.css">
 </head>
 <body>
-<div class="page">
-<div class="topbar">
-<a href="https://lokali.travel" class="brand">Lokali</a>
-<div class="tb-right">
-<button class="theme-btn" onclick="__toggleTheme()" aria-label="theme">&#9681;</button>
-<details class="lang-dd">
+<header class="topbar"><div class="wrap"><a class="brand" href="https://lokali.travel/">Lokali</a><nav class="nav"><a href="https://lokali.travel/explore/index.html" class="on">Explore</a></nav><div class="tb-right"><details class="lang-dd">
 <summary>Italiano</summary>
 <nav class="lang-menu">
 <a href="https://lokali.travel/explore/en/paris/louvre.html" hreflang="en" lang="en">English</a>
@@ -271,194 +127,22 @@ table.w50 .room{color:var(--gold);font-size:11.5px;white-space:nowrap}
 <a href="https://lokali.travel/explore/af/paris/louvre.html" hreflang="af" lang="af">Afrikaans</a>
 <a href="https://lokali.travel/explore/ka/paris/louvre.html" hreflang="ka" lang="ka">ქართული</a>
 </nav>
-</details>
-</div>
-</div>
+</details><a class="getapp" href="https://play.google.com/store/apps/details?id=app.lokali.travel&amp;utm_source=seo&amp;utm_medium=explore&amp;utm_campaign=topbar-it" rel="nofollow" target="_blank">Scarica l&#39;app</a></div></div></header>
+<main class="wrap">
 <nav class="crumbs" aria-label="Breadcrumb"><a href="https://lokali.travel">Lokali</a> <span class="sep">&rsaquo;</span> <a href="https://lokali.travel/explore/index.html">Explore</a> <span class="sep">&rsaquo;</span> <a href="https://lokali.travel/explore/en/country/france.html">France</a> <span class="sep">&rsaquo;</span> <a href="https://lokali.travel/explore/en/paris.html">Paris</a> <span class="sep">&rsaquo;</span> <span>Museo del Louvre</span></nav>
-<div class="hero-img"><img src="https://lokali.travel/images/museums/louvre.jpg" alt="Museo del Louvre, Paris" loading="eager" width="600" height="480"><div class="ov"></div><span class="badge">Audioguida</span></div>
-<h1>Museo del Louvre</h1>
-<p class="geoline">48.8606&deg; N &middot; 2.3352&deg; E &middot; Museo d&#39;arte</p>
-<p class="answer">Museo del Louvre è il museo d&#39;arte più grande e più visitato del mondo, ospitato in un antico palazzo reale lungo la Senna, a Parigi. Prevedi 2–4 ore per i capolavori: la Gioconda, la Venere di Milo, la Nike di Samotracia. L&#39;audioguida gratuita Lokali ne racconta la storia in 45 lingue, offline e senza costi.</p>
+<section class="hero noimg"><span class="ov"></span><div class="hero-copy"><span class="badge">Audioguida</span><h1>Museo del Louvre</h1><p class="geo">48.8606&deg; N &middot; 2.3352&deg; E &middot; Museo d&#39;arte</p><div class="btns"><a class="btn gold" href="https://lokali.travel" rel="nofollow" target="_blank"><span class="pl">&#9654;</span>Apri l&#39;app Lokali</a><a class="btn ghost" href="https://lokali.travel/explore/en/paris.html">Paris &rarr;</a></div></div></section>
+<div class="narrow" style="margin:0 auto">
+<p class="lead">Museo del Louvre è il museo d&#39;arte più grande e più visitato del mondo, ospitato in un antico palazzo reale lungo la Senna, a Parigi. Prevedi 2–4 ore per i capolavori: la Gioconda, la Venere di Milo, la Nike di Samotracia. L&#39;audioguida gratuita Lokali ne racconta la storia in 45 lingue, offline e senza costi.</p>
 <p class="verified">&#10003; <b>Verificato 09.2026</b> &middot; <a href="https://lokali.travel/about/editorial-process.html">come scriviamo queste guide</a> &middot; <a href="https://lokali.travel/explore/it/paris/louvre-light.html">&#9889; Versione leggera</a></p>
-<div class="stats"><div class="st"><b>35&#8239;000</b><span>opere esposte</span></div><div class="st"><b>380&#8239;000</b><span>oggetti nella collezione</span></div><div class="st"><b>72&#8239;735</b><span>m² di spazi espositivi</span></div><div class="st"><b>8</b><span>dipartimenti curatoriali</span></div></div>
-<div class="cta-row">
-<a href="https://lokali.travel" class="cta"><span class="play">&#9654;</span><span class="lbl"><small>Inizia</small><b>Apri l&#39;app Lokali</b></span></a>
+
 </div>
-<nav class="toc" aria-label="In questa pagina"><a href="#masterpieces">Capolavori e dove trovarli</a><a href="#story">La storia</a><a href="#facts">Fatti chiave</a><a href="#tips">Consigli pratici</a><a href="#faq">Domande frequenti</a><a href="#map">Sulla mappa</a></nav>
-<section id="masterpieces">
-<p class="eyebrow">01</p>
-<h2 class="sec">Capolavori e dove trovarli</h2>
-<div class="mp-grid">
-<div class="mp-card"><span class="mp-num">01</span><div class="mp-body"><h3>Gioconda</h3><p class="mp-artist">Leonardo da Vinci</p><p class="mp-brief">Il ritratto di Lisa Gherardini di Leonardo, la cui espressione mutevole lo ha reso il dipinto più famoso del mondo.</p><p class="mp-meta">1503-1519 &middot; <span translate="no">Denon Wing, Level 1, Salle 711</span></p></div></div>
-<div class="mp-card"><span class="mp-num">02</span><div class="mp-body"><h3>Le nozze di Cana</h3><p class="mp-artist">Paolo Veronese</p><p class="mp-brief">L&#39;immenso banchetto veneziano di Veronese è appeso proprio di fronte alla Gioconda — il dipinto più grande del Louvre.</p><p class="mp-meta">1562-1563 &middot; <span translate="no">Denon Wing, Level 1, Salle 711</span></p></div></div>
-<div class="mp-card"><span class="mp-num">03</span><div class="mp-body"><h3>Venere di Milo</h3><p class="mp-brief">L&#39;Afrodite ellenistica in marmo trovata a Milo nel 1820, famosa proprio per le braccia mancanti.</p><p class="mp-meta">150-125 BCE &middot; <span translate="no">Sully Wing, Level 0, Salle 345</span></p></div></div>
-<div class="mp-card"><span class="mp-num">04</span><div class="mp-body"><h3>Nike di Samotracia</h3><p class="mp-brief">Una Nike alata che si posa sulla prua di una nave in cima allo scalone Daru, il panneggio schiacciato dal vento del mare.</p><p class="mp-meta">200-175 BCE &middot; <span translate="no">Denon Wing, Level 1, Salle 703</span></p></div></div>
-<div class="mp-card"><span class="mp-num">05</span><div class="mp-body"><h3>La zattera della Medusa</h3><p class="mp-artist">Théodore Géricault</p><p class="mp-brief">La scena monumentale di Géricault su un vero scandalo navale del 1816, dipinta studiando cadaveri negli obitori.</p><p class="mp-meta">1818-1819 &middot; <span translate="no">Denon Wing, Level 1, Salle 700</span></p></div></div>
-<div class="mp-card"><span class="mp-num">06</span><div class="mp-body"><h3>L&#39;incoronazione di Napoleone</h3><p class="mp-artist">Jacques-Louis David</p><p class="mp-brief">La cerimonia grande come una parete di David, in cui Napoleone incorona lui stesso Giuseppina davanti a una corte in parte inventata.</p><p class="mp-meta">1805-1807 &middot; <span translate="no">Denon Wing, Level 1, Salle 702</span></p></div></div>
-<div class="mp-card"><span class="mp-num">07</span><div class="mp-body"><h3>La Libertà che guida il popolo</h3><p class="mp-artist">Eugène Delacroix</p><p class="mp-brief">La Libertà di Delacroix porta il tricolore sulle barricate della rivoluzione di luglio del 1830.</p><p class="mp-meta">1830 &middot; <span translate="no">Denon Wing, Level 1, Salle 700</span></p></div></div>
-<div class="mp-card"><span class="mp-num">08</span><div class="mp-body"><h3>Amore e Psiche</h3><p class="mp-artist">Antonio Canova</p><p class="mp-brief">Il marmo di Canova ferma l&#39;attimo che precede un bacio, levigato finché la pietra non sembra pelle.</p><p class="mp-meta">1787-1793 &middot; <span translate="no">Denon Wing, Level 0, Salle 403</span></p></div></div>
-<div class="mp-card"><span class="mp-num">09</span><div class="mp-body"><h3>La merlettaia</h3><p class="mp-artist">Johannes Vermeer</p><p class="mp-brief">Il dipinto più piccolo e concentrato di Vermeer: una giovane donna china sul suo tombolo.</p><p class="mp-meta">1669-1670 &middot; <span translate="no">Richelieu Wing, Level 2, Salle 837</span></p></div></div>
-<div class="mp-card"><span class="mp-num">10</span><div class="mp-body"><h3>Scriba seduto</h3><p class="mp-brief">Un funzionario dell&#39;antico Egitto in calcare dipinto, i cui occhi intarsiati di cristallo sembrano ancora vivi dopo 4.500 anni.</p><p class="mp-meta">2675-2545 BCE &middot; <span translate="no">Sully Wing, Level 1, Salle 635</span></p></div></div>
-<div class="mp-card"><span class="mp-num">11</span><div class="mp-body"><h3>Grande Sfinge di Tanis</h3><p class="mp-brief">Quasi 5 metri di leone in granito con testa di faraone, a guardia dell&#39;ingresso delle sale egizie.</p><p class="mp-meta">2675-2545 BCE or 1900-1865 BCE &middot; <span translate="no">Sully Wing, Level -1, Salle 338</span></p></div></div>
-<div class="mp-card"><span class="mp-num">12</span><div class="mp-body"><h3>Codice di Hammurabi</h3><p class="mp-brief">La stele di basalto con le leggi di Babilonia in cuneiforme — uno dei più antichi testi giuridici della terra.</p><p class="mp-meta">1792-1750 BCE &middot; <span translate="no">Richelieu Wing, Level 0, Salle 227</span></p></div></div>
-</div>
-<details class="all50"><summary>Tutti i 50 capolavori imperdibili, con il numero di sala <span class="cnt">50</span></summary><div class="tbl-wrap"><table class="w50"><thead><tr><th>Opera</th><th>Artista</th><th>Epoca</th><th>Sala</th></tr></thead><tbody>
-<tr><td>Lady of Auxerre</td><td>Cretan, Greek Archaic period</td><td class="era">640-620 BCE</td><td class="room" translate="no">Denon Wing, Level -1, Salle 170</td></tr>
-<tr><td>Psyche Revived by Cupid&#39;s Kiss</td><td>Antonio Canova</td><td class="era">1787-1793</td><td class="room" translate="no">Denon Wing, Level 0, Salle 403</td></tr>
-<tr><td>The Dying Slave and The Rebellious Slave</td><td>Michelangelo</td><td class="era">1513-1515</td><td class="room" translate="no">Denon Wing, Level 0, Salle 403</td></tr>
-<tr><td>The Nymph of Fontainebleau</td><td>Benvenuto Cellini</td><td class="era">1542-1543</td><td class="room" translate="no">Denon Wing, Level 1, Escalier Mollien</td></tr>
-<tr><td>Liberty Leading the People</td><td>Eugène Delacroix</td><td class="era">1830</td><td class="room" translate="no">Denon Wing, Level 1, Salle 700</td></tr>
-<tr><td>The Death of Sardanapalus</td><td>Eugène Delacroix</td><td class="era">1827</td><td class="room" translate="no">Denon Wing, Level 1, Salle 700</td></tr>
-<tr><td>The Raft of the Medusa</td><td>Théodore Géricault</td><td class="era">1818-1819</td><td class="room" translate="no">Denon Wing, Level 1, Salle 700</td></tr>
-<tr><td>Grande Odalisque</td><td>Jean-Auguste-Dominique Ingres</td><td class="era">1814</td><td class="room" translate="no">Denon Wing, Level 1, Salle 702</td></tr>
-<tr><td>The Coronation of Napoleon</td><td>Jacques-Louis David</td><td class="era">1805-1807</td><td class="room" translate="no">Denon Wing, Level 1, Salle 702</td></tr>
-<tr><td>The Intervention of the Sabine Women</td><td>Jacques-Louis David</td><td class="era">1799</td><td class="room" translate="no">Denon Wing, Level 1, Salle 702</td></tr>
-<tr><td>The Oath of the Horatii</td><td>Jacques-Louis David</td><td class="era">1784-1785</td><td class="room" translate="no">Denon Wing, Level 1, Salle 702</td></tr>
-<tr><td>Winged Victory of Samothrace</td><td></td><td class="era">200-175 BCE</td><td class="room" translate="no">Denon Wing, Level 1, Salle 703</td></tr>
-<tr><td>The Galerie d&#39;Apollon</td><td>Charles Le Brun, Eugène Delacroix and others</td><td class="era">1661-1851</td><td class="room" translate="no">Denon Wing, Level 1, Salle 705</td></tr>
-<tr><td>The Battle of San Romano: The Counterattack of Micheletto da Cotignola</td><td>Paolo Uccello</td><td class="era">c. 1435-1440</td><td class="room" translate="no">Denon Wing, Level 1, Salle 708</td></tr>
-<tr><td>The Virgin and Child with Saint Anne</td><td>Leonardo da Vinci</td><td class="era">1503-1519</td><td class="room" translate="no">Denon Wing, Level 1, Salle 710</td></tr>
-<tr><td>Virgin of the Rocks</td><td>Leonardo da Vinci</td><td class="era">1483-1494</td><td class="room" translate="no">Denon Wing, Level 1, Salle 710</td></tr>
-<tr><td>Mona Lisa</td><td>Leonardo da Vinci</td><td class="era">1503-1519</td><td class="room" translate="no">Denon Wing, Level 1, Salle 711</td></tr>
-<tr><td>The Wedding Feast at Cana</td><td>Paolo Veronese</td><td class="era">1562-1563</td><td class="room" translate="no">Denon Wing, Level 1, Salle 711</td></tr>
-<tr><td>Portrait of Baldassare Castiglione</td><td>Raphael</td><td class="era">c. 1514-1515</td><td class="room" translate="no">Denon Wing, Level 1, Salle 712</td></tr>
-<tr><td>The Death of the Virgin</td><td>Caravaggio</td><td class="era">1601-1606</td><td class="room" translate="no">Denon Wing, Level 1, Salle 712</td></tr>
-<tr><td>The Clubfooted Boy</td><td>Jusepe de Ribera</td><td class="era">1642</td><td class="room" translate="no">Denon Wing, Level 1, Salle 718</td></tr>
-<tr><td>The Young Beggar</td><td>Bartolomé Esteban Murillo</td><td class="era">1647-1648</td><td class="room" translate="no">Denon Wing, Level 1, Salle 718</td></tr>
-<tr><td>Marly Horses</td><td>Guillaume Coustou</td><td class="era">1745</td><td class="room" translate="no">Richelieu Wing, Level -1, Cour Marly</td></tr>
-<tr><td>Code of Hammurabi</td><td></td><td class="era">1792-1750 BCE</td><td class="room" translate="no">Richelieu Wing, Level 0, Salle 227</td></tr>
-<tr><td>Victory Stele of Naram-Sin</td><td>Akkadian, Mesopotamia</td><td class="era">2254-2218 BCE</td><td class="room" translate="no">Richelieu Wing, Level 0, Salle 228</td></tr>
-<tr><td>Human-Headed Winged Bull</td><td>Neo-Assyrian</td><td class="era">721-705 BCE</td><td class="room" translate="no">Richelieu Wing, Level 0, Salle 229</td></tr>
-<tr><td>The Barberini Ivory</td><td>Byzantine, carved in Constantinople</td><td class="era">c. 525-550</td><td class="room" translate="no">Richelieu Wing, Level 1, Salle 501</td></tr>
-<tr><td>The Harbaville Triptych</td><td>Byzantine, Romanos group workshop in Constantinople</td><td class="era">c. 940-960</td><td class="room" translate="no">Richelieu Wing, Level 1, Salle 501</td></tr>
-<tr><td>Suger&#39;s Eagle</td><td>Goldsmiths working for Abbot Suger of Saint-Denis</td><td class="era">before 1147</td><td class="room" translate="no">Richelieu Wing, Level 1, Salle 502</td></tr>
-<tr><td>The Moneylender and His Wife</td><td>Quentin Metsys</td><td class="era">1514</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 814</td></tr>
-<tr><td>The Ship of Fools</td><td>Hieronymus Bosch</td><td class="era">c. 1490-1500</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 815</td></tr>
-<tr><td>The Madonna of Chancellor Rolin</td><td>Jan van Eyck</td><td class="era">c. 1430-1435</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 818</td></tr>
-<tr><td>Gabrielle d&#39;Estrées and One of Her Sisters</td><td>School of Fontainebleau</td><td class="era">1575-1600</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 824</td></tr>
-<tr><td>The Astronomer</td><td>Johannes Vermeer</td><td class="era">1668</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 837</td></tr>
-<tr><td>The Lacemaker</td><td>Johannes Vermeer</td><td class="era">1669-1670</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 837</td></tr>
-<tr><td>Bathsheba at Her Bath</td><td>Rembrandt</td><td class="era">1654</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 844</td></tr>
-<tr><td>Self-Portrait at the Easel</td><td>Rembrandt van Rijn</td><td class="era">1660</td><td class="room" translate="no">Richelieu Wing, Level 2, Salle 844</td></tr>
-<tr><td>Great Sphinx of Tanis</td><td></td><td class="era">2675-2545 BCE or 1900-1865 BCE</td><td class="room" translate="no">Sully Wing, Level -1, Salle 338</td></tr>
-<tr><td>Frieze of Archers</td><td>Achaemenid Persian</td><td class="era">522-486 BCE</td><td class="room" translate="no">Sully Wing, Level 0, Salle 307</td></tr>
-<tr><td>The Dendera Zodiac</td><td>Egyptian, late Ptolemaic period</td><td class="era">50 BCE</td><td class="room" translate="no">Sully Wing, Level 0, Salle 325</td></tr>
-<tr><td>Venus de Milo</td><td></td><td class="era">150-125 BCE</td><td class="room" translate="no">Sully Wing, Level 0, Salle 345</td></tr>
-<tr><td>Borghese Gladiator</td><td>Agasias of Ephesos</td><td class="era">100 BCE</td><td class="room" translate="no">Sully Wing, Level 0, Salle 348</td></tr>
-<tr><td>Seated Scribe</td><td></td><td class="era">2675-2545 BCE</td><td class="room" translate="no">Sully Wing, Level 1, Salle 635</td></tr>
-<tr><td>Sarcophagus of the Spouses</td><td>Etruscan, Cerveteri</td><td class="era">520-510 BCE</td><td class="room" translate="no">Sully Wing, Level 1, Salle 663</td></tr>
-<tr><td>The Cheat with the Ace of Diamonds</td><td>Georges de La Tour</td><td class="era">1636-1640</td><td class="room" translate="no">Sully Wing, Level 2, Salle 912</td></tr>
-<tr><td>The Magdalene with the Night Light</td><td>Georges de La Tour</td><td class="era">1642-1644</td><td class="room" translate="no">Sully Wing, Level 2, Salle 912</td></tr>
-<tr><td>Pilgrimage to the Island of Cythera</td><td>Jean-Antoine Watteau</td><td class="era">1717</td><td class="room" translate="no">Sully Wing, Level 2, Salle 917</td></tr>
-<tr><td>The Ray</td><td>Jean-Siméon Chardin</td><td class="era">1728</td><td class="room" translate="no">Sully Wing, Level 2, Salle 919</td></tr>
-<tr><td>Portrait of Monsieur Bertin</td><td>Jean-Auguste-Dominique Ingres</td><td class="era">1832</td><td class="room" translate="no">Sully Wing, Level 2, Salle 940</td></tr>
-<tr><td>The Turkish Bath</td><td>Jean-Auguste-Dominique Ingres</td><td class="era">1862</td><td class="room" translate="no">Sully Wing, Level 2, Salle 940</td></tr>
-</tbody></table></div></details>
-</section>
-<section id="story">
-<p class="eyebrow">02</p>
-<h2 class="sec">La storia</h2>
-<div class="tour">
-<p>Fermati un momento nel cortile. Puoi sentire diverse lingue tutte insieme. Le ruote delle valigie sferragliano sulle pietre. Da qualche parte una guida alza la voce sopra la folla. Al centro si trova una piramide di vetro e metallo. Le antiche mura del palazzo la circondano su tre lati. Ci vuole un attimo per assorbirne le proporzioni. Questo cortile è ampio, e gli edifici sono lunghi. Alza lo sguardo verso le facciate di pietra scolpita. Poi abbassalo verso il vetro. Queste mura sono state costruite nel corso di diversi secoli. Il vetro risale agli anni ottanta.</p>
-<p>La storia comincia sottoterra. Intorno al 1190, un re di nome Filippo Augusto costruì una fortezza in questo punto. Parigi era più piccola allora, e la fortezza sorvegliava l&#39;accesso fluviale alla città. Quell&#39;edificio scomparve per secoli. Poi, durante i lavori di costruzione degli anni ottanta, gli archeologi ne riportarono alla luce le fondamenta. Oggi puoi scendere e vederle. Le fondamenta medievali si trovano nel seminterrato del museo. Avvicinati alla vecchia pietra. È ruvida, e molto più scura delle mura sopra la tua testa.</p>
-<p>La fortezza non rimase tale. I re di Francia continuarono a ricostruire sul sito. Lo ampliarono, aggiunsero ali, e trasformarono la difesa in rappresentanza. Entro il 1364 era diventata una residenza reale, e continuò a espandersi per secoli. Ogni sovrano volle lasciare un segno, quindi gli stili non corrispondono tra loro. Cammina lungo l&#39;esterno e vedrai i cambiamenti. Alcune facciate sono semplici e massicce. Altre portano colonne, figure scolpite e profonde cornici di finestre. Questo palazzo è in realtà tanti edifici, uniti insieme nel corso di un tempo molto lungo.</p>
-<p>Poi arrivò la Rivoluzione francese. Nel 1793 il palazzo aprì come museo pubblico. Quella data conta più di quanto sembri a prima vista. La collezione reale era stata tenuta per lo più per la corte, con solo occasionali aperture al pubblico. Ora la gente comune poteva entrare e guardare dipinti che erano appartenuti ai re. L&#39;idea si diffuse in tutta Europa. Molti musei nazionali seguirono in seguito lo stesso modello. Quindi, quando fai la fila qui, ti unisci a qualcosa che è nato come un atto politico. L&#39;arte fu dichiarata appartenere al popolo.</p>
-<p>La piramide di vetro è molto più recente. L&#39;architetto I. M. Pei la progettò, e fu inaugurata nel 1989. Molti parigini all&#39;inizio non la amarono. Sostenevano che vetro e acciaio non si addicessero a un palazzo reale. Le lamentele svanirono. La piramide risolse un problema reale, perché il museo aveva bisogno di un ingresso unico e chiaro e di un ampio spazio sottostante per accogliere la folla. Avvicinati e guarda attraverso i pannelli. Il vetro è stato reso particolarmente trasparente, così puoi vedere le antiche facciate di pietra attraverso di esso.</p>
-<p>La maggior parte dei visitatori viene per un solo dipinto. La Gioconda, chiamata in francese La Joconde, fu dipinta da Leonardo da Vinci. È più piccola di quanto ci si aspetti. È appesa dietro un vetro, e una folla vi si accalca davanti quasi ad ogni ora del giorno. Segui i cartelli piuttosto che una mappa. Nella sala, di solito una fila conduce fino a una barriera davanti al dipinto. La fila avanza rapidamente, quindi il tuo tempo in prima fila sarà breve. Puoi anche osservarla da più lontano, dove si trovano meno persone.</p>
-<p>Ecco la parte che sorprende la gente. Nel 1911 il dipinto fu rubato. Un operaio italiano che aveva installato vetrate nel museo lo staccò dalla parete e uscì. Il furto non fu notato subito. Il dipinto rimase scomparso per più di due anni, e la folla veniva a guardare lo spazio vuoto sulla parete. Fu ritrovato in Italia e restituito. Molti storici sostengono che sia stato proprio il furto a renderlo famoso. Prima di allora era ammirato, ma non era il dipinto che tutti volevano vedere.</p>
-<p>Due sculture si contendono il secondo posto. La Venere di Milo è una figura femminile di marmo greco, priva di entrambe le braccia. Mancavano già quando la statua fu dissotterrata nel 1820. La Vittoria alata di Samotracia è posta su una pietra scolpita a forma di prua di nave. Anche lei non ha né testa né braccia. Sembra comunque muoversi in avanti. Le sue vesti sono scolpite come se il vento ne premesse il tessuto contro il corpo. Osserva quelle pieghe di lato, non solo di fronte.</p>
-<p>La collezione si estende ben oltre l&#39;Europa. Ci sono sale dedicate all&#39;antico Egitto, con sarcofagi, statue e oggetti di uso quotidiano. Ci sono gallerie dedicate all&#39;antico Vicino Oriente. Ospita anche scultura greca e romana, arte islamica, mobili francesi e oggetti decorativi. Alcune sezioni chiudono per restauro, quindi controlla quali sale sono aperte nel giorno in cui vieni. I dipinti arrivano fino alla metà del diciannovesimo secolo. L&#39;arte successiva è andata in altri musei della città. Quindi questo non è veramente un solo museo. Sono diversi musei che condividono un tetto, un biglietto e un lunghissimo sistema di corridoi.</p>
-<p>Un oggetto nelle sale del Vicino Oriente merita una deviazione. È il Codice di Hammurabi, una stele, ovvero una lastra di pietra scolpita eretta verticalmente. Porta un lungo elenco di leggi dell&#39;antica Mesopotamia, incise nella pietra in scrittura cuneiforme. Il testo copre il commercio, le questioni familiari, la proprietà e le punizioni. Avvicinati e guarda la sommità della pietra. Una figura seduta consegna un simbolo di autorità a un re in piedi. L&#39;incisione è poco profonda, ma il dettaglio resta nitido.</p>
-<p>L&#39;edificio non è sempre stato pieno. Durante la Seconda guerra mondiale, il personale imballò le opere più preziose e le trasferì fuori Parigi. I dipinti viaggiarono su camion e furono nascosti in case di campagna lontane dalla città. Le sculture troppo grandi per essere spostate furono protette dove si trovavano. Per un lungo periodo le gallerie contennero solo cornici vuote e sacchi di sabbia. Le opere che avevano lasciato l&#39;edificio vi fecero ritorno in seguito. Vale la pena ricordarlo quando una sala sembra affollata. La folla, in realtà, è un buon segno.</p>
-<p>Ora un avvertimento sulle dimensioni. Non puoi vedere tutto questo in una sola visita. Le gallerie si estendono per chilometri, e una camminata determinata attraverso ogni sala richiederebbe giorni. Provarci rende le persone stanche e infelici. Scegli invece tre o quattro cose. Cammina verso di esse lentamente, e lasciati fermare da qualunque cosa catturi il tuo sguardo lungo il percorso. Le ore migliori qui nascono di solito dal vagare in una sala tranquilla e restarci molto più a lungo di quanto avessi programmato.</p>
-<p>Quindi respira profondamente, dove ti trovi ora. Intorno a te il palazzo conserva ancora la forma dei suoi antichi cortili e delle sue lunghe ali. Qui mangiavano i re. I soldati sorvegliavano queste mura. I pittori avevano qui i loro studi. Ora le porte sono aperte a chiunque abbia un biglietto. Gli oggetti al suo interno sono arrivati dall&#39;Egitto, dalla Grecia, dalla Mesopotamia e da mezza Europa per finire tutti in un unico luogo. Guarda ancora una volta la pietra e il vetro insieme. Poi entra e trova una cosa che ami.</p>
-</div>
-</section>
-<section id="facts">
-<p class="eyebrow">03</p>
-<h2 class="sec">Info per i visitatori</h2>
-<table class="facts-tbl"><tbody>
-<tr><th>Tempo necessario</th><td>2–4 ore (capolavori)</td></tr>
-<tr><th>Lokali</th><td>Audioguida &middot; 8 min &middot; 45 &#127760;</td></tr>
-<tr><th>Museo d&#39;arte</th><td>Paris, France</td></tr>
-<tr><th>M&eacute;tro</th><td><span translate="no">Palais-Royal &ndash; Mus&eacute;e du Louvre (1, 7)</span></td></tr>
-<tr><th><span translate="no">GPS</span></th><td><span translate="no">48.8606, 2.3352</span></td></tr>
-<tr><th>Sito ufficiale</th><td><a href="https://www.louvre.fr/en" rel="noopener nofollow" target="_blank">louvre.fr</a></td></tr>
-</tbody></table>
-</section>
-<section id="keyfacts">
-<p class="eyebrow">04</p>
-<h2 class="sec">Fatti chiave</h2>
-<div class="chips facts">
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>Una fortezza sorgeva su questo sito a partire dal 1190 circa.</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>Il palazzo aprì come museo pubblico nel 1793.</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>La piramide di vetro dell&#39;architetto I. M. Pei fu inaugurata nel 1989.</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>La Gioconda fu rubata nel 1911.</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>La stele del Codice di Hammurabi proviene dall&#39;antica Mesopotamia.</span></div>
-</div>
-</section>
-<section id="look">
-<p class="eyebrow">05</p>
-<h2 class="sec">Cosa osservare</h2>
-<div class="chips look">
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>Le pieghe scolpite, mosse dal vento, sulle vesti della Vittoria alata.</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>I punti di rottura dove un tempo erano attaccate le braccia della Venere di Milo.</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>Una figura seduta scolpita sulla sommità della stele.</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>Le antiche facciate di pietra viste attraverso i pannelli di vetro della piramide.</span></div>
-</div>
-</section>
-<section id="tips">
-<p class="eyebrow">06</p>
-<h2 class="sec">Consigli pratici</h2>
-<div class="chips tips">
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>Prenota online una fascia oraria d&#39;ingresso prima di venire, perché in estate tutti hanno bisogno di una prenotazione.</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>Controlla il sito del museo per le chiusure delle sale prima di pianificare il tuo percorso.</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>Vedi tutto ciò che vuoi vedere in un&#39;unica visita, perché non puoi rientrare dopo essere uscito.</span></div>
-<div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>Scendi a vedere le fondamenta medievali nel seminterrato.</span></div>
-</div>
-</section>
-<section id="faq">
-<p class="eyebrow">07</p>
-<h2 class="sec">Domande frequenti</h2>
-<div class="faq">
-<h3>Quanto tempo serve al Louvre?</h3>
-<p>Prevedi 2–4 ore per i capolavori. Una prima visita richiede almeno 3 ore; vedere tutto richiederebbe giorni, quindi scegli poche ali e cammina lentamente. L&#39;audioguida gratuita Lokali di 8 minuti ti racconta la storia strada facendo.</p>
-<h3>Cosa non perdere al Louvre?</h3>
-<p>Iniziate dalla Gioconda (Denon Wing, Salle 711), dalla Nike di Samotracia in cima allo scalone Daru e dalla Venere di Milo. Poi scegliete dalla tabella di questa pagina — ogni opera indica ala e sala, così potete costruire il vostro itinerario in pochi minuti.</p>
-<h3>Esiste un&#39;audioguida gratuita per Museo del Louvre?</h3>
-<p>Sì. L&#39;app Lokali racconta Museo del Louvre gratuitamente in 45 lingue — storia, cosa osservare e consigli pratici. Funziona offline una volta scaricata.</p>
-<h3>In cosa Lokali è diversa dall&#39;audioguida del museo?</h3>
-<p>Il museo noleggia in loco un dispositivo audio in 9 lingue. Lokali funziona gratis sul tuo telefono in 45 lingue, va offline una volta scaricata, e puoi ascoltarla prima ancora di arrivare.</p>
-</div>
-</section>
-<section id="near">
-<p class="eyebrow">08</p>
-<h2 class="sec">Altro da vedere a Parigi</h2>
-<div class="nearby">
-<a href="https://lokali.travel/explore/en/paris/musée-dorsay.html">Musée d&#39;Orsay<span class="km">0.6 km</span></a>
-<a href="https://lokali.travel/explore/en/paris/sainte-chapelle.html">Sainte-Chapelle<span class="km">1.0 km</span></a>
-<a href="https://lokali.travel/explore/en/paris/notre-dame-cathedral.html">Notre-Dame Cathedral<span class="km">1.4 km</span></a>
-<a href="https://lokali.travel/explore/en/paris/latin-quarter.html">Latin Quarter<span class="km">1.4 km</span></a>
-<a href="https://lokali.travel/explore/en/paris/montmartre.html">Montmartre<span class="km">3.0 km</span></a>
-<a href="https://lokali.travel/explore/en/paris/sacré-cœur-basilica.html">Sacré-Cœur Basilica<span class="km">3.0 km</span></a>
-</div>
-<p class="map-note" style="margin-top:10px"><a href="https://lokali.travel/explore/en/paris.html">Tutte le audioguide gratuite di Parigi &rsaquo;</a></p>
-</section>
-<section id="map">
-<p class="eyebrow">09</p>
-<h2 class="sec">Sulla mappa</h2>
-<div class="mapcard"><a href="https://www.google.com/maps/search/?api=1&query=48.8606%2C2.3352" target="_blank" rel="noopener noreferrer"><span class="ic"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2.9 6.4-6.4 2.9 2.9-6.4z"/></svg></span>Apri in Google Maps<span class="arr">&rsaquo;</span></a></div>
-<p class="map-note">Apre le indicazioni per Museo del Louvre dalla tua posizione.</p>
-</section>
-<section id="ref">
-<p class="eyebrow">10</p>
-<h2 class="sec">Riferimenti</h2>
-<div class="srcbox">Museo del Louvre: <a href="https://en.wikipedia.org/wiki/Louvre" rel="nofollow noopener" target="_blank">Wikipedia</a> &middot; <a href="https://www.wikidata.org/wiki/Q19675" rel="nofollow noopener" target="_blank">Wikidata</a> &middot; <a href="https://www.louvre.fr/en" rel="nofollow noopener" target="_blank">Sito ufficiale</a></div>
-</section>
+
+<section class="apppanel noimg"><div class="ap-copy"><span class="eyebrow">Gratis &middot; 45 lingue &middot; offline</span><h3>Porta la guida <em>con te</em></h3><p>Scaricala prima di partire. Funziona offline, è gratuita e parla la tua lingua.</p><div class="btns"><a class="btn gold" href="https://lokali.travel" rel="nofollow" target="_blank"><span class="pl">&#9654;</span>Apri l&#39;app Lokali</a><a class="btn ghost" href="https://lokali.travel/">Provala nel browser</a></div></div></section>
 <footer>
 <a href="https://lokali.travel/explore/index.html">Tutte le città</a> &middot; <a href="https://lokali.travel/explore/en/country/france.html">Audioguide in Francia</a> &middot; <a href="https://lokali.travel/explore/en/paris.html">Paris</a> &middot; <a href="https://lokali.travel/explore/it/paris/louvre-light.html">Versione leggera</a> &middot; <a href="https://lokali.travel/about/editorial-process.html">Processo editoriale</a>
 </footer>
+</main>
 <div class="appbar-cta" id="gpb"><div class="pill"><a href="https://play.google.com/store/apps/details?id=app.lokali.travel&amp;utm_source=seo&amp;utm_medium=explore&amp;utm_campaign=it&amp;utm_content=louvre" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 48 48" width="24" height="24" style="flex-shrink:0"><path d="M24,24 L12,35 L12,13 Z" fill="#00B0FF"/><path d="M24,24 L36,35 L36,13 Z" fill="#00E676"/><path d="M24,24 L12,13 L24,3 Z" fill="#FFC400"/><path d="M24,24 L36,13 L24,3 Z" fill="#FF3D57"/></svg><span class="lb"><small>Google Play</small><b>Scarica l&#39;app</b></span></a><button class="x" aria-label="Dismiss" onclick="try{localStorage.setItem('lokali.playbanner.dismissed.v1','1')}catch(e){};document.getElementById('gpb').classList.remove('show')">&#10005;</button></div></div><script>(function(){var d=false;try{d=localStorage.getItem("lokali.playbanner.dismissed.v1")==="1"}catch(e){}if(!window.Capacitor&&!d){document.getElementById("gpb").classList.add("show")}})();</script>
-</div>
-<div id="lk-install" style="position:fixed;left:0;right:0;bottom:0;z-index:9999;display:flex;align-items:center;gap:12px;padding:11px 16px;background:rgba(17,12,8,.97);border-top:1px solid #352c25;backdrop-filter:blur(10px);font-family:Inter,system-ui,sans-serif"><span style="flex:1;color:#e7ddcf;font-size:14px;line-height:1.35">Ascolta questa guida — gratis, nella tua lingua.</span><a href="https://play.google.com/store/apps/details?id=app.lokali.travel&amp;utm_source=seo&amp;utm_medium=explore&amp;utm_campaign=it&amp;utm_content=louvre" rel="nofollow" style="flex:none;background:linear-gradient(103deg,#f5d38a,#d4a03c);color:#1a1206;font-weight:700;font-size:14px;text-decoration:none;padding:9px 16px;border-radius:100px;white-space:nowrap">Ottieni l&#39;app</a><button onclick="this.parentNode.remove()" aria-label="close" style="flex:none;background:none;border:none;color:#6f6252;font-size:19px;line-height:1;cursor:pointer;padding:0 2px">&times;</button></div><script>if(window.Capacitor){var e=document.getElementById("lk-install");e&&e.remove();}</script></body>
+
+</body>
 </html>
