@@ -330,7 +330,16 @@ async function postJSON<T>(url: string, body: unknown): Promise<T> {
       signal: ac.signal,
     });
     if (!res.ok) {
-      throw new Error(`Request failed (${res.status})`);
+      // Carry the status ON the error, not only inside its text.
+      // Beka 2026-10-15: client-side failures now get reported to
+      // /api/client-error, and "Request failed (502)" parsed out of a
+      // string is the kind of thing that silently stops working. The
+      // property survives intact.
+      const err = new Error(`Request failed (${res.status})`) as Error & {
+        status?: number;
+      };
+      err.status = res.status;
+      throw err;
     }
     const text = await res.text();
     return tolerantParse<T>(text);

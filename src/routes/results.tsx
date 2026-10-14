@@ -21,6 +21,7 @@ import { LoadingMessages } from "@/components/LoadingMessages";
 import { MobileFrame } from "@/components/MobileFrame";
 import { UnescoBadge } from "@/components/UnescoBadge";
 import { isUnescoSite } from "@/lib/unesco";
+import { reportClientError } from "@/lib/reportClientError";
 import {
   attractionSlug,
   classifySearchQuery,
@@ -146,6 +147,7 @@ function ResultsPage() {
     // and merges 20 more into state + cache so the user's first
     // search stays fast (~5-10s) while pages 2-3 still feel instant
     // by the time they tap Next.
+    const startedAt = Date.now();
     fetchAttractionsWithMeta(q, language)
       .then(({ attractions, canonicalQuery }) => {
         if (cancelled) return;
@@ -168,7 +170,28 @@ function ResultsPage() {
           });
         }
       })
-      .catch(() => {
+      .catch((err: unknown) => {
+        /* Report BEFORE the early return. Beka 2026-10-15: "დღეს
+         * დამიწერა AI temporary busy, მაგრამ ლოგებში ვერ ამოვიკითხე."
+         *
+         * This catch used to be `.catch(() => ...)` — it threw the
+         * error away without even naming it, so a 502, a dead network,
+         * the 120 s abort and malformed JSON all produced the same
+         * toast and the same total silence in our logs. Every one of
+         * those needs a different fix, and we could not tell them
+         * apart.
+         *
+         * It also runs when `cancelled` is true (the user navigated
+         * away mid-search), which is exactly when a real failure is
+         * most likely to be dismissed as "they left". */
+        reportClientError({
+          where: "results:fetchAttractions",
+          error: err,
+          status: (err as { status?: number } | null)?.status ?? null,
+          query: q,
+          lang: language,
+          durationMs: Date.now() - startedAt,
+        });
         if (cancelled) return;
         // Friendly message instead of the raw "Request failed (502)".
         // The usual cause is the AI provider being overloaded / down.
