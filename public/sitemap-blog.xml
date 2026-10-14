@@ -5,7 +5,31 @@
     <xhtml:link rel="alternate" hreflang="en-US" href="https://lokali.travel/blog.html"/>
     <xhtml:link rel="alternate" hreflang="en-GB" href="https://lokali.travel/blog.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://lokali.travel/blog.html"/>
-    <lastmod>2026-10-11</lastmod>
+    <lastmod>2026-10-14</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://lokali.travel/blog/travel-guides-in-multiple-languages.html</loc>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://lokali.travel/blog/travel-guides-in-multiple-languages.html"/>
+    <xhtml:link rel="alternate" hreflang="en-GB" href="https://lokali.travel/blog/travel-guides-in-multiple-languages.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://lokali.travel/blog/travel-guides-in-multiple-languages.html"/>
+    <lastmod>2026-10-14</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://lokali.travel/blog/museum-audio-guide-without-tickets.html</loc>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://lokali.travel/blog/museum-audio-guide-without-tickets.html"/>
+    <xhtml:link rel="alternate" hreflang="en-GB" href="https://lokali.travel/blog/museum-audio-guide-without-tickets.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://lokali.travel/blog/museum-audio-guide-without-tickets.html"/>
+    <lastmod>2026-10-14</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://lokali.travel/blog/offline-audio-guides-for-travel.html</loc>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://lokali.travel/blog/offline-audio-guides-for-travel.html"/>
+    <xhtml:link rel="alternate" hreflang="en-GB" href="https://lokali.travel/blog/offline-audio-guides-for-travel.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://lokali.travel/blog/offline-audio-guides-for-travel.html"/>
+    <lastmod>2026-10-14</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -13,7 +37,7 @@
     <xhtml:link rel="alternate" hreflang="en-US" href="https://lokali.travel/blog/free-self-guided-city-tours-on-your-time.html"/>
     <xhtml:link rel="alternate" hreflang="en-GB" href="https://lokali.travel/blog/free-self-guided-city-tours-on-your-time.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://lokali.travel/blog/free-self-guided-city-tours-on-your-time.html"/>
-    <lastmod>2026-10-11</lastmod>
+    <lastmod>2026-10-14</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -21,7 +45,7 @@
     <xhtml:link rel="alternate" hreflang="en-US" href="https://lokali.travel/blog/free-audio-guide-apps.html"/>
     <xhtml:link rel="alternate" hreflang="en-GB" href="https://lokali.travel/blog/free-audio-guide-apps.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://lokali.travel/blog/free-audio-guide-apps.html"/>
-    <lastmod>2026-10-11</lastmod>
+    <lastmod>2026-10-14</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -29,7 +53,7 @@
     <xhtml:link rel="alternate" hreflang="en-US" href="https://lokali.travel/blog/rome-3-day-itinerary.html"/>
     <xhtml:link rel="alternate" hreflang="en-GB" href="https://lokali.travel/blog/rome-3-day-itinerary.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://lokali.travel/blog/rome-3-day-itinerary.html"/>
-    <lastmod>2026-10-11</lastmod>
+    <lastmod>2026-10-14</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -37,7 +61,7 @@
     <xhtml:link rel="alternate" hreflang="en-US" href="https://lokali.travel/blog/istanbul-2-day-itinerary.html"/>
     <xhtml:link rel="alternate" hreflang="en-GB" href="https://lokali.travel/blog/istanbul-2-day-itinerary.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://lokali.travel/blog/istanbul-2-day-itinerary.html"/>
-    <lastmod>2026-10-11</lastmod>
+    <lastmod>2026-10-14</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -45,7 +69,7 @@
     <xhtml:link rel="alternate" hreflang="en-US" href="https://lokali.travel/blog/tbilisi-one-day-walk.html"/>
     <xhtml:link rel="alternate" hreflang="en-GB" href="https://lokali.travel/blog/tbilisi-one-day-walk.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://lokali.travel/blog/tbilisi-one-day-walk.html"/>
-    <lastmod>2026-10-11</lastmod>
+    <lastmod>2026-10-14</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -53,7 +77,7 @@
     <xhtml:link rel="alternate" hreflang="en-US" href="https://lokali.travel/blog/self-guided-vs-guided-tours.html"/>
     <xhtml:link rel="alternate" hreflang="en-GB" href="https://lokali.travel/blog/self-guided-vs-guided-tours.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://lokali.travel/blog/self-guided-vs-guided-tours.html"/>
-    <lastmod>2026-10-11</lastmod>
+    <lastmod>2026-10-14</lastmod>
     <changefreq>monthly</changefreq>
   </url>
 </urlset>

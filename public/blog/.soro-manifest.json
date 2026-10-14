@@ -1,11 +1,17 @@
 {
-  "generated": "2026-10-11T18:18:27.356497+00:00",
+  "generated": "2026-10-14T14:53:12.914113+00:00",
   "feed": "https://app.trysoro.com/api/rss/40e3fcd6-ae58-4652-bf7f-5ad9d903f38f",
   "noindex": false,
   "pages": [
-    "https://lokali.travel/blog/free-self-guided-city-tours-on-your-time.html"
+    "https://lokali.travel/blog/free-self-guided-city-tours-on-your-time.html",
+    "https://lokali.travel/blog/museum-audio-guide-without-tickets.html",
+    "https://lokali.travel/blog/offline-audio-guides-for-travel.html",
+    "https://lokali.travel/blog/travel-guides-in-multiple-languages.html"
   ],
   "in_feed": [
+    "https://lokali.travel/blog/travel-guides-in-multiple-languages.html",
+    "https://lokali.travel/blog/museum-audio-guide-without-tickets.html",
+    "https://lokali.travel/blog/offline-audio-guides-for-travel.html",
     "https://lokali.travel/blog/free-self-guided-city-tours-on-your-time.html"
   ]
 }
