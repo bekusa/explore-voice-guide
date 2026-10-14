@@ -1,4 +1,5 @@
 import { callClaude } from "@/lib/anthropic.server";
+import { logNameResolution } from "@/lib/errorLog.server";
 
 /**
  * Canonical-English-name normalisation for cache keys.
@@ -105,7 +106,15 @@ export async function normalizeToCanonicalEnglish(
 
   const cacheKey = `${sourceLang.toLowerCase()}:${trimmed.toLowerCase()}`;
   const cached = nameCache.get(cacheKey);
+  // A warm in-worker hit is not a resolution event — it is the same
+  // request answered twice. Logging it would inflate whichever path
+  // happened to win earlier and bias the very number we're measuring.
   if (cached) return cached;
+
+  // Everything below is a real resolution. Time it so we can see what
+  // the Wikipedia fan-out actually costs in production.
+  const startedAt = Date.now();
+  const script = detectScript(trimmed);
 
   /* AUTHORITATIVE PASS — Wikipedia interlanguage links, before Haiku.
    *
@@ -148,8 +157,17 @@ export async function normalizeToCanonicalEnglish(
    * A clean miss is cheap; a confident wrong answer is not. */
   const fromWiki = await resolveViaWikipedia(trimmed, sourceLang);
   if (fromWiki) {
-    rememberName(cacheKey, fromWiki);
-    return fromWiki;
+    rememberName(cacheKey, fromWiki.title);
+    await logNameResolution({
+      input: trimmed,
+      sourceLang,
+      script,
+      resolvedBy: "wikipedia",
+      wiki: fromWiki.wiki,
+      resolvedTo: fromWiki.title,
+      durationMs: Date.now() - startedAt,
+    });
+    return fromWiki.title;
   }
 
   try {
@@ -171,21 +189,69 @@ export async function normalizeToCanonicalEnglish(
       .replace(/^["'`]+|["'`]+$/g, "")
       .trim();
 
-    if (!normalized) return trimmed;
-
-    // Sanity check — if the response looks too long (>120 chars,
-    // probably an explanation despite the prompt) or contains
-    // newlines, treat as garbage and skip.
-    if (normalized.length > 120 || /[\n\r]/.test(normalized)) return trimmed;
+    // Sanity checks — empty, too long (an explanation despite the
+    // prompt), or multi-line all mean "unusable", and we keep the
+    // raw input rather than a cache key we don't trust.
+    const usable =
+      normalized.length > 0 && normalized.length <= 120 && !/[\n\r]/.test(normalized);
+    if (!usable) {
+      await logNameResolution({
+        input: trimmed,
+        sourceLang,
+        script,
+        resolvedBy: "unchanged",
+        durationMs: Date.now() - startedAt,
+      });
+      return trimmed;
+    }
 
     rememberName(cacheKey, normalized);
+    await logNameResolution({
+      input: trimmed,
+      sourceLang,
+      script,
+      resolvedBy: "haiku",
+      resolvedTo: normalized,
+      durationMs: Date.now() - startedAt,
+    });
     return normalized;
   } catch {
     // Network / rate-limit error — return the original. Caller's
     // cache lookup will probably MISS, then fall through to
     // generation, which is the same behaviour as before this fix.
+    //
+    // This branch is also where the Anthropic geo-block (403 from
+    // certain Cloudflare colos) lands, so counting it separately from
+    // a clean "model had no answer" matters.
+    await logNameResolution({
+      input: trimmed,
+      sourceLang,
+      script,
+      resolvedBy: "unchanged",
+      durationMs: Date.now() - startedAt,
+    });
     return trimmed;
   }
+}
+
+/**
+ * Coarse script label for grouping the telemetry. Not used for any
+ * decision — `wikiCandidates` does its own detection — so a rough
+ * bucket is enough.
+ */
+function detectScript(s: string): string {
+  if (/[Ѐ-ӿ]/.test(s)) return "cyrillic";
+  if (/[Ⴀ-ჿ]/.test(s)) return "georgian";
+  if (/[Ͱ-Ͽ]/.test(s)) return "greek";
+  if (/[԰-֏]/.test(s)) return "armenian";
+  if (/[֐-׿]/.test(s)) return "hebrew";
+  if (/[؀-ۿ]/.test(s)) return "arabic";
+  if (/[ऀ-ॿ]/.test(s)) return "devanagari";
+  if (/[฀-๿]/.test(s)) return "thai";
+  if (/[぀-ヿ]/.test(s)) return "kana";
+  if (/[가-힯]/.test(s)) return "hangul";
+  if (/[一-鿿]/.test(s)) return "han";
+  return "latin-extended";
 }
 
 /**
@@ -204,26 +270,107 @@ function rememberName(cacheKey: string, value: string): void {
 const WIKI_UA = "Lokali/1.0 (https://lokali.travel; lokaliapps@gmail.com)";
 
 /**
- * Ask the user's own Wikipedia for the English title of an article
- * whose EXACT title is `name`. Returns null whenever we are not
- * certain — a missing article, an odd shape, a timeout, anything.
- * Null simply means "let Haiku try", so this can only ever help.
+ * Which Wikipedias to ask, in priority order.
+ *
+ * Beka 2026-10-14: "ანუ ენაზე რომ არ იყოს დამოკიდებული ძიება ეგრე
+ * ვერ ვიზავთ?" — and he was right that we should.
+ *
+ * A real user in Kyiv typed "Кносський палац" with the UI set to
+ * Russian. We asked RU Wikipedia, whose article is "Кносский дворец",
+ * so the exact-title lookup missed and we fell through to Haiku —
+ * which was the very call being geo-blocked that day. They retried
+ * thirteen times and gave up, while `knossos @ heraklion` sat in our
+ * cache the whole time.
+ *
+ * Verified against the live API on 2026-10-14:
+ *   uk.wikipedia "Кносський палац" → redirect → "Кносс" → "Knossos" ✅
+ *
+ * The UI language is a poor guess at what someone typed: people use
+ * an app in one language and type place names in another constantly.
+ * The SCRIPT of the text is far better evidence, so we derive
+ * candidates from it and keep the UI language as merely the first
+ * guess. English is always tried last — it resolves the common case
+ * of a Latin name that the ASCII fast-path let through (diacritics).
+ */
+function wikiCandidates(name: string, sourceLang: string): string[] {
+  const out: string[] = [];
+  const add = (l: string) => {
+    if (l && /^[a-z]{2,3}$/.test(l) && !out.includes(l)) out.push(l);
+  };
+
+  // 1. The user's own language first — when it IS the typed language
+  //    this resolves on the first response and the rest are ignored.
+  //    "pt-br" → "pt": Wikipedia subdomains are bare language codes.
+  add(sourceLang.toLowerCase().split(/[-_]/)[0]);
+
+  // 2. Everything the script itself suggests. Cyrillic is the case
+  //    that bit us, and it is genuinely ambiguous — uk/ru/bg/sr all
+  //    share it — so we ask the plausible ones rather than guess.
+  if (/[Ѐ-ӿ]/.test(name)) ["uk", "ru", "bg", "sr"].forEach(add);
+  if (/[Ͱ-Ͽ]/.test(name)) add("el");
+  if (/[Ⴀ-ჿ]/.test(name)) add("ka");
+  if (/[԰-֏]/.test(name)) add("hy");
+  if (/[֐-׿]/.test(name)) add("he");
+  if (/[؀-ۿ]/.test(name)) ["ar", "fa"].forEach(add);
+  if (/[ऀ-ॿ]/.test(name)) add("hi");
+  if (/[฀-๿]/.test(name)) add("th");
+  if (/[぀-ヿ]/.test(name)) add("ja");
+  if (/[가-힯]/.test(name)) add("ko");
+  if (/[一-鿿]/.test(name)) ["zh", "ja"].forEach(add);
+
+  add("en");
+  // Cap the fan-out. Five concurrent requests to an API that answers
+  // in under 300 ms is nothing, but the list must not grow unbounded
+  // as scripts are added.
+  return out.slice(0, 5);
+}
+
+/**
+ * Ask Wikipedia for the English title of an article whose EXACT title
+ * is `name`, trying every plausible language edition at once.
+ *
+ * Returns null whenever we are not certain — no article anywhere, an
+ * odd shape, a timeout. Null simply means "let Haiku try", so this
+ * can only ever help.
  */
 async function resolveViaWikipedia(
   name: string,
   sourceLang: string,
-): Promise<string | null> {
-  // "pt-br" → "pt", "zh-cn" → "zh". Wikipedia subdomains are bare
-  // language codes; a regional suffix 404s the whole host.
-  const wiki = sourceLang.toLowerCase().split(/[-_]/)[0];
-  if (!wiki || !/^[a-z]{2,3}$/.test(wiki)) return null;
+): Promise<{ title: string; wiki: string } | null> {
+  const candidates = wikiCandidates(name, sourceLang);
+  if (candidates.length === 0) return null;
 
-  // Hard timeout. This sits on the cold-cache path of a Cloudflare
-  // Worker with a ~100 s budget that a Claude call already eats into,
-  // so a hanging encyclopedia must never be what times the request
-  // out. 4 s is far above Wikipedia's normal sub-300 ms reply.
+  // One shared deadline for the whole fan-out. This sits on the
+  // cold-cache path of a Cloudflare Worker with a ~100 s budget that a
+  // Claude call already eats into, so a hanging encyclopedia must
+  // never be what times the request out. The requests run in
+  // PARALLEL, so the cost is one slow reply, not five.
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 4_000);
+  try {
+    const results = await Promise.all(
+      candidates.map((wiki) => askWiki(wiki, name, controller.signal)),
+    );
+    // Priority order, not whoever answered first: the user's own
+    // language wins over a script sibling, and English is the last
+    // resort. Deterministic — the same input always picks the same
+    // wiki, which matters because this value becomes a cache key.
+    const winner = results.findIndex((r) => r !== null);
+    if (winner === -1) return null;
+    return { title: results[winner] as string, wiki: candidates[winner] };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** One wiki, one exact-title lookup. Never throws. */
+async function askWiki(
+  wiki: string,
+  name: string,
+  signal: AbortSignal,
+): Promise<string | null> {
   try {
     const url =
       `https://${wiki}.wikipedia.org/w/api.php` +
@@ -235,7 +382,7 @@ async function resolveViaWikipedia(
       `&titles=${encodeURIComponent(name)}`;
     const res = await fetch(url, {
       headers: { "User-Agent": WIKI_UA, Accept: "application/json" },
-      signal: controller.signal,
+      signal,
     });
     if (!res.ok) return null;
     const json = (await res.json()) as {
@@ -262,8 +409,7 @@ async function resolveViaWikipedia(
     return clean;
   } catch {
     // Abort, DNS, malformed JSON — all mean the same thing here.
+    // The shared deadline is cleared by the caller, not per-request.
     return null;
-  } finally {
-    clearTimeout(timer);
   }
 }

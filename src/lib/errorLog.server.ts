@@ -101,6 +101,52 @@ export function classifyStatus(status: number | null | undefined): ErrorKind {
   return "unknown";
 }
 
+/** Which path produced the canonical English name for a cache key. */
+export type NameResolver =
+  /** Wikipedia langlinks — free, deterministic, authoritative. */
+  | "wikipedia"
+  /** Claude Haiku — costs money and invents spellings ("Photi"). */
+  | "haiku"
+  /** Nothing resolved it; the raw input was used unchanged. */
+  | "unchanged";
+
+/**
+ * Record how a non-Latin place name got turned into a cache key.
+ *
+ * Beka 2026-10-14 asked whether the model would do this better than
+ * Wikipedia. The honest answer was "we don't know the split", so this
+ * measures it rather than arguing: what share of non-Latin searches
+ * Wikipedia resolves for free, and which exact names fall through to
+ * Haiku. Only then is it worth deciding whether to add Wikidata.
+ *
+ * Same two rules as logError: never break the request, always be
+ * awaited (a floating promise dies with the Response on Workers).
+ */
+export async function logNameResolution(input: {
+  input: string;
+  sourceLang?: string | null;
+  script?: string | null;
+  resolvedBy: NameResolver;
+  wiki?: string | null;
+  resolvedTo?: string | null;
+  durationMs?: number | null;
+}): Promise<void> {
+  try {
+    await db.from("name_resolution_logs").insert({
+      input: String(input.input).slice(0, 300),
+      source_lang: input.sourceLang ?? null,
+      script: input.script ?? null,
+      resolved_by: input.resolvedBy,
+      wiki: input.wiki ?? null,
+      resolved_to: input.resolvedTo ? String(input.resolvedTo).slice(0, 300) : null,
+      duration_ms: input.durationMs ?? null,
+    });
+  } catch {
+    // Terminal on purpose. Telemetry must never cost a user their
+    // search — same rule as logError.
+  }
+}
+
 /**
  * Record a failure. Safe to call from anywhere on the server.
  *
