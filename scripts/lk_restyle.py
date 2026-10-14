@@ -33,6 +33,7 @@ EXTRA_CSS = r"""
 [dir=rtl] .mapcard .arr{margin-left:0;margin-right:auto;transform:scaleX(-1)}
 [dir=rtl] .pcard .rk,[dir=rtl] .icard .rk{left:auto;right:12px}
 [dir=rtl] .appbar-cta .x{margin-left:0;margin-right:auto}
+.credit{font-size:11px;color:var(--muted);margin:8px 6px 0;text-align:right;opacity:.75;line-height:1.4}.credit a{color:inherit;text-decoration:none}[dir=rtl] .credit{text-align:left}
 @media(max-width:760px){[dir=rtl] .apppanel .ap-img::before{background:linear-gradient(0deg,#1c1611 0%,rgba(28,22,17,0) 55%)}}
 """
 
