@@ -4,4 +4,37 @@
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
+
+  /* Smart Placement — run the Worker near our BACKENDS, not near the
+   * visitor. Beka 2026-10-13, from error_logs:
+   *
+   *   attractions · 403  [anthropic] 403 Forbidden [edge:HKG]
+   *   guide       · 403  [anthropic] 403 Forbidden [edge:HKG]
+   *
+   * Anthropic does not serve the API from Hong Kong, so when
+   * Cloudflare happens to run us in its HKG datacentre every Claude
+   * call comes back "Request not allowed" and the visitor sees "AI is
+   * temporarily busy". All four occurrences on record are HKG; no
+   * other edge has ever produced it.
+   *
+   * By default a Worker executes at the edge nearest the VISITOR,
+   * which is what puts us in HKG for anyone in that region. Smart
+   * Placement instead watches where our subrequests actually go —
+   * Anthropic (US), Supabase (Frankfurt), Azure Speech and Blob
+   * (Germany), Google Places — and relocates execution near that
+   * centre of gravity. Our handlers are backend-heavy (several
+   * round-trips per request, some of them 40 s Claude calls), so this
+   * is the case Cloudflare designed the feature for: total latency
+   * usually drops too, because we trade one slow user hop for several
+   * fast backend hops.
+   *
+   * HONEST LIMIT: this optimises for backend latency, not for dodging
+   * a geo-block. It makes HKG execution very unlikely, not
+   * impossible. If the 403 ever reappears in error_logs after this,
+   * the deterministic fix is to make the Anthropic call from a
+   * Durable Object pinned with locationHint "weur"/"enam" — more
+   * machinery, so it is not worth it until the cheap fix is proven
+   * insufficient.
+   */
+  "placement": { "mode": "smart" },
 }
