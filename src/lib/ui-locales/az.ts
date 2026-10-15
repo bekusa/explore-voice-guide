@@ -577,4 +577,7 @@ export const AZ: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Seçilmiş",
   "highlights.sortAz": "A-Z",
   "highlights.sortEra": "Dövr",
+  "map.allSaved": "Hamısı",
+  "playBanner.cta": "Tətbiqi yüklə",
+  "playBanner.dismiss": "Bağla",
 };

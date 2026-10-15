@@ -633,4 +633,7 @@ export const DA: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Top",
   "highlights.sortAz": "A-Å",
   "highlights.sortEra": "Epoke",
+  "map.allSaved": "Alle",
+  "playBanner.cta": "Hent appen",
+  "playBanner.dismiss": "Afvis",
 };

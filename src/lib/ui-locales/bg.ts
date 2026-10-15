@@ -577,4 +577,7 @@ export const BG: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Топ",
   "highlights.sortAz": "А-Я",
   "highlights.sortEra": "Епоха",
+  "map.allSaved": "Всички",
+  "playBanner.cta": "Изтегли приложението",
+  "playBanner.dismiss": "Отхвърли",
 };

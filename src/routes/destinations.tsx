@@ -7,6 +7,7 @@ import { MobileFrame } from "@/components/MobileFrame";
 import { CityCard } from "@/components/CityCard";
 import { CITY_LIST } from "@/lib/cityList";
 import { useT, useTranslated } from "@/hooks/useT";
+import { LANGUAGE_COUNT_LABEL } from "@/lib/languages";
 
 // `q` is optional and carries NO default. It used to be
 // `fallback(z.string(), "").default("")`, which made the router normalise
@@ -26,7 +27,7 @@ export const Route = createFileRoute("/destinations")({
       {
         name: "description",
         content:
-          "Browse free Lokali audio guides for 190+ cities worldwide — history, what to look for and practical tips, in 45 languages. Offline, no ticket needed.",
+          `Browse free Lokali audio guides for 190+ cities worldwide — history, what to look for and practical tips, in ${LANGUAGE_COUNT_LABEL} languages. Offline, no ticket needed.`,
       },
     ],
     // Canonical belongs in links, not meta. Points at the clean URL so any

@@ -633,4 +633,7 @@ export const SV: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Topp",
   "highlights.sortAz": "A-Ö",
   "highlights.sortEra": "Epok",
+  "map.allSaved": "Alla",
+  "playBanner.cta": "Hämta appen",
+  "playBanner.dismiss": "Avfärda",
 };

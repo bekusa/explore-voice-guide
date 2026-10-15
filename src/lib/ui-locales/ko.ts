@@ -630,4 +630,7 @@ export const KO: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "주요",
   "highlights.sortAz": "가나다",
   "highlights.sortEra": "시대",
+  "map.allSaved": "전체",
+  "playBanner.cta": "앱 받기",
+  "playBanner.dismiss": "닫기",
 };

@@ -50,6 +50,7 @@ import { maybeAskForReview, noteLocationViewed } from "@/lib/reviewPrompt";
 import { normalizeLang as normalizeCacheLang } from "@/lib/cacheKey";
 import { isUnescoSite } from "@/lib/unesco";
 import {
+import { LANGUAGE_COUNT_LABEL } from "@/lib/languages";
   attractionSlug,
   detectQueryLanguage,
   fetchAttractions,
@@ -204,7 +205,7 @@ export const Route = createFileRoute("/attraction/$id")({
 
     const pageTitle = pick(
       [
-        `${title} Audio Guide — Free, 45 Languages | Lokali`,
+        `${title} Audio Guide — Free, ${LANGUAGE_COUNT_LABEL} Languages | Lokali`,
         `${title} Audio Guide — Free | Lokali`,
         `${title} — Free Audio Guide | Lokali`,
         `${title} — Free Audio Guide`,
@@ -218,9 +219,9 @@ export const Route = createFileRoute("/attraction/$id")({
     const bare = title.replace(/^The\s+/i, "");
     const description = pick(
       [
-        `Free ${bare} audio guide — history, what to look for and practical tips, narrated in 45 languages. Works offline, no ticket and no tour group needed.`,
-        `Free ${bare} audio guide — history, what to look for and practical tips, in 45 languages. Works offline, no ticket needed.`,
-        `Free ${bare} audio guide — history, what to look for and practical tips, in 45 languages.`,
+        `Free ${bare} audio guide — history, what to look for and practical tips, narrated in ${LANGUAGE_COUNT_LABEL} languages. Works offline, no ticket and no tour group needed.`,
+        `Free ${bare} audio guide — history, what to look for and practical tips, in ${LANGUAGE_COUNT_LABEL} languages. Works offline, no ticket needed.`,
+        `Free ${bare} audio guide — history, what to look for and practical tips, in ${LANGUAGE_COUNT_LABEL} languages.`,
       ],
       158
     );

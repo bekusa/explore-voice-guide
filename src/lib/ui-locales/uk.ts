@@ -632,4 +632,7 @@ export const UK: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Топ",
   "highlights.sortAz": "А-Я",
   "highlights.sortEra": "Епоха",
+  "map.allSaved": "Усе",
+  "playBanner.cta": "Завантажити застосунок",
+  "playBanner.dismiss": "Закрити",
 };

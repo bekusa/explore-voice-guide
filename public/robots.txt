@@ -136,6 +136,7 @@ Disallow: /admin/
 
 # Sitemaps for search engines
 Sitemap: https://lokali.travel/sitemap.xml
+Sitemap: https://lokali.travel/sitemap-main.xml
 Sitemap: https://lokali.travel/sitemap-explore.xml
 Sitemap: https://lokali.travel/sitemap-blog.xml
 

@@ -631,4 +631,7 @@ export const FA: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "برتر",
   "highlights.sortAz": "الف-ی",
   "highlights.sortEra": "دوره",
+  "map.allSaved": "همه",
+  "playBanner.cta": "دریافت برنامه",
+  "playBanner.dismiss": "رد کردن",
 };

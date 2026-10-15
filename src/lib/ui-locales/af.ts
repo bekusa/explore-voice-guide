@@ -577,4 +577,7 @@ export const AF: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Top",
   "highlights.sortAz": "A-Z",
   "highlights.sortEra": "Tydperk",
+  "map.allSaved": "Almal",
+  "playBanner.cta": "Kry die app",
+  "playBanner.dismiss": "Maak toe",
 };

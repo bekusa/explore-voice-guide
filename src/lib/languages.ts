@@ -68,7 +68,54 @@ const LANGUAGES_RAW: Language[] = [
   { code: "mr-IN", name: "Marathi", native: "मराठी", flag: "🇮🇳" },
   { code: "sw-KE", name: "Swahili", native: "Kiswahili", flag: "🇰🇪" },
   { code: "af-ZA", name: "Afrikaans", native: "Afrikaans", flag: "🇿🇦" },
+  /* 2026-10-15 — five languages to reach 50. Every voice name below
+   * was read directly from Microsoft's own voice table (the
+   * `includes/language-support/tts.md` source file), not guessed:
+   * /api/tts rejects an unknown voice with 400, so a wrong name would
+   * mean the guide generates but never speaks.
+   *
+   * Slovak and Slovenian were the obvious European candidates and are
+   * deliberately NOT here — that source file truncates at `pt-BR`, so
+   * their voices could not be confirmed, and third-party voice
+   * listings are not good enough for a name that must match exactly.
+   * The Baltic pair is arguably the better pick anyway: a Slovak
+   * speaker is served reasonably by Czech (we have it), a Latvian by
+   * nothing we ship. */
+  { code: "fil-PH", name: "Filipino", native: "Filipino", flag: "🇵🇭" },
+  { code: "lt-LT", name: "Lithuanian", native: "Lietuvių", flag: "🇱🇹" },
+  { code: "lv-LV", name: "Latvian", native: "Latviešu", flag: "🇱🇻" },
+  { code: "gu-IN", name: "Gujarati", native: "ગુજરાતી", flag: "🇮🇳" },
+  { code: "ml-IN", name: "Malayalam", native: "മലയാളം", flag: "🇮🇳" },
+  { code: "pa-IN", name: "Punjabi", native: "ਪੰਜਾਬੀ", flag: "🇮🇳" },
 ];
+
+/**
+ * How many DISTINCT languages we speak — not how many options the
+ * picker shows. Four languages ship two regional variants each
+ * (en-US/en-GB, es-ES/es-MX, pt-PT/pt-BR, zh-CN/zh-TW), so counting
+ * rows would overstate it by four.
+ */
+export const DISTINCT_LANGUAGE_COUNT = new Set(
+  LANGUAGES.map((l) => l.code.split("-")[0].toLowerCase()),
+).size;
+
+/**
+ * The number we SAY in public — "50+", not "51".
+ *
+ * Beka 2026-10-15: "ყოველი ენის დამატებისას აღარ მინდა მთელი
+ * მარკეტინგული თუ სხვა სახის კომუნიკაციის ცვლილებები."
+ *
+ * Rounding DOWN to the nearest ten and adding "+" makes the claim
+ * true by construction and stable across additions: 51 languages and
+ * 58 languages both read "50+", so nothing needs rewriting until we
+ * genuinely cross 60 — and then it updates itself.
+ *
+ * This is the single source for every public mention. The count used
+ * to be hand-written into seven SEO strings as "45 languages", which
+ * is exactly the drift this replaces: those had been wrong since the
+ * catalog passed 45.
+ */
+export const LANGUAGE_COUNT_LABEL = `${Math.floor(DISTINCT_LANGUAGE_COUNT / 10) * 10}+`;
 
 /**
  * Public LANGUAGES list — alphabetised by English name. We sort once
@@ -132,6 +179,12 @@ export const PREVIEW_PHRASES: Record<string, string> = {
   "mr-IN": "नमस्कार! आज मी तुमचा मार्गदर्शक असेन.",
   "sw-KE": "Habari! Leo nitakuwa mwongozo wako.",
   "af-ZA": "Hallo! Ek sal vandag jou gids wees.",
+  "fil-PH": "Kumusta! Ako ang inyong gabay ngayong araw.",
+  "lt-LT": "Sveiki! Šiandien būsiu jūsų gidas.",
+  "lv-LV": "Sveiki! Šodien es būšu jūsu gids.",
+  "gu-IN": "નમસ્તે! આજે હું તમારો માર્ગદર્શક બનીશ.",
+  "ml-IN": "നമസ്കാരം! ഇന്ന് ഞാൻ നിങ്ങളുടെ ഗൈഡ് ആയിരിക്കും.",
+  "pa-IN": "ਸਤ ਸ੍ਰੀ ਅਕਾਲ! ਅੱਜ ਮੈਂ ਤੁਹਾਡਾ ਗਾਈਡ ਬਣਾਂਗਾ।",
 };
 
 export function getPreviewPhrase(code: string): string {

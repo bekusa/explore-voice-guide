@@ -633,4 +633,7 @@ export const HU: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Top",
   "highlights.sortAz": "A-Z",
   "highlights.sortEra": "Korszak",
+  "map.allSaved": "Mind",
+  "playBanner.cta": "Alkalmazás letöltése",
+  "playBanner.dismiss": "Bezárás",
 };

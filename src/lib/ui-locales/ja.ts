@@ -634,4 +634,7 @@ export const JA: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "注目",
   "highlights.sortAz": "A-Z",
   "highlights.sortEra": "時代",
+  "map.allSaved": "すべて",
+  "playBanner.cta": "アプリを入手",
+  "playBanner.dismiss": "閉じる",
 };

@@ -577,4 +577,7 @@ export const MR: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "टॉप",
   "highlights.sortAz": "अ-ज्ञ",
   "highlights.sortEra": "कालखंड",
+  "map.allSaved": "सर्व",
+  "playBanner.cta": "अ‍ॅप मिळवा",
+  "playBanner.dismiss": "डिसमिस करा",
 };

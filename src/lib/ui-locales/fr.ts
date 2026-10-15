@@ -636,4 +636,7 @@ export const FR: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Top",
   "highlights.sortAz": "A-Z",
   "highlights.sortEra": "Époque",
+  "map.allSaved": "Tout",
+  "playBanner.cta": "Obtenir l'app",
+  "playBanner.dismiss": "Fermer",
 };

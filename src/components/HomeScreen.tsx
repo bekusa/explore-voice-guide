@@ -23,7 +23,7 @@ import { startNarration } from "@/lib/narrationPlayer";
 import { MobileFrame } from "@/components/MobileFrame";
 import type { UiKey } from "@/lib/i18n";
 import { DESTINATIONS, type Destination } from "@/lib/destinations";
-import { LANGUAGES } from "@/lib/languages";
+import { LANGUAGES, DISTINCT_LANGUAGE_COUNT, LANGUAGE_COUNT_LABEL } from "@/lib/languages";
 import { HOME_CITIES } from "@/lib/cityList";
 import { CityCard } from "@/components/CityCard";
 import { MUSEUMS, type Museum } from "@/lib/topMuseums";
@@ -67,23 +67,11 @@ const MARQUEE_LANGS: Array<{ code: string; cc: string; native: string }> = [
   { code: "ar", cc: "sa", native: "العربية" },
 ];
 
-/**
- * Number of DISTINCT languages Lokali speaks — the figure shown in the
- * language card's title ("Available in {count} languages").
- *
- * Deliberately NOT `LANGUAGES.length`. That array holds 49 *options*,
- * because four languages ship two regional variants each (en-US/en-GB,
- * es-ES/es-MX, pt-PT/pt-BR, zh-CN/zh-TW). Counting options would
- * advertise 49 languages when the honest answer is 45.
- *
- * Beka asked for a literal "50+" here on 2026-09-01; deriving the value
- * keeps the claim true today AND makes it become 50, 60, … on its own
- * as the ~25 planned languages land, with no copy change in 44 locale
- * files.
- */
-const LANGUAGE_COUNT = new Set(
-  LANGUAGES.map((l) => l.code.split("-")[0].toLowerCase()),
-).size;
+/* The language figures now live in lib/languages.ts next to the data
+ * they count, so the home card, the SEO copy and the language picker
+ * can never drift apart. `LANGUAGE_COUNT_LABEL` is the public "50+";
+ * `DISTINCT_LANGUAGE_COUNT` is the exact number, used only where an
+ * exact one is correct (the "+N more" chip on the marquee). */
 
 // The 3 cities Beka wants surfaced as the brand carousel:
 // Tbilisi (Lokali's home base), Rome (the canonical European audio-
@@ -686,7 +674,11 @@ export function HomeScreen() {
                   centres against the arrow on its own. */}
               <div className="min-w-0">
                 <p className="text-[15px] font-bold leading-[1.2] text-foreground">
-                  {t("home.everyLang.title", { count: LANGUAGE_COUNT })}
+                  {/* "50+", not "51". The UI string itself is unchanged
+                      ("Available in {count} languages"), so this needed
+                      no edit in any of the 44 translation files — the
+                      placeholder simply receives a string. */}
+                  {t("home.everyLang.title", { count: LANGUAGE_COUNT_LABEL })}
                 </p>
               </div>
               <span className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full border border-foreground/20 text-foreground transition-transform duration-300 group-hover:translate-x-0.5">
@@ -724,7 +716,10 @@ export function HomeScreen() {
                       {/* Counts DISTINCT languages, matching the title
                           above — LANGUAGES.length would count regional
                           variants twice and disagree with it. */}
-                      +{LANGUAGE_COUNT - MARQUEE_LANGS.length}
+                      {/* Exact here on purpose: this chip counts the
+                          languages NOT shown in the marquee, so a
+                          rounded figure would be arithmetically wrong. */}
+                      +{DISTINCT_LANGUAGE_COUNT - MARQUEE_LANGS.length}
                     </span>
                   </div>
                 ))}

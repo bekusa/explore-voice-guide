@@ -203,6 +203,49 @@ export const AZURE_VOICES: Record<string, AzureVoice[]> = {
     { name: "kk-KZ-AigulNeural", display: "Aigul", gender: "female" },
     { name: "kk-KZ-DauletNeural", display: "Daulet", gender: "male" },
   ],
+  /* 2026-10-15 — the five languages added to reach 50.
+   *
+   * Every name here was copied out of Microsoft's own voice table
+   * (azure-ai-docs → includes/language-support/tts.md), not recalled
+   * and not taken from a third-party voice directory. That matters
+   * more here than anywhere else in the app: /api/tts returns 400
+   * "missing voice" for an empty voice and Azure rejects an unknown
+   * one, so a single wrong letter means this language generates a
+   * guide that can never be spoken — the one failure mode that makes
+   * an audio-guide app pointless for that user.
+   *
+   * Confidence check on the method: `kk-KZ` above was already in this
+   * file from an earlier round, and it matches that same source table
+   * exactly, which is good evidence the catalog and the source agree. */
+  "fil-PH": [
+    { name: "fil-PH-BlessicaNeural", display: "Blessica", gender: "female" },
+    { name: "fil-PH-AngeloNeural", display: "Angelo", gender: "male" },
+  ],
+  "lt-LT": [
+    { name: "lt-LT-OnaNeural", display: "Ona", gender: "female" },
+    { name: "lt-LT-LeonasNeural", display: "Leonas", gender: "male" },
+  ],
+  "lv-LV": [
+    { name: "lv-LV-EveritaNeural", display: "Everita", gender: "female" },
+    { name: "lv-LV-NilsNeural", display: "Nils", gender: "male" },
+  ],
+  "gu-IN": [
+    { name: "gu-IN-DhwaniNeural", display: "Dhwani", gender: "female" },
+    { name: "gu-IN-NiranjanNeural", display: "Niranjan", gender: "male" },
+  ],
+  "ml-IN": [
+    { name: "ml-IN-SobhanaNeural", display: "Sobhana", gender: "female" },
+    { name: "ml-IN-MidhunNeural", display: "Midhun", gender: "male" },
+  ],
+  // Punjabi — the 51st language, which is what lets the public copy
+  // say "50+" instead of a number that needs rewriting every time.
+  // ~113M speakers and a very travel-active diaspora, so it is also
+  // the strongest remaining pick on its own merits. Both names read
+  // from the same Microsoft voice table as the five above.
+  "pa-IN": [
+    { name: "pa-IN-VaaniNeural", display: "Vaani", gender: "female" },
+    { name: "pa-IN-OjasNeural", display: "Ojas", gender: "male" },
+  ],
   "az-AZ": [
     { name: "az-AZ-BanuNeural", display: "Banu", gender: "female" },
     { name: "az-AZ-BabekNeural", display: "Babek", gender: "male" },

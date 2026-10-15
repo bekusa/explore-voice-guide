@@ -634,4 +634,7 @@ export const RO: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Top",
   "highlights.sortAz": "A-Z",
   "highlights.sortEra": "Epocă",
+  "map.allSaved": "Toate",
+  "playBanner.cta": "Descarcă aplicația",
+  "playBanner.dismiss": "Închide",
 };

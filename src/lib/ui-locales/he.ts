@@ -626,4 +626,7 @@ export const HE: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "מובילות",
   "highlights.sortAz": "א-ת",
   "highlights.sortEra": "תקופה",
+  "map.allSaved": "הכול",
+  "playBanner.cta": "קבלו את האפליקציה",
+  "playBanner.dismiss": "סגור",
 };

@@ -577,4 +577,7 @@ export const SW: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Bora",
   "highlights.sortAz": "A-Z",
   "highlights.sortEra": "Enzi",
+  "map.allSaved": "Zote",
+  "playBanner.cta": "Pata programu",
+  "playBanner.dismiss": "Ondoa",
 };

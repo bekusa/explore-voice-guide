@@ -639,4 +639,7 @@ export const DE: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Top",
   "highlights.sortAz": "A-Z",
   "highlights.sortEra": "Epoche",
+  "map.allSaved": "Alle",
+  "playBanner.cta": "App herunterladen",
+  "playBanner.dismiss": "Schließen",
 };

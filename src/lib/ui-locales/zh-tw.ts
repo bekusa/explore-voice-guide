@@ -623,4 +623,7 @@ export const ZH_TW: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "精選",
   "highlights.sortAz": "A-Z",
   "highlights.sortEra": "年代",
+  "map.allSaved": "全部",
+  "playBanner.cta": "取得應用程式",
+  "playBanner.dismiss": "關閉",
 };

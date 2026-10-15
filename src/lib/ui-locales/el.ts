@@ -643,4 +643,7 @@ export const EL: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Κορυφαία",
   "highlights.sortAz": "Α-Ω",
   "highlights.sortEra": "Εποχή",
+  "map.allSaved": "Όλα",
+  "playBanner.cta": "Λήψη εφαρμογής",
+  "playBanner.dismiss": "Απόρριψη",
 };

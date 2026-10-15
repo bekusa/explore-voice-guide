@@ -636,4 +636,7 @@ export const MS: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Teratas",
   "highlights.sortAz": "A-Z",
   "highlights.sortEra": "Era",
+  "map.allSaved": "Semua",
+  "playBanner.cta": "Dapatkan apl",
+  "playBanner.dismiss": "Tutup",
 };

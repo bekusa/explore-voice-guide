@@ -637,4 +637,7 @@ export const TR: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Öne çıkan",
   "highlights.sortAz": "A-Z",
   "highlights.sortEra": "Dönem",
+  "map.allSaved": "Hepsi",
+  "playBanner.cta": "Uygulamayı indir",
+  "playBanner.dismiss": "Kapat",
 };

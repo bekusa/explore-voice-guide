@@ -577,4 +577,7 @@ export const TE: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "టాప్",
   "highlights.sortAz": "అ-ఱ",
   "highlights.sortEra": "యుగం",
+  "map.allSaved": "అన్నీ",
+  "playBanner.cta": "యాప్ పొందండి",
+  "playBanner.dismiss": "తీసివేయి",
 };

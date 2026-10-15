@@ -633,4 +633,7 @@ export const VI: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Nổi bật",
   "highlights.sortAz": "A-Z",
   "highlights.sortEra": "Thời kỳ",
+  "map.allSaved": "Tất cả",
+  "playBanner.cta": "Tải ứng dụng",
+  "playBanner.dismiss": "Đóng",
 };

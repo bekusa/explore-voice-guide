@@ -577,4 +577,7 @@ export const HY: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Լավագույն",
   "highlights.sortAz": "Ա-Ֆ",
   "highlights.sortEra": "Դարաշրջան",
+  "map.allSaved": "Բոլորը",
+  "playBanner.cta": "Ստանալ հավելվածը",
+  "playBanner.dismiss": "Անտեսել",
 };

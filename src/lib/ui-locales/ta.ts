@@ -577,4 +577,7 @@ export const TA: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "சிறந்தவை",
   "highlights.sortAz": "அ-ஃ",
   "highlights.sortEra": "காலம்",
+  "map.allSaved": "அனைத்தும்",
+  "playBanner.cta": "ஆப்ஸைப் பெறுங்கள்",
+  "playBanner.dismiss": "நிராகரி",
 };

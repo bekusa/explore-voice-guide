@@ -631,4 +631,7 @@ export const HI: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "शीर्ष",
   "highlights.sortAz": "अ-ज्ञ",
   "highlights.sortEra": "युग",
+  "map.allSaved": "सभी",
+  "playBanner.cta": "ऐप पाएं",
+  "playBanner.dismiss": "बंद करें",
 };

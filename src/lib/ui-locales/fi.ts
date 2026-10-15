@@ -634,4 +634,7 @@ export const FI: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Top",
   "highlights.sortAz": "A-Ö",
   "highlights.sortEra": "Aikakausi",
+  "map.allSaved": "Kaikki",
+  "playBanner.cta": "Hanki sovellus",
+  "playBanner.dismiss": "Sulje",
 };

@@ -630,4 +630,7 @@ export const UR: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "نمایاں",
   "highlights.sortAz": "ا-ی",
   "highlights.sortEra": "دور",
+  "map.allSaved": "سب",
+  "playBanner.cta": "ایپ حاصل کریں",
+  "playBanner.dismiss": "خارج کریں",
 };

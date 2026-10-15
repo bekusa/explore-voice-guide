@@ -634,4 +634,7 @@ export const BN: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "শীর্ষ",
   "highlights.sortAz": "অ-হ",
   "highlights.sortEra": "যুগ",
+  "map.allSaved": "সব",
+  "playBanner.cta": "অ্যাপটি পান",
+  "playBanner.dismiss": "সরান",
 };

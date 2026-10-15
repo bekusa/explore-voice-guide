@@ -633,4 +633,7 @@ export const ID: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Teratas",
   "highlights.sortAz": "A-Z",
   "highlights.sortEra": "Era",
+  "map.allSaved": "Semua",
+  "playBanner.cta": "Dapatkan aplikasi",
+  "playBanner.dismiss": "Tutup",
 };

@@ -632,4 +632,7 @@ export const ES: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Top",
   "highlights.sortAz": "A-Z",
   "highlights.sortEra": "Época",
+  "map.allSaved": "Todo",
+  "playBanner.cta": "Obtener la app",
+  "playBanner.dismiss": "Descartar",
 };

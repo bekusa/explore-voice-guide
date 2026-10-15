@@ -631,4 +631,7 @@ export const CS: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Top",
   "highlights.sortAz": "A-Z",
   "highlights.sortEra": "Epocha",
+  "map.allSaved": "Vše",
+  "playBanner.cta": "Získat aplikaci",
+  "playBanner.dismiss": "Zavřít",
 };

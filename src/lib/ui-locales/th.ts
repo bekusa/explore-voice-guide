@@ -629,4 +629,7 @@ export const TH: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "ยอดนิยม",
   "highlights.sortAz": "ก-ฮ",
   "highlights.sortEra": "ยุค",
+  "map.allSaved": "ทั้งหมด",
+  "playBanner.cta": "ดาวน์โหลดแอป",
+  "playBanner.dismiss": "ปิด",
 };

@@ -111,6 +111,9 @@ const LOCALE_LOADERS: Record<string, () => Promise<LocaleDict>> = {
   mr: () => import("./ui-locales/mr").then((m) => m.MR),
   sw: () => import("./ui-locales/sw").then((m) => m.SW),
   af: () => import("./ui-locales/af").then((m) => m.AF),
+  // 2026-10-15 — the languages that took the catalog to 51. Hand
+  // translated, not machine generated, at Beka's instruction.
+  fil: () => import("./ui-locales/fil").then((m) => m.FIL),
 };
 
 /**

@@ -634,4 +634,7 @@ export const NB: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Topp",
   "highlights.sortAz": "A-Å",
   "highlights.sortEra": "Epoke",
+  "map.allSaved": "Alle",
+  "playBanner.cta": "Hent appen",
+  "playBanner.dismiss": "Avvis",
 };

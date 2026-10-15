@@ -1,19 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { HomeScreen } from "@/components/HomeScreen";
+import { LANGUAGE_COUNT_LABEL } from "@/lib/languages";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Lokali - Free Audio Guides in 45 Languages" },
+      { title: `Lokali - Free Audio Guides in ${LANGUAGE_COUNT_LABEL} Languages` },
       {
         name: "description",
         content:
-          "Free audio guides for 190+ cities worldwide, in 45 languages. History, what to look for and practical tips - offline, no ticket, no tour group.",
+          `Free audio guides for 190+ cities worldwide, in ${LANGUAGE_COUNT_LABEL} languages. History, what to look for and practical tips - offline, no ticket, no tour group.`,
       },
-      { property: "og:title", content: "Lokali - Free Audio Guides in 45 Languages" },
+      { property: "og:title", content: `Lokali - Free Audio Guides in ${LANGUAGE_COUNT_LABEL} Languages` },
       {
         property: "og:description",
-        content: "Free audio guides for 190+ cities worldwide, in 45 languages. History, what to look for and practical tips - offline, no ticket, no tour group.",
+        content: `Free audio guides for 190+ cities worldwide, in ${LANGUAGE_COUNT_LABEL} languages. History, what to look for and practical tips - offline, no ticket, no tour group.`,
       },
     ],
   }),
@@ -40,7 +41,7 @@ const ORG_JSON_LD = {
       ],
       "url": "https://lokali.travel/",
       "logo": "https://lokali.travel/icon-512.png",
-      "description": "Lokali makes free AI-narrated audio guides for landmarks and museums in 190+ cities, in 45 languages.",
+      "description": `Lokali makes free AI-narrated audio guides for landmarks and museums in 190+ cities, in ${LANGUAGE_COUNT_LABEL} languages.`,
       "email": "contact@lokali.travel",
       "sameAs": [
         "https://play.google.com/store/apps/details?id=app.lokali.travel",

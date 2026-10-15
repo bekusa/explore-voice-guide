@@ -577,4 +577,7 @@ export const SR: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "Top",
   "highlights.sortAz": "A-Š",
   "highlights.sortEra": "Epoha",
+  "map.allSaved": "Све",
+  "playBanner.cta": "Преузми апликацију",
+  "playBanner.dismiss": "Одбаци",
 };

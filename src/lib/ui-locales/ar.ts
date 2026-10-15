@@ -628,4 +628,7 @@ export const AR: Partial<Record<UiKey, string>> = {
   "highlights.sortCurated": "الأبرز",
   "highlights.sortAz": "أ-ي",
   "highlights.sortEra": "الحقبة",
+  "map.allSaved": "الكل",
+  "playBanner.cta": "احصل على التطبيق",
+  "playBanner.dismiss": "تجاهل",
 };
