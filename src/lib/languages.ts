@@ -96,7 +96,7 @@ const LANGUAGES_RAW: Language[] = [
  * rows would overstate it by four.
  */
 export const DISTINCT_LANGUAGE_COUNT = new Set(
-  LANGUAGES.map((l) => l.code.split("-")[0].toLowerCase()),
+  LANGUAGES_RAW.map((l) => l.code.split("-")[0].toLowerCase()),
 ).size;
 
 /**

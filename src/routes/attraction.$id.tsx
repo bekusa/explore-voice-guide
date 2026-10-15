@@ -49,8 +49,8 @@ import { maybeAskForReview, noteLocationViewed } from "@/lib/reviewPrompt";
 // "en-US" look like different languages.
 import { normalizeLang as normalizeCacheLang } from "@/lib/cacheKey";
 import { isUnescoSite } from "@/lib/unesco";
-import {
 import { LANGUAGE_COUNT_LABEL } from "@/lib/languages";
+import {
   attractionSlug,
   detectQueryLanguage,
   fetchAttractions,
