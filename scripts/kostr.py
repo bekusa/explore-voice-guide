@@ -19,7 +19,7 @@ ROW={'time':'소요 시간','audio':'Lokali 오디오 가이드','type':'유형'
 UI={'badge':'무료 오디오 가이드','begin':'시작하기','open':'Lokali 앱 열기',
     'verified':'2026년 10월 확인','howwrite':'가이드 제작 방식',
     'maps':'Google 지도에서 열기','allcities':'모든 도시','editorial':'편집 원칙',
-    'guidesin':'오디오 가이드 —','langval':'45개 언어, Lokali 앱에서','free':'무료',
+    'guidesin':'오디오 가이드 —','langval':'50+개 언어, Lokali 앱에서','free':'무료',
     'min':'분','getapp':'앱 받기'}
 CAT={'history':'역사','photography':'사진','authentic':'현지 분위기','romantic':'로맨틱',
      'family':'가족','editors':'편집자 추천','nature':'자연','art':'예술',
@@ -77,7 +77,7 @@ def faq(t,city,country,vis,mins,tips,kfs,lat,lng):
         (f"대부분의 방문객은 {vis} 정도 머뭅니다. " if vis else "")+
         f"Lokali 무료 오디오 가이드는 {mins}분이며 걸으면서 들을 수 있습니다."),
        (f"{t}에 무료 오디오 가이드가 있나요?",
-        f"있습니다. Lokali 앱이 45개 언어로 무료 해설을 제공합니다. 티켓도, 단체 투어도, "
+        f"있습니다. Lokali 앱이 50+개 언어로 무료 해설을 제공합니다. 티켓도, 단체 투어도, "
         f"구독도 필요 없으며 내려받으면 오프라인에서도 사용할 수 있습니다.")]
     if lat is not None:
         o.append((f"{t}{EUN(t)} 어디에 있나요?",
@@ -95,7 +95,7 @@ TITLE_SHORT='{t} — 무료 오디오 가이드 | Lokali'
 HUB_TITLE='{city} — 무료 오디오 가이드 {n}개 | Lokali'
 HUB_TITLE_SHORT='{city} — 오디오 가이드 {n}개 | Lokali'
 HUB_DESC="{city}의 Lokali 무료 오디오 가이드 {n}개: {names}. 소요 시간, 놓치지 말아야 할 것, 실용 팁. 오프라인 지원, 티켓 불필요."
-HUB_INTRO="Lokali에는 {city}의 무료 오디오 가이드가 {n}개 있습니다. 모두 45개 언어를 지원하며 티켓이나 단체 투어 없이 이용할 수 있고, 내려받으면 오프라인에서도 작동합니다."
+HUB_INTRO="Lokali에는 {city}의 무료 오디오 가이드가 {n}개 있습니다. 모두 50+개 언어를 지원하며 티켓이나 단체 투어 없이 이용할 수 있고, 내려받으면 오프라인에서도 작동합니다."
 SENT={'is':'{t}{eun} {where}에 있는 {tp}입니다.','in':'{t}{eun} {where}에 있습니다.',
       'spend':'대부분의 방문객은 {vis} 정도 머뭅니다.',
       'runs':'Lokali 무료 오디오 가이드는 {n}분입니다.',
@@ -116,6 +116,6 @@ COUNTRY={'türkiye':'튀르키예','greece':'그리스','italy':'이탈리아','
  'philippines':'필리핀'}
 def hub_faq(city,n):
     return [(f"{city}에는 무료 오디오 가이드가 몇 개 있나요?",
-             f"{n}개입니다. 모두 무료이며 45개 언어를 지원하고 오프라인에서도 작동합니다."),
+             f"{n}개입니다. 모두 무료이며 50+개 언어를 지원하고 오프라인에서도 작동합니다."),
             (f"{city} 오디오 가이드는 정말 무료인가요?",
              "네. 티켓도, 단체 투어도, 구독도 필요 없이 본인의 휴대폰에서 재생됩니다.")]

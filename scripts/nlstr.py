@@ -8,7 +8,7 @@ ROW={'time':'Hoelang je nodig hebt','audio':'Lokali-audiogids','type':'Soort','b
 UI={'badge':'Gratis audiogids','begin':'Begin','open':'Open de Lokali-app',
     'verified':'Gecontroleerd in oktober 2026','howwrite':'hoe we deze gidsen schrijven',
     'maps':'Openen in Google Maps','allcities':'Alle steden','editorial':'Redactioneel proces',
-    'guidesin':'Gidsen in','langval':'45 talen, in de Lokali-app','free':'gratis',
+    'guidesin':'Gidsen in','langval':'50+ talen, in de Lokali-app','free':'gratis',
     'min':'min','getapp':'App downloaden'}
 CAT={'history':'Geschiedenis','photography':'Fotografie','authentic':'Authentiek',
      'romantic':'Romantisch','family':'Gezinnen','editors':'Redactiekeuze',
@@ -54,7 +54,7 @@ def faq(t,city,country,vis,mins,tips,kfs,lat,lng):
         (f"De meeste bezoekers blijven {vis}. " if vis else "")+
         f"De gratis Lokali-audiogids duurt {mins} minuten en luister je al wandelend."),
        (f"Is er een gratis audiogids voor {t}?",
-        f"Ja — de Lokali-app vertelt {t} gratis in 45 talen. Geen ticket, geen groep en geen "
+        f"Ja — de Lokali-app vertelt {t} gratis in 50+ talen. Geen ticket, geen groep en geen "
         f"abonnement; na het downloaden werkt de app ook offline.")]
     if lat is not None:
         o.append((f"Waar ligt {t}?",
@@ -74,7 +74,7 @@ TITLE_SHORT='{t} — Gratis audiogids | Lokali'
 HUB_TITLE='{city} — {n} gratis audiogidsen | Lokali'
 HUB_TITLE_SHORT='{city} — {n} audiogidsen | Lokali'
 HUB_DESC="{n} gratis Lokali-audiogidsen voor {city}: {names}. Bezoekduur, waar je op moet letten en praktische tips — offline, zonder ticket."
-HUB_INTRO="Lokali heeft {n} gratis audiogidsen voor {city}. Elke gids klinkt in 45 talen, vraagt geen ticket en geen reisgroep en werkt offline na het downloaden."
+HUB_INTRO="Lokali heeft {n} gratis audiogidsen voor {city}. Elke gids klinkt in 50+ talen, vraagt geen ticket en geen reisgroep en werkt offline na het downloaden."
 SENT={'is':'{t} is {tp} in {where}.','in':'{t} ligt in {where}.',
       'spend':'De meeste bezoekers blijven {vis}.',
       'runs':'De gratis Lokali-audiogids duurt {n} minuten.',
@@ -95,6 +95,6 @@ COUNTRY={'türkiye':'Turkije','greece':'Griekenland','italy':'Italië','france':
  'philippines':'Filipijnen'}
 def hub_faq(city,n):
     return [(f"Hoeveel gratis audiogidsen zijn er voor {city}?",
-             f"{n}. Allemaal gratis, in 45 talen, en ze werken offline."),
+             f"{n}. Allemaal gratis, in 50+ talen, en ze werken offline."),
             (f"Is de audiogids van {city} echt gratis?",
              "Ja. Geen ticket, geen reisgroep, geen abonnement — de gidsen spelen op je eigen telefoon.")]

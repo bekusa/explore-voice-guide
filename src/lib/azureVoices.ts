@@ -292,9 +292,7 @@ export const AZURE_VOICES: Record<string, AzureVoice[]> = {
 export function azureVoicesForLanguage(langCode: string): AzureVoice[] {
   if (AZURE_VOICES[langCode]) return AZURE_VOICES[langCode];
   const base = langCode.split("-")[0].toLowerCase();
-  const candidate = Object.keys(AZURE_VOICES).find((k) =>
-    k.toLowerCase().startsWith(base),
-  );
+  const candidate = Object.keys(AZURE_VOICES).find((k) => k.toLowerCase().startsWith(base));
   return candidate ? AZURE_VOICES[candidate] : [];
 }
 

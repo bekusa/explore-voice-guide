@@ -215,7 +215,7 @@ def topbar(active="explore", lang_dd=""):
 def apppanel(img, campaign, heading="Take the guide <em>with you</em>",
              body="Download a city before you travel. Works offline, costs nothing, and speaks your language at every stop."):
     return (f'<section class="apppanel"><div class="ap-copy">'
-            f'<span class="eyebrow">Free &middot; 45 languages &middot; offline</span>'
+            f'<span class="eyebrow">Free &middot; 50+ languages &middot; offline</span>'
             f'<h3>{heading}</h3><p>{body}</p>'
             f'<div class="btns"><a class="btn gold" href="{PLAY.format(c=campaign)}" rel="nofollow" target="_blank">'
             f'<span class="pl">&#9654;</span>Get the Lokali app</a>'

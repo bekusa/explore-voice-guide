@@ -14,7 +14,7 @@ ROW={'time':'Ile czasu potrzeba','audio':'Audioprzewodnik Lokali','type':'Rodzaj
 UI={'badge':'Bezpłatny audioprzewodnik','begin':'Zacznij','open':'Otwórz aplikację Lokali',
     'verified':'Zweryfikowano w październiku 2026','howwrite':'jak powstają nasze przewodniki',
     'maps':'Otwórz w Mapach Google','allcities':'Wszystkie miasta','editorial':'Proces redakcyjny',
-    'guidesin':'Przewodniki w kraju','langval':'45 języków, w aplikacji Lokali','free':'bezpłatnie',
+    'guidesin':'Przewodniki w kraju','langval':'50+ języków, w aplikacji Lokali','free':'bezpłatnie',
     'min':'min','getapp':'Pobierz aplikację'}
 CAT={'history':'Historia','photography':'Fotografia','authentic':'Autentyczne',
      'romantic':'Romantyczne','family':'Rodziny','editors':'Wybór redakcji','nature':'Przyroda',
@@ -62,7 +62,7 @@ def faq(t,city,country,vis,mins,tips,kfs,lat,lng):
         (f"Większość zwiedzających spędza tu {vis}. " if vis else "")+
         f"Bezpłatny audioprzewodnik Lokali trwa {mins} min i słucha się go w marszu."),
        (f"{t}: czy jest bezpłatny audioprzewodnik?",
-        f"Tak — aplikacja Lokali opowiada o tym miejscu bezpłatnie w 45 językach. Bez biletu, "
+        f"Tak — aplikacja Lokali opowiada o tym miejscu bezpłatnie w 50+ językach. Bez biletu, "
         f"bez grupy i bez abonamentu; po pobraniu działa offline.")]
     if lat is not None:
         o.append((f"{t}: gdzie się znajduje?",
@@ -106,7 +106,7 @@ def hub_text(city,n,names):
     t=f'{city} — {n} {g} | Lokali'
     d=(f'{n} {g} Lokali — {city}: {names}. Ile czasu potrzeba, na co zwrócić uwagę '
        f'i praktyczne wskazówki. Offline, bez biletu.')
-    i=(f'Lokali ma {n} {g} po mieście {city}. Wszystkie brzmią w 45 językach, nie wymagają '
+    i=(f'Lokali ma {n} {g} po mieście {city}. Wszystkie brzmią w 50+ językach, nie wymagają '
        f'biletu ani grupy z przewodnikiem i po pobraniu działają offline.')
     return t,d,i
 def hub_text_short(city,n):
@@ -114,7 +114,7 @@ def hub_text_short(city,n):
 def hub_faq(city,n):
     g=_pl(n,'bezpłatny audioprzewodnik','bezpłatne audioprzewodniki','bezpłatnych audioprzewodników')
     return [(f'{city}: ile jest bezpłatnych audioprzewodników?',
-             f'{n}. Wszystkie są bezpłatne, brzmią w 45 językach i działają offline.'),
+             f'{n}. Wszystkie są bezpłatne, brzmią w 50+ językach i działają offline.'),
             (f'{city}: czy audioprzewodnik jest naprawdę bezpłatny?',
              'Tak. Bez biletu, bez grupy z przewodnikiem i bez abonamentu — '
              'przewodniki odtwarzasz na własnym telefonie.')]

@@ -144,7 +144,7 @@ s0, t0 = SLIDES[0]
 
 TITLE = ("[PREVIEW] " if PREVIEW else "") + f"Explore {len(cities)} Cities — Free Audio Guides | Lokali"
 DESC = (f"Free audio guides for {total:,} landmarks in {len(cities)} cities. Ancient wonders, great museums, "
-        "sacred places and old towns, in 45 languages. Offline, no ticket.")[:158]
+        "sacred places and old towns, in 50+ languages. Offline, no ticket.")[:158]
 ROBOTS = "noindex,nofollow" if PREVIEW else "index,follow,max-image-preview:large,max-snippet:-1"
 
 doc = f'''<!DOCTYPE html>

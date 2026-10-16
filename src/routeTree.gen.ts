@@ -41,6 +41,7 @@ import { Route as ApiTranslateRouteImport } from './routes/api.translate'
 import { Route as ApiTimeMachineRouteImport } from './routes/api.time-machine'
 import { Route as ApiReportRouteImport } from './routes/api.report'
 import { Route as ApiPlaceDetailsRouteImport } from './routes/api.place-details'
+import { Route as ApiClientErrorRouteImport } from './routes/api.client-error'
 import { Route as ApiPhotoGalleryRouteImport } from './routes/api.photo-gallery'
 import { Route as ApiPhotoRouteImport } from './routes/api.photo'
 import { Route as ApiMuseumHighlightsRouteImport } from './routes/api.museum-highlights'
@@ -211,6 +212,11 @@ const ApiPlaceDetailsRoute = ApiPlaceDetailsRouteImport.update({
   path: '/api/place-details',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiClientErrorRoute = ApiClientErrorRouteImport.update({
+  id: '/api/client-error',
+  path: '/api/client-error',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPhotoGalleryRoute = ApiPhotoGalleryRouteImport.update({
   id: '/api/photo-gallery',
   path: '/api/photo-gallery',
@@ -283,6 +289,7 @@ export interface FileRoutesByFullPath {
   '/api/image-proxy': typeof ApiImageProxyRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/photo': typeof ApiPhotoRoute
+  '/api/client-error': typeof ApiClientErrorRoute
   '/api/photo-gallery': typeof ApiPhotoGalleryRoute
   '/api/place-details': typeof ApiPlaceDetailsRoute
   '/api/report': typeof ApiReportRoute
@@ -326,6 +333,7 @@ export interface FileRoutesByTo {
   '/api/image-proxy': typeof ApiImageProxyRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/photo': typeof ApiPhotoRoute
+  '/api/client-error': typeof ApiClientErrorRoute
   '/api/photo-gallery': typeof ApiPhotoGalleryRoute
   '/api/place-details': typeof ApiPlaceDetailsRoute
   '/api/report': typeof ApiReportRoute
@@ -370,6 +378,7 @@ export interface FileRoutesById {
   '/api/image-proxy': typeof ApiImageProxyRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
   '/api/photo': typeof ApiPhotoRoute
+  '/api/client-error': typeof ApiClientErrorRoute
   '/api/photo-gallery': typeof ApiPhotoGalleryRoute
   '/api/place-details': typeof ApiPlaceDetailsRoute
   '/api/report': typeof ApiReportRoute
@@ -415,6 +424,7 @@ export interface FileRouteTypes {
     | '/api/image-proxy'
     | '/api/museum-highlights'
     | '/api/photo'
+    | '/api/client-error'
     | '/api/photo-gallery'
     | '/api/place-details'
     | '/api/report'
@@ -458,6 +468,7 @@ export interface FileRouteTypes {
     | '/api/image-proxy'
     | '/api/museum-highlights'
     | '/api/photo'
+    | '/api/client-error'
     | '/api/photo-gallery'
     | '/api/place-details'
     | '/api/report'
@@ -501,6 +512,7 @@ export interface FileRouteTypes {
     | '/api/image-proxy'
     | '/api/museum-highlights'
     | '/api/photo'
+    | '/api/client-error'
     | '/api/photo-gallery'
     | '/api/place-details'
     | '/api/report'
@@ -545,6 +557,7 @@ export interface RootRouteChildren {
   ApiImageProxyRoute: typeof ApiImageProxyRoute
   ApiMuseumHighlightsRoute: typeof ApiMuseumHighlightsRoute
   ApiPhotoRoute: typeof ApiPhotoRoute
+  ApiClientErrorRoute: typeof ApiClientErrorRoute
   ApiPhotoGalleryRoute: typeof ApiPhotoGalleryRoute
   ApiPlaceDetailsRoute: typeof ApiPlaceDetailsRoute
   ApiReportRoute: typeof ApiReportRoute
@@ -786,6 +799,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPlaceDetailsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/client-error': {
+      id: '/api/client-error'
+      path: '/api/client-error'
+      fullPath: '/api/client-error'
+      preLoaderRoute: typeof ApiClientErrorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/photo-gallery': {
       id: '/api/photo-gallery'
       path: '/api/photo-gallery'
@@ -902,6 +922,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiImageProxyRoute: ApiImageProxyRoute,
   ApiMuseumHighlightsRoute: ApiMuseumHighlightsRoute,
   ApiPhotoRoute: ApiPhotoRoute,
+  ApiClientErrorRoute: ApiClientErrorRoute,
   ApiPhotoGalleryRoute: ApiPhotoGalleryRoute,
   ApiPlaceDetailsRoute: ApiPlaceDetailsRoute,
   ApiReportRoute: ApiReportRoute,

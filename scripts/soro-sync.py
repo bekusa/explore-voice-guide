@@ -396,7 +396,7 @@ def article_html(it, css):
 <div class="prose">
 {it['body']}
 </div>
-<a class="cta" href="{utm}" rel="nofollow" target="_blank"><span class="tx"><b>Free audio guides, 190+ cities</b><span>45 languages, works offline, no ticket and no rental desk.</span></span><span class="go">Get the app</span></a>
+<a class="cta" href="{utm}" rel="nofollow" target="_blank"><span class="tx"><b>Free audio guides, 190+ cities</b><span>50+ languages, works offline, no ticket and no rental desk.</span></span><span class="go">Get the app</span></a>
 </article>
 <h2>Keep reading</h2>
 <div class="more-list"><a href="{SITE}/blog.html">All journal articles</a><a href="{SITE}/explore/en/rome.html">Rome</a><a href="{SITE}/explore/en/istanbul.html">Istanbul</a><a href="{SITE}/explore/en/tbilisi.html">Tbilisi</a></div>

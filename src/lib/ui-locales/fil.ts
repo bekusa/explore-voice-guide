@@ -58,12 +58,10 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "trips.signInTitle": "Mag-sign in para magplano ng biyahe",
   "trips.signInDesc":
     "Naka-sync ang mga biyahe sa account mo, kaya kasama mo ang mga plano sa lahat ng device.",
-  "trips.loadFailed":
-    "Hindi ma-load ang mga biyahe mo. Tingnan ang koneksyon at subukan ulit.",
+  "trips.loadFailed": "Hindi ma-load ang mga biyahe mo. Tingnan ang koneksyon at subukan ulit.",
   "trips.retry": "Subukan ulit",
   "trips.emptyTrip": "Walang laman ang biyaheng ito",
-  "trips.emptyTripDesc":
-    "Maghanap ng lugar at idagdag ito sa biyaheng ito kapag nag-save.",
+  "trips.emptyTripDesc": "Maghanap ng lugar at idagdag ito sa biyaheng ito kapag nag-save.",
   "trips.findPlaces": "Maghanap ng lugar",
   "trips.addToTrip": "Idagdag sa isang biyahe?",
   "trips.addedTo": "Naidagdag sa {name}",
@@ -93,8 +91,7 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "highlights.searchPh": "Maghanap sa museo na ito…",
   "highlights.count": "{n} na obra",
   "highlights.found": "{n} ang nahanap",
-  "highlights.noMatch":
-    "Walang tugma. Subukan ang artist, ang panahon, o bahagi ng pamagat.",
+  "highlights.noMatch": "Walang tugma. Subukan ang artist, ang panahon, o bahagi ng pamagat.",
   "highlights.sortCurated": "Top",
   "highlights.sortAz": "A-Z",
   "highlights.sortEra": "Panahon",
@@ -118,11 +115,9 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "home.collections.title": "Mga piling koleksyon",
   "home.collections.sub": "Mga tema ayon sa paraan ng paglalakbay mo",
   "home.timeMachine.title": "Time Machine",
-  "home.timeMachine.sub":
-    "Top 10 na nakaka-engganyong sandali — pumasok sa loob ng kasaysayan",
+  "home.timeMachine.sub": "Top 10 na nakaka-engganyong sandali — pumasok sa loob ng kasaysayan",
   "home.museums.title": "Nangungunang Museo",
-  "home.museums.sub":
-    "Mga koleksyon ng museo na bumubuo sa isang sibilisasyon",
+  "home.museums.sub": "Mga koleksyon ng museo na bumubuo sa isang sibilisasyon",
   "museums.title": "Nangungunang Museo",
   "museums.subtitle": "Mga koleksyon ng museo na bumubuo sa isang sibilisasyon",
   "museums.openGuide": "Buksan ang gabay",
@@ -232,10 +227,8 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "attr.chapters": "{n} na kabanata",
   "attr.beginJourney": "Simulan ang biyahe",
   "attr.listenNarrated": "Pakinggan ang narrated na gabay",
-  "attr.tapBegin":
-    "I-tap ang “Simulan ang biyahe” para marinig ang kuwento ng lugar na ito.",
-  "attr.stopsAppear":
-    "Lalabas ang mga hintuan kapag nabuo na ang narrated na gabay.",
+  "attr.tapBegin": "I-tap ang “Simulan ang biyahe” para marinig ang kuwento ng lugar na ito.",
+  "attr.stopsAppear": "Lalabas ang mga hintuan kapag nabuo na ang narrated na gabay.",
 
   // Results filters
   "filters.interests": "Mga interes",
@@ -270,8 +263,7 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "toast.profileSaved": "Na-save ang profile",
   "toast.couldNotSave": "Hindi na-save",
   "err.notFound": "Hindi nahanap ang pahina",
-  "err.notFoundDesc":
-    "Wala ang pahinang hinahanap mo o inilipat na ito.",
+  "err.notFoundDesc": "Wala ang pahinang hinahanap mo o inilipat na ito.",
   "err.goHome": "Bumalik sa home",
   "toast.noVoiceAvailable": "Walang available na boses",
   "toast.libCleared": "Na-clear ang offline library",
@@ -284,8 +276,7 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "toast.audioOurSideHint":
     "Problema ito sa aming panig — inaayos na namin. Gumagana pa rin ang nakasulat na gabay.",
   "toast.voiceUnavailableTitle": "Wala pang boses para sa wikang ito",
-  "toast.voiceUnavailableHint":
-    "Subukang lumipat sa English o ibang suportadong wika.",
+  "toast.voiceUnavailableHint": "Subukang lumipat sa English o ibang suportadong wika.",
   "toast.guideOfflineDesc":
     "Hindi pa na-download ang gabay na ito. Kumonekta muna para ma-cache ito.",
   "toast.couldNotLoadAttractions": "Hindi ma-load ang mga atraksyon",
@@ -314,14 +305,12 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "saved.your": "Iyong",
   "saved.placesOne": "lugar",
   "saved.placesMany": "na lugar",
-  "saved.storedHelp":
-    "Nakaimbak sa device na ito — gumagana ang narration kahit walang koneksyon.",
+  "saved.storedHelp": "Nakaimbak sa device na ito — gumagana ang narration kahit walang koneksyon.",
   "saved.guideCached": "Naka-cache ang gabay",
   "saved.removeAria": "Alisin ang {name}",
   "saved.empty": "Walang naka-save",
   "saved.emptyYet": "pa",
-  "saved.emptyHelp":
-    "I-tap ang bookmark sa alinmang lugar para itago ito para sa offline.",
+  "saved.emptyHelp": "I-tap ang bookmark sa alinmang lugar para itago ito para sa offline.",
   "saved.exploreCta": "Tuklasin ang mga lugar",
   "saved.clearConfirm":
     "I-clear ang lahat ng naka-save na lugar? Hindi nito buburahin ang naka-cache na audio.",
@@ -345,11 +334,9 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "map.locAskAllow": "Payagan",
   "map.locAskDismiss": "Hindi muna",
   "map.locDeniedTitle": "Naka-off ang lokasyon",
-  "map.locDeniedDesc":
-    "I-on ito sa settings ng telepono mo para maitutok ang mapa sa iyo.",
+  "map.locDeniedDesc": "I-on ito sa settings ng telepono mo para maitutok ang mapa sa iyo.",
   "map.locTimeoutTitle": "Hindi ka matagpuan",
-  "map.locTimeoutDesc":
-    "Matagal ang GPS — subukan ulit sa labas o malapit sa bintana.",
+  "map.locTimeoutDesc": "Matagal ang GPS — subukan ulit sa labas o malapit sa bintana.",
   "map.locFailedTitle": "Hindi available ang lokasyon",
   "map.locFailedDesc": "Hindi namin nabasa ang posisyon mo. Subukan ulit saglit.",
 
@@ -378,8 +365,7 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "set.offlineMode": "Offline mode",
   "set.youOnline": "Online ka",
   "set.youOffline": "Offline ka",
-  "set.onlineHelp":
-    "I-download na ang mga gabay para patuloy na gumana kahit walang signal.",
+  "set.onlineHelp": "I-download na ang mga gabay para patuloy na gumana kahit walang signal.",
   "set.offlineHelp":
     "Gumagana pa rin ang mga naka-cache na gabay — maglo-load ang iba kapag nakakonekta ka ulit.",
   "set.savedSummaryOne": "{saved} naka-save · {cached} gabay na naka-cache",
@@ -404,18 +390,15 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "set.deleteConfirmBody":
     "Hindi na maibabalik ang hakbang na ito. Permanenteng mawawala ang sumusunod:",
   "set.deleteConfirmBullet1": "Ang sign-in credentials at profile mo",
-  "set.deleteConfirmBullet2":
-    "Lahat ng naka-save na tour sa device na ito at sa cloud",
-  "set.deleteConfirmBullet3":
-    "Lahat ng na-download na audio at script para sa offline",
+  "set.deleteConfirmBullet2": "Lahat ng naka-save na tour sa device na ito at sa cloud",
+  "set.deleteConfirmBullet3": "Lahat ng na-download na audio at script para sa offline",
   "set.deleteConfirmYes": "Burahin ang account ko",
   "set.deleteConfirmCancel": "Kanselahin",
   "set.deletingAccount": "Binubura…",
   "set.deleteFailedTitle": "Hindi nabura ang account",
   "set.deleteFailedDesc":
     "May nagkamali. Subukan ulit, o makipag-ugnayan sa support kung magpatuloy ito.",
-  "set.deleteFailedSession":
-    "Nag-expire ang session mo. Mag-sign in ulit, tapos subukan muli.",
+  "set.deleteFailedSession": "Nag-expire ang session mo. Mag-sign in ulit, tapos subukan muli.",
   "set.deleteSuccessTitle": "Nabura ang account",
   "set.deleteSuccessDesc": "Natanggal na ang account mo at lahat ng data.",
   "set.appVersion": "Lokali · v1.0",
@@ -425,8 +408,7 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "set.noLanguagesMatch": "Walang tugmang wika",
   "set.noNativeVoice":
     "Walang nahanap na katutubong boses para sa wikang ito. Gagamit ng pangkalahatang boses.",
-  "set.noVoiceForLang":
-    "Walang nahanap na katutubong boses sa device na ito para sa {code}.",
+  "set.noVoiceForLang": "Walang nahanap na katutubong boses sa device na ito para sa {code}.",
   "set.installVoicesHelp":
     "Babalik kami sa default ng browser. Mag-install ng karagdagang boses sa accessibility settings ng operating system mo.",
   "voice.onDevice": "Nasa device",
@@ -443,8 +425,7 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "notif.clearAll": "I-clear lahat",
   "notif.dismiss": "Isara",
   "notif.emptyTitle": "Walang notification",
-  "notif.emptyHelp":
-    "Lilitaw dito ang mga tip, update sa biyahe, at ideya sa paglalakbay.",
+  "notif.emptyHelp": "Lilitaw dito ang mga tip, update sa biyahe, at ideya sa paglalakbay.",
   "notif.backHome": "Bumalik sa home",
   "notif.now": "ngayon",
   "notif.min": "m",
@@ -455,8 +436,7 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "loading.searching": "Naghahanap ng impormasyon…",
   "loading.checkingSources": "Tinitingnan ang pinakabagong sanggunian…",
   "loading.selectingDetails": "Pinipili ang pinakamahalagang detalye…",
-  "loading.preparingRecommendations":
-    "Inihahanda ang mga rekomendasyon para sa iyo…",
+  "loading.preparingRecommendations": "Inihahanda ang mga rekomendasyon para sa iyo…",
   "loading.almostReady": "Malapit nang matapos…",
   "results.countOne": "{n} resulta para sa",
   "results.countMany": "{n} na resulta para sa",
@@ -496,8 +476,7 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "tm.refresh": "I-refresh",
   "tm.travelThrough": "Maglakbay sa",
   "tm.time": "panahon",
-  "tm.subtitle":
-    "Mga nakaka-engganyong simulation — pumasok sa sandali, maging saksi.",
+  "tm.subtitle": "Mga nakaka-engganyong simulation — pumasok sa sandali, maging saksi.",
   "tm.score": "Iskor",
   "tm.scoreOver": "{n} / {max}",
   "tm.minutes": "{n} min",
@@ -562,8 +541,7 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "auth.somethingWrong": "May nagkamali",
   "auth.signUpFailed": "Hindi natuloy ang sign up",
   "auth.signInFailed": "Hindi natuloy ang sign in",
-  "auth.alreadyRegistered":
-    "Nakarehistro na ang email na ito. Subukang mag-sign in.",
+  "auth.alreadyRegistered": "Nakarehistro na ang email na ito. Subukang mag-sign in.",
   "auth.continueWithGoogle": "Magpatuloy gamit ang Google",
   "auth.continueWithFacebook": "Magpatuloy gamit ang Facebook",
   "auth.continueWithMicrosoft": "Magpatuloy gamit ang Microsoft",
@@ -575,8 +553,7 @@ export const FIL: Partial<Record<UiKey, string>> = {
     "Mananatili sa device na ito ang mga naka-save na lugar at download. Mag-sign up anumang oras para mag-sync sa lahat ng device.",
   "auth.forgotPassword": "Nakalimutan ang password?",
   "auth.resetPasswordTitle": "I-reset ang password mo",
-  "auth.resetPasswordSub":
-    "Magpapadala kami ng one-click na reset link sa email mo.",
+  "auth.resetPasswordSub": "Magpapadala kami ng one-click na reset link sa email mo.",
   "auth.sendResetLink": "Ipadala ang reset link",
   "auth.resetEmailSent": "Naipadala ang reset email",
   "auth.resetEmailSentDesc":
@@ -585,8 +562,7 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "auth.newPassword": "Bagong password",
   "auth.confirmPassword": "Kumpirmahin ang password",
   "auth.passwordsDontMatch": "Hindi magkatugma ang mga password",
-  "auth.passwordTooShort":
-    "Dapat may hindi bababa sa 6 na karakter ang password",
+  "auth.passwordTooShort": "Dapat may hindi bababa sa 6 na karakter ang password",
   "auth.passwordUpdated": "Na-update ang password",
   "auth.passwordUpdatedDesc": "Naka-sign in ka na. Maganda sanang biyahe.",
   "auth.verifyEmailTitle": "I-verify ang email mo",
@@ -671,19 +647,15 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "attr.onTheMap": "Sa",
   "attr.mapWord": "mapa",
   "attr.openInGmaps": "Buksan sa Google Maps",
-  "attr.savedNearbyOne":
-    "{n} naka-save na lugar sa malapit — i-tap ang pin para buksan.",
-  "attr.savedNearbyMany":
-    "{n} na naka-save na lugar sa malapit — i-tap ang pin para buksan.",
-  "attr.tapDirections":
-    "I-tap para buksan ang direksyon mula sa kasalukuyan mong lokasyon.",
+  "attr.savedNearbyOne": "{n} naka-save na lugar sa malapit — i-tap ang pin para buksan.",
+  "attr.savedNearbyMany": "{n} na naka-save na lugar sa malapit — i-tap ang pin para buksan.",
+  "attr.tapDirections": "I-tap para buksan ang direksyon mula sa kasalukuyan mong lokasyon.",
   "attr.begin": "Simulan",
   "attr.listen": "Makinig",
   "attr.get": "Kunin",
   "attr.couldNotLoadPlace": "Hindi ma-load ang lugar na ito",
   "attr.savedForOffline": "Na-save para sa offline",
-  "attr.findInSaved":
-    "Hanapin ito sa Saved tab — gumagana kahit walang koneksyon.",
+  "attr.findInSaved": "Hanapin ito sa Saved tab — gumagana kahit walang koneksyon.",
   "attr.savedNoAudioTitle": "Na-save — pero hindi na-download ang audio",
   "attr.savedNoAudioDesc":
     "Kumonekta ulit at i-tap ang Save para subukan muli ang offline audio download.",

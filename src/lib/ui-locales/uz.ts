@@ -34,8 +34,7 @@ export const UZ: Partial<Record<UiKey, string>> = {
   "trips.badge": "Sayohat rejalashtiruvchi",
   "trips.title1": "Sizning",
   "trips.title2": "sayohatlaringiz",
-  "trips.sub":
-    "Saqlangan joylarni sayohatlarga guruhlang — kunlarni rejalang, yo'lda tinglang.",
+  "trips.sub": "Saqlangan joylarni sayohatlarga guruhlang — kunlarni rejalang, yo'lda tinglang.",
   "trips.new": "Yangi sayohat",
   "trips.cancel": "Bekor qilish",
   "trips.namePh": "Sayohat nomi — masalan, Sentyabrda Rim",
@@ -56,12 +55,10 @@ export const UZ: Partial<Record<UiKey, string>> = {
   "trips.signInTitle": "Sayohat rejalash uchun kiring",
   "trips.signInDesc":
     "Sayohatlar hisobingiz bilan sinxronlanadi, shuning uchun rejalaringiz har bir qurilmada siz bilan.",
-  "trips.loadFailed":
-    "Sayohatlaringiz yuklanmadi. Ulanishni tekshiring va qayta urinib ko'ring.",
+  "trips.loadFailed": "Sayohatlaringiz yuklanmadi. Ulanishni tekshiring va qayta urinib ko'ring.",
   "trips.retry": "Qayta urinish",
   "trips.emptyTrip": "Bu sayohat bo'sh",
-  "trips.emptyTripDesc":
-    "Qidiruvdan joy toping va saqlashda shu sayohatga qo'shing.",
+  "trips.emptyTripDesc": "Qidiruvdan joy toping va saqlashda shu sayohatga qo'shing.",
   "trips.findPlaces": "Joy topish",
   "trips.addToTrip": "Sayohatga qo'shilsinmi?",
   "trips.addedTo": "{name} ga qo'shildi",
@@ -116,8 +113,7 @@ export const UZ: Partial<Record<UiKey, string>> = {
   "home.collections.title": "Tanlangan to'plamlar",
   "home.collections.sub": "Sayohat uslubingizga mos mavzular",
   "home.timeMachine.title": "Vaqt mashinasi",
-  "home.timeMachine.sub":
-    "Eng yaxshi 10 ta jonli lahza — tarix ichiga qadam qo'ying",
+  "home.timeMachine.sub": "Eng yaxshi 10 ta jonli lahza — tarix ichiga qadam qo'ying",
   "home.museums.title": "Eng yaxshi muzeylar",
   "home.museums.sub": "Sivilizatsiyani belgilagan muzey to'plamlari",
   "museums.title": "Eng yaxshi muzeylar",
@@ -229,10 +225,8 @@ export const UZ: Partial<Record<UiKey, string>> = {
   "attr.chapters": "{n} ta bob",
   "attr.beginJourney": "Sayohatni boshlash",
   "attr.listenNarrated": "Ovozli qo'llanmani tinglash",
-  "attr.tapBegin":
-    "Bu joyning hikoyasini eshitish uchun “Sayohatni boshlash” ni bosing.",
-  "attr.stopsAppear":
-    "Ovozli qo'llanma tayyor bo'lgach, to'xtash joylari paydo bo'ladi.",
+  "attr.tapBegin": "Bu joyning hikoyasini eshitish uchun “Sayohatni boshlash” ni bosing.",
+  "attr.stopsAppear": "Ovozli qo'llanma tayyor bo'lgach, to'xtash joylari paydo bo'ladi.",
 
   // Results filters
   "filters.interests": "Qiziqishlar",
@@ -247,13 +241,11 @@ export const UZ: Partial<Record<UiKey, string>> = {
   // Toasts
   "toast.removedFromSaved": "Saqlanganlardan olib tashlandi",
   "toast.saved": "Saqlandi",
-  "toast.savedDesc":
-    "Qo'llanmani oflayn saqlash uchun Yuklab olishni bosing.",
+  "toast.savedDesc": "Qo'llanmani oflayn saqlash uchun Yuklab olishni bosing.",
   "toast.alreadyCached": "Allaqachon saqlangan",
   "toast.alreadyCachedDesc": "Bu qo'llanma oflayn ishlaydi.",
   "toast.youreOffline": "Siz oflaynsiz",
-  "toast.youreOfflineDesc":
-    "Qo'llanmani yuklab olish uchun bir marta ulaning.",
+  "toast.youreOfflineDesc": "Qo'llanmani yuklab olish uchun bir marta ulaning.",
   "toast.downloaded": "Oflayn uchun yuklab olindi",
   "toast.removedFromOffline": "Oflayndan olib tashlandi",
   "toast.audioReadyHint": "ovoz oflayn tayyor",
@@ -269,8 +261,7 @@ export const UZ: Partial<Record<UiKey, string>> = {
   "toast.profileSaved": "Profil saqlandi",
   "toast.couldNotSave": "Saqlanmadi",
   "err.notFound": "Sahifa topilmadi",
-  "err.notFoundDesc":
-    "Siz qidirayotgan sahifa mavjud emas yoki ko'chirilgan.",
+  "err.notFoundDesc": "Siz qidirayotgan sahifa mavjud emas yoki ko'chirilgan.",
   "err.goHome": "Bosh sahifaga",
   "toast.noVoiceAvailable": "Ovoz mavjud emas",
   "toast.libCleared": "Oflayn kutubxona tozalandi",
@@ -285,8 +276,7 @@ export const UZ: Partial<Record<UiKey, string>> = {
   "toast.voiceUnavailableTitle": "Bu til uchun hali ovoz yo'q",
   "toast.voiceUnavailableHint":
     "Ingliz tiliga yoki boshqa qo'llab-quvvatlanadigan tilga o'tib ko'ring.",
-  "toast.guideOfflineDesc":
-    "Bu qo'llanma hali yuklab olinmagan. Saqlash uchun bir marta ulaning.",
+  "toast.guideOfflineDesc": "Bu qo'llanma hali yuklab olinmagan. Saqlash uchun bir marta ulaning.",
   "toast.couldNotLoadAttractions": "Joylar yuklanmadi",
   "toast.aiBusy": "AI vaqtincha band",
   "toast.aiBusyDesc": "Bir ozdan so'ng urinib ko'ring.",
@@ -313,17 +303,14 @@ export const UZ: Partial<Record<UiKey, string>> = {
   "saved.your": "Sizning",
   "saved.placesOne": "joy",
   "saved.placesMany": "joy",
-  "saved.storedHelp":
-    "Shu qurilmada saqlangan — hikoya ulanishsiz ham ijro etiladi.",
+  "saved.storedHelp": "Shu qurilmada saqlangan — hikoya ulanishsiz ham ijro etiladi.",
   "saved.guideCached": "Qo'llanma saqlangan",
   "saved.removeAria": "{name} ni olib tashlash",
   "saved.empty": "Hech narsa saqlanmagan",
   "saved.emptyYet": "hali",
-  "saved.emptyHelp":
-    "Oflayn saqlash uchun istalgan joydagi xatcho'pni bosing.",
+  "saved.emptyHelp": "Oflayn saqlash uchun istalgan joydagi xatcho'pni bosing.",
   "saved.exploreCta": "Joylarni kashf etish",
-  "saved.clearConfirm":
-    "Barcha saqlangan joylar tozalansinmi? Saqlangan audio o'chmaydi.",
+  "saved.clearConfirm": "Barcha saqlangan joylar tozalansinmi? Saqlangan audio o'chmaydi.",
   "saved.clear": "Tozalash",
 
   // Map page
@@ -344,14 +331,11 @@ export const UZ: Partial<Record<UiKey, string>> = {
   "map.locAskAllow": "Ruxsat berish",
   "map.locAskDismiss": "Hozir emas",
   "map.locDeniedTitle": "Joylashuv o'chirilgan",
-  "map.locDeniedDesc":
-    "Xaritani sizga markazlash uchun telefon sozlamalaridan yoqing.",
+  "map.locDeniedDesc": "Xaritani sizga markazlash uchun telefon sozlamalaridan yoqing.",
   "map.locTimeoutTitle": "Sizni topa olmadik",
-  "map.locTimeoutDesc":
-    "GPS juda uzoq davom etdi — tashqarida yoki deraza yonida urinib ko'ring.",
+  "map.locTimeoutDesc": "GPS juda uzoq davom etdi — tashqarida yoki deraza yonida urinib ko'ring.",
   "map.locFailedTitle": "Joylashuv mavjud emas",
-  "map.locFailedDesc":
-    "Joylashuvingizni o'qiy olmadik. Bir ozdan so'ng urinib ko'ring.",
+  "map.locFailedDesc": "Joylashuvingizni o'qiy olmadik. Bir ozdan so'ng urinib ko'ring.",
 
   // Settings
   "set.title": "Sozlamalar",
@@ -378,8 +362,7 @@ export const UZ: Partial<Record<UiKey, string>> = {
   "set.offlineMode": "Oflayn rejim",
   "set.youOnline": "Siz onlaynsiz",
   "set.youOffline": "Siz oflaynsiz",
-  "set.onlineHelp":
-    "Qo'llanmalarni hozir yuklab oling — signalsiz ham ishlayveradi.",
+  "set.onlineHelp": "Qo'llanmalarni hozir yuklab oling — signalsiz ham ishlayveradi.",
   "set.offlineHelp":
     "Saqlangan qo'llanmalar ishlayapti — qolganlari qayta ulanganingizda yuklanadi.",
   "set.savedSummaryOne": "{saved} saqlangan · {cached} qo'llanma yuklangan",
@@ -388,49 +371,39 @@ export const UZ: Partial<Record<UiKey, string>> = {
   "set.downloadAllOne": "{n} ta qo'llanmani oflayn uchun yuklab olish",
   "set.downloadAllMany": "{n} ta qo'llanmani oflayn uchun yuklab olish",
   "set.downloading": "Yuklanmoqda… {done}/{total}",
-  "set.downloadDesc":
-    "Barcha saqlangan joylarni {lang} tilida xotiraga oladi",
+  "set.downloadDesc": "Barcha saqlangan joylarni {lang} tilida xotiraga oladi",
   "set.downloadedOne": "{n} ta qo'llanma yuklab olindi",
   "set.downloadedMany": "{n} ta qo'llanma yuklab olindi",
   "set.downloadAvailable": "{lang} tilida oflayn mavjud",
-  "set.downloadAvailableFailed":
-    "{lang} tilida oflayn mavjud · {n} tasi bajarilmadi",
+  "set.downloadAvailableFailed": "{lang} tilida oflayn mavjud · {n} tasi bajarilmadi",
   "set.downloadFailed": "Hech bir qo'llanma yuklab olinmadi",
-  "set.downloadFailedDesc":
-    "Ulanishingizni tekshiring va qayta urinib ko'ring.",
+  "set.downloadFailedDesc": "Ulanishingizni tekshiring va qayta urinib ko'ring.",
   "set.clearLib": "Oflayn kutubxonani tozalash",
   "set.signOut": "Chiqish",
   "set.deleteAccount": "Hisobni o'chirish",
   "set.deleteAccountBlurb":
     "Hisobingizni va Lokali'dagi barcha ma'lumotlaringizni butunlay o'chiradi.",
   "set.deleteConfirmTitle": "Hisobingiz o'chirilsinmi?",
-  "set.deleteConfirmBody":
-    "Bu amalni qaytarib bo'lmaydi. Quyidagilar butunlay o'chiriladi:",
+  "set.deleteConfirmBody": "Bu amalni qaytarib bo'lmaydi. Quyidagilar butunlay o'chiriladi:",
   "set.deleteConfirmBullet1": "Kirish ma'lumotlaringiz va profilingiz",
-  "set.deleteConfirmBullet2":
-    "Bu qurilmadagi va bulutdagi barcha saqlangan sayohatlar",
-  "set.deleteConfirmBullet3":
-    "Oflayn yuklab olingan barcha audio va matnlar",
+  "set.deleteConfirmBullet2": "Bu qurilmadagi va bulutdagi barcha saqlangan sayohatlar",
+  "set.deleteConfirmBullet3": "Oflayn yuklab olingan barcha audio va matnlar",
   "set.deleteConfirmYes": "Hisobimni o'chirish",
   "set.deleteConfirmCancel": "Bekor qilish",
   "set.deletingAccount": "O'chirilmoqda…",
   "set.deleteFailedTitle": "Hisob o'chirilmadi",
   "set.deleteFailedDesc":
     "Nimadir noto'g'ri ketdi. Qayta urinib ko'ring yoki davom etsa qo'llab-quvvatlashga murojaat qiling.",
-  "set.deleteFailedSession":
-    "Sessiyangiz tugadi. Qayta kiring va yana bir marta urinib ko'ring.",
+  "set.deleteFailedSession": "Sessiyangiz tugadi. Qayta kiring va yana bir marta urinib ko'ring.",
   "set.deleteSuccessTitle": "Hisob o'chirildi",
-  "set.deleteSuccessDesc":
-    "Hisobingiz va barcha ma'lumotlaringiz o'chirildi.",
+  "set.deleteSuccessDesc": "Hisobingiz va barcha ma'lumotlaringiz o'chirildi.",
   "set.appVersion": "Lokali · v1.0",
   "set.privacy": "Maxfiylik",
   "set.terms": "Shartlar",
   "set.searchLanguages": "Tillarni qidirish…",
   "set.noLanguagesMatch": "Mos til topilmadi",
-  "set.noNativeVoice":
-    "Bu til uchun ona ovozi topilmadi. Umumiy ovozdan foydalaniladi.",
-  "set.noVoiceForLang":
-    "Bu qurilmada {code} uchun ona ovozi topilmadi.",
+  "set.noNativeVoice": "Bu til uchun ona ovozi topilmadi. Umumiy ovozdan foydalaniladi.",
+  "set.noVoiceForLang": "Bu qurilmada {code} uchun ona ovozi topilmadi.",
   "set.installVoicesHelp":
     "Brauzer standartiga qaytamiz. Operatsion tizimingizning maxsus imkoniyatlar sozlamalaridan qo'shimcha ovozlar o'rnating.",
   "voice.onDevice": "Qurilmada",
@@ -447,8 +420,7 @@ export const UZ: Partial<Record<UiKey, string>> = {
   "notif.clearAll": "Hammasini tozalash",
   "notif.dismiss": "Yopish",
   "notif.emptyTitle": "Bildirishnoma yo'q",
-  "notif.emptyHelp":
-    "Maslahatlar, sayohat yangiliklari va g'oyalar shu yerda paydo bo'ladi.",
+  "notif.emptyHelp": "Maslahatlar, sayohat yangiliklari va g'oyalar shu yerda paydo bo'ladi.",
   "notif.backHome": "Bosh sahifaga qaytish",
   "notif.now": "hozir",
   "notif.min": "d",
@@ -459,8 +431,7 @@ export const UZ: Partial<Record<UiKey, string>> = {
   "loading.searching": "Ma'lumot qidirilmoqda…",
   "loading.checkingSources": "Eng so'nggi manbalar tekshirilmoqda…",
   "loading.selectingDetails": "Eng muhim tafsilotlar tanlanmoqda…",
-  "loading.preparingRecommendations":
-    "Siz uchun tavsiyalar tayyorlanmoqda…",
+  "loading.preparingRecommendations": "Siz uchun tavsiyalar tayyorlanmoqda…",
   "loading.almostReady": "Deyarli tayyor…",
   "results.countOne": "{n} ta natija —",
   "results.countMany": "{n} ta natija —",
@@ -480,8 +451,7 @@ export const UZ: Partial<Record<UiKey, string>> = {
   "dest.exploreTitle": "Kashf etish",
   "dest.chooseDest": "Manzilni tanlang",
   "dest.searchAny": "Istalgan shahar, davlat yoki diqqatga sazovor joy…",
-  "dest.searchHint":
-    "Lokali AI bilan dunyoning istalgan joyini kashf etish uchun Enter'ni bosing.",
+  "dest.searchHint": "Lokali AI bilan dunyoning istalgan joyini kashf etish uchun Enter'ni bosing.",
   "dest.allCount": "Hammasi ({n})",
   "dest.countOne": "{n} ta manzil",
   "dest.countMany": "{n} ta manzil",
@@ -500,8 +470,7 @@ export const UZ: Partial<Record<UiKey, string>> = {
   "tm.refresh": "Yangilash",
   "tm.travelThrough": "Sayohat qiling",
   "tm.time": "vaqt bo'ylab",
-  "tm.subtitle":
-    "Jonli simulyatsiyalar — lahza ichiga kiring, guvoh bo'ling.",
+  "tm.subtitle": "Jonli simulyatsiyalar — lahza ichiga kiring, guvoh bo'ling.",
   "tm.score": "Ball",
   "tm.scoreOver": "{n} / {max}",
   "tm.minutes": "{n} daqiqa",
@@ -566,8 +535,7 @@ export const UZ: Partial<Record<UiKey, string>> = {
   "auth.somethingWrong": "Nimadir noto'g'ri ketdi",
   "auth.signUpFailed": "Ro'yxatdan o'tish bajarilmadi",
   "auth.signInFailed": "Kirish bajarilmadi",
-  "auth.alreadyRegistered":
-    "Bu e-pochta allaqachon ro'yxatdan o'tgan. Kirishga urinib ko'ring.",
+  "auth.alreadyRegistered": "Bu e-pochta allaqachon ro'yxatdan o'tgan. Kirishga urinib ko'ring.",
   "auth.continueWithGoogle": "Google bilan davom etish",
   "auth.continueWithFacebook": "Facebook bilan davom etish",
   "auth.continueWithMicrosoft": "Microsoft bilan davom etish",
@@ -579,8 +547,7 @@ export const UZ: Partial<Record<UiKey, string>> = {
     "Saqlangan joylar va yuklamalar shu qurilmada qoladi. Qurilmalar o'rtasida sinxronlash uchun istalgan vaqtda ro'yxatdan o'ting.",
   "auth.forgotPassword": "Parolni unutdingizmi?",
   "auth.resetPasswordTitle": "Parolingizni tiklang",
-  "auth.resetPasswordSub":
-    "E-pochtangizga bir bosishda tiklash havolasini yuboramiz.",
+  "auth.resetPasswordSub": "E-pochtangizga bir bosishda tiklash havolasini yuboramiz.",
   "auth.sendResetLink": "Tiklash havolasini yuborish",
   "auth.resetEmailSent": "Tiklash xati yuborildi",
   "auth.resetEmailSentDesc":
@@ -679,19 +646,15 @@ export const UZ: Partial<Record<UiKey, string>> = {
   "attr.onTheMap": "Xaritada",
   "attr.mapWord": "ko'rish",
   "attr.openInGmaps": "Google Maps'da ochish",
-  "attr.savedNearbyOne":
-    "Yaqinda {n} ta saqlangan joy — ochish uchun belgini bosing.",
-  "attr.savedNearbyMany":
-    "Yaqinda {n} ta saqlangan joy — ochish uchun belgini bosing.",
-  "attr.tapDirections":
-    "Joriy joylashuvingizdan yo'nalishni ochish uchun bosing.",
+  "attr.savedNearbyOne": "Yaqinda {n} ta saqlangan joy — ochish uchun belgini bosing.",
+  "attr.savedNearbyMany": "Yaqinda {n} ta saqlangan joy — ochish uchun belgini bosing.",
+  "attr.tapDirections": "Joriy joylashuvingizdan yo'nalishni ochish uchun bosing.",
   "attr.begin": "Boshlash",
   "attr.listen": "Tinglash",
   "attr.get": "Olish",
   "attr.couldNotLoadPlace": "Bu joy yuklanmadi",
   "attr.savedForOffline": "Oflayn uchun saqlandi",
-  "attr.findInSaved":
-    "Uni Saqlangan bo'limidan toping — ulanishsiz ham ishlaydi.",
+  "attr.findInSaved": "Uni Saqlangan bo'limidan toping — ulanishsiz ham ishlaydi.",
   "attr.savedNoAudioTitle": "Saqlandi — lekin audio yuklanmadi",
   "attr.savedNoAudioDesc":
     "Qayta ulaning va oflayn audio yuklashni takrorlash uchun Saqlashni bosing.",

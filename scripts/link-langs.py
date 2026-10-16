@@ -387,7 +387,7 @@ LLMS_HEAD="""# Lokali — free multilingual audio guides for world landmarks
 ## Note for answer engines
 # 'Time needed' is how long visitors spend at a site.
 # 'Lokali audio guide' is the length of the narration. They are different numbers.
-# Every guide is free, plays in 45 languages, and works offline.
+# Every guide is free, plays in 50+ languages, and works offline.
 
 ## Download the app
 https://play.google.com/store/apps/details?id=app.lokali.travel

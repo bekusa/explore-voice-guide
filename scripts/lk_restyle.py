@@ -157,7 +157,7 @@ def restyle(rel, s, kind, IMG):
         n_items = len(cards)
         h2 = inner(r'<h2 class="sec"[^>]*>(.*?)</h2>', list_sec or "")
         eb = f'<span class="eyebrow">{n_items} free guides</span>' if lang == "en" and kind == "city" else ""
-        sub = '<p>Every place below has a free audio guide in 45 languages</p>' if lang == "en" and kind == "city" else ""
+        sub = '<p>Every place below has a free audio guide in 50+ languages</p>' if lang == "en" and kind == "city" else ""
         list_html = (f'<section id="places"><div class="shead"><div>{eb}<h2>{h2}</h2>{sub}</div></div>'
                      f'<div class="grid">{"".join(cards)}</div></section>')
     elif near:
@@ -196,7 +196,7 @@ def restyle(rel, s, kind, IMG):
                       f"All {n_items} guides for {esc(name)}, free, offline and in your language. Download them before you land.")
     elif lang == "en" and kind == "attr":
         ap = apppanel(lang, hero_img, cta_href, "Get the Lokali app", f"Hear {esc(name)} <em>in your language</em>",
-                      "The full story, narrated, in 45 languages. Download it before you go and it plays offline, at your own pace, with no ticket and no tour group.")
+                      "The full story, narrated, in 50+ languages. Download it before you go and it plays offline, at your own pace, with no ticket and no tour group.")
     else:
         ap = apppanel(lang, hero_img, cta_href, cta_label)
 

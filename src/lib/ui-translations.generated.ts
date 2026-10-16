@@ -114,6 +114,13 @@ const LOCALE_LOADERS: Record<string, () => Promise<LocaleDict>> = {
   // 2026-10-15 — the languages that took the catalog to 51. Hand
   // translated, not machine generated, at Beka's instruction.
   fil: () => import("./ui-locales/fil").then((m) => m.FIL),
+  uz: () => import("./ui-locales/uz").then((m) => m.UZ),
+  kk: () => import("./ui-locales/kk").then((m) => m.KK),
+  lt: () => import("./ui-locales/lt").then((m) => m.LT),
+  lv: () => import("./ui-locales/lv").then((m) => m.LV),
+  gu: () => import("./ui-locales/gu").then((m) => m.GU),
+  ml: () => import("./ui-locales/ml").then((m) => m.ML),
+  pa: () => import("./ui-locales/pa").then((m) => m.PA),
 };
 
 /**

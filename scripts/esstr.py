@@ -7,7 +7,7 @@ ROW={'time':'Tiempo necesario','audio':'Audioguía Lokali','type':'Tipo','best':
 UI={'badge':'Audioguía gratuita','begin':'Empezar','open':'Abrir la app Lokali',
     'verified':'Verificado en octubre de 2026','howwrite':'cómo escribimos estas guías',
     'maps':'Abrir en Google Maps','allcities':'Todas las ciudades','editorial':'Proceso editorial',
-    'guidesin':'Audioguías en','langval':'45 idiomas, en la app Lokali','free':'gratis','min':'min',
+    'guidesin':'Audioguías en','langval':'50+ idiomas, en la app Lokali','free':'gratis','min':'min',
     'getapp':'Descargar la app'}
 CAT={'history':'Historia','photography':'Fotografía','authentic':'Lo auténtico',
      'romantic':'Romántico','family':'Familias','editors':'Selección del editor',
@@ -54,7 +54,7 @@ def faq(t,city,country,vis,mins,tips,kfs,lat,lng):
         (f"La mayoría de los visitantes dedica {vis}. " if vis else "")+
         f"La audioguía gratuita de Lokali dura {mins} minutos y está pensada para escucharla mientras caminas."),
        (f"¿Hay una audioguía gratuita de {t}?",
-        f"Sí: la app de Lokali narra {t} gratis en 45 idiomas. Sin entrada, sin grupo organizado "
+        f"Sí: la app de Lokali narra {t} gratis en 50+ idiomas. Sin entrada, sin grupo organizado "
         f"y sin suscripción; una vez descargada funciona sin conexión.")]
     if lat is not None:
         o.append((f"¿Dónde está {t}?",
@@ -75,7 +75,7 @@ TITLE_SHORT='{t} — Audioguía gratuita | Lokali'
 HUB_TITLE='{city} — {n} audioguías gratuitas | Lokali'
 HUB_TITLE_SHORT='{city} — {n} audioguías | Lokali'
 HUB_DESC='{n} audioguías gratuitas de Lokali en {city}: {names}. Duración de la visita, qué mirar y consejos prácticos — sin conexión y sin entrada.'
-HUB_INTRO='Lokali tiene {n} audioguías gratuitas de {city}. Cada una suena en 45 idiomas, no necesita entrada ni grupo organizado y funciona sin conexión una vez descargada.'
+HUB_INTRO='Lokali tiene {n} audioguías gratuitas de {city}. Cada una suena en 50+ idiomas, no necesita entrada ni grupo organizado y funciona sin conexión una vez descargada.'
 SENT={'is':'{t} es {tp} en {where}.','in':'{t} está en {where}.',
       'spend':'La mayoría de los visitantes dedica {vis}.',
       'runs':'La audioguía gratuita de Lokali dura {n} minutos.',
@@ -95,6 +95,6 @@ COUNTRY={'türkiye':'Turquía','greece':'Grecia','italy':'Italia','france':'Fran
  'norway':'Noruega','nepal':'Nepal','pakistan':'Pakistán','cambodia':'Camboya','philippines':'Filipinas'}
 def hub_faq(city,n):
     return [(f"¿Cuántas audioguías gratuitas hay de {city}?",
-             f"{n}. Todas son gratuitas, suenan en 45 idiomas y funcionan sin conexión."),
+             f"{n}. Todas son gratuitas, suenan en 50+ idiomas y funcionan sin conexión."),
             (f"¿La audioguía de {city} es realmente gratis?",
              "Sí. Sin entrada, sin grupo organizado y sin suscripción: las guías suenan en tu propio móvil.")]

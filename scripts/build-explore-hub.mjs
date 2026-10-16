@@ -32,9 +32,12 @@
  * them:
  *   1. URLs pointed at the bare directory /explore/, which returns 404 on the
  *      Cloudflare Worker. Everything now uses /explore/index.html (HUB_URL).
- *   2. The copy said 47 languages. The app ships 45 — src/lib/ui-locales/ is
- *      the source of truth; keep this file, the Play listing and the /explore/
- *      templates in step with it.
+ *   2. The copy used to state an exact language count, which went stale every
+ *      time a locale landed (it said 47 when the app shipped 45). All copy now
+ *      says "50+" instead: rounded down to the nearest ten, so it stays true
+ *      as the catalog grows and no marketing string needs rewriting. The app
+ *      ships 51 locales today — src/lib/ui-locales/ is the source of truth,
+ *      and LANGUAGE_COUNT_LABEL in src/lib/languages.ts derives the label.
  *   3. Generated pages had no Play Store link. Every page must carry one.
  *
  * It also used to re-add pages to the sitemap that were deliberately set to
@@ -148,7 +151,7 @@ function cityPage(city, attrs) {
   const name = titleCase(city);
   const url = `${BASE}/explore/en/${city}.html`;
   const top = attrs.slice(0, 3).map((a) => a.name).join(", ");
-  const desc = `Free ${name} audio guide in 45 languages: ${top}. Visit times, what to look for and practical tips — self-guided, offline, no fee.`;
+  const desc = `Free ${name} audio guide in 50+ languages: ${top}. Visit times, what to look for and practical tips — self-guided, offline, no fee.`;
   const links = attrs
     .map((a) => `<a href="${BASE}/explore/en/${city}/${a.slug}.html">${esc(a.name)}</a>`)
     .join("\n");
@@ -198,7 +201,7 @@ ${CSS}
 <header class="topbar"><a class="brand" href="${BASE}/">Lokali</a></header>
 <div class="crumbs"><a href="${BASE}/">Lokali</a> › <a href="${HUB_URL}">Explore</a> › ${esc(name)}</div>
 <h1>${esc(name)}</h1>
-<p class="lede">${attrs.length} landmark${attrs.length === 1 ? "" : "s"} in ${esc(name)} with a free Lokali audio guide. Pick one to read about it, then listen in the app in any of 45 languages — offline, no ticket, no tour group.</p>
+<p class="lede">${attrs.length} landmark${attrs.length === 1 ? "" : "s"} in ${esc(name)} with a free Lokali audio guide. Pick one to read about it, then listen in the app in any of 50+ languages — offline, no ticket, no tour group.</p>
 <div class="cta-row"><a class="cta" href="${BASE}/"><span class="lbl"><small>Begin</small><b>Open the Lokali app</b></span></a></div>
 <section><h2 class="sec">What to see in ${esc(name)}</h2>
 <div class="more-list">
@@ -247,7 +250,7 @@ function hubPage(cities) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#110c08">
-<title>Explore ${names.length} Cities — Free Audio Guides in 45 Languages | Lokali</title>
+<title>Explore ${names.length} Cities — Free Audio Guides in 50+ Languages | Lokali</title>
 <meta name="description" content="${esc(desc)}">
 <link rel="canonical" href="${HUB_URL}">
 <link rel="alternate" hreflang="en-US" href="${HUB_URL}">
@@ -255,7 +258,7 @@ function hubPage(cities) {
 <link rel="alternate" hreflang="x-default" href="${HUB_URL}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Lokali">
-<meta property="og:title" content="Explore ${names.length} Cities — Free Audio Guides in 45 Languages | Lokali">
+<meta property="og:title" content="Explore ${names.length} Cities — Free Audio Guides in 50+ Languages | Lokali">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:image" content="${BASE}/images/museums/louvre.jpg">
 <meta property="og:url" content="${HUB_URL}">
@@ -279,7 +282,7 @@ ${CSS}
 <header class="topbar"><a class="brand" href="${BASE}/">Lokali</a></header>
 <div class="crumbs"><a href="${BASE}/">Lokali</a> › Explore</div>
 <h1>Explore by city</h1>
-<p class="lede">Free audio guides for ${names.length} cities and ${attrTotal} landmarks. Pick a city to see what is worth your time there, then listen in the Lokali app in any of 45 languages. No ticket, no tour group, no fee. Every guide works offline once downloaded.</p>
+<p class="lede">Free audio guides for ${names.length} cities and ${attrTotal} landmarks. Pick a city to see what is worth your time there, then listen in the Lokali app in any of 50+ languages. No ticket, no tour group, no fee. Every guide works offline once downloaded.</p>
 <div class="cta-row"><a class="cta" href="${BASE}/"><span class="lbl"><small>Begin</small><b>Open the Lokali app</b></span></a></div>
 
 ${body}
@@ -352,7 +355,7 @@ console.log(`1. City pages: ${written} created, ${cities.size - written} already
 
 // The hub is the one file this script always rewrites, so it is also the one
 // that silently reverted hand-made SEO work in the past. Keep it in sync with
-// the real templates: /explore/index.html URLs, 45 languages, a Play link.
+// the real templates: /explore/index.html URLs, 50+ languages, a Play link.
 const hub = path.join(PUB, "explore", "index.html");
 if (APPLY) await writeFile(hub, hubPage(cities), "utf8");
 console.log(`2. Hub: public/explore/index.html (${cities.size} cities linked)`);

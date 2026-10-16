@@ -10,7 +10,7 @@ ROW={'time':'Waktu yang dibutuhkan','audio':'Panduan audio Lokali','type':'Jenis
 UI={'badge':'Panduan audio gratis','begin':'Mulai','open':'Buka aplikasi Lokali',
     'verified':'Diverifikasi Oktober 2026','howwrite':'cara kami menulis panduan ini',
     'maps':'Buka di Google Maps','allcities':'Semua kota','editorial':'Proses redaksi',
-    'guidesin':'Panduan audio di','langval':'45 bahasa, di aplikasi Lokali','free':'gratis',
+    'guidesin':'Panduan audio di','langval':'50+ bahasa, di aplikasi Lokali','free':'gratis',
     'min':'mnt','getapp':'Unduh aplikasi'}
 CAT={'history':'Sejarah','photography':'Fotografi','authentic':'Autentik','romantic':'Romantis',
      'family':'Keluarga','editors':'Pilihan redaksi','nature':'Alam','art':'Seni',
@@ -52,7 +52,7 @@ def faq(t,city,country,vis,mins,tips,kfs,lat,lng):
         (f"Sebagian besar pengunjung menghabiskan {vis}. " if vis else "")+
         f"Panduan audio gratis Lokali berdurasi {mins} menit dan bisa didengarkan sambil berjalan."),
        (f"Apakah ada panduan audio gratis untuk {t}?",
-        f"Ada — aplikasi Lokali menceritakan {t} secara gratis dalam 45 bahasa. Tanpa tiket, "
+        f"Ada — aplikasi Lokali menceritakan {t} secara gratis dalam 50+ bahasa. Tanpa tiket, "
         f"tanpa rombongan dan tanpa langganan; setelah diunduh bisa dipakai offline.")]
     if lat is not None:
         o.append((f"Di mana letak {t}?",
@@ -71,7 +71,7 @@ TITLE_SHORT='{t} — Panduan audio gratis | Lokali'
 HUB_TITLE='{city} — {n} panduan audio gratis | Lokali'
 HUB_TITLE_SHORT='{city} — {n} panduan audio | Lokali'
 HUB_DESC="{n} panduan audio Lokali gratis di {city}: {names}. Lama kunjungan, apa yang perlu diamati dan tips praktis — offline, tanpa tiket."
-HUB_INTRO="Lokali punya {n} panduan audio gratis di {city}. Semuanya tersedia dalam 45 bahasa, tidak perlu tiket atau rombongan, dan bisa dipakai offline setelah diunduh."
+HUB_INTRO="Lokali punya {n} panduan audio gratis di {city}. Semuanya tersedia dalam 50+ bahasa, tidak perlu tiket atau rombongan, dan bisa dipakai offline setelah diunduh."
 SENT={'is':'{t} adalah {tp} di {where}.','in':'{t} berada di {where}.',
       'spend':'Sebagian besar pengunjung menghabiskan {vis}.',
       'runs':'Panduan audio gratis Lokali berdurasi {n} menit.',
@@ -92,6 +92,6 @@ COUNTRY={'türkiye':'Turki','greece':'Yunani','italy':'Italia','france':'Prancis
  'philippines':'Filipina'}
 def hub_faq(city,n):
     return [(f"Ada berapa panduan audio gratis di {city}?",
-             f"{n}. Semuanya gratis, tersedia dalam 45 bahasa, dan bisa dipakai offline."),
+             f"{n}. Semuanya gratis, tersedia dalam 50+ bahasa, dan bisa dipakai offline."),
             (f"Apakah panduan audio {city} benar-benar gratis?",
              "Ya. Tanpa tiket, tanpa rombongan dan tanpa langganan — panduan diputar di ponsel Anda sendiri.")]

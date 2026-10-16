@@ -11,6 +11,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { useT } from "@/hooks/useT";
 import { useCapacitorBridge } from "@/hooks/useCapacitorBridge";
 import { capturePageview, logVisit, identifyUser, resetAnalytics } from "@/lib/analytics";
+import { LANGUAGE_COUNT_LABEL } from "@/lib/languages";
 
 import appCss from "../styles.css?url";
 
@@ -104,25 +105,25 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1, viewport-fit=cover",
       },
       // SEO head cleanup 2026-09-01: title/description carry the real
-      // value prop (free · 45 languages · offline); author + twitter:site
+      // value prop (free · 50+ languages · offline); author + twitter:site
       // no longer leak "Lovable"; og/twitter images point at our own
       // hosted asset instead of a Lovable r2.dev preview screenshot.
-      // NOTE: keep the language count in sync with src/lib/ui-locales/.
-      { title: "Lokali — Free Audio Guides in 45 Languages" },
+      // The language count comes from LANGUAGE_COUNT_LABEL — one source
+      // of truth in src/lib/languages.ts, so adding a locale never
+      // leaves a stale number in a meta tag again.
+      { title: `Lokali — Free Audio Guides in ${LANGUAGE_COUNT_LABEL} Languages` },
       {
         name: "description",
-        content:
-          "Free audio guides for 190+ cities worldwide, in 45 languages. History, what to look for and practical tips — offline, no ticket, no tour group.",
+        content: `Free audio guides for 190+ cities worldwide, in ${LANGUAGE_COUNT_LABEL} languages. History, what to look for and practical tips — offline, no ticket, no tour group.`,
       },
       { name: "author", content: "Lokali" },
       {
         property: "og:title",
-        content: "Lokali — Free Audio Guides in 45 Languages",
+        content: `Lokali — Free Audio Guides in ${LANGUAGE_COUNT_LABEL} Languages`,
       },
       {
         property: "og:description",
-        content:
-          "Free audio guides for 190+ cities worldwide, in 45 languages. History, what to look for and practical tips — offline, no ticket, no tour group.",
+        content: `Free audio guides for 190+ cities worldwide, in ${LANGUAGE_COUNT_LABEL} languages. History, what to look for and practical tips — offline, no ticket, no tour group.`,
       },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Lokali" },
@@ -130,12 +131,11 @@ export const Route = createRootRoute({
       { name: "twitter:card", content: "summary_large_image" },
       {
         name: "twitter:title",
-        content: "Lokali — Free Audio Guides in 45 Languages",
+        content: `Lokali — Free Audio Guides in ${LANGUAGE_COUNT_LABEL} Languages`,
       },
       {
         name: "twitter:description",
-        content:
-          "Free audio guides for 190+ cities worldwide, in 45 languages. Offline, no ticket, no tour group.",
+        content: `Free audio guides for 190+ cities worldwide, in ${LANGUAGE_COUNT_LABEL} languages. Offline, no ticket, no tour group.`,
       },
       {
         property: "og:image",
@@ -277,8 +277,7 @@ function RootComponent() {
         if (typeof navigator !== "undefined" && navigator.onLine !== false) {
           for (const item of getSaved()) {
             if (item.imageDataUrl) continue;
-            const url =
-              (item.attraction as { image_url?: string } | null)?.image_url ?? null;
+            const url = (item.attraction as { image_url?: string } | null)?.image_url ?? null;
             if (!url) continue;
             void attachPhotoToSavedItem(item.id, url);
           }

@@ -22,7 +22,7 @@ ROW={'time':'所要時間','audio':'Lokali音声ガイド','type':'種類','best
 UI={'badge':'無料音声ガイド','begin':'はじめる','open':'Lokaliアプリを開く',
     'verified':'2026年10月に確認','howwrite':'ガイドの作り方',
     'maps':'Google マップで開く','allcities':'すべての都市','editorial':'編集方針',
-    'guidesin':'の音声ガイド','langval':'45言語、Lokaliアプリで','free':'無料',
+    'guidesin':'の音声ガイド','langval':'50+言語、Lokaliアプリで','free':'無料',
     'min':'分','getapp':'アプリを入手'}
 CAT={'history':'歴史','photography':'写真','authentic':'地元の雰囲気','romantic':'ロマンティック',
      'family':'家族向け','editors':'編集部のおすすめ','nature':'自然','art':'アート',
@@ -64,7 +64,7 @@ def faq(t,city,country,vis,mins,tips,kfs,lat,lng):
         (f"多くの人が{vis}ほど過ごします。" if vis else "")+
         f"Lokaliの無料音声ガイドは{mins}分で、歩きながら聴けます。"),
        (f"{t}に無料の音声ガイドはありますか？",
-        f"あります。Lokaliアプリが45言語で無料で解説します。チケットもツアー参加も定期購読も不要で、"
+        f"あります。Lokaliアプリが50+言語で無料で解説します。チケットもツアー参加も定期購読も不要で、"
         f"ダウンロード後はオフラインでも使えます。")]
     if lat is not None:
         o.append((f"{t}はどこにありますか？",
@@ -82,7 +82,7 @@ TITLE_SHORT='{t} — 無料音声ガイド | Lokali'
 HUB_TITLE='{city} — 無料音声ガイド{n}件 | Lokali'
 HUB_TITLE_SHORT='{city} — 音声ガイド{n}件 | Lokali'
 HUB_DESC="{city}のLokali無料音声ガイド{n}件：{names}。所要時間、見どころ、実用的なヒント。オフライン対応、チケット不要。"
-HUB_INTRO="Lokaliには{city}の無料音声ガイドが{n}件あります。すべて45言語に対応し、チケットもツアー参加も不要で、ダウンロードすればオフラインでも使えます。"
+HUB_INTRO="Lokaliには{city}の無料音声ガイドが{n}件あります。すべて50+言語に対応し、チケットもツアー参加も不要で、ダウンロードすればオフラインでも使えます。"
 SENT={'is':'{t}は{where}の{tp}です。','in':'{t}は{where}にあります。',
       'spend':'多くの人が{vis}ほど過ごします。',
       'runs':'Lokaliの無料音声ガイドは{n}分です。',
@@ -104,6 +104,6 @@ COUNTRY={'türkiye':'トルコ','greece':'ギリシャ','italy':'イタリア','
  'nepal':'ネパール','pakistan':'パキスタン','cambodia':'カンボジア','philippines':'フィリピン'}
 def hub_faq(city,n):
     return [(f"{city}には無料音声ガイドがいくつありますか？",
-             f"{n}件です。すべて無料で、45言語に対応し、オフラインでも使えます。"),
+             f"{n}件です。すべて無料で、50+言語に対応し、オフラインでも使えます。"),
             (f"{city}の音声ガイドは本当に無料ですか？",
              "はい。チケットもツアー参加も定期購読も不要で、ご自身のスマートフォンで再生できます。")]

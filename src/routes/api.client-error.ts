@@ -74,9 +74,7 @@ export const Route = createFileRoute("/api/client-error")({
         const where = clip(body.where, 80) ?? "unknown";
         const message = clip(body.message, 500) ?? "(no message)";
         const status =
-          typeof body.status === "number" && Number.isFinite(body.status)
-            ? body.status
-            : null;
+          typeof body.status === "number" && Number.isFinite(body.status) ? body.status : null;
 
         await logError({
           service: "client",

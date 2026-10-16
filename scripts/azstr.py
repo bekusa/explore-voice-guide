@@ -22,7 +22,7 @@ ROW={'time':'Nə qədər vaxt lazımdır','audio':'Lokali audio bələdçisi','t
 UI={'badge':'Pulsuz audio bələdçi','begin':'Başla','open':'Lokali tətbiqini aç',
     'verified':'2026-cı ilin oktyabrında yoxlanılıb','howwrite':'bu bələdçiləri necə yazırıq',
     'maps':'Google Maps-də aç','allcities':'Bütün şəhərlər','editorial':'Redaksiya prosesi',
-    'guidesin':'Audio bələdçilər —','langval':'45 dil, Lokali tətbiqində','free':'pulsuz',
+    'guidesin':'Audio bələdçilər —','langval':'50+ dil, Lokali tətbiqində','free':'pulsuz',
     'min':'dəq','getapp':'Tətbiqi yüklə'}
 CAT={'history':'Tarix','photography':'Fotoqrafiya','authentic':'Autentik','romantic':'Romantik',
      'family':'Ailələr üçün','editors':'Redaksiyanın seçimi','nature':'Təbiət','art':'İncəsənət',
@@ -63,7 +63,7 @@ def faq(t,city,country,vis,mins,tips,kfs,lat,lng):
         (f"Ziyarətçilərin çoxu burada {vis} keçirir. " if vis else "")+
         f"Lokali-nin pulsuz audio bələdçisi {mins} dəqiqə çəkir və gəzə-gəzə dinlənilir."),
        (f"{t}: pulsuz audio bələdçi varmı?",
-        f"Bəli — Lokali tətbiqi bu yer haqqında 45 dildə pulsuz danışır. Bilet, qrup və abunə "
+        f"Bəli — Lokali tətbiqi bu yer haqqında 50+ dildə pulsuz danışır. Bilet, qrup və abunə "
         f"tələb olunmur; yükləndikdən sonra oflayn da işləyir.")]
     if lat is not None:
         o.append((f"{t}: harada yerləşir?",
@@ -82,7 +82,7 @@ TITLE_SHORT='{t} — pulsuz audio bələdçi | Lokali'
 HUB_TITLE='{city} — {n} pulsuz audio bələdçi | Lokali'
 HUB_TITLE_SHORT='{city} — {n} audio bələdçi | Lokali'
 HUB_DESC="{city} üçün {n} pulsuz Lokali audio bələdçisi: {names}. Nə qədər vaxt lazımdır, nəyə diqqət yetirməli və praktiki məsləhətlər. Oflayn, biletsiz."
-HUB_INTRO="Lokali-nin {city} üçün {n} pulsuz audio bələdçisi var. Hamısı 45 dildə səslənir, bilet və ya ekskursiya qrupu tələb etmir və yükləndikdən sonra oflayn işləyir."
+HUB_INTRO="Lokali-nin {city} üçün {n} pulsuz audio bələdçisi var. Hamısı 50+ dildə səslənir, bilet və ya ekskursiya qrupu tələb etmir və yükləndikdən sonra oflayn işləyir."
 SENT={'is':'{t} — {tp}. Yeri: {where}.','in':'{t}. Yeri: {where}.',
       'spend':'Ziyarətçilərin çoxu burada {vis} keçirir.',
       'runs':'Lokali-nin pulsuz audio bələdçisi {n} dəqiqə çəkir.',
@@ -104,7 +104,7 @@ COUNTRY={'türkiye':'Türkiyə','greece':'Yunanıstan','italy':'İtaliya','franc
  'pakistan':'Pakistan','cambodia':'Kamboca','philippines':'Filippin'}
 def hub_faq(city,n):
     return [(f"{city}: neçə pulsuz audio bələdçi var?",
-             f"{n}. Hamısı pulsuzdur, 45 dildə səslənir və oflayn işləyir."),
+             f"{n}. Hamısı pulsuzdur, 50+ dildə səslənir və oflayn işləyir."),
             (f"{city}: audio bələdçi həqiqətən pulsuzdur?",
              "Bəli. Bilet, ekskursiya qrupu və abunə tələb olunmur — "
              "bələdçilər öz telefonunuzda səslənir.")]

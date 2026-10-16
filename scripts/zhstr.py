@@ -19,7 +19,7 @@ ROW={'time':'建议游览时长','audio':'Lokali 语音导览','type':'类型','
 UI={'badge':'免费语音导览','begin':'开始','open':'打开 Lokali 应用',
     'verified':'2026 年 10 月核实','howwrite':'我们如何撰写这些导览',
     'maps':'在 Google 地图中打开','allcities':'所有城市','editorial':'编辑流程',
-    'guidesin':'语音导览','langval':'45 种语言，在 Lokali 应用中','free':'免费',
+    'guidesin':'语音导览','langval':'50+ 种语言，在 Lokali 应用中','free':'免费',
     'min':'分钟','getapp':'获取应用'}
 CAT={'history':'历史','photography':'摄影','authentic':'本地风味','romantic':'浪漫',
      'family':'亲子','editors':'编辑推荐','nature':'自然','art':'艺术',
@@ -57,7 +57,7 @@ def faq(t,city,country,vis,mins,tips,kfs,lat,lng):
         (f"多数游客在此停留{vis}。" if vis else "")+
         f"Lokali 免费语音导览时长 {mins} 分钟，可边走边听。"),
        (f"{t}有免费语音导览吗？",
-        f"有。Lokali 应用以 45 种语言免费讲解，无需门票、无需跟团、无需订阅；下载后可离线使用。")]
+        f"有。Lokali 应用以 50+ 种语言免费讲解，无需门票、无需跟团、无需订阅；下载后可离线使用。")]
     if lat is not None:
         o.append((f"{t}在哪里？",
           f"位于{city}（{country}），坐标 {lat}, {lng}。点击本页的地图链接即可查看路线。"))
@@ -74,7 +74,7 @@ TITLE_SHORT='{t} — 免费语音导览 | Lokali'
 HUB_TITLE='{city} — {n} 个免费语音导览 | Lokali'
 HUB_TITLE_SHORT='{city} — {n} 个语音导览 | Lokali'
 HUB_DESC="{city}的 {n} 个 Lokali 免费语音导览：{names}。游览时长、看点与实用贴士，离线可用，无需门票。"
-HUB_INTRO="Lokali 为{city}提供 {n} 个免费语音导览。每一个都支持 45 种语言，无需门票、无需跟团，下载后可离线使用。"
+HUB_INTRO="Lokali 为{city}提供 {n} 个免费语音导览。每一个都支持 50+ 种语言，无需门票、无需跟团，下载后可离线使用。"
 SENT={'is':'{t}是位于{where}的{tp}。','in':'{t}位于{where}。',
       'spend':'多数游客在此停留{vis}。',
       'runs':'Lokali 免费语音导览时长 {n} 分钟。',
@@ -94,7 +94,7 @@ COUNTRY={'türkiye':'土耳其','greece':'希腊','italy':'意大利','france':'
  'philippines':'菲律宾'}
 def hub_faq(city,n):
     return [(f"{city}有多少个免费语音导览？",
-             f"{n} 个。全部免费，支持 45 种语言，并可离线使用。"),
+             f"{n} 个。全部免费，支持 50+ 种语言，并可离线使用。"),
             (f"{city}的语音导览真的免费吗？",
              "是的。无需门票、无需跟团、无需订阅——导览在你自己的手机上播放。")]
 

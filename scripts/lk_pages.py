@@ -110,7 +110,7 @@ def city(src, dst, slug, pub, preview=True):
 {verified}
 
 <section id="places">
-<div class="shead"><div><span class="eyebrow">{n} free guides</span><h2>What to see in <em>{esc(name)}</em></h2><p>Every place below has a free audio guide in 45 languages</p></div></div>
+<div class="shead"><div><span class="eyebrow">{n} free guides</span><h2>What to see in <em>{esc(name)}</em></h2><p>Every place below has a free audio guide in 50+ languages</p></div></div>
 <div class="grid">{"".join(grid)}</div>
 </section>
 
@@ -187,7 +187,7 @@ def attraction(src, dst, pub, preview=True):
 {f'<section><div class="shead"><div><span class="eyebrow">Nearby</span><h2>More to see in <em>{esc(city_name)}</em></h2><p>Free audio guides a short walk away</p></div><a class="seeall" href="{esc(city_url)}">All of {esc(city_name)} &rarr;</a></div><div class="rail">{rail}</div></section>' if rail else ""}
 
 {apppanel(img, "attr-"+slug, heading=f"Hear {esc(name)} <em>in your language</em>",
-          body="The full story, narrated, in 45 languages. Download it before you go and it plays offline, at your own pace, with no ticket and no tour group.")}
+          body="The full story, narrated, in 50+ languages. Download it before you go and it plays offline, at your own pace, with no ticket and no tour group.")}
 {FOOTER}
 </main>
 {appbar(s)}
