@@ -47,6 +47,7 @@ import { Route as ApiPhotoRouteImport } from './routes/api.photo'
 import { Route as ApiMuseumHighlightsRouteImport } from './routes/api.museum-highlights'
 import { Route as ApiImageProxyRouteImport } from './routes/api.image-proxy'
 import { Route as ApiGuideRouteImport } from './routes/api.guide'
+import { Route as ApiClientErrorRouteImport } from './routes/api.client-error'
 import { Route as ApiClassifyQueryRouteImport } from './routes/api.classify-query'
 import { Route as ApiAttractionsRouteImport } from './routes/api.attractions'
 import { Route as TmSimIdRoleRouteImport } from './routes/tm-sim.$id.$role'
@@ -242,6 +243,11 @@ const ApiGuideRoute = ApiGuideRouteImport.update({
   path: '/api/guide',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiClientErrorRoute = ApiClientErrorRouteImport.update({
+  id: '/api/client-error',
+  path: '/api/client-error',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiClassifyQueryRoute = ApiClassifyQueryRouteImport.update({
   id: '/api/classify-query',
   path: '/api/classify-query',
@@ -285,6 +291,7 @@ export interface FileRoutesByFullPath {
   '/trips': typeof TripsRoute
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/classify-query': typeof ApiClassifyQueryRoute
+  '/api/client-error': typeof ApiClientErrorRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/image-proxy': typeof ApiImageProxyRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
@@ -329,6 +336,7 @@ export interface FileRoutesByTo {
   '/trips': typeof TripsRoute
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/classify-query': typeof ApiClassifyQueryRoute
+  '/api/client-error': typeof ApiClientErrorRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/image-proxy': typeof ApiImageProxyRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
@@ -374,6 +382,7 @@ export interface FileRoutesById {
   '/trips': typeof TripsRoute
   '/api/attractions': typeof ApiAttractionsRoute
   '/api/classify-query': typeof ApiClassifyQueryRoute
+  '/api/client-error': typeof ApiClientErrorRoute
   '/api/guide': typeof ApiGuideRoute
   '/api/image-proxy': typeof ApiImageProxyRoute
   '/api/museum-highlights': typeof ApiMuseumHighlightsRoute
@@ -420,6 +429,7 @@ export interface FileRouteTypes {
     | '/trips'
     | '/api/attractions'
     | '/api/classify-query'
+    | '/api/client-error'
     | '/api/guide'
     | '/api/image-proxy'
     | '/api/museum-highlights'
@@ -464,6 +474,7 @@ export interface FileRouteTypes {
     | '/trips'
     | '/api/attractions'
     | '/api/classify-query'
+    | '/api/client-error'
     | '/api/guide'
     | '/api/image-proxy'
     | '/api/museum-highlights'
@@ -508,6 +519,7 @@ export interface FileRouteTypes {
     | '/trips'
     | '/api/attractions'
     | '/api/classify-query'
+    | '/api/client-error'
     | '/api/guide'
     | '/api/image-proxy'
     | '/api/museum-highlights'
@@ -553,6 +565,7 @@ export interface RootRouteChildren {
   TripsRoute: typeof TripsRoute
   ApiAttractionsRoute: typeof ApiAttractionsRoute
   ApiClassifyQueryRoute: typeof ApiClassifyQueryRoute
+  ApiClientErrorRoute: typeof ApiClientErrorRoute
   ApiGuideRoute: typeof ApiGuideRoute
   ApiImageProxyRoute: typeof ApiImageProxyRoute
   ApiMuseumHighlightsRoute: typeof ApiMuseumHighlightsRoute
@@ -841,6 +854,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGuideRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/client-error': {
+      id: '/api/client-error'
+      path: '/api/client-error'
+      fullPath: '/api/client-error'
+      preLoaderRoute: typeof ApiClientErrorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/classify-query': {
       id: '/api/classify-query'
       path: '/api/classify-query'
@@ -918,6 +938,7 @@ const rootRouteChildren: RootRouteChildren = {
   TripsRoute: TripsRoute,
   ApiAttractionsRoute: ApiAttractionsRoute,
   ApiClassifyQueryRoute: ApiClassifyQueryRoute,
+  ApiClientErrorRoute: ApiClientErrorRoute,
   ApiGuideRoute: ApiGuideRoute,
   ApiImageProxyRoute: ApiImageProxyRoute,
   ApiMuseumHighlightsRoute: ApiMuseumHighlightsRoute,
