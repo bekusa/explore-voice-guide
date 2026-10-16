@@ -115,8 +115,11 @@ export function HomeScreen() {
   /** Live DOM access to the search box — see the IME notes below. */
   const searchRef = useRef<HTMLInputElement>(null);
   /**
-   * The search box is UNCONTROLLED on purpose, and this boolean is the
-   * only thing React tracks about it.
+   * The search box is UNCONTROLLED, and React tracks NOTHING about it.
+   * Not its value, not whether it is empty. Read it at submit time or
+   * not at all.
+   *
+   * How we got here, because the history is the justification:
    *
    * Beka 2026-10-06 reported two bugs that turned out to be one:
    *   #1 "ქართულად რომ ვეძებ, Go ღილაკი არ არის აქტიური"
@@ -130,20 +133,31 @@ export function HomeScreen() {
    * the instant ANY unrelated re-render happened, React's controlled-
    * value reconciliation wrote the stale `query` back into the DOM and
    * erased what had been typed. The 7-second hero rotation is exactly
-   * such a re-render, which is why the text disappeared by itself (#2)
-   * and why the button lit up only "sometimes".
+   * such a re-render, which is why the text disappeared by itself (#2).
    *
-   * My earlier attempt added onInput + onCompositionEnd and KEPT the
-   * input controlled. That could never have worked: the problem was
-   * never which event we listen to — it is that React owns the DOM
-   * value and overwrites the composition buffer underneath the user.
+   * Making the field uncontrolled fixed the lost text. The dim button
+   * I then chased through three more attempts — onInput, then
+   * onCompositionEnd, then compositionupdate reading `e.data` — and it
+   * came back every time, because every one of them is a bet that we
+   * can mirror an IME's internal buffer into React state. Georgian,
+   * Japanese, Chinese and Korean IMEs each fire a different subset of
+   * those events, Android keyboards differ again per vendor, and any
+   * event we miss leaves the pill grey while the user stares at text
+   * they can plainly see in the box.
    *
-   * Uncontrolled removes the conflict at its root: React never writes
-   * to the field, so nothing can erase a composition. The worst case
-   * now is a cosmetically-muted button, never lost text, because
-   * `submitSearch` reads the DOM rather than this state.
+   * Beka 2026-10-16: "ისე შეცვალე რომ ეგ ღილაკი სულ ენთოს და მხოლოდ
+   * ძიების დაჭერისას გადადიოდეს ძიებაზე და მანამდე თუ რამეს ეძებს
+   * თითო ასოს ჩაწერისას ეგ გაუთიშე."
+   *
+   * So: the pill is permanently lit and there is no keystroke
+   * listener left to get wrong. Nothing observes typing, so nothing
+   * can disagree with what the user typed. The empty case is handled
+   * where it belongs — `submitSearch` reads the DOM, and `if (!q)
+   * return` makes a press on a blank field a no-op. An always-enabled
+   * submit on a search field is also the plain-HTML default, and it
+   * costs one wasted tap in the rare empty case against a bug class
+   * that has now cost four.
    */
-  const [hasQuery, setHasQuery] = useState(false);
   const [heroIdx, setHeroIdx] = useState(0);
   const [mounted, setMounted] = useState(false);
   // True while a narration is running — pauses the 7-second hero
@@ -174,7 +188,6 @@ export function HomeScreen() {
    * Harmless on first mount, where the field is already blank. */
   useEffect(() => {
     if (searchRef.current) searchRef.current.value = "";
-    setHasQuery(false);
   }, [lang]);
 
   // Slow rotation through featured cinematic shots. Skipped while
@@ -233,9 +246,13 @@ export function HomeScreen() {
   async function submitSearch(e: React.FormEvent) {
     e.preventDefault();
     /* The DOM is the single source of truth for what the user typed —
-     * the field is uncontrolled (see `hasQuery` above), so there is no
-     * React copy to fall back to. This is deliberate: with an IME the
-     * DOM is the only place the composed text ever existed. */
+     * the field is uncontrolled (see the note on searchRef above), so
+     * there is no React copy to fall back to. This is deliberate: with
+     * an IME the DOM is the only place the composed text ever existed.
+     *
+     * This is also the ONLY place emptiness is ever tested. The Go
+     * pill is always enabled, so a press on a blank field lands here
+     * and stops — no navigation, no classifier call, no cost. */
     const q = (searchRef.current?.value ?? "").trim();
     if (!q) return;
     // Stage-0 routing — Beka 2026-06-21 UX spec.
@@ -314,26 +331,26 @@ export function HomeScreen() {
               }`}
             />
           ))}
-            {/* Constant darkening layer over the photo — invisible on
+          {/* Constant darkening layer over the photo — invisible on
                 the dark theme (the body bg is already dark, so the
                 hero photo reads with enough contrast) but kicks in on
                 the light theme where Beka caught the photos looking
                 washed-out behind the hero copy. */}
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-[80%] bg-black/0 [.light_&]:bg-black/20" />
-            {/* Soft fade band straddling the image's bottom edge (80%)
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[80%] bg-black/0 [.light_&]:bg-black/20" />
+          {/* Soft fade band straddling the image's bottom edge (80%)
                 so the photo blends into the section background on both
                 themes — kills the visible horizontal line. */}
-            <div
-              className="pointer-events-none absolute inset-x-0 z-[1]"
-              style={{
-                top: "45%",
-                height: "55%",
-                background:
-                  "linear-gradient(to bottom, transparent 0%, var(--background) 55%, var(--background) 100%)",
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-hero" />
-            <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background/60 to-transparent" />
+          <div
+            className="pointer-events-none absolute inset-x-0 z-[1]"
+            style={{
+              top: "45%",
+              height: "55%",
+              background:
+                "linear-gradient(to bottom, transparent 0%, var(--background) 55%, var(--background) 100%)",
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-hero" />
+          <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background/60 to-transparent" />
 
           {/* Hero carousel chrome — side arrows + bottom dots. Only
               renders when there are at least 2 cities to swipe between,
@@ -445,7 +462,9 @@ export function HomeScreen() {
                     aria-label={`Go to ${d.city}`}
                     aria-current={i === heroIdx ? "true" : undefined}
                     className={`h-1.5 rounded-full transition-all ${
-                      i === heroIdx ? "w-6 bg-primary" : "w-1.5 bg-foreground/30 hover:bg-foreground/50"
+                      i === heroIdx
+                        ? "w-6 bg-primary"
+                        : "w-1.5 bg-foreground/30 hover:bg-foreground/50"
                     }`}
                   />
                 ))}
@@ -529,47 +548,15 @@ export function HomeScreen() {
             <Search className="h-4 w-4 shrink-0 text-primary" />
             <input
               ref={searchRef}
-              /* NO `value` prop — the field is uncontrolled. That is
-               * the whole fix for the Georgian-input bugs; see the
-               * `hasQuery` comment above for why a controlled value
-               * and an IME cannot coexist.
+              /* NO `value` prop and NO input/composition handlers.
+               * The field is uncontrolled and completely unobserved —
+               * see the long note above searchRef for why every
+               * attempt to watch it per-keystroke reintroduced the
+               * Georgian "Go is dead" bug.
                *
-               * These three only drive the Go pill's appearance.
-               * `compositionupdate` is the important one: it fires
-               * while a Georgian syllable is still being assembled,
-               * which is precisely the window where the other two can
-               * stay silent. Nothing here writes to the input, so a
-               * missed event costs a dim button and never the text.
-               *
-               * This is an accessibility-of-language issue, not a
-               * cosmetic one: for an app whose entire premise is "in
-               * your own language", a search box that behaves worse
-               * in Georgian than in English is the worst possible bug. */
-              onInput={(e) => setHasQuery(e.currentTarget.value.trim().length > 0)}
-              /* `e.data`, NOT `e.currentTarget.value`. Beka 2026-10-11:
-               * "ქართულად ვწერ — არ ყვითლდება; ინგლისურად პირველივე
-               * ასოს მერე ყვითლდება."
-               *
-               * I reproduced this against the live site: while a
-               * composition is in flight the element's own `.value` is
-               * still EMPTY — the half-formed syllable lives only on
-               * the event's `data`. My previous version read `.value`
-               * here, so it computed "".trim().length > 0 → false and
-               * the pill stayed grey until compositionend. Latin input
-               * never composes, so it lit up on the first keystroke:
-               * exactly the asymmetry he described.
-               *
-               * Concatenating both sources covers either behaviour —
-               * engines that leave `.value` empty during composition
-               * and engines that fill it in as they go. We only test
-               * for non-emptiness, so counting a character twice is
-               * harmless. */
-              onCompositionUpdate={(e) =>
-                setHasQuery(
-                  `${e.currentTarget.value ?? ""}${e.data ?? ""}`.trim().length > 0,
-                )
-              }
-              onCompositionEnd={(e) => setHasQuery(e.currentTarget.value.trim().length > 0)}
+               * React must not read this field as the user types, and
+               * must never write to it. The only read is in
+               * submitSearch. Please do not add an onChange here. */
               placeholder={t("home.searchPlaceholder")}
               enterKeyHint="search"
               autoComplete="off"
@@ -624,20 +611,20 @@ export function HomeScreen() {
                 form's own `if (!q) return` guard handles the empty
                 case. Browse is still one tap away via the city cards
                 and the Explore tab. */}
-            {/* ONE button, not two branches. Beka 2026-10-06: the two
-                copies differed only in styling, and keeping them apart
-                is how "the button does not light up" turned into a
-                second bug on top of the IME one. Now only a class
-                string changes, so appearance can no longer disagree
-                with behaviour. */}
+            {/* ONE button, ONE appearance. Beka 2026-10-16: the pill
+                is always gold and always enabled.
+
+                There is no longer a conditional class here, and that
+                is the point. Dimming it required knowing whether the
+                field was empty, knowing that required watching an IME
+                per keystroke, and that is what kept breaking Georgian
+                input — four reports in ten days. A permanently lit
+                submit button cannot be wrong about what the user
+                typed, because it never asks. */}
             <button
               type="submit"
               aria-label={t("home.search")}
-              className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-4 text-[12px] font-bold uppercase tracking-[0.14em] transition-smooth ${
-                hasQuery
-                  ? "bg-gradient-gold text-primary-foreground active:scale-95 hover:scale-105"
-                  : "border border-border bg-secondary/60 text-muted-foreground hover:text-foreground"
-              }`}
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-gradient-gold px-4 text-[12px] font-bold uppercase tracking-[0.14em] text-primary-foreground transition-smooth active:scale-95 hover:scale-105"
             >
               <span>{t("home.go")}</span>
               <ArrowRight className="h-3.5 w-3.5 shrink-0" />
@@ -688,11 +675,7 @@ export function HomeScreen() {
             <div className="lang-marquee mt-2.5 overflow-hidden">
               <div className="lang-marquee-track flex w-max items-center">
                 {[0, 1].map((dup) => (
-                  <div
-                    key={dup}
-                    aria-hidden={dup === 1}
-                    className="flex items-center gap-2 pr-2"
-                  >
+                  <div key={dup} aria-hidden={dup === 1} className="flex items-center gap-2 pr-2">
                     {MARQUEE_LANGS.map((l) => (
                       <span
                         key={`${dup}-${l.code}`}
@@ -877,12 +860,7 @@ function MuseumCard({ museum, rank }: { museum: Museum; rank: number }) {
   // Priority: curated static → Wikipedia (via fetched) → LoremFlickr
   // seed only as last-ditch fallback. The first two skip when the
   // step before them succeeded (see `skip` above and `staticFailed`).
-  const photo =
-    staticHero && !staticFailed
-      ? staticHero
-      : imgFailed
-        ? museum.image
-        : fetched;
+  const photo = staticHero && !staticFailed ? staticHero : imgFailed ? museum.image : fetched;
   return (
     <Link
       to="/attraction/$id"
