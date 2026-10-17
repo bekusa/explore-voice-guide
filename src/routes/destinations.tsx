@@ -21,7 +21,7 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/destinations")({
   validateSearch: zodValidator(searchSchema),
-  head: () => ({
+  head: ({ matches }) => ({
     meta: [
       { title: "Explore Destinations — Free Audio Guides | Lokali" },
       {
@@ -32,7 +32,14 @@ export const Route = createFileRoute("/destinations")({
     ],
     // Canonical belongs in links, not meta. Points at the clean URL so any
     // ?q=… variant that still gets crawled folds into one indexable page.
-    links: [{ rel: "canonical", href: "https://lokali.travel/destinations" }],
+    // Head links from every matched route are concatenated, so on
+    // /destinations/$slug this parent canonical used to ride along and
+    // point the city page at /destinations (seen live 2026-10-17). Emit
+    // it only when the list itself is the deepest match; the child sets
+    // its own canonical.
+    links: matches.some((m) => (m.routeId as string) === "/destinations/$slug")
+      ? []
+      : [{ rel: "canonical", href: "https://lokali.travel/destinations" }],
   }),
   component: DestinationsPage,
 });
