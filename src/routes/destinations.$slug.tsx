@@ -90,7 +90,15 @@ export const Route = createFileRoute("/destinations/$slug")({
         },
         { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:image", content: img },
+        // Unknown slugs keep the friendly "not yet covered" screen for
+        // people, but must not be indexed: a 200 page with no content is
+        // a soft 404 in Search Console (2026-10-17). noindex,follow takes
+        // them out of the index without changing what the visitor sees.
+        ...(profile ? [] : [{ name: "robots", content: "noindex, follow" }]),
       ],
+      links: profile
+        ? [{ rel: "canonical", href: `https://lokali.travel/destinations/${params.slug}` }]
+        : [],
     };
   },
   component: CityDetailPage,
