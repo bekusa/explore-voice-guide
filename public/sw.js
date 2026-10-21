@@ -30,8 +30,10 @@
  *     HTML is on disk for the next offline launch.
  */
 
-const CACHE_VERSION = "lokali-shell-v8";
-const RUNTIME_CACHE = "lokali-runtime-v8";
+// v9 (2026-10-21): bumped so the stale /explore/assets/lk-1.css that v8's
+// CacheFirst branch was holding on returning visitors gets pruned.
+const CACHE_VERSION = "lokali-shell-v9";
+const RUNTIME_CACHE = "lokali-runtime-v9";
 
 // Minimum set of routes we want to be reachable offline even if the
 // user has never visited them. Anything else gets cached lazily.
@@ -104,6 +106,12 @@ self.addEventListener("fetch", (event) => {
   // specific). The app already handles API failures via
   // `useOnlineStatus` + the offlineStore fallbacks.
   if (url.pathname.startsWith("/api/")) return;
+
+  // The static SEO site (/explore/, /blog/) is not part of the app shell and
+  // never needs to work offline. Leaving it to the browser means a CSS or JS
+  // change there shows up on the next visit instead of being pinned by the
+  // CacheFirst asset branch below (lk-1.css has no hashed filename).
+  if (url.pathname.startsWith("/explore/") || url.pathname.startsWith("/blog")) return;
 
   // Bypass the SW for Capacitor-local plugin assets — those resolve
   // from the WebView's bundled files, never from lokali.travel.
