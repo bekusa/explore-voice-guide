@@ -42,3 +42,6 @@ ios/
 
 # superseded files parked here by tooling (the mount forbids unlink)
 _to_delete/
+
+# content factory dry-run output (tools/content-factory)
+cf-out/

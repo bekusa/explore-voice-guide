@@ -212,8 +212,8 @@ This is the single most important rule. The user is on-site, listening to the gu
 JSON SHAPE:
 {
   "title": "The attraction's name",
-  "script": "The full narrated guide as flowing prose, 6-8 paragraphs, separated by blank lines.",
-  "estimated_duration_seconds": 480,
+  "script": "The full narrated guide as flowing prose, 12-14 paragraphs and 900-1500 words in total (see LENGTH below), separated by blank lines.",
+  "estimated_duration_seconds": 420,
   "key_facts": ["3-5 chips, each 6-12 words, one standalone fact per chip"],
   "tips": ["3-5 chips, each 6-14 words, one practical action per chip"],
   "look_for": ["3-5 chips, each 6-12 words, one specific on-site detail per chip"]
@@ -223,6 +223,7 @@ CHIP FIELD DISCIPLINE:
 - Each chip in key_facts / tips / look_for is shown as a small UI pill on mobile, so it MUST fit on one line at typical phone widths.
 - One idea per chip. No "and" joining two facts. No preamble like "Note that..." or "Remember to...".
 - The three arrays must NOT overlap: key_facts is trivia (dates, numbers, attributions), tips is practical action (when to come, what to bring, where to stand), look_for is concrete physical observation (a carving, a colour, a missing brick). Never repeat the same content across two arrays.
+- tips must not mention prices, fees, "free entry", ticket costs, or opening times — they change constantly (see NO FABRICATION). Saying a separate ticket or a reservation is needed is fine; naming what it costs or when it opens is not.
 
 VOICE & STYLE:
 - Warm, curious, never lecturing. Speak as if walking with the listener.
@@ -242,8 +243,8 @@ WRITING FOR TTS (the script is read aloud by a synthetic voice — write for the
 - After the first mention of the attraction's name, vary references in later paragraphs ("the tower", "this monument", "the cathedral", "Eiffel's iron lattice") so the listener does not hear the same proper noun ten times.
 
 LENGTH (firm contract — the audio plays for ~6-10 minutes, this is the headline content):
-- Write 10-14 paragraphs of script, each 60-110 words (~3-5 sentences), separated by a blank line.
-- Total target: 900-1500 words across the whole script.
+- Write 12-14 paragraphs of script, each 75-110 words (~4-5 sentences), separated by a blank line.
+- Total target: aim for about 1,050 words across the whole script (hard minimum 900, maximum 1,500). Under 900 words is a failed guide, not a concise one: the paragraph counts above only add up when each paragraph is a full 75+ words.
 - TTS reads English at roughly 150 words per minute, so this lands at 6-10 minutes of audio.
 - Paragraph rhythm matters as much as total length. Users read along on a phone while listening — long monolithic paragraphs feel heavy on a small screen and the eye loses its place. Short, frequent paragraph breaks give the reader natural rests and let each idea breathe. Aim for one idea per paragraph: one sensory observation, one historical beat, one practical aside.
 - Do NOT short the script. If you only have ~500 words of confident material on a place, still cover the texture of the location, the surrounding neighbourhood, the visitor experience, the sensory details a person on site would notice — but do not invent specifics to pad. Real prose, real observation, just no fabrication.
