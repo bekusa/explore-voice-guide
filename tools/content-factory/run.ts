@@ -23,7 +23,7 @@ import { join } from "node:path";
 import { CONFIG } from "./config";
 import { db, DRY_RUN } from "./db";
 import { EvidenceUnavailable, getEvidence, type Evidence } from "./evidence";
-import { generateAttractions, generateGuide, type AttractionItem, type GuidePayload } from "./generate";
+import { generateAttractions, generateGuide, trimChips, type AttractionItem, type GuidePayload } from "./generate";
 import { gate1Attractions, gate1Guide } from "./gate1";
 import { gate2Attractions, gate2Guide } from "./gate2";
 import { factCheck, summarize, type Claim } from "./gate3";
@@ -55,6 +55,7 @@ const limit = Number(arg("limit", "10"));
 const minutes = Number(arg("minutes", "100"));
 const local = arg("local");
 const offset = Number(arg("offset", "0"));
+const concurrency = Number(arg("concurrency", String(CONFIG.concurrency)));
 const worker = `${hostname()}-${process.pid}`;
 const deadline = Date.now() + minutes * 60_000;
 const outDir = process.env.CF_OUT ?? "cf-out";
@@ -101,13 +102,15 @@ const problemsOf = (fc: ReturnType<typeof summarize>): Claim[] => [...fc.contrad
 
 async function processGuide(job: Job) {
   let cost = 0;
-  let ev: Evidence | null;
-  try {
-    ev = await getEvidence(job.target_qid, job.meta.en_title ?? job.name);
-  } catch (e) {
-    // Evidence temporarily unavailable (rate limit): retry this job later instead of publishing it unchecked.
-    if (e instanceof EvidenceUnavailable) return requeue(job, 0);
-    ev = null;
+  let ev: Evidence | null = null;
+  if (CONFIG.factCheck) {
+    try {
+      ev = await getEvidence(job.target_qid, job.meta.en_title ?? job.name);
+    } catch (e) {
+      // Evidence temporarily unavailable (rate limit): retry this job later instead of publishing it unchecked.
+      if (e instanceof EvidenceUnavailable) return requeue(job, 0);
+      ev = null;
+    }
   }
   type Cand = { payload: GuidePayload; g1: ReturnType<typeof gate1Guide>; g2: ReturnType<typeof gate2Guide>; fc: ReturnType<typeof summarize> | null; attempt: number };
   const cands: Cand[] = [];
@@ -124,7 +127,10 @@ async function processGuide(job: Job) {
       await audit(job, attempt, "generate", { verdict: "reroll", model: gen.call.model, cost_usd: gen.call.costUsd, duration_ms: gen.call.durationMs, findings: { error: "unparseable_or_empty" }, raw_output: gen.call.text.slice(0, 20000) });
       continue;
     }
+    const chips = trimChips(gen.payload);
+    if (chips.trimmed) gen.payload = chips.payload;
     const g1 = gate1Guide(gen.payload, job.name);
+    if (chips.trimmed) g1.soft.push("chips_trimmed_to_5");
     const g2 = gate2Guide(gen.payload, ev);
     let fc: ReturnType<typeof summarize> | null = null;
     let checkFailed = false;
@@ -187,6 +193,7 @@ async function processGuide(job: Job) {
     country: job.country,
     bucketlessNames: job.homonym ? [] : (job.meta.bucketlessNames ?? []),
   };
+  edited = edited || best.g1.soft.includes("chips_trimmed_to_5");
   writeFileSync(join(outDir, `guide-${job.target_qid}.json`), JSON.stringify({ job, edited, payload: best.payload, gate1: best.g1, gate3: best.fc }, null, 1));
   const pub = await publishGuide(target, best.payload, CONFIG.interest);
   await audit(job, best.attempt, "publish", { verdict: "published", edited, findings: pub, payload: best.payload });
@@ -207,12 +214,19 @@ async function processCity(job: Job) {
     }
     const list = gen.payload?.attractions ?? [];
     const g1 = gate1Attractions(list);
+    // The model sometimes declines a city in prose (Damascus, first try at Pyongyang).
+    // The app shows nothing in that case; give it one more try, then skip.
+    const declined = !gen.payload && !/[{[]/.test(gen.call.text.slice(0, 200));
+    if (declined && attempt >= 2) {
+      await audit(job, attempt, "generate", { verdict: "skipped", model: gen.call.model, cost_usd: gen.call.costUsd, findings: { declined: true }, raw_output: gen.call.text.slice(0, 20000) });
+      return finish(job, "skipped", cost, { last_error: "model declined to list this city (app would show an empty list too)" });
+    }
     if (!gen.payload || g1.hard.length) {
       await audit(job, attempt, "generate", { verdict: "reroll", model: gen.call.model, cost_usd: gen.call.costUsd, findings: { gate1: g1 }, payload: gen.payload, raw_output: gen.payload ? null : gen.call.text.slice(0, 20000) });
       continue;
     }
-    const g2 = await gate2Attractions(list, center);
-    const edited = g2.dropped.length > 0;
+    const g2 = await gate2Attractions(list, center, job.name);
+    const edited = g2.dropped.length > 0 || g2.fixedCoords.length > 0;
     await audit(job, attempt, "generate", { verdict: g2.hard.length ? "reroll" : "pass", model: gen.call.model, cost_usd: gen.call.costUsd, findings: { gate1: g1, gate2: { soft: g2.soft, dropped: g2.dropped } }, payload: gen.payload, edited });
     if (g2.hard.length) continue;
     const kept: AttractionItem[] = g2.kept;
@@ -227,7 +241,7 @@ async function processCity(job: Job) {
 
 async function laneSpent(): Promise<number> {
   if (DRY_RUN) return 0;
-  const rows = await db.select<{ cost_usd: number }>("content_jobs", `select=cost_usd&lane=eq.${lane}&cost_usd=gt.0`);
+  const rows = await db.select<{ cost_usd: number }>("content_jobs", `select=cost_usd&lane=eq.${lane}&kind=eq.${kind}&cost_usd=gt.0`);
   return rows.reduce((s, r) => s + Number(r.cost_usd), 0);
 }
 
@@ -242,7 +256,7 @@ async function claim(n: number): Promise<Job[]> {
 
 async function main() {
   if (!DRY_RUN) await db.rpc("factory_release_stale", { p_minutes: 120 }).catch(() => null);
-  const budget = CONFIG.laneBudgetUsd[lane] ?? 0;
+  const budget = CONFIG.budgetUsd[`${lane}:${kind}`] ?? 0;
   const spentBefore = await laneSpent();
   if (!local && spentBefore >= budget) {
     console.log(`lane ${lane} budget reached: $${spentBefore.toFixed(2)} of $${budget}`);
@@ -250,7 +264,7 @@ async function main() {
   }
   let done = 0;
   while (done < limit && !stopReason && Date.now() < deadline) {
-    const batch = await claim(Math.min(CONFIG.concurrency, limit - done));
+    const batch = await claim(Math.min(concurrency, limit - done));
     if (!batch.length) { stopReason = "queue empty"; break; }
     const before = Date.now();
     await Promise.all(

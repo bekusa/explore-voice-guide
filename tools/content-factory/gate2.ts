@@ -62,36 +62,76 @@ export function gate2Guide(g: GuidePayload, ev: Evidence | null): GateResult & {
   return { hard, soft, metrics: { evidence_chars: ev.text.length, years: years.length, unverified_years: unverifiedYears.length }, unverifiedYears };
 }
 
+/** "<name>, <city>" on Nominatim (free, 1 req/s): the city-scoped answer
+ *  that tells a Sanaa "Tahrir Square" apart from Cairo's. */
+let lastNominatim = 0;
+async function geocodeInCity(name: string, cityName: string): Promise<{ lat: number; lng: number } | null> {
+  const wait = lastNominatim + 1100 - Date.now();
+  if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+  lastNominatim = Date.now();
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(`${name}, ${cityName}`)}`, {
+      headers: { "User-Agent": "Lokali/1.0 (contact@lokali.travel)" },
+    });
+    if (!res.ok) return null;
+    const [hit] = (await res.json()) as { lat: string; lon: string }[];
+    return hit ? { lat: Number(hit.lat), lng: Number(hit.lon) } : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * List grounding. An item is DROPPED only on positive evidence that it is
+ * somewhere else: far away by its own coordinates AND not found inside the
+ * city by a city-scoped geocode. Missing evidence (no English article, no
+ * coordinates) is a soft flag, never a drop — the pilot showed real places
+ * (Komarovsky Market, Island of Tears, the Great Mosque of Sana'a) with
+ * neither, and a name-only lookup puts homonyms in the wrong country.
+ */
 export async function gate2Attractions(
   list: AttractionItem[],
   city: { lat: number; lng: number } | null,
-): Promise<GateResult & { kept: AttractionItem[]; dropped: { name: string; reason: string }[] }> {
+  cityName = "",
+): Promise<GateResult & { kept: AttractionItem[]; dropped: { name: string; reason: string }[]; fixedCoords: string[] }> {
   const G = CONFIG.geo;
   const soft: string[] = [];
   const hard: string[] = [];
   const dropped: { name: string; reason: string }[] = [];
+  const fixedCoords: string[] = [];
   const scored: { item: AttractionItem; dist: number | null }[] = [];
 
-  for (const item of list) {
+  for (const original of list) {
+    let item = original;
     const name = String(item.name ?? "");
     const sum = await wikiSummary(name);
     if (!sum.exists) soft.push(`no_enwiki_article:${name}`);
     if (sum.type === "disambiguation") soft.push(`disambiguation_title:${name}`);
-    let pos: { lat: number; lng: number } | null =
-      typeof item.lat === "number" && typeof item.lng === "number" ? { lat: item.lat, lng: item.lng } : null;
-    // A Wikipedia article's own coordinates are a second, independent source.
+    const own = typeof item.lat === "number" && typeof item.lng === "number" ? { lat: item.lat, lng: item.lng } : null;
     const wpos = typeof sum.lat === "number" && typeof sum.lng === "number" ? { lat: sum.lat, lng: sum.lng } : null;
-    if (pos && wpos && km(pos, wpos) > 25) soft.push(`coords_disagree:${name}:${Math.round(km(pos, wpos))}km`);
-    pos = pos ?? wpos;
-    const dist = city && pos ? km(city, pos) : null;
-    if (dist !== null && dist > G.maxKmPackaged) {
-      dropped.push({ name, reason: `wrong_place:${Math.round(dist)}km` });
-      continue;
-    }
-    if (!sum.exists && !pos) {
-      // No article, no coordinates from our table or Nominatim: can't show it exists.
-      dropped.push({ name, reason: "unverifiable" });
-      continue;
+    if (own && wpos && km(own, wpos) > 25) soft.push(`coords_disagree:${name}:${Math.round(km(own, wpos))}km`);
+    const pos = own ?? wpos;
+    let dist = city && pos ? km(city, pos) : null;
+    if (city && cityName && (dist === null || dist > G.maxKmPackaged)) {
+      // Far, or nothing to go on: ask for this name inside this city.
+      const local = await geocodeInCity(name, cityName);
+      const localDist = local ? km(city, local) : null;
+      if (local && localDist !== null && localDist <= G.maxKmPackaged) {
+        if (own && dist !== null && dist > G.maxKmPackaged) {
+          item = { ...item, lat: local.lat, lng: local.lng }; // the app's pin was in the wrong country
+          fixedCoords.push(name);
+        }
+        dist = localDist;
+      } else if (dist !== null && dist > G.maxKmPackaged && own) {
+        dropped.push({ name, reason: `wrong_place:${Math.round(dist)}km` });
+        continue;
+      } else if (dist !== null && dist > G.maxKmPackaged) {
+        // Only the English article's coordinates are far: likely a homonym article. Keep, flag.
+        soft.push(`far_by_article_only:${name}:${Math.round(dist)}km`);
+        dist = null;
+      } else if (dist === null) {
+        soft.push(`unverified_location:${name}`);
+      }
     }
     scored.push({ item, dist });
   }
@@ -107,6 +147,7 @@ export async function gate2Attractions(
   for (const s of tooMany) dropped.push({ name: String(s.item.name), reason: `too_many_far:${Math.round(s.dist ?? 0)}km` });
   const kept = scored.filter((s) => !tooMany.includes(s)).map((s) => s.item);
   if (dropped.length) soft.push(`dropped:${dropped.map((d) => `${d.name}(${d.reason})`).join(";")}`);
+  if (fixedCoords.length) soft.push(`coords_fixed_by_city_geocode:${fixedCoords.join(";")}`);
   if (kept.length < CONFIG.attractions.minItems) hard.push(`too_few_after_grounding:${kept.length}`);
-  return { hard, soft, metrics: { kept: kept.length, dropped: dropped.length }, kept, dropped };
+  return { hard, soft, metrics: { kept: kept.length, dropped: dropped.length, coords_fixed: fixedCoords.length }, kept, dropped, fixedCoords };
 }

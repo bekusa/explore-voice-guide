@@ -46,12 +46,26 @@ export async function generateGuide(args: { name: string; city?: string; interes
   const call = await runClaude({
     system,
     user,
-    model: CONFIG.generatorModel,
+    model: CONFIG.guideModel,
     maxBudgetUsd: CONFIG.maxBudgetPerCallUsd,
   });
   if (!call.ok) return { payload: null, call };
   const parsed = normalizeGuidePayload(parseClaudeJson(call.text));
   return { payload: hasGuideScript(parsed) ? parsed : null, call };
+}
+
+/** Opus sometimes writes 6 chips where the prompt asks for 3-5. The UI shows
+ *  them as one-line pills, so keep the first 5 instead of paying for a re-roll. */
+export function trimChips(g: GuidePayload, max = 5): { payload: GuidePayload; trimmed: boolean } {
+  let trimmed = false;
+  const out: GuidePayload = { ...g };
+  for (const k of ["key_facts", "tips", "look_for"] as const) {
+    if (Array.isArray(out[k]) && out[k].length > max) {
+      out[k] = out[k].slice(0, max);
+      trimmed = true;
+    }
+  }
+  return { payload: out, trimmed };
 }
 
 export type AttractionItem = {
@@ -82,7 +96,7 @@ export async function generateAttractions(args: { query: string }): Promise<GenR
   const call = await runClaude({
     system,
     user,
-    model: CONFIG.generatorModel,
+    model: CONFIG.attractionsModel,
     maxBudgetUsd: CONFIG.maxBudgetPerCallUsd,
   });
   if (!call.ok) return { payload: null, call };

@@ -269,8 +269,11 @@ async function main() {
       pageviews_month: Number(c.pageviews_month) || null, score: Number(c.score) || null, has_attractions: c.has_attractions === "true",
       attraction_langs: Number(c.attraction_langs) || 0, attraction_count: Number(c.attraction_count) || null, place_type: c.place_type,
     }));
-    for (let i = 0; i < targetG.length; i += 500) await db.upsert("target_guides", targetG.slice(i, i + 500), "qid");
-    for (let i = 0; i < targetA.length; i += 500) await db.upsert("target_attractions", targetA.slice(i, i + 500), "qid");
+    // One row per QID (a merge-upsert cannot touch the same row twice in one batch).
+    const byQid = <T extends { qid: string }>(rows: T[]) => [...new Map(rows.map((r) => [r.qid, r])).values()];
+    const tg = byQid(targetG), ta = byQid(targetA);
+    for (let i = 0; i < tg.length; i += 500) await db.upsert("target_guides", tg.slice(i, i + 500), "qid");
+    for (let i = 0; i < ta.length; i += 500) await db.upsert("target_attractions", ta.slice(i, i + 500), "qid");
     const jobs = [...guideJobs, ...cityJobs];
     for (let i = 0; i < jobs.length; i += 500) await db.insertIgnore("content_jobs", jobs.slice(i, i + 500), "kind,name,city");
     console.log(`loaded ${targetG.length} target_guides, ${targetA.length} target_attractions, queued ${jobs.length} jobs`);

@@ -6,8 +6,14 @@
  *  - unsure categories + town/municipality are NOT in the first wave.
  */
 export const CONFIG = {
-  /** Must equal the model the live routes call (src/lib/anthropic.server.ts DEFAULT_MODEL / api.attractions.ts). */
-  generatorModel: "claude-sonnet-4-5",
+  /** Beka 2026-10-22, after the 5-place comparison: guides with Opus 5.5
+   *  (fewer invented facts, meets the length contract), city lists with the
+   *  app's own Sonnet 4.5. The live app still generates new guides with
+   *  Sonnet unless src/lib/anthropic.server.ts DEFAULT_MODEL is changed. */
+  guideModel: "claude-opus-5-5",
+  attractionsModel: "claude-sonnet-4-5",
+  /** Beka 2026-10-22: no fact-check / repair in the credit run (cost). Gates 1-2 (code) stay. */
+  factCheck: false,
   /** Fact-checker and repair do not need to match the app. */
   checkerModel: "claude-haiku-4-5",
   secondOpinionModel: "claude-sonnet-4-5",
@@ -19,9 +25,13 @@ export const CONFIG = {
   /** Hard cap per single call — a runaway call cannot eat the budget. */
   maxBudgetPerCallUsd: 0.4,
   /** Lane budgets (client-side list-price estimate, summed from total_cost_usd). */
-  laneBudgetUsd: {
-    cloud: 230, // $250 promo credit, $20 reserve; expires 2026-11-04
-    max: 0, // set per week once the pilot has measured % of the weekly limit per item
+  /** Budgets per lane and kind (client-side list-price estimate, summed from content_jobs.cost_usd).
+   *  Cloud: $250 promo credit, expires 2026-11-04 — ~$227 for jobs incl. the pilot, rest is reserve. */
+  budgetUsd: {
+    "cloud:guide": 175,
+    "cloud:attractions": 52,
+    "max:guide": 0, // set once the weekly-limit share per item is measured
+    "max:attractions": 0,
   } as Record<string, number>,
   /** Evidence sent to the checker: the article from the top (lead + history usually come first). */
   evidenceChars: 25_000,
