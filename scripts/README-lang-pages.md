@@ -196,3 +196,18 @@ original was lost; it reproduces the shipped wording exactly. ⚠️ Hindi is no
 - Non-ASCII URLs (`en/istanbul/gülhane-park.html`) are **fine**. They serve 200,
   they are in the sitemap, and Google handles percent-encoded UTF-8. Renaming
   them would abandon indexed URLs for cosmetics — leave them alone.
+
+## App /attraction/ pages point at /explore/ (2026-10-22)
+
+The app's `/attraction/$id` page server-renders ~40 words, so it now names the
+matching `/explore/` page as its canonical, or sends `noindex, follow` when no
+page matches (or the name belongs to two places, e.g. "Old Town", the two Düden
+waterfalls). The lookup is `src/lib/exploreCanonical.generated.ts`, built from
+the pages' own `<h1>`, canonical, robots and the hreflang groups in
+`sitemap-explore.xml`:
+
+    python3 scripts/build-explore-canonical.py
+
+**Re-run it whenever pages are added, merged or noindexed**, then commit and
+Publish (it lives in `src/`). Merging a duplicate pair also un-blocks the app
+page for that name — the script lists every ambiguous name it skipped.

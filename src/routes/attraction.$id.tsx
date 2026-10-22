@@ -180,7 +180,17 @@ export const Route = createFileRoute("/attraction/$id")({
     // single-photo lookup chain.
     photo: typeof search.photo === "string" ? search.photo : undefined,
   }),
-  head: ({ params }) => {
+  // Server only: which /explore/ page covers this place (see
+  // lib/exploreCanonical.ts). import.meta.env.SSR drops the lookup and its
+  // ~300 KB table from the browser bundle. In the browser exploreUrl stays
+  // undefined on client-side navigation; the server-rendered value is what
+  // crawlers see and what hydration reuses.
+  loader: async ({ params }) => ({
+    exploreUrl: import.meta.env.SSR
+      ? await (await import("@/lib/exploreCanonical")).exploreUrlFor(params.id)
+      : undefined,
+  }),
+  head: ({ params, loaderData }) => {
     // unslugAttraction only swaps hyphens for spaces, so the raw value is
     // lower case ("the grand egyptian museum") and that is exactly how it
     // showed up in search results. Title-case it for display only — do NOT
@@ -225,16 +235,23 @@ export const Route = createFileRoute("/attraction/$id")({
       ],
       158
     );
+    // string = the /explore/ page about this place; null = there is none
+    // (or the name belongs to several places); undefined = not looked up
+    // (client-side navigation, nothing a crawler sees).
+    const exploreUrl = loaderData?.exploreUrl;
     return {
       meta: [
         { title: pageTitle },
         { name: "description", content: description },
+        // No /explore/ page to defer to: keep this thin, client-rendered
+        // page out of the index but let crawlers follow its links.
+        ...(exploreUrl === null ? [{ name: "robots", content: "noindex, follow" }] : []),
         { property: "og:title", content: pageTitle },
         { property: "og:description", content: description },
         { property: "og:type", content: "article" },
         {
           property: "og:url",
-          content: `https://lokali.travel/attraction/${params.id}`,
+          content: exploreUrl ?? `https://lokali.travel/attraction/${params.id}`,
         },
         {
           property: "og:image",
@@ -246,16 +263,13 @@ export const Route = createFileRoute("/attraction/$id")({
           content: "https://lokali.travel/images/museums/louvre.jpg",
         },
       ],
-      // Canonical link tag — tells Google / social-card crawlers that
-      // the URL without query params is the one to index, even when the
-      // same page is reached via a legacy `?name=…&city=…&photo=…` link.
-      // Without this, search engines would dilute ranking signals
-      // across every search-param permutation. Domain is hard-coded so
-      // the canonical stays correct in SSR (where `window` isn't there)
-      // and matches the production hostname Beka ships on.
-      links: [
-        { rel: "canonical", href: `https://lokali.travel/attraction/${params.id}` },
-      ],
+      // Canonical: the full /explore/ page when one covers this place
+      // (2026-10-22 — the app page server-renders ~40 words and was
+      // competing with it in search). Noindexed pages carry no canonical.
+      // Query params (?name=…&city=…&photo=…) never change the target, so
+      // every permutation still folds into one URL. Domain is hard-coded
+      // so it stays correct in SSR.
+      links: exploreUrl ? [{ rel: "canonical", href: exploreUrl }] : [],
     };
   },
   component: AttractionPage,

@@ -1,13 +1,15 @@
 {
-  "generated": "2026-10-21T15:28:12.643968+00:00",
+  "generated": "2026-10-22T06:01:18.073160+00:00",
   "feed": "https://app.trysoro.com/api/rss/40e3fcd6-ae58-4652-bf7f-5ad9d903f38f",
   "noindex": false,
   "pages": [
     "https://lokali.travel/blog/architecture-audio-tour-for-travelers.html",
     "https://lokali.travel/blog/audio-guide-for-famous-landmarks.html",
+    "https://lokali.travel/blog/city-sightseeing-tips-without-groups.html",
     "https://lokali.travel/blog/first-time-visitor-sightseeing-guide.html",
     "https://lokali.travel/blog/free-self-guided-city-tours-on-your-time.html",
     "https://lokali.travel/blog/historic-district-self-guided-walks.html",
+    "https://lokali.travel/blog/how-to-explore-a-city-alone.html",
     "https://lokali.travel/blog/locally-narrated-walking-tours-app.html",
     "https://lokali.travel/blog/museum-audio-guide-without-tickets.html",
     "https://lokali.travel/blog/offline-audio-guides-for-travel.html",
@@ -15,9 +17,11 @@
     "https://lokali.travel/blog/travel-guides-in-multiple-languages.html"
   ],
   "in_feed": [
+    "https://lokali.travel/blog/city-sightseeing-tips-without-groups.html",
     "https://lokali.travel/blog/time-machine-history-travel-experience.html",
     "https://lokali.travel/blog/audio-guide-for-famous-landmarks.html",
     "https://lokali.travel/blog/first-time-visitor-sightseeing-guide.html",
+    "https://lokali.travel/blog/how-to-explore-a-city-alone.html",
     "https://lokali.travel/blog/historic-district-self-guided-walks.html",
     "https://lokali.travel/blog/architecture-audio-tour-for-travelers.html",
     "https://lokali.travel/blog/locally-narrated-walking-tours-app.html",
