@@ -30,8 +30,12 @@ export const CONFIG = {
    *  did not move. Overage is disabled for the org, so no money is charged; the real limit is
    *  `usage` below. These dollar caps stay as a second brake. */
   budgetUsd: {
-    "cloud:guide": 750, // Beka 2026-10-22: lifted from $175 — ~$500 on the Max plan + the $250 cloud credit; the weekly cap below is the real brake
-    "cloud:attractions": 52,
+    "cloud:guide": 2000, // Max plan. Not money (overage is off): the weekly cap below is the real brake. Beka 2026-10-22 lifted it from $175.
+    "cloud:attractions": 200, // Beka 2026-10-23: continue past 1,000 cities
+    // Cloud-session credit ($250, expires 2026-11-04 23:59 PT). Run with CF_CREDIT_MODE=1 from a
+    // session outside any Project; ~$25 stays for that session's own conversation.
+    "credit:guide": 210,
+    "credit:attractions": 15,
     "max:guide": 0, // set once the weekly-limit share per item is measured
     "max:attractions": 0,
   } as Record<string, number>,

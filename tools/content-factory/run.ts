@@ -81,6 +81,7 @@ async function audit(job: Job, attempt: number, stage: string, row: Record<strin
  *  released after a crash and claimed again) is kept and added to. */
 async function finish(job: Job, status: string, cost: number, patch: Record<string, unknown> = {}) {
   bump(status);
+  procSpent += cost;
   console.log(`  ${status.padEnd(9)} $${cost.toFixed(3)}  ${job.kind} #${job.rank} ${job.name}${patch.last_error ? `  — ${patch.last_error}` : ""}`);
   if (DRY_RUN) return;
   await db.update("content_jobs", `id=eq.${job.id}`, {
@@ -91,6 +92,7 @@ async function finish(job: Job, status: string, cost: number, patch: Record<stri
 /** Usage limit hit mid-job: give the job back to the queue, keep the spend. */
 async function requeue(job: Job, cost: number) {
   bump("requeued");
+  procSpent += cost;
   console.log(`  requeued  ${job.kind} #${job.rank} ${job.name}`);
   if (DRY_RUN) return;
   await db.update("content_jobs", `id=eq.${job.id}`, { status: "queued", claimed_by: null, cost_usd: (Number(job.cost_usd) || 0) + cost });
@@ -115,6 +117,30 @@ const limitsFile = () => join(outDir, "..", "usage-limits.json");
 function limitsLine(L: UsageLimits | null) {
   return L ? `5h ${pct(L.fiveHour?.utilization)} · 7d ${pct(L.sevenDay?.utilization)}` : "5h ? · 7d ?";
 }
+/** Credit mode (CF_CREDIT_MODE=1): for a cloud session that is NOT attached to a Project, whose
+ *  usage the cloud-session credit pays first. The plan's windows are then not the limit, so the
+ *  usage caps are skipped. The runner still checks that the plan really is not being charged: if
+ *  the Max 5-hour window climbs with this process's spend (it did at ~0.7 points per $ while the
+ *  plan paid), the calls are hitting the plan and the runner stops. This also stops it once the
+ *  credit is used up and the calls fall back to the plan. */
+const creditMode = process.env.CF_CREDIT_MODE === "1";
+const PLAN_POINTS_PER_USD = 0.7; // measured 2026-10-23 while the plan paid
+let procSpent = 0;
+let creditBase: { u: number; resetsAt: number; spent: number } | null = null;
+function creditCheck(L: UsageLimits | null) {
+  if (!L?.fiveHour) return;
+  const { utilization, resetsAt } = L.fiveHour;
+  if (!creditBase || creditBase.resetsAt !== resetsAt) {
+    creditBase = { u: utilization, resetsAt, spent: procSpent };
+    return;
+  }
+  const spent = procSpent - creditBase.spent;
+  const rise = (utilization - creditBase.u) * 100;
+  if (spent >= 3 && rise >= 2 && rise >= 0.5 * spent * PLAN_POINTS_PER_USD) {
+    stopReason = `credit check failed: the Max 5-hour window rose ${rise.toFixed(0)} points for $${spent.toFixed(2)} of calls, so they are charged to the plan, not the cloud credit (or the credit is used up)`;
+  }
+}
+
 /** Decide what the plan's usage windows allow next: "go", "stop" (weekly cap) or a wait. */
 async function respectUsage(L: UsageLimits | null): Promise<void> {
   if (!L) return;
@@ -314,8 +340,9 @@ async function main() {
     console.log(`lane ${lane} budget reached: $${spentBefore.toFixed(2)} of $${budget}`);
     return;
   }
+  if (creditMode) console.log("credit mode: plan usage caps off, credit check on");
   // Preflight: the other runner (or the previous block) may already have seen a full window.
-  if (!local) {
+  if (!local && !creditMode) {
     try {
       const prev = JSON.parse(readFileSync(limitsFile(), "utf8")) as UsageLimits;
       await respectUsage(prev);
@@ -351,7 +378,10 @@ async function main() {
     const spent = local ? 0 : await laneSpent();
     console.log(`[${new Date().toISOString()}] ${done}/${limit} done · ${Math.round((Date.now() - before) / 1000)}s batch · lane $${spent.toFixed(2)}/${budget} · ${limitsLine(latestLimits())} · ${JSON.stringify(results)}`);
     if (!local && spent >= budget) stopReason = "lane budget reached";
-    if (!stopReason && !local) await respectUsage(latestLimits());
+    if (!stopReason && !local) {
+      if (creditMode) creditCheck(latestLimits());
+      else await respectUsage(latestLimits());
+    }
     if (local) break;
   }
   console.log(`finished: ${stopReason || "limit reached"} · ${JSON.stringify(results)}`);
