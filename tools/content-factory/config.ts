@@ -34,8 +34,8 @@ export const CONFIG = {
     "cloud:attractions": 200, // Beka 2026-10-23: continue past 1,000 cities
     // Cloud-session credit ($250, expires 2026-11-04 23:59 PT). Run with CF_CREDIT_MODE=1 from a
     // session outside any Project; ~$25 stays for that session's own conversation.
-    "credit:guide": 210,
-    "credit:attractions": 15,
+    "credit:guide": 200,
+    "credit:attractions": 25, // ~475 cities: 249 never tried + 226 re-queued after the 2026-10-23 prompt fix
     "max:guide": 0, // set once the weekly-limit share per item is measured
     "max:attractions": 0,
   } as Record<string, number>,
@@ -70,7 +70,7 @@ export const CONFIG = {
   },
   /** Gate 1 contract — attraction lists (buildAttractionsSystem). */
   attractions: {
-    minItems: 6,
+    minItems: 3, // Beka 2026-10-23: the app shows and caches lists of 3-5 for small cities too
     maxItems: 10,
     outsideWords: [35, 60] as [number, number],
     insiderWords: [20, 40] as [number, number],
