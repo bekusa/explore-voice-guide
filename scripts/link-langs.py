@@ -210,6 +210,21 @@ for rel in pages:
     if en in pages and find(rel)!=find(en): union(rel,en); same+=1
 print(f'pages joined by sharing the English path: {same}')
 
+# A page that names another page as its canonical is the same place (that is
+# what the canonical says), so both belong in one hreflang group even when no
+# alternate link joins them. 2026-10-22: en/tbilisi/nariqala-fortress ->
+# narikala-fortress pulls the Georgian nariqala page into the narikala group,
+# and the one-per-language check below then names every language that still
+# has both versions indexable, instead of leaving two silent groups.
+CANON1=re.compile(r'<link rel="canonical" href="([^"]+)">')
+joined=0
+for rel in pages:
+    m=CANON1.search(read(rel))
+    if not m: continue
+    t=url2rel.get(norm(m.group(1)))
+    if t and t!=rel and find(t)!=find(rel): union(rel,t); joined+=1
+print(f'groups joined through canonical aliases: {joined}')
+
 comp=defaultdict(list)
 for rel in pages: comp[find(rel)].append(rel)
 print(f'components: {len(comp)}   size histogram: {sorted(Counter(len(v) for v in comp.values()).items())}')

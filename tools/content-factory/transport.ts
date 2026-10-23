@@ -23,8 +23,29 @@ import { join } from "node:path";
 
 export type ErrorKind = "usage_limit" | "rate_limit" | "overloaded" | "auth" | "budget" | "timeout" | "other";
 
+/** Subscription usage windows, as Claude Code reports them on every call
+ *  (`rate_limit_event`). Utilization is 0..1 of the plan's limit. */
+export type UsageLimits = {
+  status?: string;
+  fiveHour?: { utilization: number; resetsAt: number };
+  sevenDay?: { utilization: number; resetsAt: number };
+  overageStatus?: string;
+  isUsingOverage?: boolean;
+};
+
+let lastLimits: UsageLimits | null = null;
+/** Latest usage windows seen by any call in this process (null until the first call). */
+export const latestLimits = () => lastLimits;
+
+function readLimits(info: any): UsageLimits {
+  const w = info?.unifiedWindows ?? {};
+  const win = (x: any) => (x && Number.isFinite(Number(x.utilization)) ? { utilization: Number(x.utilization), resetsAt: Number(x.resetsAt) } : undefined);
+  return { status: info?.status, fiveHour: win(w.five_hour), sevenDay: win(w.seven_day), overageStatus: info?.overageStatus, isUsingOverage: info?.isUsingOverage };
+}
+
 export type ClaudeResult = {
   ok: boolean;
+  limits?: UsageLimits;
   text: string;
   structured?: unknown;
   costUsd: number;
@@ -55,7 +76,7 @@ export type ClaudeCall = {
 
 function classify(message: string): ErrorKind {
   const m = message.toLowerCase();
-  if (/usage limit|session limit|weekly limit|limit reached|out of (extra )?usage|credit balance/.test(m)) return "usage_limit";
+  if (/usage limit|session limit|weekly limit|limit reached|hit your( \w+)? limit|out of (extra )?usage|credit balance/.test(m)) return "usage_limit";
   if (/rate[_ ]limit|429/.test(m)) return "rate_limit";
   if (/overloaded|529/.test(m)) return "overloaded";
   if (/auth|401|403|login/.test(m)) return "auth";
@@ -83,7 +104,9 @@ export async function runClaude(call: ClaudeCall): Promise<ClaudeResult> {
     "--no-session-persistence",
     // --json-schema answers through a structured-output tool call, which needs an extra turn.
     "--max-turns", call.jsonSchema ? "3" : "1",
-    "--output-format", "json",
+    // stream-json (not json) so the subscription's usage windows come back too.
+    "--output-format", "stream-json",
+    "--verbose",
   ];
   if (call.maxBudgetUsd) args.push("--max-budget-usd", String(call.maxBudgetUsd));
   if (call.jsonSchema) args.push("--json-schema", JSON.stringify(call.jsonSchema));
@@ -107,16 +130,25 @@ export async function runClaude(call: ClaudeCall): Promise<ClaudeResult> {
       rmSync(dir, { recursive: true, force: true });
       const durationMs = Date.now() - started;
       let parsed: Record<string, any> | null = null;
-      try {
-        parsed = JSON.parse(out);
-      } catch {
-        /* not JSON — handled below */
+      let limits: UsageLimits | undefined;
+      for (const line of out.split("\n")) {
+        if (!line.startsWith("{")) continue;
+        let o: Record<string, any>;
+        try {
+          o = JSON.parse(line);
+        } catch {
+          continue;
+        }
+        if (o.type === "rate_limit_event" && o.rate_limit_info) limits = readLimits(o.rate_limit_info);
+        else if (o.type === "result") parsed = o;
       }
+      if (limits) lastLimits = limits;
       if (!parsed) {
         const message = (err || out || `exit ${code}`).slice(0, 500);
         resolve({
-          ok: false, text: "", costUsd: 0, model: call.model, durationMs,
-          error: message, errorKind: durationMs >= timeoutMs ? "timeout" : classify(message),
+          ok: false, text: "", costUsd: 0, model: call.model, durationMs, limits,
+          error: message,
+          errorKind: limits?.status === "rejected" ? "usage_limit" : durationMs >= timeoutMs ? "timeout" : classify(message),
         });
         return;
       }
@@ -132,7 +164,8 @@ export async function runClaude(call: ClaudeCall): Promise<ClaudeResult> {
         durationMs,
         usage: parsed.usage,
         error: message,
-        errorKind: message ? classify(message) : undefined,
+        errorKind: message ? (limits?.status === "rejected" ? "usage_limit" : classify(message)) : undefined,
+        limits,
       });
     });
   });

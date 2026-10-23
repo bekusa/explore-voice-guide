@@ -14,7 +14,7 @@ https://play.google.com/store/apps/details?id=app.lokali.travel
 ## Browse
 https://lokali.travel/explore/index.html
 
-## Canonical URLs (6610 total)
+## Canonical URLs (6557 total)
 
 https://lokali.travel/about/editorial-process.html
 https://lokali.travel/explore/af/adıyaman/mount-nemrut.html
@@ -213,7 +213,6 @@ https://lokali.travel/explore/ar/göreme/goreme-open-air-museum.html
 https://lokali.travel/explore/ar/göreme/pasabag-monks-valley.html
 https://lokali.travel/explore/ar/göreme/uchisar-castle.html
 https://lokali.travel/explore/ar/istanbul.html
-https://lokali.travel/explore/ar/istanbul/balat.html
 https://lokali.travel/explore/ar/istanbul/basilica-cistern.html
 https://lokali.travel/explore/ar/istanbul/blue-mosque.html
 https://lokali.travel/explore/ar/istanbul/bosphorus-strait.html
@@ -380,7 +379,6 @@ https://lokali.travel/explore/az/mersin/kizkalesi.html
 https://lokali.travel/explore/az/paris/louvre.html
 https://lokali.travel/explore/az/rize/ayder-yaylasi.html
 https://lokali.travel/explore/az/sanliurfa.html
-https://lokali.travel/explore/az/sanliurfa/balikligol.html
 https://lokali.travel/explore/az/sanliurfa/halfeti.html
 https://lokali.travel/explore/az/selçuk.html
 https://lokali.travel/explore/az/selçuk/efes.html
@@ -517,7 +515,6 @@ https://lokali.travel/explore/bg/mersin/kazkalesi.html
 https://lokali.travel/explore/bg/paris/louvre.html
 https://lokali.travel/explore/bg/rize/plato-ayder.html
 https://lokali.travel/explore/bg/sanliurfa.html
-https://lokali.travel/explore/bg/sanliurfa/balaklagyol.html
 https://lokali.travel/explore/bg/sanliurfa/halfeti.html
 https://lokali.travel/explore/bg/selçuk.html
 https://lokali.travel/explore/bg/selçuk/bazar-kemeralta.html
@@ -568,7 +565,6 @@ https://lokali.travel/explore/bn/bergama/pergamon-acropolis.html
 https://lokali.travel/explore/bn/beyoğlu.html
 https://lokali.travel/explore/bn/beyoğlu/galata-tower.html
 https://lokali.travel/explore/bn/beyoğlu/istiklal-avenue.html
-https://lokali.travel/explore/bn/beyoğlu/istiklal-street.html
 https://lokali.travel/explore/bn/beşiktaş.html
 https://lokali.travel/explore/bn/beşiktaş/dolmabahçe-palace.html
 https://lokali.travel/explore/bn/beşiktaş/ortakoy-mosque.html
@@ -685,7 +681,6 @@ https://lokali.travel/explore/cs/bergama/pergamon-acropolis.html
 https://lokali.travel/explore/cs/beyoğlu.html
 https://lokali.travel/explore/cs/beyoğlu/galata-tower.html
 https://lokali.travel/explore/cs/beyoğlu/istiklal-avenue.html
-https://lokali.travel/explore/cs/beyoğlu/istiklal-street.html
 https://lokali.travel/explore/cs/beşiktaş.html
 https://lokali.travel/explore/cs/beşiktaş/dolmabahçe-palace.html
 https://lokali.travel/explore/cs/beşiktaş/ortakoy-mosque.html
@@ -847,7 +842,6 @@ https://lokali.travel/explore/da/göreme/uchisar-castle.html
 https://lokali.travel/explore/da/istanbul.html
 https://lokali.travel/explore/da/istanbul/balat.html
 https://lokali.travel/explore/da/istanbul/basilica-cistern.html
-https://lokali.travel/explore/da/istanbul/basilikacisternen.html
 https://lokali.travel/explore/da/istanbul/blue-mosque.html
 https://lokali.travel/explore/da/istanbul/bosphorus-strait.html
 https://lokali.travel/explore/da/istanbul/chora-church.html
@@ -1007,12 +1001,10 @@ https://lokali.travel/explore/de/mardin/altstadt-von-mardin.html
 https://lokali.travel/explore/de/mardin/kloster-deyrulzafaran.html
 https://lokali.travel/explore/de/mersin/kizkalesi.html
 https://lokali.travel/explore/de/mtskheta/david-gareja.html
-https://lokali.travel/explore/de/new-york/das-metropolitan-museum-of-art.html
 https://lokali.travel/explore/de/new-york/metropolitan-museum-of-art.html
 https://lokali.travel/explore/de/paris/louvre.html
 https://lokali.travel/explore/de/rize/ayder-plateau.html
 https://lokali.travel/explore/de/sanliurfa.html
-https://lokali.travel/explore/de/sanliurfa/balikligol.html
 https://lokali.travel/explore/de/sanliurfa/halfeti.html
 https://lokali.travel/explore/de/selçuk.html
 https://lokali.travel/explore/de/selçuk/dorf-sirince.html
@@ -1070,7 +1062,6 @@ https://lokali.travel/explore/el/bergama/pergamon-acropolis.html
 https://lokali.travel/explore/el/beyoğlu.html
 https://lokali.travel/explore/el/beyoğlu/galata-tower.html
 https://lokali.travel/explore/el/beyoğlu/istiklal-avenue.html
-https://lokali.travel/explore/el/beyoğlu/istiklal-street.html
 https://lokali.travel/explore/el/beşiktaş.html
 https://lokali.travel/explore/el/beşiktaş/dolmabahçe-palace.html
 https://lokali.travel/explore/el/beşiktaş/ortakoy-mosque.html
@@ -1166,8 +1157,6 @@ https://lokali.travel/explore/en/abu-dhabi/louvre-abu-dhabi.html
 https://lokali.travel/explore/en/abu-dhabi/qasr-al-watan.html
 https://lokali.travel/explore/en/abu-dhabi/sheikh-zayed-grand-mosque.html
 https://lokali.travel/explore/en/abuja/millennium-park.html
-https://lokali.travel/explore/en/abuja/the-606-trail.html
-https://lokali.travel/explore/en/abuja/the-bean-cloud-gate.html
 https://lokali.travel/explore/en/adıyaman/mount-nemrut.html
 https://lokali.travel/explore/en/agra.html
 https://lokali.travel/explore/en/agra/agra-fort.html
@@ -1325,7 +1314,6 @@ https://lokali.travel/explore/en/beyoğlu/istiklal-avenue.html
 https://lokali.travel/explore/en/beyoğlu/karaköy.html
 https://lokali.travel/explore/en/beşiktaş.html
 https://lokali.travel/explore/en/beşiktaş/dolmabahçe-palace.html
-https://lokali.travel/explore/en/beşiktaş/ortakoy-mosque-2.html
 https://lokali.travel/explore/en/beşiktaş/ortakoy-mosque.html
 https://lokali.travel/explore/en/beşiktaş/yıldız-park.html
 https://lokali.travel/explore/en/bilbao.html
@@ -1414,7 +1402,6 @@ https://lokali.travel/explore/en/cape-town/kirstenbosch-national-botanical-garde
 https://lokali.travel/explore/en/cape-town/robben-island.html
 https://lokali.travel/explore/en/cape-town/table-mountain.html
 https://lokali.travel/explore/en/cape-town/v-a-waterfront.html
-https://lokali.travel/explore/en/cape-town/va-waterfront.html
 https://lokali.travel/explore/en/casablanca/central-market.html
 https://lokali.travel/explore/en/central-jakarta.html
 https://lokali.travel/explore/en/central-jakarta/cathedral-of-jakarta.html
@@ -1689,7 +1676,6 @@ https://lokali.travel/explore/en/gulshan/mausoleum-of-bahauddin-zakariya.html
 https://lokali.travel/explore/en/gulshan/multan-fort.html
 https://lokali.travel/explore/en/göreme/cappadocia.html
 https://lokali.travel/explore/en/göreme/derinkuyu-underground-city.html
-https://lokali.travel/explore/en/göreme/goreme-open-air-museum-2.html
 https://lokali.travel/explore/en/göreme/goreme-open-air-museum.html
 https://lokali.travel/explore/en/göreme/pasabag-monks-valley.html
 https://lokali.travel/explore/en/göreme/uchisar-castle.html
@@ -1742,7 +1728,6 @@ https://lokali.travel/explore/en/istanbul/hippodrome-of-constantinople.html
 https://lokali.travel/explore/en/istanbul/istanbul-archaeological-museums.html
 https://lokali.travel/explore/en/istanbul/kadıköy.html
 https://lokali.travel/explore/en/istanbul/mihrimah-sultan-mosque.html
-https://lokali.travel/explore/en/istanbul/pierre-loti-café.html
 https://lokali.travel/explore/en/istanbul/princes-islands.html
 https://lokali.travel/explore/en/istanbul/rahmi-m-koç-museum.html
 https://lokali.travel/explore/en/istanbul/rumeli-fortress.html
@@ -1831,7 +1816,6 @@ https://lokali.travel/explore/en/madagaskar/royal-hill-of-ambohimanga.html
 https://lokali.travel/explore/en/madagaskar/tsingy-de-bemaraha-national-park.html
 https://lokali.travel/explore/en/madrid.html
 https://lokali.travel/explore/en/madrid/museo-nacional-de-antropología.html
-https://lokali.travel/explore/en/madrid/museo-nacional-del-prado.html
 https://lokali.travel/explore/en/madrid/plaza-mayor.html
 https://lokali.travel/explore/en/madrid/prado-museum.html
 https://lokali.travel/explore/en/madrid/retiro-park.html
@@ -1875,7 +1859,6 @@ https://lokali.travel/explore/en/mestia/ushguli.html
 https://lokali.travel/explore/en/mexico-city.html
 https://lokali.travel/explore/en/mexico-city/basilica-of-our-lady-of-guadalupe.html
 https://lokali.travel/explore/en/mexico-city/bosque-de-chapultepec.html
-https://lokali.travel/explore/en/mexico-city/castillo-de-chapultepec.html
 https://lokali.travel/explore/en/mexico-city/chapultepec-castle.html
 https://lokali.travel/explore/en/mexico-city/national-museum-of-anthropology.html
 https://lokali.travel/explore/en/miami.html
@@ -1915,7 +1898,6 @@ https://lokali.travel/explore/en/moscow/christ-the-saviour-cathedral.html
 https://lokali.travel/explore/en/moscow/gorky-park.html
 https://lokali.travel/explore/en/moscow/gum-department-store.html
 https://lokali.travel/explore/en/moscow/izmailovsky-market.html
-https://lokali.travel/explore/en/moscow/kremlin.html
 https://lokali.travel/explore/en/moscow/moscow-kremlin.html
 https://lokali.travel/explore/en/moscow/red-square.html
 https://lokali.travel/explore/en/moscow/saint-basils-cathedral.html
@@ -1947,7 +1929,6 @@ https://lokali.travel/explore/en/napa/napa-river.html
 https://lokali.travel/explore/en/napa/napa-valley-wine-train.html
 https://lokali.travel/explore/en/napa/oxbow-market.html
 https://lokali.travel/explore/en/new-york.html
-https://lokali.travel/explore/en/new-york/9-11-memorial-museum.html
 https://lokali.travel/explore/en/new-york/911-memorial-museum.html
 https://lokali.travel/explore/en/new-york/american-museum-of-natural-history.html
 https://lokali.travel/explore/en/new-york/battery-park.html
@@ -2022,7 +2003,6 @@ https://lokali.travel/explore/en/phuket/phi-phi-islands.html
 https://lokali.travel/explore/en/phuket/phuket-old-town.html
 https://lokali.travel/explore/en/phuket/wat-chalong.html
 https://lokali.travel/explore/en/plaka.html
-https://lokali.travel/explore/en/plaka/spinalonga.html
 https://lokali.travel/explore/en/port-elizabeth/addo-elephant-national-park.html
 https://lokali.travel/explore/en/port-moresby.html
 https://lokali.travel/explore/en/port-moresby/bomana-war-cemetery.html
@@ -2250,7 +2230,6 @@ https://lokali.travel/explore/en/tbilisi/metekhi-palace.html
 https://lokali.travel/explore/en/tbilisi/metekhi-square.html
 https://lokali.travel/explore/en/tbilisi/mtkvari-river-waterfront.html
 https://lokali.travel/explore/en/tbilisi/mtskheta.html
-https://lokali.travel/explore/en/tbilisi/narikala-fortress.html
 https://lokali.travel/explore/en/tbilisi/nariqala-fortress.html
 https://lokali.travel/explore/en/tbilisi/old-town.html
 https://lokali.travel/explore/en/tbilisi/peace-bridge.html
@@ -2374,7 +2353,6 @@ https://lokali.travel/explore/en/vijayawada/undavalli-caves.html
 https://lokali.travel/explore/en/warsaw.html
 https://lokali.travel/explore/en/warsaw/pge-narodowy.html
 https://lokali.travel/explore/en/washington.html
-https://lokali.travel/explore/en/washington/c-o-canal.html
 https://lokali.travel/explore/en/washington/chesapeake-ohio-canal.html
 https://lokali.travel/explore/en/washington/co-canal.html
 https://lokali.travel/explore/en/washington/coxs-row.html
@@ -2392,7 +2370,6 @@ https://lokali.travel/explore/en/winter-park.html
 https://lokali.travel/explore/en/winter-park/morse-museum.html
 https://lokali.travel/explore/en/winter-park/winter-park.html
 https://lokali.travel/explore/en/xi-an.html
-https://lokali.travel/explore/en/xi-an/big-wild-goose-pagoda.html
 https://lokali.travel/explore/en/xi-an/city-wall.html
 https://lokali.travel/explore/en/xi-an/giant-wild-goose-pagoda.html
 https://lokali.travel/explore/en/xi-an/huaqing-palace.html
@@ -2542,7 +2519,6 @@ https://lokali.travel/explore/es/paris/louvre.html
 https://lokali.travel/explore/es/prague/josefov.html
 https://lokali.travel/explore/es/rize/meseta-de-ayder.html
 https://lokali.travel/explore/es/sanliurfa.html
-https://lokali.travel/explore/es/sanliurfa/balikligol.html
 https://lokali.travel/explore/es/sanliurfa/halfeti.html
 https://lokali.travel/explore/es/selçuk.html
 https://lokali.travel/explore/es/selçuk/bazar-de-kemeralti.html
@@ -2645,7 +2621,6 @@ https://lokali.travel/explore/fa/göreme/goreme-open-air-museum.html
 https://lokali.travel/explore/fa/göreme/pasabag-monks-valley.html
 https://lokali.travel/explore/fa/göreme/uchisar-castle.html
 https://lokali.travel/explore/fa/istanbul.html
-https://lokali.travel/explore/fa/istanbul/balat.html
 https://lokali.travel/explore/fa/istanbul/basilica-cistern.html
 https://lokali.travel/explore/fa/istanbul/blue-mosque.html
 https://lokali.travel/explore/fa/istanbul/bosphorus-strait.html
@@ -2930,7 +2905,6 @@ https://lokali.travel/explore/fr/rethymno/notre-dame-des-anges.html
 https://lokali.travel/explore/fr/rethymno/vieille-ville-de-rethymnon.html
 https://lokali.travel/explore/fr/rize/plateau-d-ayder.html
 https://lokali.travel/explore/fr/sanliurfa.html
-https://lokali.travel/explore/fr/sanliurfa/balikligol.html
 https://lokali.travel/explore/fr/sanliurfa/halfeti.html
 https://lokali.travel/explore/fr/selçuk.html
 https://lokali.travel/explore/fr/selçuk/bazar-kemeralti.html
@@ -3439,7 +3413,6 @@ https://lokali.travel/explore/hy/bergama/pergamon-acropolis.html
 https://lokali.travel/explore/hy/beyoğlu.html
 https://lokali.travel/explore/hy/beyoğlu/galata-tower.html
 https://lokali.travel/explore/hy/beyoğlu/istiklal-avenue.html
-https://lokali.travel/explore/hy/beyoğlu/istiklal-street.html
 https://lokali.travel/explore/hy/beyoğlu/karaköy.html
 https://lokali.travel/explore/hy/beşiktaş.html
 https://lokali.travel/explore/hy/beşiktaş/dolmabahçe-palace.html
@@ -3509,7 +3482,6 @@ https://lokali.travel/explore/hy/konya.html
 https://lokali.travel/explore/hy/konya/catalhoyuk.html
 https://lokali.travel/explore/hy/konya/mevlana-museum.html
 https://lokali.travel/explore/hy/madrid.html
-https://lokali.travel/explore/hy/madrid/museo-nacional-del-prado.html
 https://lokali.travel/explore/hy/madrid/prado-museum.html
 https://lokali.travel/explore/hy/manavgat/manavgat-waterfall.html
 https://lokali.travel/explore/hy/mardin.html
@@ -3653,7 +3625,6 @@ https://lokali.travel/explore/id/mersin/kizkalesi.html
 https://lokali.travel/explore/id/paris/louvre.html
 https://lokali.travel/explore/id/rize/dataran-tinggi-ayder.html
 https://lokali.travel/explore/id/sanliurfa.html
-https://lokali.travel/explore/id/sanliurfa/balikligol.html
 https://lokali.travel/explore/id/sanliurfa/halfeti.html
 https://lokali.travel/explore/id/selçuk.html
 https://lokali.travel/explore/id/selçuk/desa-sirince.html
@@ -3790,7 +3761,6 @@ https://lokali.travel/explore/it/mersin/kizkalesi.html
 https://lokali.travel/explore/it/paris/louvre.html
 https://lokali.travel/explore/it/rize/altopiano-di-ayder.html
 https://lokali.travel/explore/it/sanliurfa.html
-https://lokali.travel/explore/it/sanliurfa/balikligol.html
 https://lokali.travel/explore/it/sanliurfa/halfeti.html
 https://lokali.travel/explore/it/selçuk.html
 https://lokali.travel/explore/it/selçuk/bazar-di-kemeralti.html
@@ -3894,7 +3864,6 @@ https://lokali.travel/explore/ja/göreme/goreme-open-air-museum.html
 https://lokali.travel/explore/ja/göreme/pasabag-monks-valley.html
 https://lokali.travel/explore/ja/göreme/uchisar-castle.html
 https://lokali.travel/explore/ja/istanbul.html
-https://lokali.travel/explore/ja/istanbul/balat.html
 https://lokali.travel/explore/ja/istanbul/basilica-cistern.html
 https://lokali.travel/explore/ja/istanbul/blue-mosque.html
 https://lokali.travel/explore/ja/istanbul/bosphorus-strait.html
@@ -4035,7 +4004,6 @@ https://lokali.travel/explore/ka/göreme/goreme-open-air-museum.html
 https://lokali.travel/explore/ka/göreme/pasabag-monks-valley.html
 https://lokali.travel/explore/ka/göreme/uchisar-castle.html
 https://lokali.travel/explore/ka/istanbul.html
-https://lokali.travel/explore/ka/istanbul/balat.html
 https://lokali.travel/explore/ka/istanbul/basilica-cistern.html
 https://lokali.travel/explore/ka/istanbul/blue-mosque.html
 https://lokali.travel/explore/ka/istanbul/bosphorus-strait.html
@@ -4093,7 +4061,6 @@ https://lokali.travel/explore/ka/tbilisi/metekhi-church.html
 https://lokali.travel/explore/ka/tbilisi/metekhi-palace.html
 https://lokali.travel/explore/ka/tbilisi/metekhi-square.html
 https://lokali.travel/explore/ka/tbilisi/narikala-fortress.html
-https://lokali.travel/explore/ka/tbilisi/nariqala-fortress.html
 https://lokali.travel/explore/ka/tbilisi/shardeni-street.html
 https://lokali.travel/explore/ka/tokyo/imperial-palace-east-gardens.html
 https://lokali.travel/explore/ka/trabzon.html
@@ -4189,7 +4156,6 @@ https://lokali.travel/explore/ko/göreme/goreme-open-air-museum.html
 https://lokali.travel/explore/ko/göreme/pasabag-monks-valley.html
 https://lokali.travel/explore/ko/göreme/uchisar-castle.html
 https://lokali.travel/explore/ko/istanbul.html
-https://lokali.travel/explore/ko/istanbul/balat.html
 https://lokali.travel/explore/ko/istanbul/basilica-cistern.html
 https://lokali.travel/explore/ko/istanbul/blue-mosque.html
 https://lokali.travel/explore/ko/istanbul/bosphorus-strait.html
@@ -4544,7 +4510,6 @@ https://lokali.travel/explore/nb/istanbul/kadıköy.html
 https://lokali.travel/explore/nb/istanbul/princes-islands.html
 https://lokali.travel/explore/nb/istanbul/rumeli-fortress.html
 https://lokali.travel/explore/nb/istanbul/spice-bazaar.html
-https://lokali.travel/explore/nb/istanbul/sultanahmet-square.html
 https://lokali.travel/explore/nb/istanbul/süleymaniye-mosque.html
 https://lokali.travel/explore/nb/istanbul/topkapi-palace.html
 https://lokali.travel/explore/nb/karabuk/safranbolu-old-town.html
@@ -4691,7 +4656,6 @@ https://lokali.travel/explore/nl/paris/louvre.html
 https://lokali.travel/explore/nl/prague/strahov-klooster.html
 https://lokali.travel/explore/nl/rize/ayder-plateau.html
 https://lokali.travel/explore/nl/sanliurfa.html
-https://lokali.travel/explore/nl/sanliurfa/balikligol.html
 https://lokali.travel/explore/nl/sanliurfa/halfeti.html
 https://lokali.travel/explore/nl/selçuk.html
 https://lokali.travel/explore/nl/selçuk/efeze.html
@@ -4835,7 +4799,6 @@ https://lokali.travel/explore/pl/mersin/kizkalesi.html
 https://lokali.travel/explore/pl/paris/louvre.html
 https://lokali.travel/explore/pl/rize/plaskowyz-ayder.html
 https://lokali.travel/explore/pl/sanliurfa.html
-https://lokali.travel/explore/pl/sanliurfa/balikligol.html
 https://lokali.travel/explore/pl/sanliurfa/halfeti.html
 https://lokali.travel/explore/pl/selçuk.html
 https://lokali.travel/explore/pl/selçuk/bazar-kemeralti.html
@@ -5005,7 +4968,6 @@ https://lokali.travel/explore/ro/bergama/pergamon-acropolis.html
 https://lokali.travel/explore/ro/beyoğlu.html
 https://lokali.travel/explore/ro/beyoğlu/galata-tower.html
 https://lokali.travel/explore/ro/beyoğlu/istiklal-avenue.html
-https://lokali.travel/explore/ro/beyoğlu/istiklal-street.html
 https://lokali.travel/explore/ro/beşiktaş.html
 https://lokali.travel/explore/ro/beşiktaş/dolmabahçe-palace.html
 https://lokali.travel/explore/ro/beşiktaş/ortakoy-mosque.html
@@ -5169,7 +5131,6 @@ https://lokali.travel/explore/ru/fethiye/prizrachnaya-derevnya-kayakoy.html
 https://lokali.travel/explore/ru/fethiye/ushchele-saklykent.html
 https://lokali.travel/explore/ru/gaziantep/muzey-mozaiki-zeygma.html
 https://lokali.travel/explore/ru/giza/bolshoy-egipetskiy-muzey-gem.html
-https://lokali.travel/explore/ru/giza/gem.html
 https://lokali.travel/explore/ru/göreme.html
 https://lokali.travel/explore/ru/göreme/dolina-monakhov-pashabag.html
 https://lokali.travel/explore/ru/göreme/kappadokiya.html
@@ -5212,7 +5173,6 @@ https://lokali.travel/explore/ru/paris/monmartr.html
 https://lokali.travel/explore/ru/paris/notr-dam-de-shartr.html
 https://lokali.travel/explore/ru/rize/plato-ayder.html
 https://lokali.travel/explore/ru/sanliurfa.html
-https://lokali.travel/explore/ru/sanliurfa/balyklygel.html
 https://lokali.travel/explore/ru/sanliurfa/khalfeti.html
 https://lokali.travel/explore/ru/selçuk.html
 https://lokali.travel/explore/ru/selçuk/derevnya-shirinche.html
@@ -5266,7 +5226,6 @@ https://lokali.travel/explore/sr/bergama/pergamon-acropolis.html
 https://lokali.travel/explore/sr/beyoğlu.html
 https://lokali.travel/explore/sr/beyoğlu/galata-tower.html
 https://lokali.travel/explore/sr/beyoğlu/istiklal-avenue.html
-https://lokali.travel/explore/sr/beyoğlu/istiklal-street.html
 https://lokali.travel/explore/sr/beşiktaş.html
 https://lokali.travel/explore/sr/beşiktaş/dolmabahçe-palace.html
 https://lokali.travel/explore/sr/beşiktaş/ortakoy-mosque.html
@@ -6123,7 +6082,6 @@ https://lokali.travel/explore/uk/mersin/kyzkalesi.html
 https://lokali.travel/explore/uk/paris/louvre.html
 https://lokali.travel/explore/uk/rize/plato-aider.html
 https://lokali.travel/explore/uk/sanliurfa.html
-https://lokali.travel/explore/uk/sanliurfa/balykylgel.html
 https://lokali.travel/explore/uk/sanliurfa/khalfeti.html
 https://lokali.travel/explore/uk/selçuk.html
 https://lokali.travel/explore/uk/selçuk/bazar-kemeralty.html
@@ -6446,7 +6404,6 @@ https://lokali.travel/explore/zh-cn/göreme/goreme-open-air-museum.html
 https://lokali.travel/explore/zh-cn/göreme/pasabag-monks-valley.html
 https://lokali.travel/explore/zh-cn/göreme/uchisar-castle.html
 https://lokali.travel/explore/zh-cn/istanbul.html
-https://lokali.travel/explore/zh-cn/istanbul/balat.html
 https://lokali.travel/explore/zh-cn/istanbul/basilica-cistern.html
 https://lokali.travel/explore/zh-cn/istanbul/blue-mosque.html
 https://lokali.travel/explore/zh-cn/istanbul/bosphorus-strait.html

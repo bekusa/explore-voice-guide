@@ -29,6 +29,7 @@ import { gate2Attractions, gate2Guide } from "./gate2";
 import { factCheck, summarize, type Claim } from "./gate3";
 import { publishAttractions, publishGuide } from "./publish";
 import { repairGuide } from "./repair";
+import { latestLimits, type UsageLimits } from "./transport";
 
 type Job = {
   id: number;
@@ -56,7 +57,8 @@ const minutes = Number(arg("minutes", "100"));
 const local = arg("local");
 const offset = Number(arg("offset", "0"));
 const concurrency = Number(arg("concurrency", String(CONFIG.concurrency)));
-const worker = `${hostname()}-${process.pid}`;
+// CF_WORKER names the session that runs this (two cloud sessions both report hostname "vm").
+const worker = `${process.env.CF_WORKER ?? hostname()}-${process.pid}`;
 const deadline = Date.now() + minutes * 60_000;
 const outDir = process.env.CF_OUT ?? "cf-out";
 mkdirSync(outDir, { recursive: true });
@@ -98,6 +100,45 @@ function stopOn(errorKind?: string) {
   if (errorKind === "usage_limit" || errorKind === "auth") stopReason = `stopped: ${errorKind}`;
 }
 
+/** Short-lived API pushback (429 / overloaded): not the job's fault, so the job goes back
+ *  to the queue untouched and the whole runner pauses for a couple of minutes. */
+let pauseUntil = 0;
+const isTransient = (k?: string) => k === "rate_limit" || k === "overloaded";
+function pauseFor(ms: number) {
+  pauseUntil = Math.max(pauseUntil, Date.now() + ms);
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const pct = (x?: number) => (x == null ? "?" : `${Math.round(x * 100)}%`);
+const at = (t?: number) => (t ? new Date(t * 1000).toISOString().slice(5, 16).replace("T", " ") + " UTC" : "?");
+const limitsFile = () => join(outDir, "..", "usage-limits.json");
+function limitsLine(L: UsageLimits | null) {
+  return L ? `5h ${pct(L.fiveHour?.utilization)} · 7d ${pct(L.sevenDay?.utilization)}` : "5h ? · 7d ?";
+}
+/** Decide what the plan's usage windows allow next: "go", "stop" (weekly cap) or a wait. */
+async function respectUsage(L: UsageLimits | null): Promise<void> {
+  if (!L) return;
+  try {
+    writeFileSync(limitsFile(), JSON.stringify({ seen_at: new Date().toISOString(), ...L }));
+  } catch {
+    /* best effort */
+  }
+  const now = Date.now() / 1000;
+  if (L.sevenDay && L.sevenDay.resetsAt > now && L.sevenDay.utilization >= CONFIG.usage.maxWeekly) {
+    stopReason = `weekly usage cap: ${pct(L.sevenDay.utilization)} ≥ ${pct(CONFIG.usage.maxWeekly)} (resets ${at(L.sevenDay.resetsAt)})`;
+    return;
+  }
+  if (L.fiveHour && L.fiveHour.resetsAt > now && L.fiveHour.utilization >= CONFIG.usage.maxFiveHour) {
+    const wakeMs = L.fiveHour.resetsAt * 1000 + 90_000;
+    if (wakeMs > deadline) {
+      stopReason = `5-hour window at ${pct(L.fiveHour.utilization)} (resets ${at(L.fiveHour.resetsAt)})`;
+      return;
+    }
+    console.log(`  waiting   5-hour window at ${pct(L.fiveHour.utilization)} — sleeping until ${at(L.fiveHour.resetsAt)}`);
+    await sleep(wakeMs - Date.now());
+  }
+}
+
 const problemsOf = (fc: ReturnType<typeof summarize>): Claim[] => [...fc.contradicted, ...fc.legend_as_fact, ...fc.price_or_hours];
 
 async function processGuide(job: Job) {
@@ -120,6 +161,11 @@ async function processGuide(job: Job) {
     if (!gen.call.ok) {
       stopOn(gen.call.errorKind);
       await audit(job, attempt, "generate", { verdict: "error", model: gen.call.model, cost_usd: gen.call.costUsd, duration_ms: gen.call.durationMs, findings: { error: gen.call.error, kind: gen.call.errorKind } });
+      if (isTransient(gen.call.errorKind)) {
+        pauseFor(120_000);
+        if (cands.length === 0) return requeue(job, cost);
+        break;
+      }
       if (stopReason) break;
       continue;
     }
@@ -208,7 +254,11 @@ async function processCity(job: Job) {
     cost += gen.call.costUsd;
     if (!gen.call.ok) {
       stopOn(gen.call.errorKind);
-      await audit(job, attempt, "generate", { verdict: "error", model: gen.call.model, cost_usd: gen.call.costUsd, findings: { error: gen.call.error } });
+      await audit(job, attempt, "generate", { verdict: "error", model: gen.call.model, cost_usd: gen.call.costUsd, findings: { error: gen.call.error, kind: gen.call.errorKind } });
+      if (isTransient(gen.call.errorKind)) {
+        pauseFor(120_000);
+        return requeue(job, cost);
+      }
       if (stopReason) break;
       continue;
     }
@@ -241,8 +291,10 @@ async function processCity(job: Job) {
 
 async function laneSpent(): Promise<number> {
   if (DRY_RUN) return 0;
-  const rows = await db.select<{ cost_usd: number }>("content_jobs", `select=cost_usd&lane=eq.${lane}&kind=eq.${kind}&cost_usd=gt.0`);
-  return rows.reduce((s, r) => s + Number(r.cost_usd), 0);
+  // Sum from the aggregate view: PostgREST returns at most 1,000 rows, so summing
+  // content_jobs rows client-side stopped counting after the 1,000th job.
+  const rows = await db.select<{ cost_usd: number | null }>("content_factory_progress", `select=cost_usd&lane=eq.${lane}&kind=eq.${kind}`);
+  return rows.reduce((s, r) => s + Number(r.cost_usd ?? 0), 0);
 }
 
 async function claim(n: number): Promise<Job[]> {
@@ -262,8 +314,25 @@ async function main() {
     console.log(`lane ${lane} budget reached: $${spentBefore.toFixed(2)} of $${budget}`);
     return;
   }
+  // Preflight: the other runner (or the previous block) may already have seen a full window.
+  if (!local) {
+    try {
+      const prev = JSON.parse(readFileSync(limitsFile(), "utf8")) as UsageLimits;
+      await respectUsage(prev);
+      if (stopReason) {
+        console.log(`finished: ${stopReason}`);
+        return;
+      }
+    } catch {
+      /* no file yet */
+    }
+  }
   let done = 0;
   while (done < limit && !stopReason && Date.now() < deadline) {
+    if (pauseUntil > Date.now()) {
+      console.log(`  pausing   ${Math.round((pauseUntil - Date.now()) / 1000)}s after API pushback`);
+      await sleep(pauseUntil - Date.now());
+    }
     const batch = await claim(Math.min(concurrency, limit - done));
     if (!batch.length) { stopReason = "queue empty"; break; }
     const before = Date.now();
@@ -280,8 +349,9 @@ async function main() {
     );
     done += batch.length;
     const spent = local ? 0 : await laneSpent();
-    console.log(`[${new Date().toISOString()}] ${done}/${limit} done · ${Math.round((Date.now() - before) / 1000)}s batch · lane $${spent.toFixed(2)}/${budget} · ${JSON.stringify(results)}`);
+    console.log(`[${new Date().toISOString()}] ${done}/${limit} done · ${Math.round((Date.now() - before) / 1000)}s batch · lane $${spent.toFixed(2)}/${budget} · ${limitsLine(latestLimits())} · ${JSON.stringify(results)}`);
     if (!local && spent >= budget) stopReason = "lane budget reached";
+    if (!stopReason && !local) await respectUsage(latestLimits());
     if (local) break;
   }
   console.log(`finished: ${stopReason || "limit reached"} · ${JSON.stringify(results)}`);

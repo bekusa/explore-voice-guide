@@ -181,12 +181,10 @@ original was lost; it reproduces the shipped wording exactly. ⚠️ Hindi is no
 - `no-en-sibling.json` — 7 batch pages whose attraction has no EN page at all
   (David Gareja, Josefov, Notre Dame des Anges, Balıklıgöl …). They ship with no
   hreflang, which is correct.
-- `en/beyoğlu/istiklal-avenue.html` vs `istiklal-street.html`, and
-  `en/istanbul/hippodrome-of-constantinople.html` vs `sultanahmet-square.html`,
-  are the same place twice. Both pairs are live and indexed; decide with GSC
-  impression data which to keep before canonicalising one into the other. Do
-  **not** merge Düden — `duden-waterfalls` (upper) and `düden-waterfall`
-  (lower) are 2.6 km apart and genuinely different.
+- Istiklal (street/avenue), Hippodrome/Sultanahmet Square and Balat/Fener and Balat
+  were merged in every language on 2026-10-22 (see below). Do **not** merge Düden —
+  `duden-waterfalls` (upper) and `düden-waterfall` (lower) are 2.6 km apart and
+  genuinely different.
 - 56 attractions have no photo anywhere in `cached_photos`, so their pages ship
   without an image in every language. That is a database gap, not a matching
   bug: a looser name match over all 35,760 photo rows recovered exactly one.
@@ -211,3 +209,42 @@ the pages' own `<h1>`, canonical, robots and the hreflang groups in
 **Re-run it whenever pages are added, merged or noindexed**, then commit and
 Publish (it lives in `src/`). Merging a duplicate pair also un-blocks the app
 page for that name — the script lists every ambiguous name it skipped.
+
+## Duplicate merges, canonical groups and coordinates (2026-10-22)
+
+**link-langs.py now joins a page to its canonical target's hreflang group.** A
+page whose canonical names another page is the same place, so the two groups
+merge, and the one-indexable-page-per-language check then names every
+language that still has both versions. Fix those by aliasing (canonical →
+keeper + `noindex, follow` + og:url), never by deleting.
+
+Merged on 2026-10-22 (alias → kept): en Narikala → `nariqala-fortress` (1,309
+words vs 349; ka keeps `narikala-fortress`), 606 Trail and The Bean
+(`abuja/` → `chicago/`), Ortaköy `-2`, V&A `va-` → `v-a-`, Spinalonga
+`plaka/` → `crete/spinalonga-fortress`, Pierre Loti `istanbul/` →
+`eyüpsultan/`, Göreme `-2`, Kremlin → `moscow-kremlin`, 9/11 → `911-`,
+C&O → `co-canal`, Big → Giant Wild Goose Pagoda, Prado (en, hy) →
+`prado-museum`, Chapultepec → `chapultepec-castle`, de Met
+`das-metropolitan-…` → `metropolitan-museum-of-art`, ru GEM `gem` →
+`bolshoy-egipetskiy-muzey-gem`, Balıklıgöl `sanliurfa/` → `şanlıurfa/` (11
+languages), plus Istiklal (6), Balat (6), da Basilica Cistern, nb
+Hippodrome. Full list: `merges.json` in the Audioguide folder's `cm/`.
+
+94 pages that had no English sibling in their hreflang group (61 Turkish, the
+Ortaköy/Göreme translations, the Istanbul Archaeology Museums set, etc.) were
+joined to their English page by adding one `hreflang="en"` link and re-running
+link-langs. List: `joins.json`.
+
+Hub cards still list both versions of a merged pair (the alias card links to a
+page that canonicalises to the keeper). Removing them means fixing counts in
+45 languages — do it with a hub rebuild, not by hand.
+
+**Georgian coordinates.** Most Tbilisi, Kutaisi, Mtskheta and Mestia pages
+carried placeholder coordinates 2–100 km off. 36 attractions (70 pages in all
+languages) now use Wikipedia / OpenStreetMap / Google Places coordinates
+(`coordfix.py`), and every "nearby" distance on those cities' pages was
+recomputed and re-sorted. 9 pages still have no sourced coordinate
+(Leselidze Street, Mtkvari Waterfront, Shardeni Street Market, both Gino
+pages, Metekhi Palace, Metekhi Square, the funicular page, Batumi Piazza):
+their own pages keep the placeholder, and other pages' rails show them
+without a distance.

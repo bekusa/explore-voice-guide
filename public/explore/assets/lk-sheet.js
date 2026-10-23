@@ -74,7 +74,7 @@
       '</b><p class="lks-p">' + sub + '</p><div class="lks-body"><div class="lks-shot"><img src="' + shot + '" alt="Lokali app" width="320" height="622"></div><div class="lks-side">' +
       (desk
         ? '<div class="lks-qr"><img src="' + A + 'lk-qr.svg" alt="QR code for Lokali on Google Play" width="196" height="196"></div><b class="lks-scan">Scan with your Android phone</b><p class="lks-cam">Open your camera to get Lokali on Google Play.</p>' + badge
-        : '<p class="lks-pts">45 languages<br>Works offline<br>No ads</p>' + badge + '<a class="lks-web" href="' + webUrl + '">Listen in your browser</a>') +
+        : '<p class="lks-pts">50+ languages<br>Works offline<br>No ads</p>' + badge + '<a class="lks-web" href="' + webUrl + '">Listen in your browser</a>') +
       "</div></div>";
   }
   function compact() {

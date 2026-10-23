@@ -24,15 +24,24 @@ export const CONFIG = {
 
   /** Hard cap per single call — a runaway call cannot eat the budget. */
   maxBudgetPerCallUsd: 0.4,
-  /** Lane budgets (client-side list-price estimate, summed from total_cost_usd). */
   /** Budgets per lane and kind (client-side list-price estimate, summed from content_jobs.cost_usd).
-   *  Cloud: $250 promo credit, expires 2026-11-04 — ~$227 for jobs incl. the pilot, rest is reserve. */
+   *  NOTE (2026-10-22): `claude -p` logs in with the subscription (apiKeySource "none"), so these
+   *  calls count against the Max plan's 5-hour and weekly windows — the $250 cloud credit counter
+   *  did not move. Overage is disabled for the org, so no money is charged; the real limit is
+   *  `usage` below. These dollar caps stay as a second brake. */
   budgetUsd: {
-    "cloud:guide": 175,
+    "cloud:guide": 750, // Beka 2026-10-22: lifted from $175 — ~$500 on the Max plan + the $250 cloud credit; the weekly cap below is the real brake
     "cloud:attractions": 52,
     "max:guide": 0, // set once the weekly-limit share per item is measured
     "max:attractions": 0,
   } as Record<string, number>,
+  /** Max-plan usage windows (0..1), read from every call. The factory shares them with Beka's
+   *  own Claude use, so it leaves room: when the 5-hour window passes `maxFiveHour` the runner
+   *  sleeps until it resets; when the weekly window passes `maxWeekly` it stops (Beka: 80%, the rest stays for his own use). */
+  usage: {
+    maxFiveHour: 0.9,
+    maxWeekly: 0.8, // Beka 2026-10-22
+  },
   /** Evidence sent to the checker: the article from the top (lead + history usually come first). */
   evidenceChars: 25_000,
   concurrency: 4,
