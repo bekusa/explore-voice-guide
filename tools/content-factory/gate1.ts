@@ -103,7 +103,9 @@ export function gate1Guide(g: GuidePayload, expectedName: string): GateResult {
   const money = findAll(allText, /[€$£¥]\s?\d|\b\d+\s?(euros?|dollars?|lira|pounds)\b|\bfree (entry|admission)\b|\b(small|entrance|admission) fee\b|\bopen(s)? (daily|from|at|until)\b|\b\d{1,2}(:\d{2})?\s?(am|pm)\b/gi);
   if (money.length) soft.push(`price_or_hours:${[...new Set(money.map((m) => m.toLowerCase()))].join(",")}`);
   // English only (the baseline must be English; translation happens downstream)
-  const nonLatin = (script.match(/[^\u0000-ɏḀ-ỿ -⁯\s]/g) ?? []).length;
+  // Spacing modifier letters (U+02B0-02FF: the glottal stop in Kʼicheʼ, the okina in Hawaiʻi) belong to
+  // romanised names, not to another language.
+  const nonLatin = (script.match(/[^\u0000-\u024f\u02b0-\u02ff\u1e00-\u1eff\u2000-\u206f\s]/g) ?? []).length;
   if (nonLatin > 20) hard.push(`non_english_chars:${nonLatin}`);
 
   return {
