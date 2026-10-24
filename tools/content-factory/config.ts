@@ -44,7 +44,7 @@ export const CONFIG = {
    *  sleeps until it resets; when the weekly window passes `maxWeekly` it stops (Beka: 80%, the rest stays for his own use). */
   usage: {
     maxFiveHour: 0.9,
-    maxWeekly: 0.8, // Beka 2026-10-22
+    maxWeekly: 0.9, // Beka 2026-10-22: 80%; raised to 90% on 2026-10-24
   },
   /** Evidence sent to the checker: the article from the top (lead + history usually come first). */
   evidenceChars: 25_000,

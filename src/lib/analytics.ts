@@ -69,6 +69,13 @@ export function captureEvent(event: string, properties?: Record<string, unknown>
 // internally, but we keep our own so the Supabase-side dashboard can count
 // uniques without depending on PostHog being loaded.
 const ANON_ID_KEY = "lokali_anon_id";
+// True when this page load had to mint a brand-new anon id, i.e. the first
+// time this browser / app install ever opened Lokali. Reported once (on the
+// next page_view) as `new_device: true` — inside the Android app that is
+// the closest thing to an "install + first open" count we can see without
+// a native plugin (and so without a store release).
+let deviceIsNew = false;
+let newDeviceReported = false;
 function anonId(): string {
   if (typeof window === "undefined") return "server";
   try {
@@ -79,11 +86,70 @@ function anonId(): string {
           ? crypto.randomUUID()
           : "a_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
       localStorage.setItem(ANON_ID_KEY, id);
+      deviceIsNew = true;
     }
     return id;
   } catch {
     return "anon";
   }
+}
+
+/**
+ * Coarse client context for the dashboard's browser / OS / platform
+ * breakdowns. Parsed from navigator.userAgent — no fingerprinting, no
+ * version numbers, nothing that identifies a person. `app` tells the
+ * Android app (Capacitor WebView loading this same site) apart from the
+ * plain website, which is what lets the dashboard split web vs app and
+ * count first app opens. Pure web code: ships with a normal site deploy,
+ * no app-store release needed.
+ */
+type ClientInfo = { app: string; os: string; browser: string; device: string; bot?: boolean };
+let clientInfoCache: ClientInfo | null = null;
+export function clientInfo(): ClientInfo {
+  if (clientInfoCache) return clientInfoCache;
+  if (typeof navigator === "undefined" || typeof window === "undefined") {
+    return { app: "server", os: "Other", browser: "Other", device: "desktop" };
+  }
+  const ua = navigator.userAgent || "";
+  const cap = (
+    window as Window & { Capacitor?: { getPlatform?: () => string } }
+  ).Capacitor;
+  const capPlatform = cap?.getPlatform?.() ?? (cap ? "android" : "web");
+  const app = capPlatform === "web" ? "web" : `${capPlatform}_app`;
+
+  const touchMac = /Macintosh/.test(ua) && (navigator.maxTouchPoints ?? 0) > 1;
+  let os = "Other";
+  if (/Android/i.test(ua)) os = "Android";
+  else if (/iPhone|iPad|iPod/i.test(ua) || touchMac) os = "iOS";
+  else if (/Windows/i.test(ua)) os = "Windows";
+  else if (/CrOS/.test(ua)) os = "ChromeOS";
+  else if (/Mac OS X|Macintosh/.test(ua)) os = "macOS";
+  else if (/Linux/i.test(ua)) os = "Linux";
+
+  const bot = /bot|crawl|spider|slurp|lighthouse|headlesschrome|pagespeed|preview/i.test(ua);
+  let browser = "Other";
+  if (bot) browser = "Bot";
+  else if (app !== "web") browser = "Lokali app";
+  else if (/FBAN|FBAV|FB_IAB|FBIOS/.test(ua)) browser = "Facebook";
+  else if (/Instagram/.test(ua)) browser = "Instagram";
+  else if (/TikTok|musical_ly|BytedanceWebview/i.test(ua)) browser = "TikTok";
+  else if (/Edg(A|iOS)?\//.test(ua)) browser = "Edge";
+  else if (/OPR\/|Opera|OPT\//.test(ua)) browser = "Opera";
+  else if (/SamsungBrowser/.test(ua)) browser = "Samsung Internet";
+  else if (/YaBrowser/.test(ua)) browser = "Yandex";
+  else if (/Firefox|FxiOS/.test(ua)) browser = "Firefox";
+  else if (/; wv\)/.test(ua)) browser = "Android WebView";
+  else if (/CriOS|Chrome\//.test(ua)) browser = "Chrome";
+  else if (/Safari\//.test(ua)) browser = "Safari";
+
+  const device = /iPad|Tablet/i.test(ua) || touchMac || (/Android/i.test(ua) && !/Mobile/i.test(ua))
+    ? "tablet"
+    : /Mobi|iPhone|iPod|Android/i.test(ua)
+      ? "mobile"
+      : "desktop";
+
+  clientInfoCache = bot ? { app, os, browser, device, bot } : { app, os, browser, device };
+  return clientInfoCache;
 }
 
 /**
@@ -104,7 +170,12 @@ export function trackEvent(
   try {
     void telemetryDb
       .from("usage_events")
-      .insert({ event, anon_id: anonId(), user_id: userId ?? null, props: properties ?? {} })
+      .insert({
+        event,
+        anon_id: anonId(),
+        user_id: userId ?? null,
+        props: { ...(properties ?? {}), app: clientInfo().app, os: clientInfo().os },
+      })
       .then(undefined, () => {});
   } catch {
     /* never throw from telemetry */
@@ -122,18 +193,68 @@ export function trackEvent(
 export function logVisit(path?: string): void {
   if (typeof window === "undefined") return;
   try {
+    const info = clientInfo();
+    // Crawlers (Googlebot, Lighthouse, link previews) run our JS too; they
+    // are not visitors, so keep them out of the counts entirely.
+    if (info.bot) return;
+    const id = anonId();
+    const props: Record<string, unknown> = {
+      path: path ?? (typeof location !== "undefined" ? location.pathname : null),
+      app: info.app,
+      os: info.os,
+      browser: info.browser,
+      device: info.device,
+    };
+    if (deviceIsNew && !newDeviceReported) {
+      props.new_device = true;
+      newDeviceReported = true;
+    }
     void telemetryDb
       .from("usage_events")
       .insert({
         event: "page_view",
-        anon_id: anonId(),
+        anon_id: id,
         user_id: currentUserId,
-        props: { path: path ?? (typeof location !== "undefined" ? location.pathname : null) },
+        props,
       })
       .then(undefined, () => {});
   } catch {
     /* never throw from telemetry */
   }
+}
+
+/**
+ * Count clicks on any Google Play link (the floating banner today, any
+ * future placement automatically) as `play_store_click`. One delegated
+ * listener on document, installed once from the root component — so new
+ * links need no extra wiring. `placement` comes from the nearest
+ * data-placement attribute, falling back to the current path.
+ */
+let playClicksInstalled = false;
+export function installPlayStoreClickTracking(): void {
+  if (typeof document === "undefined" || playClicksInstalled) return;
+  playClicksInstalled = true;
+  document.addEventListener(
+    "click",
+    (e) => {
+      try {
+        const a = (e.target as Element | null)?.closest?.("a[href*='play.google.com']");
+        if (!a) return;
+        const placement =
+          a.closest("[data-placement]")?.getAttribute("data-placement") ??
+          (typeof location !== "undefined" ? location.pathname : null);
+        const info = clientInfo();
+        trackEvent(
+          "play_store_click",
+          { placement, path: location.pathname, browser: info.browser, device: info.device },
+          currentUserId,
+        );
+      } catch {
+        /* never throw from telemetry */
+      }
+    },
+    { capture: true },
+  );
 }
 
 /**

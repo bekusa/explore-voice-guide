@@ -10,7 +10,13 @@ import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { useT } from "@/hooks/useT";
 import { useCapacitorBridge } from "@/hooks/useCapacitorBridge";
-import { capturePageview, logVisit, identifyUser, resetAnalytics } from "@/lib/analytics";
+import {
+  capturePageview,
+  logVisit,
+  identifyUser,
+  resetAnalytics,
+  installPlayStoreClickTracking,
+} from "@/lib/analytics";
 import { LANGUAGE_COUNT_LABEL } from "@/lib/languages";
 
 import appCss from "../styles.css?url";
@@ -250,6 +256,7 @@ function RootComponent() {
   // $pageview now for the entry page, then one on every resolved
   // navigation. router.subscribe returns its own unsubscribe fn.
   useEffect(() => {
+    installPlayStoreClickTracking();
     capturePageview();
     logVisit();
     const unsubscribe = router.subscribe("onResolved", () => {

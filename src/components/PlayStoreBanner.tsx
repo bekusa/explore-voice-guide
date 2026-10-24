@@ -49,6 +49,7 @@ export function PlayStoreBanner() {
       <div className="pointer-events-auto flex items-center gap-1.5 rounded-full border border-primary/30 bg-card/95 p-2 pl-2.5 shadow-elegant backdrop-blur-xl">
         <a
           href={PLAY_URL}
+          data-placement="floating_banner"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3 rounded-full px-2.5 py-1.5"
