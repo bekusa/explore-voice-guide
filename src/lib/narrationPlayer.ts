@@ -26,13 +26,99 @@
  *
  * ── What this does NOT do ─────────────────────────────────────────
  * Audio still stops when the app is BACKGROUNDED on Android. That
- * needs MediaSession + a foreground service + a Play Console
- * declaration, and is deliberately deferred (see lokali-backlog.md,
- * "აუდიო ფონში, ვარიანტი ბ"). Keeping that out of here is the reason
- * this file stays small enough to trust.
+ * needs a foreground service + a Play Console declaration, and is
+ * deliberately deferred (see lokali-backlog.md, "აუდიო ფონში,
+ * ვარიანტი ბ"). Keeping that out of here is the reason this file
+ * stays small enough to trust.
+ *
+ * ── Lock-screen controls (Beka 2026-10-25, iOS launch) ────────────
+ * The MediaSession block below tells the OS what is playing, so the
+ * lock screen / Control Center / headphones show the place name with
+ * play-pause and ±10 s. On iOS the app keeps playing in the background
+ * (UIBackgroundModes: audio), which makes these controls the only way
+ * to pause without unlocking. On Android and in the browser it is the
+ * same API and simply adds the media notification controls. Every call
+ * is feature-detected and wrapped: a browser without MediaSession, or
+ * one that rejects a single action, must never break playback.
  */
 
 import { noteAudioCompleted } from "@/lib/reviewPrompt";
+
+/* ── MediaSession (lock screen, Control Center, headphones) ───────── */
+
+function mediaSession(): MediaSession | null {
+  if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return null;
+  return navigator.mediaSession;
+}
+
+let mediaHandlersInstalled = false;
+
+function installMediaHandlers(): void {
+  const ms = mediaSession();
+  if (!ms || mediaHandlersInstalled) return;
+  mediaHandlersInstalled = true;
+  const set = (action: MediaSessionAction, fn: MediaSessionActionHandler) => {
+    try {
+      ms.setActionHandler(action, fn);
+    } catch {
+      /* this browser doesn't support the action — skip it */
+    }
+  };
+  set("play", () => resumeNarration());
+  set("pause", () => pauseNarration());
+  set("stop", () => stopNarration());
+  // Same 10 s step as the panel's skip buttons.
+  set("seekbackward", (d) => seekBy(-(d.seekOffset ?? 10)));
+  set("seekforward", (d) => seekBy(d.seekOffset ?? 10));
+  set("seekto", (d) => {
+    if (typeof d.seekTime === "number") seekNarration(d.seekTime);
+  });
+}
+
+function syncMediaMetadata(): void {
+  const ms = mediaSession();
+  if (!ms) return;
+  try {
+    if (!state.request) {
+      ms.metadata = null;
+      ms.playbackState = "none";
+      return;
+    }
+    ms.metadata = new MediaMetadata({
+      title: state.request.name,
+      artist: "Lokali",
+      artwork: [{ src: "/icon-512.png", sizes: "512x512", type: "image/png" }],
+    });
+  } catch {
+    /* MediaMetadata missing or rejected the artwork — controls still work */
+  }
+}
+
+function syncPlaybackState(value: MediaSessionPlaybackState): void {
+  const ms = mediaSession();
+  if (!ms) return;
+  try {
+    ms.playbackState = value;
+  } catch {
+    /* ignore */
+  }
+}
+
+function syncPositionState(): void {
+  const ms = mediaSession();
+  if (!ms || !el || typeof ms.setPositionState !== "function") return;
+  const duration = el.duration;
+  if (!Number.isFinite(duration) || duration <= 0) return;
+  try {
+    ms.setPositionState({
+      duration,
+      playbackRate: el.playbackRate || 1,
+      position: Math.min(Math.max(0, el.currentTime), duration),
+    });
+  } catch {
+    /* position outside duration during a seek — next timeupdate fixes it */
+  }
+}
 
 export type NarrationRequest = {
   /** Title shown in the panel header — the place or moment name. */
@@ -94,11 +180,14 @@ function audio(): HTMLAudioElement | null {
   if (el) return el;
   el = new Audio();
   el.preload = "auto";
+  installMediaHandlers();
 
   el.addEventListener("play", () => {
     state.playing = true;
     state.paused = false;
     emit();
+    syncMediaMetadata();
+    syncPlaybackState("playing");
   });
   el.addEventListener("pause", () => {
     // stopNarration() pauses the element on its way out, and that
@@ -109,11 +198,13 @@ function audio(): HTMLAudioElement | null {
     if (el && el.currentTime >= el.duration - 0.05) return;
     state.paused = true;
     emit();
+    syncPlaybackState("paused");
   });
   el.addEventListener("ended", () => {
     state.playing = false;
     state.paused = false;
     emit();
+    syncPlaybackState("paused");
     /* Recorded HERE rather than in the panel's `ended` subscription on
      * purpose. The panel unmounts and remounts on every route change,
      * and a guide that finishes inside that window would otherwise
@@ -133,12 +224,14 @@ function audio(): HTMLAudioElement | null {
     state.current = el.currentTime;
     state.total = Number.isFinite(el.duration) ? el.duration : 0;
     emit();
+    syncPositionState();
   });
   el.addEventListener("loadedmetadata", () => {
     if (!el) return;
     state.current = 0;
     state.total = Number.isFinite(el.duration) ? el.duration : 0;
     emit();
+    syncPositionState();
   });
   el.addEventListener("error", () => {
     // Same reasoning as `pause`, and here it matters visibly: the
@@ -302,4 +395,5 @@ export function stopNarration(): void {
   fetchClaim = null;
   state = { ...EMPTY };
   emit();
+  syncMediaMetadata(); // request is null now → clears the lock-screen card
 }

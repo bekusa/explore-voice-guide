@@ -31,13 +31,15 @@ dist-ssr
 *.sln
 *.sw?
 
-# Capacitor native projects — generated via `npx cap add android` / ios
-# locally. Each developer regenerates them; the source of truth is the
-# web app + capacitor.config.json. android/ and ios/ folders carry
-# machine-specific paths, signing material, and large gradle caches
-# we don't want in git.
+# Capacitor native projects.
+# android/ — generated locally via `npx cap add android`; carries
+# machine-specific paths, signing material and large gradle caches we
+# don't want in git.
 android/
-ios/
+# ios/ IS committed (Beka 2026-10-25): there is no Mac, so Codemagic
+# builds it from GitHub. ios/.gitignore keeps Pods, the copied web
+# assets and the generated capacitor.config.json out. Signing is done
+# by Codemagic — no certificates live in the repo.
 .capacitor/
 
 # superseded files parked here by tooling (the mount forbids unlink)

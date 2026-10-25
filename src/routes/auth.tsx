@@ -85,6 +85,58 @@ export type OAuthProvider = "google" | "apple" | "facebook" | "azure";
  */
 const SHOW_FB_MS = false;
 
+/**
+ * Sign in with Apple — NATIVE, iOS app only. Beka 2026-10-25.
+ *
+ * App Store guideline 4.8: an app that offers Google sign-in must also
+ * offer Sign in with Apple. On iOS we use Apple's own sheet (Face ID,
+ * "Hide My Email") through @capacitor-community/apple-sign-in, then
+ * hand the identity token to Supabase with signInWithIdToken.
+ *
+ * Why native and not the browser OAuth flow the other providers use:
+ * the native path needs NO client secret in Supabase, so there is no
+ * 6-monthly secret rotation to forget. Supabase only needs the bundle
+ * id `app.lokali.travel` in Apple provider → Client IDs.
+ *
+ * Android + web keep the "coming soon" placeholder until we decide to
+ * set up the web flow (Services ID + rotating secret).
+ *
+ * The plugin is reached through registerPlugin() instead of importing
+ * the npm package, so its web fallback (which loads Apple's JS SDK)
+ * never lands in the site bundle.
+ */
+type AppleSignInResponse = {
+  response: {
+    user: string | null;
+    email: string | null;
+    givenName: string | null;
+    familyName: string | null;
+    identityToken: string;
+    authorizationCode: string;
+  };
+};
+type AppleSignInPlugin = {
+  authorize(options: {
+    clientId: string;
+    redirectURI: string;
+    scopes?: string;
+    state?: string;
+    nonce?: string;
+  }): Promise<AppleSignInResponse>;
+};
+
+/** Random URL-safe nonce: the raw value goes to Supabase, its SHA-256 to Apple. */
+function makeNonce(): string {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function sha256Hex(input: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input));
+  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 function AuthPage() {
   const navigate = useNavigate();
   const t = useT();
@@ -98,6 +150,21 @@ function AuthPage() {
   const [oauthLoading, setOauthLoading] = useState<
     null | OAuthProvider | "guest"
   >(null);
+  // True only inside the native iOS app — gates the real Apple button.
+  const [isIOSApp, setIsIOSApp] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    import("@capacitor/core")
+      .then(({ Capacitor }) => {
+        if (alive) setIsIOSApp(Capacitor.getPlatform() === "ios");
+      })
+      .catch(() => {
+        /* not in a Capacitor shell */
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   // Redirect if already signed in. Send to onboarding if profile is unset.
   useEffect(() => {
@@ -205,6 +272,50 @@ function AuthPage() {
     } catch (err) {
       setOauthLoading(null);
       const msg = err instanceof Error ? err.message : t("auth.somethingWrong");
+      toast.error(t("auth.signInFailed"), { description: msg });
+    }
+  };
+
+  /* ─── Sign in with Apple (native, iOS app) ─── */
+  const signInWithAppleNative = async () => {
+    setOauthLoading("apple");
+    try {
+      const rawNonce = makeNonce();
+      const hashedNonce = await sha256Hex(rawNonce);
+      const { registerPlugin } = await import("@capacitor/core");
+      const AppleSignIn = registerPlugin<AppleSignInPlugin>("SignInWithApple");
+      const res = await AppleSignIn.authorize({
+        // Both fields are only read by the web fallback; iOS ignores them.
+        clientId: "app.lokali.travel",
+        redirectURI: "https://lokali.travel/auth",
+        scopes: "email name",
+        nonce: hashedNonce,
+      });
+      const token = res?.response?.identityToken;
+      if (!token) throw new Error("Apple returned no identity token");
+
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: "apple",
+        token,
+        nonce: rawNonce,
+      });
+      if (error) throw error;
+
+      // Apple sends the name ONLY on the very first authorization —
+      // keep it, same metadata key the email sign-up uses.
+      const fullName = [res.response.givenName, res.response.familyName]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+      if (fullName) {
+        await supabase.auth.updateUser({ data: { display_name: fullName } }).catch(() => {});
+      }
+      // onAuthStateChange above routes to onboarding / home.
+    } catch (err) {
+      setOauthLoading(null);
+      const msg = err instanceof Error ? err.message : String(err);
+      // User closed Apple's sheet (AuthorizationError 1001) — not an error.
+      if (/1001|cancel/i.test(msg)) return;
       toast.error(t("auth.signInFailed"), { description: msg });
     }
   };
@@ -318,10 +429,10 @@ function AuthPage() {
           </p>
         </div>
 
-        {/* OAuth buttons — hidden on reset mode. Google works today;
-            Apple is wired to a placeholder toast until Beka has an
-            Apple Developer account ($99/yr) and we set up the
-            Apple Services ID + key in Supabase. */}
+        {/* OAuth buttons — hidden on reset mode. Google works
+            everywhere. Apple is native and live inside the iOS app
+            (signInWithAppleNative); on Android + web it is still the
+            placeholder toast until the web flow is set up. */}
         {mode !== "reset" && (
           <>
             <div className="flex flex-col gap-2.5 mb-4">
@@ -371,15 +482,33 @@ function AuthPage() {
                   </button>
                 </>
               )}
-              <button
-                type="button"
-                onClick={() => toast.info(t("auth.appleComingSoon"))}
-                disabled={!!oauthLoading}
-                className="flex h-12 items-center justify-center gap-3 rounded-2xl border border-border bg-card px-5 text-[14px] font-semibold text-foreground/60 transition-smooth hover:bg-secondary disabled:opacity-60"
-              >
-                <AppleIcon className="h-4 w-4" />
-                {t("auth.continueWithApple")}
-              </button>
+              {isIOSApp ? (
+                // Same size, place and weight as Google — App Review
+                // checks that Apple is offered as an EQUAL option.
+                <button
+                  type="button"
+                  onClick={signInWithAppleNative}
+                  disabled={!!oauthLoading}
+                  className="flex h-12 items-center justify-center gap-3 rounded-2xl border border-border bg-card px-5 text-[14px] font-semibold text-foreground transition-smooth hover:bg-secondary disabled:opacity-60"
+                >
+                  {oauthLoading === "apple" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <AppleIcon className="h-4 w-4" />
+                  )}
+                  {t("auth.continueWithApple")}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => toast.info(t("auth.appleComingSoon"))}
+                  disabled={!!oauthLoading}
+                  className="flex h-12 items-center justify-center gap-3 rounded-2xl border border-border bg-card px-5 text-[14px] font-semibold text-foreground/60 transition-smooth hover:bg-secondary disabled:opacity-60"
+                >
+                  <AppleIcon className="h-4 w-4" />
+                  {t("auth.continueWithApple")}
+                </button>
+              )}
             </div>
             <div className="relative my-4 flex items-center">
               <div className="flex-1 border-t border-border" />

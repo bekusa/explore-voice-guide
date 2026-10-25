@@ -134,9 +134,12 @@ function DeleteAccountPage() {
           </h1>
           <p className="mt-3 max-w-md text-[14px] leading-[1.55] text-muted-foreground">
             This page lets you permanently delete your Lokali account and every
-            piece of data tied to it. The action is irreversible — Google Play
-            Store policy requires us to offer it.
+            piece of data tied to it. The action is irreversible.
           </p>
+          {/* Beka 2026-10-25: the old line cited "Google Play Store policy".
+              The same page opens inside the iOS app, and App Review
+              rejects apps that mention another platform (guideline
+              2.3.10), so the reason is left out on every platform. */}
         </div>
 
         {/* What gets deleted */}

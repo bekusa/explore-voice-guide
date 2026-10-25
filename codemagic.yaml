@@ -1,0 +1,70 @@
+# Codemagic — Lokali iOS build → TestFlight.
+# Beka 2026-10-25. There is no Mac in the team: Codemagic builds the
+# ios/ project from GitHub on a cloud Mac mini and uploads it to
+# App Store Connect. Builds are started by hand in the Codemagic UI.
+#
+# One-time setup (Codemagic UI, see "Lokali iOS — გაშვების გეგმა"):
+#   - Developer Portal integration named exactly "Lokali ASC"
+#     (App Store Connect API key, App Manager role)
+#   - Code signing identities: an Apple Distribution certificate and
+#     the App Store provisioning profile for app.lokali.travel
+#
+# No secrets live in this file — it references the integration by name.
+
+workflows:
+  ios-testflight:
+    name: Lokali iOS → TestFlight
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: Lokali ASC
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: app.lokali.travel
+      vars:
+        XCODE_WORKSPACE: ios/App/App.xcworkspace
+        XCODE_SCHEME: App
+      node: 22
+      # Apple accepts only Xcode 26+ builds since 2026-04-28.
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Install dependencies (bun.lock is the source of truth — Lovable uses bun)
+        script: |
+          npm install -g bun
+          bun install --frozen-lockfile
+
+      - name: Native shell + cap sync ios
+        # Builds the 3-file local bundle (offline.html etc.) instead of the
+        # full 500 MB site, then copies it and runs pod install.
+        script: |
+          npm run cap:ios:ci
+
+      - name: Build number = Codemagic build number
+        # Every TestFlight upload needs a higher build number than the last.
+        script: |
+          sed -i '' "s/CURRENT_PROJECT_VERSION = [0-9]*;/CURRENT_PROJECT_VERSION = $BUILD_NUMBER;/g" ios/App/App.xcodeproj/project.pbxproj
+          grep -m1 "CURRENT_PROJECT_VERSION" ios/App/App.xcodeproj/project.pbxproj
+
+      - name: Code signing
+        script: |
+          xcode-project use-profiles
+
+      - name: Build .ipa
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        # Upload only. Internal testers (App Store Connect → TestFlight →
+        # Internal Testing group with automatic distribution) get every
+        # build without Apple's beta review.
+        submit_to_testflight: false
