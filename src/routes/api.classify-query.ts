@@ -25,6 +25,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
+import { describeThrown, logError } from "@/lib/errorLog.server";
 import {
   getCachedClassification,
   putCachedClassification,
@@ -106,8 +107,7 @@ function parseClassification(raw: string): Classification | null {
   const out: Classification = { kind };
   if (typeof obj.name === "string" && obj.name.trim()) out.name = obj.name.trim();
   if (typeof obj.city === "string" && obj.city.trim()) out.city = obj.city.trim();
-  if (typeof obj.country === "string" && obj.country.trim())
-    out.country = obj.country.trim();
+  if (typeof obj.country === "string" && obj.country.trim()) out.country = obj.country.trim();
   if (typeof obj.slug === "string" && obj.slug.trim()) out.slug = obj.slug.trim();
   return out;
 }
@@ -153,13 +153,25 @@ export const Route = createFileRoute("/api/classify-query")({
           if (!classification) {
             // Surface WHAT Haiku actually said so the next debugging
             // session reads the failure from logs instead of guessing.
-            console.warn(
-              "[api.classify-query] unparseable Haiku output:",
-              text.slice(0, 200),
-            );
+            console.warn("[api.classify-query] unparseable Haiku output:", text.slice(0, 200));
+            await logError({
+              service: "classify-query",
+              route: "/api/classify-query",
+              kind: "bad-response",
+              message: "Unparseable Haiku classification output",
+              context: { query: q.slice(0, 120), sample: text.slice(0, 200) },
+            });
           }
         } catch (err) {
           console.warn("[api.classify-query] Haiku call failed", err);
+          const { message, kind } = describeThrown(err);
+          await logError({
+            service: "classify-query",
+            route: "/api/classify-query",
+            kind,
+            message,
+            context: { query: q.slice(0, 120) },
+          });
         }
 
         if (!classification) {
@@ -184,6 +196,14 @@ export const Route = createFileRoute("/api/classify-query")({
           await putCachedClassification(q, classification);
         } catch (err) {
           console.warn("[api.classify-query] cache write failed", err);
+          const { message, kind } = describeThrown(err);
+          await logError({
+            service: "classify-query",
+            route: "/api/classify-query",
+            kind,
+            message: `cache write failed: ${message}`,
+            context: { query: q.slice(0, 120) },
+          });
         }
 
         return corsJson(classification);

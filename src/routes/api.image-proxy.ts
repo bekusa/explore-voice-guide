@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CORS_HEADERS, corsPreflight } from "@/lib/cors.server";
+import { describeThrown, logError } from "@/lib/errorLog.server";
 
 /**
  * /api/image-proxy?url=<encoded>
@@ -33,9 +34,7 @@ import { CORS_HEADERS, corsPreflight } from "@/lib/cors.server";
 // storage-account env so it tracks renames; the literal is a cold-start
 // fallback for when the env isn't visible at module-eval time.
 const BLOB_ACCOUNT =
-  typeof process !== "undefined"
-    ? (process.env?.AZURE_STORAGE_ACCOUNT ?? "")
-    : "";
+  typeof process !== "undefined" ? (process.env?.AZURE_STORAGE_ACCOUNT ?? "") : "";
 const ALLOWED_HOSTS = new Set(
   [
     "upload.wikimedia.org",
@@ -72,16 +71,12 @@ export const Route = createFileRoute("/api/image-proxy")({
           const upstream = await fetch(parsed.toString(), {
             redirect: "follow",
             headers: {
-              "User-Agent":
-                "Lokali-ImageProxy/1.0 (https://lokali.travel; lokaliapps@gmail.com)",
+              "User-Agent": "Lokali-ImageProxy/1.0 (https://lokali.travel; lokaliapps@gmail.com)",
               Accept: "image/*",
             },
           });
           if (!upstream.ok) {
-            return jsonError(
-              upstream.status,
-              `upstream ${upstream.status} for ${parsed.host}`,
-            );
+            return jsonError(upstream.status, `upstream ${upstream.status} for ${parsed.host}`);
           }
           const reader = upstream.body?.getReader();
           if (!reader) {
@@ -111,10 +106,21 @@ export const Route = createFileRoute("/api/image-proxy")({
             },
           });
         } catch (err) {
-          return jsonError(
-            502,
-            err instanceof Error ? err.message : "proxy fetch failed",
-          );
+          const { message, kind } = describeThrown(err);
+          /* A broken proxy shows up as missing photos, which users
+           * read as "the app has no pictures" rather than as an
+           * error — so it never got reported. Logged with the host,
+           * because these failures are almost always one upstream
+           * (Wikimedia, Azure blob) rather than all of them. */
+          await logError({
+            service: "image-proxy",
+            route: "/api/image-proxy",
+            status: 502,
+            kind,
+            message,
+            context: { host: parsed.host, path: parsed.pathname.slice(0, 120) },
+          });
+          return jsonError(502, err instanceof Error ? err.message : "proxy fetch failed");
         }
       },
     },

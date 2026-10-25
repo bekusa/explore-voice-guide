@@ -43,6 +43,7 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
+import { describeThrown, logError } from "@/lib/errorLog.server";
 import {
   getCachedPlaceDetails,
   putCachedPlaceDetails,
@@ -56,8 +57,7 @@ import {
  * No literal fallback: a committed `AIzaSy…` key is exactly what the
  * pre-Capacitor security review flagged.
  */
-const GOOGLE_KEY =
-  typeof process !== "undefined" ? (process.env?.GOOGLE_PLACES_KEY ?? "") : "";
+const GOOGLE_KEY = typeof process !== "undefined" ? (process.env?.GOOGLE_PLACES_KEY ?? "") : "";
 
 /**
  * How long a cached row stays fresh. 30 days is the compromise:
@@ -298,6 +298,18 @@ export const Route = createFileRoute("/api/place-details")({
           details = await lookupPlace(name, city, lat, lng);
         } catch (err) {
           console.warn("[api.place-details] lookup threw", err);
+          const { message, kind } = describeThrown(err);
+          /* Logged even though we answer 200: the caller cannot tell
+           * "Google says this place has no hours" from "Google was
+           * down", and before this the second case was invisible.
+           * A run of these is how a quota or billing lapse shows up. */
+          await logError({
+            service: "google-places",
+            route: "/api/place-details",
+            kind,
+            message,
+            context: { name: name.slice(0, 120), city: city?.slice(0, 80) ?? null },
+          });
           // Transient network/quota failure — do NOT write a notFound
           // row for it, or a 30-second Google outage would blank this
           // block for 30 days. Just return empty and retry next time.

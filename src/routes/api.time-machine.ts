@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CORS_HEADERS, corsPreflight } from "@/lib/cors.server";
+import { describeThrown, logError } from "@/lib/errorLog.server";
 import { getCachedTimeMachine, putCachedTimeMachine } from "@/lib/sharedCache.server";
 import { translateTimeMachinePayload } from "@/lib/translatePayload.server";
 import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
@@ -163,13 +164,23 @@ export const Route = createFileRoute("/api/time-machine")({
           return jsonResponse(parsed, 200, "MISS");
         } catch (err) {
           console.warn("[api.time-machine] upstream error", err);
-          return new Response(
-            JSON.stringify({ error: "Service temporarily unavailable" }),
-            {
-              status: 502,
-              headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+          const { message, kind } = describeThrown(err);
+          await logError({
+            service: "time-machine",
+            route: "/api/time-machine",
+            status: 502,
+            kind,
+            message,
+            context: {
+              attractionId: key?.attractionId ?? null,
+              role: key?.role ?? null,
+              language: key?.language ?? null,
             },
-          );
+          });
+          return new Response(JSON.stringify({ error: "Service temporarily unavailable" }), {
+            status: 502,
+            headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+          });
         }
       },
     },

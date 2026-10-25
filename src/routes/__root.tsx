@@ -18,6 +18,8 @@ import {
   installPlayStoreClickTracking,
 } from "@/lib/analytics";
 import { LANGUAGE_COUNT_LABEL } from "@/lib/languages";
+import { installClientErrorGuard } from "@/lib/clientErrorGuard";
+import { reportClientError } from "@/lib/reportClientError";
 
 import appCss from "../styles.css?url";
 
@@ -28,6 +30,26 @@ import appCss from "../styles.css?url";
 // (the SSR shell ships lang="en" because we don't know the user's
 // preference at SSR time; the script overrides it client-side).
 const themeBootScript = `(function(){try{var t=localStorage.getItem('tg.theme');if(t==='light'){document.documentElement.classList.add('light');}var l=localStorage.getItem('tg.lang');if(l){document.documentElement.setAttribute('lang',l);}}catch(e){}})();`;
+
+/**
+ * Catch errors that happen BEFORE the bundle is ready to report them.
+ *
+ * installClientErrorGuard() runs from a React effect, which means it
+ * only exists once hydration has succeeded — so the one failure it can
+ * never see is a failure during hydration itself, or a chunk that 404s
+ * on the way in. Those are precisely the white screens worth knowing
+ * about, and they would have stayed invisible.
+ *
+ * So: a few lines of inline script, running before anything else,
+ * push early errors into `window.__lokaliEarlyErrors`. The guard
+ * drains that buffer as soon as it installs. Capped at 10 so a boot
+ * loop cannot grow the array without bound; deliberately NOT sending
+ * anything itself, because a fetch from here would race the bundle
+ * and duplicate the dedupe logic.
+ */
+const earlyErrorBootScript = `(function(){try{var b=[];window.__lokaliEarlyErrors=b;function p(e){try{if(b.length<10){b.push(e);}}catch(x){}}
+window.addEventListener('error',function(e){try{var t=e.target;if(t&&t!==window&&t.tagName){p({k:'resource',m:'Failed to load '+String(t.tagName).toLowerCase(),s:t.src||t.href||null});}else{p({k:'js',m:(e.message||'unknown error'),s:(e.filename||'')+':'+(e.lineno||'?')+':'+(e.colno||'?'),st:(e.error&&e.error.stack)||null});}}catch(x){}},true);
+window.addEventListener('unhandledrejection',function(e){try{var r=e.reason;p({k:'js',m:'unhandledrejection: '+((r&&r.message)||String(r)),st:(r&&r.stack)||null});}catch(x){}});}catch(x){}})();`;
 
 // PostHog loader snippet — the official queuing stub. It installs
 // `window.posthog` synchronously (so calls made before the real
@@ -79,6 +101,61 @@ function NotFoundComponent() {
           >
             {t("err.goHome")}
           </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Shown instead of a blank page when React throws while rendering,
+ * and the only place a render crash gets recorded.
+ *
+ * Reporting happens in an effect rather than inline: this component
+ * renders during React's error recovery, and firing a side effect in
+ * the render body there can re-enter and loop. The dependency is the
+ * error itself, so a second, different crash reports again while the
+ * same one re-rendering does not.
+ *
+ * Copy is intentionally plain English and not routed through t(): if
+ * the thing that threw was the i18n layer, calling t() here would
+ * throw a second time inside the handler for the first throw.
+ */
+function RootErrorComponent({ error }: { error: unknown }) {
+  useEffect(() => {
+    reportClientError({
+      where: "react:render",
+      kind: "crash",
+      error,
+      stack: error instanceof Error ? (error.stack ?? null) : null,
+    });
+  }, [error]);
+
+  return (
+    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4">
+      <div className="max-w-md text-center">
+        <h2 className="text-xl font-semibold text-foreground">Something went wrong</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          This screen failed to load. Reloading usually fixes it — the problem has been reported
+          automatically.
+        </p>
+        <div className="mt-6 flex items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            Reload
+          </button>
+          {/* A plain <a>, not <Link>: the router is the thing that just
+              threw, so a client-side navigation may not survive. A full
+              document load always will. */}
+          <a
+            href="/"
+            className="inline-flex items-center justify-center rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+          >
+            Home
+          </a>
         </div>
       </div>
     </div>
@@ -191,12 +268,24 @@ export const Route = createRootRoute({
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
+  /* The white-screen case. Beka 2026-10-25: "მჭირდება რომ ყველა ტიპის
+   * ერორი ილოგებოდეს და ამას ვხედავდეთ."
+   *
+   * Without an errorComponent, a throw during render unmounts the tree
+   * and leaves a blank page — the single worst failure in the app and
+   * the one that left NO trace anywhere, server or client. Declaring
+   * it on the ROOT route makes it the backstop for every screen that
+   * has not declared its own. */
+  errorComponent: RootErrorComponent,
 });
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
+        {/* FIRST script in <head> on purpose: it has to be listening
+            before any other script can throw. See earlyErrorBootScript. */}
+        <script dangerouslySetInnerHTML={{ __html: earlyErrorBootScript }} />
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
         {/* PostHog loader — installs window.posthog + init() before
             hydration so pageview/identify calls from React are queued
@@ -234,6 +323,17 @@ function RootComponent() {
   // No-op in the browser (Capacitor.isNativePlatform() guards the
   // import), so this is free for web visitors.
   useCapacitorBridge(router);
+
+  /* Global error capture — uncaught exceptions, unhandled promise
+   * rejections and failed resource loads. Installed as early as a
+   * client effect can run, and idempotent, so a remount cannot
+   * double-register the listeners. Deliberately NOT in the boot
+   * script: a listener added before the bundle has loaded would have
+   * no reporter to call. */
+  useEffect(() => {
+    installClientErrorGuard();
+  }, []);
+
   useEffect(() => {
     const stored = localStorage.getItem("tg.theme");
     document.documentElement.classList.toggle("light", stored === "light");

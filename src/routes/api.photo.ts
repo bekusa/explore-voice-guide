@@ -1,10 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
-import {
-  getCachedPhotoEntry,
-  putCachedPhoto,
-  putCachedPhotoMiss,
-} from "@/lib/sharedCache.server";
+import { describeThrown, logError } from "@/lib/errorLog.server";
+import { getCachedPhotoEntry, putCachedPhoto, putCachedPhotoMiss } from "@/lib/sharedCache.server";
 import { isAzureConfigured, mirrorPhotoToBlob } from "@/lib/azureBlob.server";
 
 /**
@@ -27,21 +24,60 @@ import { isAzureConfigured, mirrorPhotoToBlob } from "@/lib/azureBlob.server";
  * the Wikipedia path still works — Google Places is only the fallback
  * for places Wikipedia doesn't cover.
  */
-const GOOGLE_KEY =
-  typeof process !== "undefined" ? (process.env?.GOOGLE_PLACES_KEY ?? "") : "";
+const GOOGLE_KEY = typeof process !== "undefined" ? (process.env?.GOOGLE_PLACES_KEY ?? "") : "";
 
 // Allowlist of Wikipedia language subdomains. Used to gate the `lang`
 // query parameter before it's interpolated into outbound fetch URLs
 // (SSRF guard — without it `?lang=evil.com/x` would coerce the Worker
 // into fetching attacker-controlled hosts via `https://${lang}.wikipedia.org/...`).
 const ALLOWED_WIKI_LANGS = new Set([
-  "en","ka","es","fr","de","it","pt","nl","pl","sv","nb","da","fi","cs","el",
-  "hu","ro","ru","uk","tr","ar","he","fa","hi","bn","ur","id","ms","th","vi",
-  "ja","ko","zh",
+  "en",
+  "ka",
+  "es",
+  "fr",
+  "de",
+  "it",
+  "pt",
+  "nl",
+  "pl",
+  "sv",
+  "nb",
+  "da",
+  "fi",
+  "cs",
+  "el",
+  "hu",
+  "ro",
+  "ru",
+  "uk",
+  "tr",
+  "ar",
+  "he",
+  "fa",
+  "hi",
+  "bn",
+  "ur",
+  "id",
+  "ms",
+  "th",
+  "vi",
+  "ja",
+  "ko",
+  "zh",
   // 2026-06-22 market expansion locales (localised Wikipedia photo lookup).
-  "hy","az","bg","hr","sr","ta","te","mr","sw","af",
+  "hy",
+  "az",
+  "bg",
+  "hr",
+  "sr",
+  "ta",
+  "te",
+  "mr",
+  "sw",
+  "af",
   // 2026-08-08 CIS expansion — both have their own Wikipedias.
-  "uz","kk",
+  "uz",
+  "kk",
 ]);
 export function sanitizeWikiLang(raw: string | null | undefined, fallback: string): string {
   if (!raw) return fallback;
@@ -78,43 +114,165 @@ const cache = new Map<string, string | null>();
  */
 const GENERIC_ATTRACTION_WORDS = new Set([
   // directional / size modifiers
-  "old", "new", "central", "main", "great", "little", "small", "big",
-  "upper", "lower", "high", "low", "north", "south", "east", "west",
-  "inner", "outer", "royal", "imperial", "national", "public",
-  "ancient", "modern", "historical", "historic", "medieval",
-  "holy", "sacred", "eternal",
+  "old",
+  "new",
+  "central",
+  "main",
+  "great",
+  "little",
+  "small",
+  "big",
+  "upper",
+  "lower",
+  "high",
+  "low",
+  "north",
+  "south",
+  "east",
+  "west",
+  "inner",
+  "outer",
+  "royal",
+  "imperial",
+  "national",
+  "public",
+  "ancient",
+  "modern",
+  "historical",
+  "historic",
+  "medieval",
+  "holy",
+  "sacred",
+  "eternal",
   // generic place categories
-  "town", "city", "village", "settlement", "place",
-  "square", "plaza", "piazza", "street", "avenue", "boulevard",
-  "lane", "alley", "promenade", "walk",
+  "town",
+  "city",
+  "village",
+  "settlement",
+  "place",
+  "square",
+  "plaza",
+  "piazza",
+  "street",
+  "avenue",
+  "boulevard",
+  "lane",
+  "alley",
+  "promenade",
+  "walk",
   // religious-building generics
-  "cathedral", "church", "basilica", "temple", "mosque", "synagogue",
-  "chapel", "monastery", "abbey", "priory", "shrine",
+  "cathedral",
+  "church",
+  "basilica",
+  "temple",
+  "mosque",
+  "synagogue",
+  "chapel",
+  "monastery",
+  "abbey",
+  "priory",
+  "shrine",
   // civic-building generics
-  "palace", "castle", "fort", "fortress", "citadel",
-  "tower", "gate", "bridge", "wall", "walls",
-  "house", "mansion", "villa", "residence",
-  "theatre", "theater", "library",
-  "monument", "memorial", "statue", "obelisk",
+  "palace",
+  "castle",
+  "fort",
+  "fortress",
+  "citadel",
+  "tower",
+  "gate",
+  "bridge",
+  "wall",
+  "walls",
+  "house",
+  "mansion",
+  "villa",
+  "residence",
+  "theatre",
+  "theater",
+  "library",
+  "monument",
+  "memorial",
+  "statue",
+  "obelisk",
   // market / leisure generics
-  "market", "bazaar", "souk", "souq",
-  "park", "garden", "gardens",
-  "museum", "gallery", "exhibition",
-  "baths", "bath", "spa",
-  "sulphur", "sulfur", "thermal", "mineral", "hot", "cold",
+  "market",
+  "bazaar",
+  "souk",
+  "souq",
+  "park",
+  "garden",
+  "gardens",
+  "museum",
+  "gallery",
+  "exhibition",
+  "baths",
+  "bath",
+  "spa",
+  "sulphur",
+  "sulfur",
+  "thermal",
+  "mineral",
+  "hot",
+  "cold",
   // water features
-  "embankment", "boardwalk", "waterfront", "riverfront", "riverside",
-  "seafront", "lakefront", "harbour", "harbor", "port", "dock", "pier",
-  "river", "lake", "pond", "fountain", "well", "spring", "beach", "bay",
+  "embankment",
+  "boardwalk",
+  "waterfront",
+  "riverfront",
+  "riverside",
+  "seafront",
+  "lakefront",
+  "harbour",
+  "harbor",
+  "port",
+  "dock",
+  "pier",
+  "river",
+  "lake",
+  "pond",
+  "fountain",
+  "well",
+  "spring",
+  "beach",
+  "bay",
   // landscape generics
-  "hill", "mountain", "peak", "valley", "ridge", "cliff", "summit",
-  "rock", "stone", "cave", "grove", "forest", "meadow", "field",
-  "view", "viewpoint", "lookout", "observation",
+  "hill",
+  "mountain",
+  "peak",
+  "valley",
+  "ridge",
+  "cliff",
+  "summit",
+  "rock",
+  "stone",
+  "cave",
+  "grove",
+  "forest",
+  "meadow",
+  "field",
+  "view",
+  "viewpoint",
+  "lookout",
+  "observation",
   // district generics
-  "district", "quarter", "neighborhood", "neighbourhood",
-  "block", "area", "zone", "region",
+  "district",
+  "quarter",
+  "neighborhood",
+  "neighbourhood",
+  "block",
+  "area",
+  "zone",
+  "region",
   // connectives + articles (don't count against generic-detection)
-  "the", "of", "in", "on", "at", "by", "and", "or", "for",
+  "the",
+  "of",
+  "in",
+  "on",
+  "at",
+  "by",
+  "and",
+  "or",
+  "for",
 ]);
 
 /**
@@ -320,20 +478,18 @@ async function toWikimediaThumb(
   if (existing && Number(existing[1]) <= width) return url;
 
   // /wikipedia/<project>/[thumb/]<a>/<ab>/<File name>[/<N>px-<File name>]
-  const m = u.pathname.match(
-    /^\/wikipedia\/([a-z-]+)\/(?:thumb\/)?\w\/\w\w\/([^/]+)/,
-  );
+  const m = u.pathname.match(/^\/wikipedia\/([a-z-]+)\/(?:thumb\/)?\w\/\w\w\/([^/]+)/);
   if (!m) return url;
   const [, project, rawName] = m;
   const fileName = rawName.replace(/^\d+px-/, "");
-  const host =
-    project === "commons" ? "commons.wikimedia.org" : `${project}.wikipedia.org`;
+  const host = project === "commons" ? "commons.wikimedia.org" : `${project}.wikipedia.org`;
 
   try {
-    const res = await fetch(
-      `https://${host}/wiki/Special:FilePath/${fileName}?width=${width}`,
-      { method: "HEAD", redirect: "follow", headers: { "User-Agent": WIKI_USER_AGENT } },
-    );
+    const res = await fetch(`https://${host}/wiki/Special:FilePath/${fileName}?width=${width}`, {
+      method: "HEAD",
+      redirect: "follow",
+      headers: { "User-Agent": WIKI_USER_AGENT },
+    });
     if (res.ok && res.url.startsWith("https://")) {
       return res.url.split("?")[0];
     }
@@ -788,10 +944,7 @@ async function tryWikiSummary(
       //     description tags them as a settlement, biblical site,
       //     country, region, or panoramic view when we're looking
       //     for a painting / sculpture / drawing.
-      if (
-        summaryData.description &&
-        isWrongTopicForArtwork(summaryData.description)
-      ) {
+      if (summaryData.description && isWrongTopicForArtwork(summaryData.description)) {
         return null;
       }
       // NOTE: we deliberately DO NOT run isNonPlaceTopic here — that
@@ -910,7 +1063,11 @@ function isWrongTopicForArtwork(description: string): boolean {
   const d = description.toLowerCase();
   // Settlements + regions — towns / villages / cities / countries /
   // provinces. The artwork is never literally a settlement.
-  if (/\b(village|town|city|capital|hamlet|borough|municipality|commune|county|province|region|country|district|prefecture|island|peninsula|archipelago|state in|nation in|nation of)\b/.test(d)) {
+  if (
+    /\b(village|town|city|capital|hamlet|borough|municipality|commune|county|province|region|country|district|prefecture|island|peninsula|archipelago|state in|nation in|nation of)\b/.test(
+      d,
+    )
+  ) {
     return true;
   }
   // Aerial / panoramic views — Wikipedia tags cityscape photos as
@@ -921,13 +1078,21 @@ function isWrongTopicForArtwork(description: string): boolean {
   // Biblical / religious narrative articles (separate from the
   // artwork they inspired). Cana, Bethlehem, Galilee, … all tag
   // themselves as biblical sites or events.
-  if (/\b(biblical site|biblical event|biblical narrative|gospel passage|new testament event|old testament event)\b/.test(d)) {
+  if (
+    /\b(biblical site|biblical event|biblical narrative|gospel passage|new testament event|old testament event)\b/.test(
+      d,
+    )
+  ) {
     return true;
   }
   // Festivals + rituals — sometimes a Wikipedia article exists for
   // the religious feast a painting depicts, separate from the
   // painting itself.
-  if (/\b(feast day|feast of|christian festival|religious festival|jewish festival|public holiday)\b/.test(d)) {
+  if (
+    /\b(feast day|feast of|christian festival|religious festival|jewish festival|public holiday)\b/.test(
+      d,
+    )
+  ) {
     return true;
   }
   // Films / albums / songs / novels / plays. Beka caught Wikipedia
@@ -940,8 +1105,14 @@ function isWrongTopicForArtwork(description: string): boolean {
   // (which is why this filter is separate from isNonPlaceTopic) but
   // reject any media-type that ISN'T a visual artwork.
   if (/\b(\d{4}\s+(?:film|movie|tv film|television film))\b/.test(d)) return true;
-  if (/\b(album by|studio album|live album|compilation album|soundtrack|extended play|single by)\b/.test(d)) return true;
-  if (/\b(\d{4}\s+(?:novel|play|opera|musical|video game|comic|manga|short story|poem))\b/.test(d)) return true;
+  if (
+    /\b(album by|studio album|live album|compilation album|soundtrack|extended play|single by)\b/.test(
+      d,
+    )
+  )
+    return true;
+  if (/\b(\d{4}\s+(?:novel|play|opera|musical|video game|comic|manga|short story|poem))\b/.test(d))
+    return true;
   if (/\b(song by|song from|composition by|symphony by)\b/.test(d)) return true;
   // Music groups and bands. Beka caught "The Spinners" (Velázquez's
   // "Las Hilanderas") landing on Wikipedia's article for the Detroit
@@ -1056,7 +1227,10 @@ function isArtistSelfHit(title: string, artist: string): boolean {
   if (!surname || surname.length < 4) return false;
   if (t === surname) return true;
   if (t.endsWith(` ${surname}`)) {
-    const extra = t.slice(0, t.length - surname.length).trim().split(/\s+/);
+    const extra = t
+      .slice(0, t.length - surname.length)
+      .trim()
+      .split(/\s+/);
     // Bios have 1–4 first-name tokens; artworks usually have 0
     // (bare title) or many (full phrase). Cap at 4 so a long
     // painting title that happens to end with the surname doesn't
@@ -1133,7 +1307,10 @@ function isMuseumSelfHit(title: string, museum: string): boolean {
   // artwork title that happens to contain the museum's name in a
   // long phrase doesn't get rejected).
   if (t.endsWith(` ${m}`)) {
-    const extra = t.slice(0, t.length - m.length).trim().split(/\s+/);
+    const extra = t
+      .slice(0, t.length - m.length)
+      .trim()
+      .split(/\s+/);
     if (extra.length <= 3) return true;
   }
   // Starts-with variant — "Louvre Museum exterior at night" etc.
@@ -1425,8 +1602,22 @@ export const Route = createFileRoute("/api/photo")({
             if (!photoUrl && city && !q.toLowerCase().includes(city.toLowerCase())) {
               photoUrl = await wikipediaPhoto(`${q} ${city}`, lang, wikiOpts);
             }
-          } catch {
-            /* fall through to Google Places (non-artwork) */
+          } catch (err) {
+            /* fall through to Google Places (non-artwork) — but say
+             * so. This single catch wraps the whole Wikipedia stage,
+             * so before Beka's 2026-10-25 "log every type" it could
+             * swallow a genuine outage (Wikimedia 429, a thrown bug
+             * in wikipediaPhoto) and present it as "no photo found",
+             * which is indistinguishable from a place that simply
+             * has no picture. */
+            const { message, kind } = describeThrown(err);
+            await logError({
+              service: "wikipedia",
+              route: "/api/photo",
+              kind,
+              message,
+              context: { query: q.slice(0, 120), lang, city, scope, artist, museum },
+            });
           }
         }
 
@@ -1437,8 +1628,20 @@ export const Route = createFileRoute("/api/photo")({
         if (!photoUrl && !isArtwork) {
           try {
             photoUrl = await googlePhoto(q, city);
-          } catch {
+          } catch (err) {
             // give up — frontend will show the MapPin placeholder
+            /* Logged because a Google key/quota/billing failure looks
+             * EXACTLY like "this place has no photo" from the UI, and
+             * that ambiguity is what let a billing problem run for
+             * days. A run of these on one service is the signal. */
+            const { message, kind } = describeThrown(err);
+            await logError({
+              service: "google-places",
+              route: "/api/photo",
+              kind,
+              message,
+              context: { query: q.slice(0, 120), city },
+            });
           }
         }
 
@@ -1477,6 +1680,18 @@ export const Route = createFileRoute("/api/photo")({
             if (mirrored) photoUrl = mirrored;
           } catch (err) {
             console.warn("[api.photo] Azure mirror failed", err);
+            /* Falls through to the upstream URL, so the user still
+             * sees a picture and nothing looks broken — which is why
+             * the Azure storage account sitting disabled for days
+             * (2026-10-11, billing) produced no signal at all. */
+            const { message, kind } = describeThrown(err);
+            await logError({
+              service: "azure-blob",
+              route: "/api/photo",
+              kind,
+              message: `mirror failed: ${message}`,
+              context: { query: q.slice(0, 120), scope, city },
+            });
           }
         }
         if (photoUrl) {

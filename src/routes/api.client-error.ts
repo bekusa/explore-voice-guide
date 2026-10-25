@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
-import { logError } from "@/lib/errorLog.server";
+import { logError, type ErrorKind } from "@/lib/errorLog.server";
 
 /**
  * POST /api/client-error — record a failure that happened in the
@@ -38,14 +38,29 @@ import { logError } from "@/lib/errorLog.server";
  * Cloudflare Workers a floating promise dies with the Response.
  */
 
-/** Longest body we will even look at. A client report is ~200 bytes. */
-const MAX_BODY_BYTES = 4_000;
+/** Longest body we will even look at. A report with a stack is ~2 KB. */
+const MAX_BODY_BYTES = 8_000;
 
 function clip(v: unknown, max: number): string | null {
   if (typeof v !== "string") return null;
   const s = v.trim();
   return s ? s.slice(0, max) : null;
 }
+
+function num(v: unknown): number | null {
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
+}
+
+/**
+ * Kinds the browser is allowed to assert.
+ *
+ * Whitelisted rather than passed through: this endpoint is public, and
+ * an unbounded `kind` would let anyone invent buckets and make the
+ * dashboard's group-by useless. Anything unrecognised becomes
+ * "network", which is what every pre-2026-10-25 client sent and so
+ * keeps old builds reporting correctly after this deploy.
+ */
+const ALLOWED_KINDS = new Set(["network", "js", "crash", "resource"]);
 
 export const Route = createFileRoute("/api/client-error")({
   server: {
@@ -73,31 +88,52 @@ export const Route = createFileRoute("/api/client-error")({
 
         const where = clip(body.where, 80) ?? "unknown";
         const message = clip(body.message, 500) ?? "(no message)";
-        const status =
-          typeof body.status === "number" && Number.isFinite(body.status) ? body.status : null;
+        const status = num(body.status);
+        const durationMs = num(body.durationMs);
+
+        const rawKind = clip(body.kind, 16);
+        // Default "network" rather than "unknown": that is what every
+        // build before 2026-10-25 meant by saying nothing at all.
+        const kind = rawKind && ALLOWED_KINDS.has(rawKind) ? rawKind : "network";
 
         await logError({
           service: "client",
           route: where,
           status,
-          // A browser-side failure is almost always transport, and
-          // classifyStatus() would read a null status as "unknown".
-          // `offline: true` in the context is the discriminator that
+          // A transport failure has no status, and classifyStatus()
+          // would read a null status as "unknown". The client tells us
+          // the bucket instead; `online` in the context is what
           // separates "their wifi died" from "our Worker broke".
-          kind: "network",
+          kind: kind as ErrorKind,
           message,
+          /* Fill the COLUMN, not just the context. Beka 2026-10-25 —
+           * the dashboard groups by service/kind and averages
+           * duration_ms, and because client rows only ever carried the
+           * duration inside `context`, that column read blank for
+           * exactly the rows whose timing mattered most. */
+          ...(durationMs != null ? { durationMs } : {}),
           context: {
             where,
             online: typeof body.online === "boolean" ? body.online : null,
             lang: clip(body.lang, 16),
             query: clip(body.query, 120),
-            durationMs:
-              typeof body.durationMs === "number" && Number.isFinite(body.durationMs)
-                ? body.durationMs
-                : null,
+            durationMs,
             // Which build the browser was running. A spike confined to
             // one build is the fastest way to spot a bad deploy.
             build: clip(body.build, 40),
+            // Page the failure happened on. For a global handler this
+            // is often the only clue about what the user was doing.
+            url: clip(body.url, 200),
+            // `file.js:120:9`, or a React component stack.
+            source: clip(body.source, 300),
+            // Clipped hard: a stack is the most useful field here and
+            // also the only one that can run to kilobytes.
+            stack: clip(body.stack, 1_500),
+            /* Identical failures inside the client's 60 s window
+             * collapse into one row; this is how many were swallowed.
+             * A large number is itself the finding — it means a loop,
+             * not a one-off. */
+            repeats: num(body.repeats) ?? 0,
             hint: "Reported BY THE BROWSER. The request may never have reached the Worker — check whether a matching server-side row exists at the same minute.",
           },
         });

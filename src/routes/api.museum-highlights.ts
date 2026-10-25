@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CORS_HEADERS, corsPreflight } from "@/lib/cors.server";
+import { describeThrown, logError } from "@/lib/errorLog.server";
 import { getCachedMuseumHighlights, putCachedMuseumHighlights } from "@/lib/sharedCache.server";
 import { translateMuseumHighlightsPayload } from "@/lib/translatePayload.server";
 import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
@@ -140,12 +141,7 @@ export const Route = createFileRoute("/api/museum-highlights")({
               "preview:",
               preview,
             );
-            return jsonResponse(
-              { highlights: [] },
-              200,
-              "MISS",
-              "upstream-empty",
-            );
+            return jsonResponse({ highlights: [] }, 200, "MISS", "upstream-empty");
           }
 
           if (wantsTranslation) {
@@ -164,6 +160,15 @@ export const Route = createFileRoute("/api/museum-highlights")({
           return jsonResponse(parsed, 200, "MISS");
         } catch (err) {
           console.warn("[api.museum-highlights] upstream error", err);
+          const { message, kind } = describeThrown(err);
+          await logError({
+            service: "museum-highlights",
+            route: "/api/museum-highlights",
+            status: 502,
+            kind,
+            message,
+            context: { museumId: key?.museumId ?? null, language: key?.language ?? null },
+          });
           return new Response(
             JSON.stringify({
               highlights: [],

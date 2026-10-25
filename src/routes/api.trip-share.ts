@@ -17,6 +17,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
+import { logError } from "@/lib/errorLog.server";
 
 function serviceDb() {
   if (typeof process === "undefined") return null;
@@ -61,6 +62,13 @@ export const Route = createFileRoute("/api/trip-share")({
         const db = serviceDb();
         if (!db) {
           console.warn("[api.trip-share] service credentials missing");
+          await logError({
+            service: "trip-share",
+            route: "/api/trip-share",
+            status: 503,
+            kind: "auth",
+            message: "Supabase service credentials missing",
+          });
           return corsJson({ error: "unavailable" }, { status: 503 });
         }
 
@@ -71,6 +79,17 @@ export const Route = createFileRoute("/api/trip-share")({
           .maybeSingle();
         if (error) {
           console.warn("[api.trip-share] trip lookup failed", error.message);
+          /* A shared link is something the user gave to someone else,
+           * so a failure here is seen by a person who cannot report
+           * it to us and has no account. Worth logging on its own. */
+          await logError({
+            service: "trip-share",
+            route: "/api/trip-share",
+            status: 503,
+            kind: "bad-response",
+            message: `trip lookup failed: ${error.message}`,
+            context: { stage: "trip" },
+          });
           return corsJson({ error: "unavailable" }, { status: 503 });
         }
         if (!trip) {
@@ -85,6 +104,14 @@ export const Route = createFileRoute("/api/trip-share")({
           .order("position", { ascending: true });
         if (itemsErr) {
           console.warn("[api.trip-share] items lookup failed", itemsErr.message);
+          await logError({
+            service: "trip-share",
+            route: "/api/trip-share",
+            status: 503,
+            kind: "bad-response",
+            message: `items lookup failed: ${itemsErr.message}`,
+            context: { stage: "items" },
+          });
           return corsJson({ error: "unavailable" }, { status: 503 });
         }
 

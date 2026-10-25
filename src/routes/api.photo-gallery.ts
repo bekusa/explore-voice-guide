@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
+import { describeThrown, logError } from "@/lib/errorLog.server";
 import { getCachedPhoto, putCachedPhoto } from "@/lib/sharedCache.server";
 import { isAzureConfigured, mirrorPhotoToBlob } from "@/lib/azureBlob.server";
 import { sanitizeWikiLang } from "./api.photo";
@@ -43,8 +44,7 @@ import { sanitizeWikiLang } from "./api.photo";
  * newlines).
  */
 
-const WIKI_USER_AGENT =
-  "LokaliApp/1.0 (https://lokali.travel; contact@lokali.travel)";
+const WIKI_USER_AGENT = "LokaliApp/1.0 (https://lokali.travel; contact@lokali.travel)";
 const WIKI_HEADERS: HeadersInit = {
   "User-Agent": WIKI_USER_AGENT,
   Accept: "application/json",
@@ -265,18 +265,80 @@ function looksLikePhoto(filename: string): boolean {
  * gallery instead of the actual neighbourhood.
  */
 const GENERIC_VOCAB = new Set([
-  "old", "town", "city", "central", "park", "square", "street",
-  "avenue", "road", "boulevard", "river", "bridge", "lake",
-  "hill", "valley", "garden", "gardens", "market", "cathedral",
-  "church", "mosque", "temple", "palace", "castle", "fort",
-  "fortress", "tower", "wall", "walls", "gate", "gates", "harbour",
-  "harbor", "port", "beach", "coast", "mountain", "mountains",
-  "monument", "statue", "memorial", "museum", "library",
-  "theater", "theatre", "opera", "stadium", "fountain", "spring",
-  "springs", "bath", "baths", "sulphur", "sulfur", "thermal",
-  "historic", "historical", "ancient", "new", "main", "grand",
-  "great", "little", "lower", "upper", "north", "south", "east",
-  "west", "northern", "southern", "eastern", "western", "old town",
+  "old",
+  "town",
+  "city",
+  "central",
+  "park",
+  "square",
+  "street",
+  "avenue",
+  "road",
+  "boulevard",
+  "river",
+  "bridge",
+  "lake",
+  "hill",
+  "valley",
+  "garden",
+  "gardens",
+  "market",
+  "cathedral",
+  "church",
+  "mosque",
+  "temple",
+  "palace",
+  "castle",
+  "fort",
+  "fortress",
+  "tower",
+  "wall",
+  "walls",
+  "gate",
+  "gates",
+  "harbour",
+  "harbor",
+  "port",
+  "beach",
+  "coast",
+  "mountain",
+  "mountains",
+  "monument",
+  "statue",
+  "memorial",
+  "museum",
+  "library",
+  "theater",
+  "theatre",
+  "opera",
+  "stadium",
+  "fountain",
+  "spring",
+  "springs",
+  "bath",
+  "baths",
+  "sulphur",
+  "sulfur",
+  "thermal",
+  "historic",
+  "historical",
+  "ancient",
+  "new",
+  "main",
+  "grand",
+  "great",
+  "little",
+  "lower",
+  "upper",
+  "north",
+  "south",
+  "east",
+  "west",
+  "northern",
+  "southern",
+  "eastern",
+  "western",
+  "old town",
 ]);
 
 function isGenericName(name: string | null | undefined): boolean {
@@ -315,8 +377,7 @@ async function resolveWikiTitle(
     const directTitle = q.trim().replace(/\s+/g, "_");
     try {
       const summaryUrl =
-        `https://${l}.wikipedia.org/api/rest_v1/page/summary/` +
-        encodeURIComponent(directTitle);
+        `https://${l}.wikipedia.org/api/rest_v1/page/summary/` + encodeURIComponent(directTitle);
       const r = await fetch(summaryUrl, { headers: WIKI_HEADERS });
       if (r.ok) {
         const data = (await r.json()) as WikiSummaryResponse;
@@ -428,18 +489,52 @@ function titleMatchesQuery(title: string, query: string, city?: string | null): 
    *      title → accept. ✅ now works
    */
   const GENERIC_PLACE_WORDS = new Set([
-    "church", "cathedral", "basilica", "chapel", "monastery", "convent",
-    "mosque", "temple", "shrine", "synagogue", "museum", "gallery",
-    "fortress", "castle", "palace", "citadel", "tower", "bridge",
-    "park", "garden", "square", "street", "avenue", "market", "bazaar",
-    "lighthouse", "beach", "lake", "river", "mountain", "island",
-    "ruins", "monument", "memorial", "statue", "theatre", "theater",
-    "stadium", "station", "district", "quarter", "house", "hall",
+    "church",
+    "cathedral",
+    "basilica",
+    "chapel",
+    "monastery",
+    "convent",
+    "mosque",
+    "temple",
+    "shrine",
+    "synagogue",
+    "museum",
+    "gallery",
+    "fortress",
+    "castle",
+    "palace",
+    "citadel",
+    "tower",
+    "bridge",
+    "park",
+    "garden",
+    "square",
+    "street",
+    "avenue",
+    "market",
+    "bazaar",
+    "lighthouse",
+    "beach",
+    "lake",
+    "river",
+    "mountain",
+    "island",
+    "ruins",
+    "monument",
+    "memorial",
+    "statue",
+    "theatre",
+    "theater",
+    "stadium",
+    "station",
+    "district",
+    "quarter",
+    "house",
+    "hall",
   ]);
 
-  const significant = norm(query).filter(
-    (w) => w.length >= 4 && !cityWords.has(w),
-  );
+  const significant = norm(query).filter((w) => w.length >= 4 && !cityWords.has(w));
   // Proper nouns only — the words that actually identify the subject.
   const subjectWords = significant.filter((w) => !GENERIC_PLACE_WORDS.has(w));
   // Nothing distinctive to test (query was only a city name, or only
@@ -470,8 +565,7 @@ function titleMatchesQuery(title: string, query: string, city?: string | null): 
 async function fetchMediaList(title: string, lang: string): Promise<string[]> {
   try {
     const url =
-      `https://${lang}.wikipedia.org/api/rest_v1/page/media-list/` +
-      encodeURIComponent(title);
+      `https://${lang}.wikipedia.org/api/rest_v1/page/media-list/` + encodeURIComponent(title);
     const r = await fetch(url, { headers: WIKI_HEADERS });
     if (!r.ok) return [];
     const data = (await r.json()) as MediaListResponse;
@@ -585,25 +679,52 @@ export const Route = createFileRoute("/api/photo-gallery")({
         // (Eiffel Tower, Mtatsminda Park) stay on the bare-first path
         // — those have canonical articles at the exact title and the
         // city qualifier only adds noise.
-        let title: { title: string; lang: string; confidence: "exact" | "search" } | null =
-          null;
+        let title: { title: string; lang: string; confidence: "exact" | "search" } | null = null;
         const lowerQ = q.toLowerCase();
         const cityInQ = city && lowerQ.includes(city.toLowerCase());
         if (isGenericName(q) && city && !cityInQ) {
           title = await resolveWikiTitle(`${q} ${city}`, lang, city);
         }
-        if (!title) title = await resolveWikiTitle(q, lang, city);
-        if (!title && city && !cityInQ) {
-          title = await resolveWikiTitle(`${q} ${city}`, lang, city);
+        /* Wrapped, because nothing below it was. Beka 2026-10-25 —
+         * "ყველა ტიპის ერორი ილოგებოდეს". resolveWikiTitle and
+         * fetchMediaList both do network I/O and both can throw; with
+         * no catch here that throw escaped as a bare 500 with no row
+         * in error_logs, which is how "the gallery is empty" and "the
+         * gallery endpoint is broken" became the same symptom. */
+        try {
+          if (!title) title = await resolveWikiTitle(q, lang, city);
+          if (!title && city && !cityInQ) {
+            title = await resolveWikiTitle(`${q} ${city}`, lang, city);
+          }
+        } catch (err) {
+          const { message, kind } = describeThrown(err);
+          await logError({
+            service: "wikipedia",
+            route: "/api/photo-gallery",
+            kind,
+            message: `title resolution failed: ${message}`,
+            context: { query: q.slice(0, 120), lang, city },
+          });
+          return corsJson({ urls: [] }, { headers: { "Cache-Control": "no-store" } });
         }
         if (!title) {
-          return corsJson(
-            { urls: [] },
-            { headers: { "Cache-Control": "no-store" } },
-          );
+          return corsJson({ urls: [] }, { headers: { "Cache-Control": "no-store" } });
         }
 
-        let urls = await fetchMediaList(title.title, title.lang);
+        let urls: string[];
+        try {
+          urls = await fetchMediaList(title.title, title.lang);
+        } catch (err) {
+          const { message, kind } = describeThrown(err);
+          await logError({
+            service: "wikipedia",
+            route: "/api/photo-gallery",
+            kind,
+            message: `media list failed: ${message}`,
+            context: { query: q.slice(0, 120), title: title.title, lang: title.lang },
+          });
+          return corsJson({ urls: [] }, { headers: { "Cache-Control": "no-store" } });
+        }
 
         /* CONFIDENCE DECIDES HOW MANY. Beka 2026-10-04.
          *
@@ -659,10 +780,7 @@ export const Route = createFileRoute("/api/photo-gallery")({
           { urls },
           {
             headers: {
-              "Cache-Control":
-                urls.length > 0
-                  ? "public, max-age=2592000, immutable"
-                  : "no-store",
+              "Cache-Control": urls.length > 0 ? "public, max-age=2592000, immutable" : "no-store",
             },
           },
         );

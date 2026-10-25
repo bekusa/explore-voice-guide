@@ -10,6 +10,7 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
+import { describeThrown, logError } from "@/lib/errorLog.server";
 import { googleTranslateBatch } from "@/lib/googleTranslate.server";
 import { geminiTranslateBatch } from "@/lib/geminiTranslate.server";
 
@@ -122,8 +123,7 @@ export const Route = createFileRoute("/api/translate")({
           // by reference identity AND content because Gemini's
           // graceful fallback uses the same array.
           const everythingUnchanged =
-            translations === texts ||
-            translations.every((t, i) => t === texts[i]);
+            translations === texts || translations.every((t, i) => t === texts[i]);
           if (everythingUnchanged) {
             translations = await googleTranslateBatch(texts, target);
           }
@@ -131,7 +131,19 @@ export const Route = createFileRoute("/api/translate")({
             looksLikeGatewayGarbage(t, texts[i], target) ? texts[i] : t,
           );
           return corsJson({ translations: sanitized });
-        } catch {
+        } catch (err) {
+          /* Answers 200 with the source text, so the UI degrades to
+           * English rather than breaking. That silent fallback is
+           * exactly why a broken translation backend could run for
+           * days unnoticed — Beka 2026-10-25, log every type. */
+          const { message, kind } = describeThrown(err);
+          await logError({
+            service: "translate",
+            route: "/api/translate",
+            kind,
+            message,
+            context: { target, count: texts.length, sample: texts[0]?.slice(0, 80) ?? null },
+          });
           return corsJson({ translations: texts });
         }
       },

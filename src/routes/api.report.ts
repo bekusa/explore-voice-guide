@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
+import { logError } from "@/lib/errorLog.server";
 
 /**
  * POST /api/report — record a "this guide has wrong info" report.
@@ -65,11 +66,35 @@ export const Route = createFileRoute("/api/report")({
 
         const client = db();
         if (!client) {
-          console.warn("[api.report] Supabase not configured — report dropped:", row.attraction_name);
+          console.warn(
+            "[api.report] Supabase not configured — report dropped:",
+            row.attraction_name,
+          );
+          await logError({
+            service: "report",
+            route: "/api/report",
+            kind: "unknown",
+            message: "Supabase not configured — user report dropped",
+            context: { attraction: row.attraction_name },
+          });
           return corsJson({ ok: true });
         }
         const { error } = await client.from("guide_reports").insert(row);
-        if (error) console.warn("[api.report] insert failed:", error.message);
+        if (error) {
+          console.warn("[api.report] insert failed:", error.message);
+          /* This endpoint answers { ok: true } no matter what, so the
+           * user is told their report was received. If the insert
+           * silently fails we are lying to them — which is the worst
+           * possible thing to be silent about, because the whole
+           * point of the feature is catching bad guide content. */
+          await logError({
+            service: "report",
+            route: "/api/report",
+            kind: "bad-response",
+            message: `guide_reports insert failed: ${error.message}`,
+            context: { attraction: row.attraction_name },
+          });
+        }
         return corsJson({ ok: true });
       },
     },

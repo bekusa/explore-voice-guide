@@ -42,6 +42,17 @@ export type ErrorKind =
   | "bad-response"
   /** Never reached them: DNS, TLS, connection reset. */
   | "network"
+  /**
+   * Browser-side only (service = 'client'): an uncaught exception or
+   * an unhandled promise rejection. Added 2026-10-25 — before that a
+   * JS error anywhere outside one `catch` in results.tsx left no
+   * record at all.
+   */
+  | "js"
+  /** Browser-side only: React threw while rendering — white screen. */
+  | "crash"
+  /** Browser-side only: an image / script / stylesheet failed to load. */
+  | "resource"
   /** Our own bug or an unclassified upstream status. */
   | "unknown";
 

@@ -36,6 +36,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { corsJson, corsPreflight } from "@/lib/cors.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { describeThrown, logError } from "@/lib/errorLog.server";
 
 export const Route = createFileRoute("/api/account/delete")({
   server: {
@@ -108,6 +109,18 @@ export const Route = createFileRoute("/api/account/delete")({
           const { error: authErr } = await supabaseAdmin.auth.admin.deleteUser(userId);
           if (authErr) {
             console.warn("[api.account.delete] auth deleteUser failed", authErr);
+            /* Half-deleted account: the data rows are gone but the
+             * auth row is not. This is a GDPR-relevant failure and
+             * the user is told to contact support — so it must leave
+             * a record we can find, with the user id. */
+            await logError({
+              service: "account-delete",
+              route: "/api/account/delete",
+              status: 500,
+              kind: "unknown",
+              message: `auth deleteUser failed: ${authErr.message}`,
+              context: { userId, partial: errors },
+            });
             return corsJson(
               {
                 error: "Account data cleared, but auth removal failed. Contact support.",
@@ -119,6 +132,15 @@ export const Route = createFileRoute("/api/account/delete")({
           }
         } catch (err) {
           console.warn("[api.account.delete] auth deleteUser threw", err);
+          const { message, kind } = describeThrown(err);
+          await logError({
+            service: "account-delete",
+            route: "/api/account/delete",
+            status: 500,
+            kind,
+            message: `auth deleteUser threw: ${message}`,
+            context: { userId, partial: errors },
+          });
           return corsJson(
             {
               error: "Auth removal threw an exception. Contact support.",
@@ -127,6 +149,20 @@ export const Route = createFileRoute("/api/account/delete")({
             },
             { status: 500 },
           );
+        }
+
+        /* The auth row IS gone, so the user's deletion request was
+         * honoured and they correctly see success. But leftover data
+         * rows are our problem to clean up, and `warnings` returned
+         * to a client that is about to sign out is nobody's inbox. */
+        if (errors.length > 0) {
+          await logError({
+            service: "account-delete",
+            route: "/api/account/delete",
+            kind: "unknown",
+            message: `account deleted with ${errors.length} leftover row error(s)`,
+            context: { userId, partial: errors },
+          });
         }
 
         return corsJson({
