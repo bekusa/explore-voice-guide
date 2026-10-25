@@ -33,13 +33,59 @@ import {
   staticUiLookup,
 } from "@/lib/ui-translations.generated";
 
+/**
+ * The language the SERVER renders in.
+ *
+ * `getStoredLang()` returns "en" when there is no `localStorage` (see
+ * isBrowser() in i18n.ts), so every server-rendered page is English.
+ * The first CLIENT render has to agree with that — see useUiLang.
+ */
+const SSR_LANG = normalizeLang("en");
+
 /** Reactive current UI language (normalized, e.g. "en", "ka", "es", "zh-cn"). */
 export function useUiLang(): string {
   const { user } = useAuth();
-  const [lang, setLang] = useState<string>(() => normalizeLang(getStoredLang()));
 
-  // Listen for cross-tab + same-tab language changes.
+  /* Starts at the SERVER's language, NOT the device's.
+   *
+   * Beka 2026-10-25 — the new window.onerror logging caught React
+   * error #418 on the homepage within an hour of going live:
+   * "Hydration failed because the server rendered text didn't match
+   * the client."
+   *
+   * The cause was this line. It used to be:
+   *     useState(() => normalizeLang(getStoredLang()))
+   * and a useState initializer runs during the FIRST render. On the
+   * server that is "en" (no localStorage); in the browser it is
+   * whatever the device picked. So the server sent English markup and
+   * the very first client render produced Georgian — React compared
+   * them, found different text, threw away the entire server-rendered
+   * tree and re-rendered from scratch.
+   *
+   * I reproduced it in a browser before changing anything: empty
+   * localStorage → no error; `tg.lang=ka` → #418 every load. So it hit
+   * every non-English user, on every visit, and nothing reported it
+   * until the global handler existed.
+   *
+   * The fix is React's standard two-pass approach: render what the
+   * server rendered, then adopt the device's choice in an effect,
+   * after hydration has already succeeded. Visually this is what
+   * users ALREADY saw (English for an instant, then their language) —
+   * the difference is that React now keeps the server's HTML instead
+   * of discarding it, which is strictly faster.
+   *
+   * To remove that flash entirely the server has to KNOW the language,
+   * which means a cookie rather than localStorage. That is a bigger
+   * change and deliberately not done here.
+   */
+  const [lang, setLang] = useState<string>(SSR_LANG);
+
+  // Adopt the device's stored language, then listen for cross-tab +
+  // same-tab changes. Both live in ONE effect so the adopt always
+  // happens before any subscription callback can fire.
   useEffect(() => {
+    const stored = normalizeLang(getStoredLang());
+    setLang((cur) => (cur === stored ? cur : stored));
     return onLangChange((l) => setLang(normalizeLang(l)));
   }, []);
 

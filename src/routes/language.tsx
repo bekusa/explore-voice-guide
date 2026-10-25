@@ -72,11 +72,25 @@ function LanguagePage() {
   const [searchFocused, setSearchFocused] = useState(false);
   // Seed `active` from localStorage instead of hardcoded "ka". The
   // hardcoded default plus a strict `code === active` find() meant
-  // anonymous visitors landed on LANGUAGES[0] = Arabic. Now we read
-  // the stored preference (short form like "en" / "ka") and rely on
+  // anonymous visitors landed on LANGUAGES[0] = Arabic. We read the
+  // stored preference (short form like "en" / "ka") and rely on
   // resolveLanguage() to map it to a real Language entry below.
-  const [active, setActive] = useState<string>(() => getStoredLang());
+  //
+  // Read in an EFFECT, not in the useState initializer. Beka
+  // 2026-10-25: the initializer runs during the first render, where
+  // the server has no localStorage and answers "en" while the browser
+  // answers the device's language — which marks a different row as
+  // current on each side and trips React's hydration check (#418).
+  // Same bug, same fix as useUiLang in hooks/useT.ts; see the long
+  // note there.
+  const [active, setActive] = useState<string>("en");
   const [pending, setPending] = useState<string | null>(null);
+
+  // Adopt the device's stored language once hydration is done.
+  useEffect(() => {
+    const stored = getStoredLang();
+    setActive((cur) => (cur === stored ? cur : stored));
+  }, []);
 
   // Load current preferred language from profile
   useEffect(() => {

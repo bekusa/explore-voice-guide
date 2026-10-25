@@ -281,7 +281,21 @@ export const Route = createRootRoute({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    /* suppressHydrationWarning is required here, not cosmetic.
+     *
+     * themeBootScript runs before React hydrates and deliberately
+     * mutates this exact element: it adds the `light` class and
+     * rewrites `lang` from localStorage. That is the whole point — it
+     * is what stops a white flash and a wrong <html lang> on first
+     * paint. But it means the DOM React finds no longer matches the
+     * HTML the server sent, and React reports that as a hydration
+     * mismatch (error #418).
+     *
+     * The flag applies to THIS element's own attributes only; it does
+     * not suppress anything inside the tree, so real mismatches in
+     * the app still surface. Beka 2026-10-25 — paired with the
+     * useUiLang fix; see the long note there. */
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* FIRST script in <head> on purpose: it has to be listening
             before any other script can throw. See earlyErrorBootScript. */}
