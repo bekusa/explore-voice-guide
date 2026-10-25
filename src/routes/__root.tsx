@@ -16,6 +16,7 @@ import {
   identifyUser,
   resetAnalytics,
   installPlayStoreClickTracking,
+  installAnalytics,
 } from "@/lib/analytics";
 import { LANGUAGE_COUNT_LABEL } from "@/lib/languages";
 import { installClientErrorGuard } from "@/lib/clientErrorGuard";
@@ -84,7 +85,6 @@ window.addEventListener('unhandledrejection',function(e){try{var r=e.reason;p({k
 // The project API key below is a PUBLIC, write-only key: it can send
 // events but cannot read data, so shipping it in the client bundle is
 // expected and safe.
-const posthogBootScript = `!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug getPageViewId captureTraceFeedback captureTraceMetric".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_qCd9xVsVntEAjMS7fGPC7JcpXGGVftSk7oKEzzSxuMqc',{api_host:'https://eu.i.posthog.com',person_profiles:'identified_only',capture_pageview:false,capture_pageleave:true,autocapture:true,respect_dnt:true});`;
 
 function NotFoundComponent() {
   const t = useT();
@@ -301,10 +301,6 @@ function RootShell({ children }: { children: React.ReactNode }) {
             before any other script can throw. See earlyErrorBootScript. */}
         <script dangerouslySetInnerHTML={{ __html: earlyErrorBootScript }} />
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
-        {/* PostHog loader — installs window.posthog + init() before
-            hydration so pageview/identify calls from React are queued
-            and replayed once array.js loads. See posthogBootScript. */}
-        <script dangerouslySetInnerHTML={{ __html: posthogBootScript }} />
         <HeadContent />
       </head>
       <body>
@@ -370,6 +366,14 @@ function RootComponent() {
   // $pageview now for the entry page, then one on every resolved
   // navigation. router.subscribe returns its own unsubscribe fn.
   useEffect(() => {
+    /* PostHog is loaded HERE, not from a <script> in the head.
+     * Beka 2026-10-25 — running it before hydration let it append
+     * four of its own scripts into <body>, inside React's hydration
+     * root, which aborted hydration of the whole homepage (#418).
+     * installAnalytics() is idempotent, and the snippet installs
+     * window.posthog synchronously, so the pageview below still
+     * lands. See the long note in lib/analytics.ts. */
+    installAnalytics();
     installPlayStoreClickTracking();
     capturePageview();
     logVisit();

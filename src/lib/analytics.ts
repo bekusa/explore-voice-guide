@@ -111,9 +111,7 @@ export function clientInfo(): ClientInfo {
     return { app: "server", os: "Other", browser: "Other", device: "desktop" };
   }
   const ua = navigator.userAgent || "";
-  const cap = (
-    window as Window & { Capacitor?: { getPlatform?: () => string } }
-  ).Capacitor;
+  const cap = (window as Window & { Capacitor?: { getPlatform?: () => string } }).Capacitor;
   const capPlatform = cap?.getPlatform?.() ?? (cap ? "android" : "web");
   const app = capPlatform === "web" ? "web" : `${capPlatform}_app`;
 
@@ -142,11 +140,12 @@ export function clientInfo(): ClientInfo {
   else if (/CriOS|Chrome\//.test(ua)) browser = "Chrome";
   else if (/Safari\//.test(ua)) browser = "Safari";
 
-  const device = /iPad|Tablet/i.test(ua) || touchMac || (/Android/i.test(ua) && !/Mobile/i.test(ua))
-    ? "tablet"
-    : /Mobi|iPhone|iPod|Android/i.test(ua)
-      ? "mobile"
-      : "desktop";
+  const device =
+    /iPad|Tablet/i.test(ua) || touchMac || (/Android/i.test(ua) && !/Mobile/i.test(ua))
+      ? "tablet"
+      : /Mobi|iPhone|iPod|Android/i.test(ua)
+        ? "mobile"
+        : "desktop";
 
   clientInfoCache = bot ? { app, os, browser, device, bot } : { app, os, browser, device };
   return clientInfoCache;
@@ -273,4 +272,55 @@ export function identifyUser(distinctId: string, properties?: Record<string, unk
 export function resetAnalytics(): void {
   currentUserId = null;
   ph()?.reset();
+}
+
+/* ── PostHog loader ───────────────────────────────────────────────
+ *
+ * This is PostHog's official queuing snippet, moved here out of a
+ * <script> tag in the document head. Beka 2026-10-25.
+ *
+ * Why it moved: run from the head it executed BEFORE React hydrated,
+ * and PostHog then appends its own scripts (array.js, surveys.js,
+ * dead-clicks-autocapture.js, web-vitals-with-attribution.js) into
+ * the document. Several of those landed inside <body> — which is
+ * inside React's hydration root — so React met four elements it had
+ * never rendered and aborted hydration with error #418, throwing away
+ * the whole server-rendered homepage.
+ *
+ * The dev build named them one by one; that diff is what finally
+ * identified this after a day of wrong guesses on my part.
+ *
+ * Installing after hydration removes the race entirely: by the time
+ * these scripts appear, React is no longer matching the DOM against
+ * server HTML and extra nodes are simply ignored.
+ *
+ * Analytics losing a few hundred milliseconds is a non-issue; every
+ * accessor in this file already uses `ph()?.`, so calls made before
+ * the snippet lands are dropped rather than thrown.
+ */
+const POSTHOG_SNIPPET = `!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug getPageViewId captureTraceFeedback captureTraceMetric".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_qCd9xVsVntEAjMS7fGPC7JcpXGGVftSk7oKEzzSxuMqc',{api_host:'https://eu.i.posthog.com',person_profiles:'identified_only',capture_pageview:false,capture_pageleave:true,autocapture:true,respect_dnt:true});`;
+
+let analyticsInstalled = false;
+
+/**
+ * Load PostHog. Call ONLY from a client effect, never during render
+ * and never from the document head — see the note above.
+ *
+ * Idempotent and silent on failure: analytics must never be the
+ * reason a page breaks.
+ */
+export function installAnalytics(): void {
+  try {
+    if (analyticsInstalled) return;
+    if (typeof window === "undefined" || typeof document === "undefined") return;
+    analyticsInstalled = true;
+    const el = document.createElement("script");
+    el.textContent = POSTHOG_SNIPPET;
+    // Head, not body: PostHog inserts its own scripts next to the
+    // first <script> it finds, and keeping ours in the head biases
+    // that away from the React tree.
+    document.head.appendChild(el);
+  } catch {
+    /* Analytics is optional. The app is not. */
+  }
 }

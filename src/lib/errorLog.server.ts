@@ -183,7 +183,13 @@ export async function logError(input: LogErrorInput): Promise<void> {
       route: input.route ?? null,
       status: input.status ?? null,
       kind,
-      message: redact(String(input.message)).slice(0, 2000),
+      /* 4000, raised from 2000 (Beka 2026-10-25). A React hydration
+       * error spends its first ~750 characters on generic advice and
+       * only then prints the component diff that names the broken
+       * node, so a tight clip silently discards the diagnosis. The
+       * column is `text`; this cap exists to stop a runaway message,
+       * not to save space. */
+      message: redact(String(input.message)).slice(0, 4000),
       context: input.context ? JSON.parse(redact(JSON.stringify(input.context))) : null,
       duration_ms: input.durationMs ?? null,
     });

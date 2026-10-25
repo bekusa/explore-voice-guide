@@ -39,7 +39,24 @@ import { logError, type ErrorKind } from "@/lib/errorLog.server";
  */
 
 /** Longest body we will even look at. A report with a stack is ~2 KB. */
-const MAX_BODY_BYTES = 8_000;
+const MAX_BODY_BYTES = 16_000;
+
+/**
+ * How much of the message we keep.
+ *
+ * Beka 2026-10-25: this was 500, and 500 was actively harmful. React's
+ * hydration error (#418) carries ~750 characters of boilerplate advice
+ * BEFORE the component diff that actually identifies the broken node —
+ * so the clip threw away the only part worth having, and the log read
+ * "…- In" and stopped. I spent a day guessing at a cause that the
+ * error had been willing to tell me all along.
+ *
+ * 4000 comfortably fits a React diff. `message` is a Postgres `text`
+ * column, so there is no storage reason to be stingy; the real bound
+ * is the 2000-character slice inside logError, which is what finally
+ * lands in the row.
+ */
+const MAX_MESSAGE_CHARS = 4_000;
 
 function clip(v: unknown, max: number): string | null {
   if (typeof v !== "string") return null;
@@ -87,7 +104,7 @@ export const Route = createFileRoute("/api/client-error")({
         }
 
         const where = clip(body.where, 80) ?? "unknown";
-        const message = clip(body.message, 500) ?? "(no message)";
+        const message = clip(body.message, MAX_MESSAGE_CHARS) ?? "(no message)";
         const status = num(body.status);
         const durationMs = num(body.durationMs);
 
