@@ -108,11 +108,23 @@ function buildId(): string | null {
     /* No build-time define is configured (vite.config.ts is generated
      * by Lovable and we would rather not fight it), so fall back to
      * Vite's content hash in the entry bundle's filename. It changes
-     * on every deploy, which is the only property we need. */
-    if (typeof document === "undefined") return null;
-    const el = document.querySelector<HTMLScriptElement>('script[type="module"][src]');
-    const m = el?.src?.match(/([A-Za-z0-9_-]{8,})\.js(?:\?|$)/);
-    return m ? m[1].slice(-12) : null;
+     * on every deploy, which is the only property we need.
+     *
+     * Read from the PERFORMANCE timeline, not the DOM. Beka
+     * 2026-10-29: `build` came back null on every single row for four
+     * days because the previous version queried
+     * `script[type="module"][src]`, and on the deployed site that
+     * selector matches nothing — TanStack Start injects the entry
+     * differently. I confirmed it returns null against production.
+     * The resource timeline always contains the entry chunk, so this
+     * works wherever the markup puts it. */
+    if (typeof performance?.getEntriesByType !== "function") return null;
+    const entry = performance
+      .getEntriesByType("resource")
+      .map((r) => r.name)
+      .find((n) => /\/assets\/index-[A-Za-z0-9_-]+\.js/.test(n));
+    const m = entry?.match(/\/assets\/index-([A-Za-z0-9_-]+)\.js/);
+    return m ? m[1].slice(0, 12) : null;
   } catch {
     return null;
   }

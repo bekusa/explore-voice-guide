@@ -11,12 +11,10 @@ import { Toaster } from "@/components/ui/sonner";
 import { useT } from "@/hooks/useT";
 import { useCapacitorBridge } from "@/hooks/useCapacitorBridge";
 import {
-  capturePageview,
   logVisit,
   identifyUser,
   resetAnalytics,
   installPlayStoreClickTracking,
-  installAnalytics,
 } from "@/lib/analytics";
 import { LANGUAGE_COUNT_LABEL } from "@/lib/languages";
 import { installClientErrorGuard } from "@/lib/clientErrorGuard";
@@ -51,40 +49,6 @@ const themeBootScript = `(function(){try{var t=localStorage.getItem('tg.theme');
 const earlyErrorBootScript = `(function(){try{var b=[];window.__lokaliEarlyErrors=b;function p(e){try{if(b.length<10){b.push(e);}}catch(x){}}
 window.addEventListener('error',function(e){try{var t=e.target;if(t&&t!==window&&t.tagName){p({k:'resource',m:'Failed to load '+String(t.tagName).toLowerCase(),s:t.src||t.href||null});}else{p({k:'js',m:(e.message||'unknown error'),s:(e.filename||'')+':'+(e.lineno||'?')+':'+(e.colno||'?'),st:(e.error&&e.error.stack)||null});}}catch(x){}},true);
 window.addEventListener('unhandledrejection',function(e){try{var r=e.reason;p({k:'js',m:'unhandledrejection: '+((r&&r.message)||String(r)),st:(r&&r.stack)||null});}catch(x){}});}catch(x){}})();`;
-
-// PostHog loader snippet — the official queuing stub. It installs
-// `window.posthog` synchronously (so calls made before the real
-// library downloads are queued, not lost), then async-loads
-// array.js from the matching assets host and calls init().
-//
-// REGION FIX, 2026-10-02. This used to point at
-//   phc_o65XCRaZi3tqYsxd3ETsdN47guGRXL8AhmS9x53NZ3Gp @ https://us.i.posthog.com
-// but Beka's PostHog account lives in the EU region: us.posthog.com refuses the
-// login with "You're already logged into PostHog Cloud in the EU region", so
-// nobody could ever open that US project. Meanwhile his EU project 290874 read
-// "This project has no events yet" — because the site had never sent it any.
-// That mismatch is why the August audit reported 0 audio plays: it was reading
-// an empty project. (The real numbers were in Supabase `usage_events` all along:
-// 155 audio plays by 62 people.) Key and host below now point at EU project
-// 290874, which is the one Beka can actually open.
-//
-// Config notes:
-//   - api_host eu.i.posthog.com — project region is EU Cloud.
-//   - capture_pageview:false — we drive $pageview ourselves from the
-//     router's onResolved event (see RootComponent); this is a SPA,
-//     so the automatic load-time pageview would under-count.
-//   - capture_pageleave:true — gives us session duration + bounce.
-//   - person_profiles:'identified_only' — anonymous visitors are
-//     still counted as events (DAU works), but no person profile is
-//     created until identify() runs at sign-in. Keeps us well inside
-//     the 1M-events/month free tier.
-//   - respect_dnt:true — honour Do-Not-Track. With the project now in EU
-//     Cloud this is also the simpler GDPR story: EU visitors' events no
-//     longer leave the EU.
-//
-// The project API key below is a PUBLIC, write-only key: it can send
-// events but cannot read data, so shipping it in the client bundle is
-// expected and safe.
 
 function NotFoundComponent() {
   const t = useT();
@@ -361,24 +325,14 @@ function RootComponent() {
   }, []);
 
   // Analytics pageviews — this is a SPA, so a route change doesn't
-  // reload the page and PostHog's automatic pageview (disabled in the
+  // reload the page, so a single page-load pageview would badly
   // snippet) never fires again after the initial load. Capture one
   // $pageview now for the entry page, then one on every resolved
   // navigation. router.subscribe returns its own unsubscribe fn.
   useEffect(() => {
-    /* PostHog is loaded HERE, not from a <script> in the head.
-     * Beka 2026-10-25 — running it before hydration let it append
-     * four of its own scripts into <body>, inside React's hydration
-     * root, which aborted hydration of the whole homepage (#418).
-     * installAnalytics() is idempotent, and the snippet installs
-     * window.posthog synchronously, so the pageview below still
-     * lands. See the long note in lib/analytics.ts. */
-    installAnalytics();
     installPlayStoreClickTracking();
-    capturePageview();
     logVisit();
     const unsubscribe = router.subscribe("onResolved", () => {
-      capturePageview();
       logVisit();
     });
     return unsubscribe;
@@ -470,7 +424,7 @@ function RootComponent() {
   // root mounts (OAuth redirects, exchangeCodeForSession), so the
   // SIGNED_IN event is what we need to wait for.
   //
-  // This effect also drives analytics identity: we tag PostHog with the
+  // This effect also drives analytics identity: we tag telemetry with the
   // Supabase user UUID (pseudonymous — no email/PII) whenever a session
   // is present, and reset() on sign-out so the next person on the same
   // device isn't merged into the previous user's profile.

@@ -1,6 +1,6 @@
 {
-  "generated": "2026-10-23T04:58:13.243101+00:00",
-  "feed": "https://app.trysoro.com/api/rss/40e3fcd6-ae58-4652-bf7f-5ad9d903f38f",
+  "generated": "2026-10-29T04:58:16.438107+00:00",
+  "feed": "file:///sessions/rcw-01lgpzaetpyfznz5izsgwkyi/soro-filtered.xml",
   "noindex": false,
   "pages": [
     "https://lokali.travel/blog/architecture-audio-tour-for-travelers.html",
@@ -14,10 +14,14 @@
     "https://lokali.travel/blog/locally-narrated-walking-tours-app.html",
     "https://lokali.travel/blog/museum-audio-guide-without-tickets.html",
     "https://lokali.travel/blog/offline-audio-guides-for-travel.html",
+    "https://lokali.travel/blog/self-guided-sightseeing.html",
     "https://lokali.travel/blog/time-machine-history-travel-experience.html",
-    "https://lokali.travel/blog/travel-guides-in-multiple-languages.html"
+    "https://lokali.travel/blog/travel-guides-in-multiple-languages.html",
+    "https://lokali.travel/blog/which-museum-guides-are-free.html"
   ],
   "in_feed": [
+    "https://lokali.travel/blog/which-museum-guides-are-free.html",
+    "https://lokali.travel/blog/self-guided-sightseeing.html",
     "https://lokali.travel/blog/audio-walking-tour-see-a-city-at-your-pace.html",
     "https://lokali.travel/blog/city-sightseeing-tips-without-groups.html",
     "https://lokali.travel/blog/time-machine-history-travel-experience.html",

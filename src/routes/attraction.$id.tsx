@@ -197,13 +197,31 @@ export const Route = createFileRoute("/attraction/$id")({
     // change unslugAttraction itself, its output is used as a cache/lookup
     // key elsewhere and the DB rows are keyed lower case. 2026-09-25.
     const raw = unslugAttraction(params.id);
-    const SMALL = new Set(["a", "an", "and", "at", "by", "de", "del", "der",
-      "di", "for", "in", "la", "le", "of", "on", "or", "the", "to", "van", "von"]);
+    const SMALL = new Set([
+      "a",
+      "an",
+      "and",
+      "at",
+      "by",
+      "de",
+      "del",
+      "der",
+      "di",
+      "for",
+      "in",
+      "la",
+      "le",
+      "of",
+      "on",
+      "or",
+      "the",
+      "to",
+      "van",
+      "von",
+    ]);
     const title = raw
       .split(" ")
-      .map((w, i) =>
-        i > 0 && SMALL.has(w) ? w : w.charAt(0).toUpperCase() + w.slice(1)
-      )
+      .map((w, i) => (i > 0 && SMALL.has(w) ? w : w.charAt(0).toUpperCase() + w.slice(1)))
       .join(" ");
     // Bing flags descriptions under ~150 characters as too short; Google
     // truncates titles past ~60 and descriptions past ~160. Attraction
@@ -221,7 +239,7 @@ export const Route = createFileRoute("/attraction/$id")({
         `${title} — Free Audio Guide`,
         `${title} — Lokali`,
       ],
-      60
+      60,
     );
     // "Free The Grand Egyptian Museum audio guide" reads badly, so the
     // leading article is dropped for the description only — the title and
@@ -233,7 +251,7 @@ export const Route = createFileRoute("/attraction/$id")({
         `Free ${bare} audio guide — history, what to look for and practical tips, in ${LANGUAGE_COUNT_LABEL} languages. Works offline, no ticket needed.`,
         `Free ${bare} audio guide — history, what to look for and practical tips, in ${LANGUAGE_COUNT_LABEL} languages.`,
       ],
-      158
+      158,
     );
     // string = the /explore/ page about this place; null = there is none
     // (or the name belongs to several places); undefined = not looked up
@@ -280,18 +298,33 @@ function AttractionPage() {
   const search = Route.useSearch();
   // Hand-off hint stashed by the linking page just before navigation
   // (see setAttractionHint in lib/api.ts). Lets us render the right
-  // photo/city/name immediately without dragging them through the URL.
-  // We read once on mount via useState's initializer so the very first
-  // render has the data — no second-pass flicker. The hint stays in
-  // sessionStorage for as long as the tab lives, but the linker
-  // overwrites it on every new card click, so cross-city slug
+  // photo/city/name without dragging them through the URL. The hint
+  // stays in sessionStorage for as long as the tab lives, but the
+  // linker overwrites it on every new card click, so cross-city slug
   // collisions (e.g. "Cathedral" in both Tbilisi and Rome) can't
-  // serve a stale photo. Server-side render (SSR for first visit)
-  // sees null and falls back to search params — those are still in
-  // validateSearch for backward compat with old shared bookmarks.
-  const [hint] = useState(() =>
-    typeof window === "undefined" ? null : getAttractionHint(id),
-  );
+  // serve a stale photo.
+  //
+  /* Read in an EFFECT, not in the useState initializer. Beka
+   * 2026-10-29.
+   *
+   * The old line was literally
+   *     useState(() => typeof window === "undefined" ? null : getAttractionHint(id))
+   * and that server/client branch is the FIRST bullet in React's own
+   * explanation of error #418. It guaranteed the two sides disagreed
+   * whenever a hint existed: the server rendered the URL's name/city/
+   * photo and the browser's first render used the hint's, so the
+   * title, the city line and the hero image could all differ.
+   *
+   * Third instance of this bug on this page — `attraction` and
+   * `guide` below were the other two. The lesson, written down so the
+   * next one does not happen: on an SSR'd route, NOTHING that reads
+   * localStorage or sessionStorage may be read during the first
+   * render. Seed from the URL (which the server also sees), then
+   * adopt device state in an effect. */
+  const [hint, setHint] = useState<ReturnType<typeof getAttractionHint>>(null);
+  useEffect(() => {
+    setHint(getAttractionHint(id));
+  }, [id]);
   const searchName = hint?.name ?? search.name;
   const searchCity = hint?.city ?? search.city;
   const searchPhoto = hint?.photo ?? search.photo;
@@ -345,12 +378,23 @@ function AttractionPage() {
   // Beka caught the same name resolving to Dadiani Palace (Georgia)
   // on one open and Bangkok Grand Palace on another — the cache row
   // key (name + city) differs when city is missing.
-  const [attraction, setAttraction] = useState<Attraction | null>(() => {
-    const slug = attractionSlug(searchName ?? unslugAttraction(id));
-    const seed = getSaved().find((s) => s.id === slug);
-    if (seed) return seed.attraction;
-    return searchName ? { name: searchName } : null;
-  });
+  /* NOTE: the saved-store seed is applied in an effect below, NOT in
+   * this initializer. Beka 2026-10-29.
+   *
+   * getSaved() reads localStorage, and a useState initializer runs
+   * during the FIRST render — which on the server has no localStorage.
+   * So the server rendered a bare placeholder while the browser's
+   * first render produced the full saved attraction (hero photo, city,
+   * the lot). Different markup on each side, so React aborted
+   * hydration and regenerated the whole page: error #418, variant
+   * "HTML", logged on /attraction/iolani-palace, /attraction/wat-pho,
+   * /attraction/victoria-peak and others.
+   *
+   * `searchName` is safe here — it comes from the URL, which the
+   * server sees too. Only the localStorage part had to move. */
+  const [attraction, setAttraction] = useState<Attraction | null>(() =>
+    searchName ? { name: searchName } : null,
+  );
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   // Geocoded coords fallback when /api/attractions doesn't include
@@ -393,12 +437,43 @@ function AttractionPage() {
   };
   // Full guide payload (script + key_facts/tips/look_for/nearby).
   // Initialized from cache for instant first paint when revisiting a place.
-  const [guide, setGuide] = useState<GuideData | null>(() => {
-    const cached = getCachedGuideData(fallbackName, language, interest);
-    return cached && cached.script ? cached : null;
-  });
+  /* Same story as `attraction` above — the cache read moved to an
+   * effect. getCachedGuideData() reads localStorage, so seeding here
+   * gave the browser a full guide script on its first render while
+   * the server had none: #418, variant "text". */
+  const [guide, setGuide] = useState<GuideData | null>(null);
   const [loadingScript, setLoadingScript] = useState(false);
   const script = guide?.script ?? "";
+
+  /* Apply the two localStorage seeds — saved attraction and cached
+   * guide — now that hydration is finished. Beka 2026-10-29.
+   *
+   * This effect is the whole point of the #418 fix above: the seeds
+   * still happen, just one frame later, so the server's HTML and the
+   * browser's first render agree and React keeps the page instead of
+   * rebuilding it. The user-visible result is the same "instant on
+   * revisit" paint the initializers were written for.
+   *
+   * Runs before the network effects below, so a cache hit still beats
+   * the fetch and a revisit does not flash empty.
+   *
+   * Both setters are guarded: if the network has already answered in
+   * the meantime, fresher data must not be overwritten by the cache. */
+  useEffect(() => {
+    const slug = attractionSlug(searchName ?? unslugAttraction(id));
+    const seed = getSaved().find((s) => s.id === slug);
+    if (seed?.attraction) {
+      setAttraction((cur) => (cur && cur.city ? cur : seed.attraction));
+    }
+    const cached = getCachedGuideData(fallbackName, language, interest);
+    if (cached?.script) {
+      setGuide((cur) => cur ?? cached);
+    }
+    // Intentionally keyed on the identity of the place only. Re-running
+    // this on every language/interest change would let a stale cache
+    // entry stomp a fresh fetch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, searchName, fallbackName]);
 
   /* Play Store review prompt — the actual attempt. Beka 2026-09-19.
    *
@@ -419,8 +494,7 @@ function AttractionPage() {
   useEffect(() => {
     if (!guide) return;
     void maybeAskForReview({
-      inPreferredLanguage:
-        normalizeCacheLang(language) === normalizeCacheLang(preferredLanguage),
+      inPreferredLanguage: normalizeCacheLang(language) === normalizeCacheLang(preferredLanguage),
       online,
     });
   }, [guide, language, preferredLanguage, online]);
@@ -441,18 +515,9 @@ function AttractionPage() {
     // (rather than the later-declared `a` / `name` shorthand) so
     // the useMemo callback doesn't trip a TDZ when those bindings
     // aren't initialised yet at component-evaluation time.
-    const titlePart = (
-      attraction?.name ??
-      searchName ??
-      fallbackName ??
-      ""
-    ).trim();
+    const titlePart = (attraction?.name ?? searchName ?? fallbackName ?? "").trim();
     if (titlePart) parts.push(titlePart + ".");
-    const aboutPart = (
-      attraction?.outside_desc ??
-      attraction?.description ??
-      ""
-    ).trim();
+    const aboutPart = (attraction?.outside_desc ?? attraction?.description ?? "").trim();
     if (aboutPart) parts.push("\n\n" + aboutPart);
     if (guide.script) parts.push("\n\n" + guide.script);
     const join = (items: string[]) =>
@@ -485,8 +550,7 @@ function AttractionPage() {
   // city so generic-named places like "Grand Palace" land in the
   // user's actual destination (Bangkok), not the API key's regional
   // default (Tbilisi).
-  const heroCity =
-    (typeof attraction?.city === "string" ? attraction.city : null) || searchCity;
+  const heroCity = (typeof attraction?.city === "string" ? attraction.city : null) || searchCity;
   // Choose a Wikipedia/Google-friendly query. Non-Latin display names
   // ("ლუვრი", "東京タワー", "Колизей") match the wrong article on
   // en.wikipedia.org's text search — Wikipedia falls back to a
@@ -814,7 +878,15 @@ function AttractionPage() {
       clearTimeout(timeout);
       controller.abort();
     };
-  }, [attraction?.lat, attraction?.lng, attraction?.name_en, attraction?.name, attraction?.city, fallbackName, searchCity]);
+  }, [
+    attraction?.lat,
+    attraction?.lng,
+    attraction?.name_en,
+    attraction?.name,
+    attraction?.city,
+    fallbackName,
+    searchCity,
+  ]);
 
   // Inline audio player state. Replaces the old /player page — Play
   // now opens a sticky panel at the bottom of this screen so the user
@@ -887,10 +959,7 @@ function AttractionPage() {
             they always sit on top regardless of which slide is
             currently active. */}
         <section className="relative h-[420px] w-full overflow-hidden">
-          <HeroPhotoCarousel
-            slides={heroSlides}
-            alt={a?.name ?? fallbackName}
-          />
+          <HeroPhotoCarousel slides={heroSlides} alt={a?.name ?? fallbackName} />
           <div className="absolute inset-0 bg-gradient-hero" />
 
           <header className="relative z-10 flex items-start justify-between px-6 pt-safe">
@@ -1005,8 +1074,8 @@ function AttractionPage() {
           heroPhoto={heroPhoto}
           heroSlides={heroSlides}
           cityHint={(typeof a?.city === "string" ? a.city : null) || searchCity || null}
-          latHint={typeof a?.lat === "number" ? a.lat : geocoded?.lat ?? null}
-          lngHint={typeof a?.lng === "number" ? a.lng : geocoded?.lng ?? null}
+          latHint={typeof a?.lat === "number" ? a.lat : (geocoded?.lat ?? null)}
+          lngHint={typeof a?.lng === "number" ? a.lng : (geocoded?.lng ?? null)}
           language={language}
           interest={interest}
           starting={starting}
@@ -1042,11 +1111,7 @@ function AttractionPage() {
               {(
                 [
                   ["guide", t("highlights.tabGuide"), <Info key="i" className="h-4 w-4" />],
-                  [
-                    "works",
-                    t("highlights.tabWorks"),
-                    <Sparkles key="s" className="h-4 w-4" />,
-                  ],
+                  ["works", t("highlights.tabWorks"), <Sparkles key="s" className="h-4 w-4" />],
                 ] as const
               ).map(([tab, label, icon]) => {
                 const active = museumTab === tab;
@@ -1058,7 +1123,9 @@ function AttractionPage() {
                     aria-selected={active}
                     onClick={() => pickMuseumTab(tab)}
                     className={`relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-[13px] font-bold transition-colors duration-200 ${
-                      active ? "text-primary-foreground" : "text-foreground/70 hover:text-foreground"
+                      active
+                        ? "text-primary-foreground"
+                        : "text-foreground/70 hover:text-foreground"
                     }`}
                   >
                     {icon}
@@ -1089,13 +1156,13 @@ function AttractionPage() {
             about those pages changes. */}
         {showGuideTab && (
           <>
-        {/* Interest picker — Beka's product call: bias the *guide* (not
+            {/* Interest picker — Beka's product call: bias the *guide* (not
             the discovery list) by user interest. Tap a chip → re-fetches
             the n8n /webhook/guide with that interest, and the script /
             chips come back tilted toward it. History default. */}
-        <InterestPicker current={interest} onPick={setInterest} loading={loadingScript} />
+            <InterestPicker current={interest} onPick={setInterest} loading={loadingScript} />
 
-        {/* About — outside-view short description (n8n: outside_desc).
+            {/* About — outside-view short description (n8n: outside_desc).
             FIRST: at-a-glance factual summary.
             Beka 2026-08-08 — no longer waits for the ATTRACTIONS
             endpoint. Gating on `loading` (the /api/attractions list)
@@ -1106,56 +1173,56 @@ function AttractionPage() {
             background enrichment (see the fetchAttractions effect),
             so About/Stops render as soon as the GUIDE lands and the
             about text fills in later if the list adds anything. */}
-        <AboutSection
-          loading={loadingScript}
-          aboutText={a?.outside_desc ?? a?.description ?? ""}
-        />
+            <AboutSection
+              loading={loadingScript}
+              aboutText={a?.outside_desc ?? a?.description ?? ""}
+            />
 
-        {/* The story — what a local would tell you (n8n: insider_desc).
+            {/* The story — what a local would tell you (n8n: insider_desc).
             SECOND: longer, story-shaped intro before the audio guide
             content itself. */}
-        <StorySection storyText={a?.insider_desc} />
+            <StorySection storyText={a?.insider_desc} />
 
-        {/* The stops — the full narrated audio-guide content (n8n: script).
+            {/* The stops — the full narrated audio-guide content (n8n: script).
             THIRD: rendered as flowing prose, with no chapter cards or
             numbering — Beka's request was to keep the content but drop
             the divisions. */}
-        <StopsSection script={script} loading={loadingScript} />
+            <StopsSection script={script} loading={loadingScript} />
 
-        {/* Key facts — emerald chips */}
-        <ChipsSection
-          title={t("attr.keyFactsTitle")}
-          emoji="💡"
-          icon={<Lightbulb className="h-3 w-3" />}
-          tone="emerald"
-          items={guide?.key_facts}
-        />
+            {/* Key facts — emerald chips */}
+            <ChipsSection
+              title={t("attr.keyFactsTitle")}
+              emoji="💡"
+              icon={<Lightbulb className="h-3 w-3" />}
+              tone="emerald"
+              items={guide?.key_facts}
+            />
 
-        {/* What to look for — sky chips */}
-        <ChipsSection
-          title={t("attr.whatToLook")}
-          emoji="👀"
-          icon={<Eye className="h-3 w-3" />}
-          tone="sky"
-          items={guide?.look_for}
-        />
+            {/* What to look for — sky chips */}
+            <ChipsSection
+              title={t("attr.whatToLook")}
+              emoji="👀"
+              icon={<Eye className="h-3 w-3" />}
+              tone="sky"
+              items={guide?.look_for}
+            />
 
-        {/* Tips — list with rotating icons */}
-        <TipsSection items={guide?.tips} />
+            {/* Tips — list with rotating icons */}
+            <TipsSection items={guide?.tips} />
 
-        {/* Report incorrect info — one-tap, only when a guide is loaded. */}
-        {!!script && (
-          <ReportInaccuracyButton
-            slug={id}
-            name={a?.name ?? fallbackName}
-            nameEn={(a as { name_en?: string } | null)?.name_en ?? null}
-            city={typeof a?.city === "string" ? a.city : null}
-            language={language}
-            interest={interest}
-            script={script}
-            userId={user?.id ?? null}
-          />
-        )}
+            {/* Report incorrect info — one-tap, only when a guide is loaded. */}
+            {!!script && (
+              <ReportInaccuracyButton
+                slug={id}
+                name={a?.name ?? fallbackName}
+                nameEn={(a as { name_en?: string } | null)?.name_en ?? null}
+                city={typeof a?.city === "string" ? a.city : null}
+                language={language}
+                interest={interest}
+                script={script}
+                userId={user?.id ?? null}
+              />
+            )}
           </>
         )}
 
@@ -1430,10 +1497,7 @@ function ActionRow({
           .select("preferred_voice")
           .eq("user_id", user.id)
           .maybeSingle();
-        if (
-          data?.preferred_voice &&
-          /-[A-Z][A-Za-z]+Neural$/.test(data.preferred_voice)
-        ) {
+        if (data?.preferred_voice && /-[A-Z][A-Za-z]+Neural$/.test(data.preferred_voice)) {
           voicePref = data.preferred_voice;
         }
       } catch {
@@ -1570,10 +1634,7 @@ function ActionRow({
       for (const v of voicesToWipe) {
         if (seen.has(v)) continue;
         seen.add(v);
-        void deleteOfflineItem(
-          makeAudioId(id, language, v),
-          makeScriptId(id, language),
-        );
+        void deleteOfflineItem(makeAudioId(id, language, v), makeScriptId(id, language));
       }
       // Beka 2026-07-05 — un-download also frees the cached gallery
       // photos and zeroes the count on the saved row (if any).
@@ -1614,10 +1675,7 @@ function ActionRow({
           .select("preferred_voice")
           .eq("user_id", user.id)
           .maybeSingle();
-        if (
-          data?.preferred_voice &&
-          /-[A-Z][A-Za-z]+Neural$/.test(data.preferred_voice)
-        ) {
+        if (data?.preferred_voice && /-[A-Z][A-Za-z]+Neural$/.test(data.preferred_voice)) {
           voicePref = data.preferred_voice;
         }
       }
@@ -1750,8 +1808,7 @@ function ActionRow({
           place={{
             slug: id,
             name,
-            city:
-              (typeof attraction?.city === "string" && attraction.city) || cityHint,
+            city: (typeof attraction?.city === "string" && attraction.city) || cityHint,
             imageUrl:
               heroPhoto ??
               (typeof attraction?.image_url === "string" ? attraction.image_url : null),
@@ -2628,10 +2685,7 @@ function MuseumHighlightsSection({
             .select("preferred_voice")
             .eq("user_id", user.id)
             .maybeSingle();
-          if (
-            data?.preferred_voice &&
-            /-[A-Z][A-Za-z]+Neural$/.test(data.preferred_voice)
-          ) {
+          if (data?.preferred_voice && /-[A-Z][A-Za-z]+Neural$/.test(data.preferred_voice)) {
             voicePref = data.preferred_voice;
           }
         } catch {
@@ -2668,9 +2722,7 @@ function MuseumHighlightsSection({
     if (sort === "curated") return filtered;
     const out = [...filtered];
     if (sort === "az") {
-      out.sort((a, b) =>
-        foldForSearch(a.h.name).localeCompare(foldForSearch(b.h.name)),
-      );
+      out.sort((a, b) => foldForSearch(a.h.name).localeCompare(foldForSearch(b.h.name)));
     } else {
       // Oldest first; anything we can't date sinks to the bottom
       // rather than polluting the timeline with 0s.
@@ -2820,11 +2872,7 @@ function MuseumHighlightsSection({
  * module is server-only.
  */
 function foldForSearch(s: string): string {
-  return s
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "");
+  return s.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 }
 
 /**
@@ -3065,9 +3113,7 @@ function HighlightCard({
       // "The Swing" — article at "The Swing (Fragonard)", not
       // "The Swing (Jean-Honoré Fragonard)". Try the surname-only
       // disambiguator first, then the full name, then bare.
-      const artistSurname = artist
-        ? (artist.split(/\s+/).filter(Boolean).pop() ?? "")
-        : "";
+      const artistSurname = artist ? (artist.split(/\s+/).filter(Boolean).pop() ?? "") : "";
       const candidates: string[] = [];
       if (artistSurname && artistSurname !== artist) {
         candidates.push(`${baseName} (${artistSurname})`);
@@ -3331,13 +3377,7 @@ function HighlightCard({
  * when no photo had resolved yet — keeps the layout from
  * collapsing while the lookups are in flight.
  */
-function HeroPhotoCarousel({
-  slides,
-  alt,
-}: {
-  slides: string[];
-  alt: string;
-}) {
+function HeroPhotoCarousel({ slides, alt }: { slides: string[]; alt: string }) {
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const total = slides.length;
@@ -3437,9 +3477,7 @@ function HeroPhotoCarousel({
                 onClick={() => go(i)}
                 aria-label={`Go to photo ${i + 1}`}
                 className={`pointer-events-auto h-1.5 rounded-full transition-all ${
-                  i === idx
-                    ? "w-6 bg-primary"
-                    : "w-1.5 bg-foreground/30 hover:bg-foreground/50"
+                  i === idx ? "w-6 bg-primary" : "w-1.5 bg-foreground/30 hover:bg-foreground/50"
                 }`}
               />
             ))}
