@@ -248,3 +248,42 @@ recomputed and re-sorted. 9 pages still have no sourced coordinate
 pages, Metekhi Palace, Metekhi Square, the funicular page, Batumi Piazza):
 their own pages keep the placeholder, and other pages' rails show them
 without a distance.
+
+## Content-factory wave 1 (EN, 2026-10-30)
+
+1,367 new English attraction pages from the content factory (`target_guides` with
+Wikipedia ≥3k views/month, guides already cached — no generation was paid for),
+plus 51 new city hubs, 17 new country hubs, 63 rebuilt city hubs and 61 rebuilt
+country hubs.
+
+Pipeline (data lives outside the repo, in the wave's FACTORY_DATA folder):
+1. `items.json` — one record per guide: the cached_guides payload (title, script,
+   key_facts, look_for, tips, duration) + Wikidata (coordinates, description,
+   country ISO, enwiki, official site) + Commons photo with author and licence.
+   Curation before that step dropped 143 guides (not visitable, objects shown
+   elsewhere, ancient-city concepts, destroyed, duplicates within the wave), 12
+   duplicates of existing pages, and held 29 in disputed territory (Jerusalem,
+   West Bank, Crimea) pending a labelling decision.
+2. `gen_factory_en.py <stage>` — the pages. Lead = Wikidata description + first
+   key fact + guide length; JSON-LD TouristAttraction with geo, address,
+   additionalType and `sameAs` (Wikipedia, Wikidata, official site); FAQ only
+   from the guide's own facts/tips/look-for; hero photo credited under the
+   image; "Nearby" rail from new + existing EN pages within 50 km. No
+   "time needed" row (the factory has no visit time) and no
+   `isAccessibleForFree` claim about the place itself.
+   City: an existing hub when the factory city matches it (or the place is
+   within 4 km of it), otherwise the factory city — "near <city>" in the text
+   when the page has no hub, because the factory city is the nearest town.
+3. `gen_factory_hubs.py <public/explore> <stage>` — hubs. A hub that existed
+   before the wave keeps its hreflang block, language menu, hero photo,
+   "Planning your time" section and its old cards verbatim; wave cards are
+   rebuilt from `items.json` on every run, and every indexable pre-wave page in the
+   city folder gets a card (several old hubs had stopped listing newer pages).
+   A hub with 3+ guides is indexable; one that was already indexable stays so.
+   Country hubs list city hubs plus a "More places" list for pages with no
+   city hub, so every page has at least one hub link.
+4. link-langs → sitemap (8,027 URLs) + llms.txt; `build-explore-canonical.py`
+   for the app's /attraction canonical; index.html A–Z + search-index.json.
+
+Also in this pass: "45 languages" → "50+" on every EN facts table and hub stat
+(2,595 files incl. twins) and the Hindi facts rows (267 files).
