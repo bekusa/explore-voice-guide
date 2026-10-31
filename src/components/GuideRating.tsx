@@ -139,9 +139,7 @@ export function GuideRating({
   return (
     <section className="mt-8 px-5">
       <div className="rounded-2xl border border-border bg-card px-4 py-4">
-        <p className="text-[13px] font-semibold text-foreground">
-          {t("rating.question")}
-        </p>
+        <p className="text-[13px] font-semibold text-foreground">{t("rating.question")}</p>
 
         <div
           className="mt-3 flex items-center gap-1.5"
@@ -220,9 +218,7 @@ export function GuideRating({
               </button>
             </div>
             {commentSaved && (
-              <p className="mt-1 text-[11px] text-muted-foreground">
-                {t("rating.commentSaved")}
-              </p>
+              <p className="mt-1 text-[11px] text-muted-foreground">{t("rating.commentSaved")}</p>
             )}
           </div>
         )}
