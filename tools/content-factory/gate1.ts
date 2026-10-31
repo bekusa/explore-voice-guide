@@ -160,8 +160,9 @@ export function gate1Attractions(list: AttractionItem[]): GateResult {
     else ratings.push(r);
     if (!/^\d+(\.\d+)?-\d+(\.\d+)? (min|hours)$/.test(String(a.duration ?? ""))) soft.push(`${tag}:duration:${a.duration}`);
     if (!INTEREST_IDS.has(String(a.category ?? ""))) soft.push(`${tag}:category:${a.category}`);
-    // The prompt's definition gate excludes paid-leisure venues.
-    if (/\b(amusement|theme|water ?park|aqua ?park|casino|mall|shopping|cinema|bowling|escape room|trampoline|spa|nightclub)\b/i.test(`${type} ${name}`)) soft.push(`${tag}:excluded_venue_type:${type}`);
+    // The prompt's definition gate excludes paid-leisure venues. Destination theme parks,
+    // water parks and thermal spas are allowed since 2026-10-31 (Beka), so they are not flagged here.
+    if (/\b(casino|mall|shopping|cinema|bowling|escape room|trampoline|nightclub|family fun|fun cent(er|re)|entertainment cent(er|re))\b/i.test(`${type} ${name}`)) soft.push(`${tag}:excluded_venue_type:${type}`);
     const banned = findAll(`${a.outside_desc ?? ""} ${a.insider_desc ?? ""}`, re(LIST_BANNED));
     if (banned.length) soft.push(`${tag}:banned:${banned.join(",")}`);
   });

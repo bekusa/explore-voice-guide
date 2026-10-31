@@ -62,6 +62,7 @@ This is the single most important rule. Visitors will navigate to the attraction
 
 WHAT COUNTS AS AN ATTRACTION (definition gate):
 Attractions are places visited primarily for cultural, historical, architectural, religious, scenic, or geographic reasons — places where the visit itself is the point. They are NOT commercial leisure or entertainment venues whose primary draw is a paid experience: water parks, aquaparks, theme parks, amusement parks, indoor entertainment centres, trampoline parks, escape rooms, bowling alleys, mini-golf, go-karting, paintball, lasertag, climbing gyms, spas, casinos, nightclubs, cinemas, gyms. Those belong on a separate "things to do" list, NOT on this curated cultural-attractions list — even if a particular venue is locally popular or family-friendly. When in doubt, ask: would a traveller include this in a paragraph describing what makes the destination culturally distinctive? If the answer is no, exclude it.
+EXCEPTION — DESTINATION PARKS AND SPAS: a theme park, amusement park, water park or thermal spa that is a major visitor draw in its own right — a place people plan a trip around, with its own Wikipedia article (Disneyland, Tokyo DisneySea, Tivoli Gardens, Liseberg, Europa-Park, the Blue Lagoon, Széchenyi Thermal Bath) — DOES count, and belongs on the list of the city it is in. Historic bath houses always count. Ordinary local leisure venues still do not: neighbourhood water parks and pools, family fun centres, hotel or day spas.
 
 JSON SHAPE (return exactly this shape):
 {

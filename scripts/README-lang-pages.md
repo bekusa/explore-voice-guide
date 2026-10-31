@@ -287,3 +287,20 @@ Pipeline (data lives outside the repo, in the wave's FACTORY_DATA folder):
 
 Also in this pass: "45 languages" → "50+" on every EN facts table and hub stat
 (2,595 files incl. twins) and the Hindi facts rows (267 files).
+
+### Wave 2 (2026-10-31)
+
+All remaining published factory guides (Wikipedia < 3k views/month): 4,931 more EN
+pages, so the factory set is now 6,298 pages. Wave 1 + 2 are generated together
+from one combined `items.json` (FACTORY_DATA/wall), so every factory page's
+"Nearby" rail and every hub sees both waves; re-running both generators over the
+combined set is safe (wave cards are rebuilt, pre-wave cards and hub heads kept).
+Wave 2 curation was automatic: Wikidata P31 "not a place" types (organisations,
+rides, learned societies), destroyed buildings without remains, name/geo duplicates
+of existing pages, and the same disputed-area hold as wave 1 (by coordinates).
+City: same rules as wave 1; a factory "city" that is a generic region name
+(Central District, Southern Province) or that spans >300 km gets a country suffix
+instead of one hub across countries.
+Totals after wave 2: 454 city hubs touched (334 new), 137 country hubs (66 new),
+sitemap 13,311 URLs. `link-langs.py` HEAD_BYTES raised to 200 KB because the Rome
+hub's JSON-LD (209 places) ends its <head> past 70 KB.

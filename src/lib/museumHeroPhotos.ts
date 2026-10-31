@@ -7,9 +7,26 @@
  * into `public/images/museums/`. Filenames are case-sensitive on
  * Cloudflare's static asset host, so capitalisation matters.
  *
+ * ── AND NO PARENTHESES, OR ANYTHING ELSE A URL HAS TO ENCODE ─────
+ * Beka 2026-10-29. The MoMA photo was stored as
+ *     The_Museum_of_Modern_Art_(MoMA).jpg
+ * and 404'd in production for months. The file was deployed and fine
+ * — Cloudflare's asset host only matched the PERCENT-ENCODED path
+ * (`%28MoMA%29`), while the browser requested the raw `(MoMA)`. I
+ * confirmed both against the live site: raw → 404, encoded → 200.
+ *
+ * Encoding it in code would not have been a real fix either, because
+ * neither encodeURI nor encodeURIComponent escapes parentheses — it
+ * would have needed a hand-rolled replace, in every consumer. So the
+ * file was renamed instead, and the rule is: keep these filenames to
+ * [A-Za-z0-9_.-] only.
+ *
  * Graceful fallback when a file is missing: `useLazyPlacePhoto` keeps
  * doing its existing job — if the static URL 404s, the consumer falls
- * through to the dynamic API lookup exactly as before.
+ * through to the dynamic API lookup exactly as before. That fallback
+ * is WHY this went unnoticed: the MoMA card always showed a picture,
+ * just never the curated one, and only the new resource logging made
+ * the 404 visible at all.
  */
 const MUSEUM_HERO_PHOTOS: Record<string, string> = {
   louvre: "/images/museums/louvre.jpg",
@@ -35,9 +52,9 @@ const MUSEUM_HERO_PHOTOS: Record<string, string> = {
   "smithsonian-natural-history":
     "/images/museums/Smithsonian_National_Museum_of_Natural_History.jpg",
   "national-museum-of-anthropology": "/images/museums/Musee_National_Anthropologie.jpg",
-  "the-museum-of-modern-art-moma": "/images/museums/The_Museum_of_Modern_Art_(MoMA).jpg",
-  "museum-of-modern-art-moma": "/images/museums/The_Museum_of_Modern_Art_(MoMA).jpg",
-  moma: "/images/museums/The_Museum_of_Modern_Art_(MoMA).jpg",
+  "the-museum-of-modern-art-moma": "/images/museums/The_Museum_of_Modern_Art_MoMA.jpg",
+  "museum-of-modern-art-moma": "/images/museums/The_Museum_of_Modern_Art_MoMA.jpg",
+  moma: "/images/museums/The_Museum_of_Modern_Art_MoMA.jpg",
 };
 
 /** Same slug shape used by `scripts/download-hero-photos.mjs`. */

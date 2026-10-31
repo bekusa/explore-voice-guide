@@ -131,6 +131,11 @@ def article(d):
     return "an" if fl[:1] in "aeiou" else "a"
 
 
+def fold(s):
+    import unicodedata
+    return "".join(c for c in unicodedata.normalize("NFKD", (s or "").replace("ı", "i")) if not unicodedata.combining(c)).lower()
+
+
 def where(a):
     return a["country"] if a["city_disp"] == a["country"] or not a["city_disp"] else f'{a["city_disp"]}, {a["country"]}'
 
@@ -139,7 +144,7 @@ def prep(a):
     """'in' when the page sits in a real city hub or the name/description says so;
     otherwise 'near' - the factory city is the nearest town the app files it under."""
     c = (a["city_disp"] or "").lower()
-    return "in" if a["how"] != "own" or (c and c in (a["desc"] + " " + a["title"]).lower()) else "near"
+    return "in" if a["how"] != "own" or (c and fold(c) in fold(a["desc"] + " " + a["title"])) else "near"
 
 
 HAS_LOC = re.compile(r"\b(?:in|of|near|on|at)\s+(?:the\s+)?[A-Z]")
@@ -156,7 +161,7 @@ def lead(a, short=False):
         else:
             ar = article(d)
             P.append(f"{t} is {ar + ' ' if ar else ''}{d}.")
-        if a["city_disp"].lower() not in d.lower() and (a["how"] != "own" or not HAS_LOC.search(d)):
+        if fold(a["city_disp"]) not in fold(d) and (a["how"] != "own" or not HAS_LOC.search(d)):
             P.append(f"It is {prep(a)} {where(a)}.")
     else:
         P.append(f"{t} is {article(cat)} {cat} {prep(a)} {where(a)}.")

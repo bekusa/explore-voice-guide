@@ -18,6 +18,15 @@
  * (Leaning Tower of Pisa → Lucca, Auschwitz → Tychy), and the city is
  * both sent to the prompt and used as the cache bucket, so we resolve it
  * from Wikidata's "located in" (P131) chain instead.
+ *
+ * 2026-10-31 (post-publication audit): the October target list has no Los
+ * Angeles, Vienna, Madrid, Kolkata, Kyiv…, so "nearest target settlement"
+ * sent LACMA to Inglewood and the Belvedere to Klosterneuburg, and chain
+ * entries that are admin units (Greater London, Bezirk Mitte) became the
+ * city. First choice is now the most populous P131 ancestor that is a real
+ * city in GeoNames (geonames-cities15000.json next to the CSVs, made by
+ * geonames-export.py)
+ * and close enough to count as being in it.
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -55,6 +64,43 @@ export function parseCsv(text: string): Row[] {
 
 const SETTLEMENT_TYPES = new Set(["big city", "city", "capital", "town", "settlement", "village", "urban area", "municipality", "agglomeration", "quarter", "hamlet"]);
 const RUIN_CATEGORIES = /archaeolog|ruin|ancient|tell|necropolis|fortification|castle|amphitheatre|theatre/i;
+
+// ── GeoNames: is a P131 ancestor a real city, and is the place inside it? ──
+// geonames-cities15000.json sits next to the CSVs (python tools/content-factory/geonames-export.py <dir>):
+// rows of [name, lat, lng, population]. Matched on the main GeoNames name only: alternate names
+// matched admin units and districts to the wrong place (Jerusalem → "Quds", Bangkok → Phra Nakhon).
+type GeoCity = { name: string; lat: number; lng: number; pop: number };
+const ADMIN_AFFIX = /^(city of|national capital territory of|metropolitan city of|municipality of|comune di|canton of|province of)\s+|\s+(municipality|metropolitan municipality|district|city|metropolitan area|prefecture|county|raion|rayon|province|region|oblast|governorate|voivodeship)$/i;
+const foldCity = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+let geoByName: Map<string, GeoCity[]> = new Map();
+function loadGeonames(dir: string) {
+  const file = join(dir, "geonames-cities15000.json");
+  if (!existsSync(file)) { console.warn(`no ${file}: GeoNames city check is off (run geonames-export.py)`); return; }
+  for (const [name, lat, lng, pop] of JSON.parse(readFileSync(file, "utf8")) as [string, number, number, number][]) {
+    const k = foldCity(name);
+    if (!geoByName.has(k)) geoByName.set(k, []);
+    geoByName.get(k)!.push({ name, lat, lng, pop });
+  }
+}
+/** A place counts as "in" a city within 8 km of a town's centre, ~15 km of a 5-million city's. */
+const cityRadiusKm = (pop: number) => 8 + 6 * Math.log10(Math.max(pop, 300_000) / 300_000);
+/**
+ * The most populous P131 ancestor that is a real city the place lies in. Returns the Wikidata
+ * English label (Seville, not GeoNames' Sevilla), without an admin affix ("Ankara Province" → "Ankara").
+ */
+function chainCity(chains: WdInfo["chain"], pos: { lat: number; lng: number }): { label: string; pop: number } | null {
+  let best: { label: string; pop: number } | null = null;
+  for (const chain of chains) for (const a of chain) {
+    if (!a.label || /^Q\d+$/.test(a.label)) continue;
+    const bare = a.label.replace(ADMIN_AFFIX, "").trim();
+    for (const [label, k] of [[a.label, foldCity(a.label)], [bare, foldCity(bare)]] as const) {
+      for (const c of geoByName.get(k) ?? []) {
+        if (km(pos, c) <= cityRadiusKm(c.pop) && (!best || c.pop > best.pop)) best = { label, pop: c.pop };
+      }
+    }
+  }
+  return best;
+}
 
 type WdInfo = {
   inception: string[];
@@ -166,6 +212,7 @@ async function main() {
   const outDir = dirname(guidesCsv);
   const guides = parseCsv(readFileSync(guidesCsv, "utf8"));
   const cities = parseCsv(readFileSync(citiesCsv, "utf8"));
+  loadGeonames(outDir);
 
   const historical = await dissolvedEntities(cities.map((c) => c.qid), join(outDir, "wikidata-cities-dissolved.json"));
   const cityByQid = new Map(cities.filter((c) => SETTLEMENT_TYPES.has(c.place_type) && !historical.has(c.qid)).map((c) => [c.qid, c]));
@@ -198,11 +245,19 @@ async function main() {
   for (const g of candidates) {
     const info = wd.get(g.qid);
     if (gone.has(g.qid)) { skipped.no_longer_exists = (skipped.no_longer_exists ?? 0) + 1; skippedNames.push(`${g.rank} ${g.name}`); continue; }
-    // (a) nearest ancestor that is one of our target settlements
     let city = "";
     let cityAliases: string[] = [];
     let how = "";
-    for (const chain of info?.chain ?? []) {
+    const pos = Number.isFinite(Number(g.lat)) ? { lat: Number(g.lat), lng: Number(g.lng) } : null;
+    // (0) the most populous ancestor that is a real city the place lies in (LACMA → Los Angeles, not Inglewood)
+    const gc = pos ? chainCity(info?.chain ?? [], pos) : null;
+    if (gc) {
+      city = gc.label; how = "p131_geonames_city";
+      const target = settlements.find((c) => foldCity(c.row.name) === foldCity(gc.label) && km(pos!, c.pos) <= 30);
+      if (target && target.row.en_title !== target.row.name) cityAliases = [target.row.en_title];
+    }
+    // (a) nearest ancestor that is one of our target settlements
+    if (!city) for (const chain of info?.chain ?? []) {
       const hit = chain.find((a) => cityByQid.has(a.id));
       if (hit) {
         const c = cityByQid.get(hit.id)!;

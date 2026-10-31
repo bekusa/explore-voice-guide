@@ -83,7 +83,7 @@ import pickle,hashlib
 CACHE=os.environ.get('LINK_PAGE_CACHE')
 SIG=hashlib.sha1('\n'.join(sorted(pages)).encode()).hexdigest()
 cache={}
-HEAD_BYTES=48000     # every page's </head> sits well inside this
+HEAD_BYTES=200000    # big city hubs (Rome: 209 places in JSON-LD) close </head> past 70 KB
 def _load(rel):
     for _ in range(4):
         try: return rel,open(os.path.join(EXP,rel),encoding='utf-8',errors='ignore').read(HEAD_BYTES)

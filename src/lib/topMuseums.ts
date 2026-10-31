@@ -175,7 +175,11 @@ export const MUSEUMS: Museum[] = [
     city: "New York",
     country: "United States",
     blurb: "Van Gogh's Starry Night, Picasso's Demoiselles, the modern canon.",
-    image: "/images/museums/The_Museum_of_Modern_Art_(MoMA).jpg",
+    // Filename has NO parentheses on purpose — the display name keeps
+    // them, the file must not. Cloudflare's asset host served the old
+    // `(MoMA).jpg` only when the parens were percent-encoded, so the
+    // browser's raw request 404'd. See museumHeroPhotos.ts.
+    image: "/images/museums/The_Museum_of_Modern_Art_MoMA.jpg",
     emoji: "✨",
   },
 ];
