@@ -18,6 +18,7 @@ import {
 } from "@/lib/analytics";
 import { LANGUAGE_COUNT_LABEL } from "@/lib/languages";
 import { installClientErrorGuard } from "@/lib/clientErrorGuard";
+import { restoreLangFromNative } from "@/lib/i18n";
 import { reportClientError } from "@/lib/reportClientError";
 
 import appCss from "../styles.css?url";
@@ -29,6 +30,34 @@ import appCss from "../styles.css?url";
 // (the SSR shell ships lang="en" because we don't know the user's
 // preference at SSR time; the script overrides it client-side).
 const themeBootScript = `(function(){try{var t=localStorage.getItem('tg.theme');if(t==='light'){document.documentElement.classList.add('light');}var l=localStorage.getItem('tg.lang');if(l){document.documentElement.setAttribute('lang',l);}}catch(e){}})();`;
+
+/**
+ * iPhone / iPad only: add `maximum-scale=1` to the viewport.
+ *
+ * Beka 2026-10-31, first iOS TestFlight build: "ეკრანი არ აკეთებს სრულ
+ * ფულსქრინს სიგანეზე. ისქროლება სიგანეზე". iOS zooms the page in when
+ * an input with text smaller than 16px gets focus — the search fields
+ * on /language and /onboarding are 13-14px. The app's web view also
+ * has pinch-zoom switched off (Capacitor's default), so once zoomed
+ * there was no way back: the page stayed wider than the screen and
+ * slid sideways.
+ *
+ * `maximum-scale=1` stops that zoom. Applied on iOS only and from the
+ * client: on Android it would also block pinch-zoom, which people use;
+ * iOS Safari ignores it for pinch (accessibility) and only drops the
+ * focus zoom, and inside the app pinch-zoom was already off.
+ */
+function lockIosViewportScale() {
+  if (typeof navigator === "undefined") return;
+  const ua = navigator.userAgent || "";
+  const isIOS =
+    /iPad|iPhone|iPod/.test(ua) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if (!isIOS) return;
+  const meta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
+  if (!meta || /maximum-scale/.test(meta.content)) return;
+  meta.setAttribute("content", `${meta.content}, maximum-scale=1`);
+}
 
 /**
  * Catch errors that happen BEFORE the bundle is ready to report them.
@@ -320,9 +349,17 @@ function RootComponent() {
       if (l) document.documentElement.setAttribute("lang", l);
     };
     syncLang();
+    void restoreLangFromNative();
     window.addEventListener("tg:lang-changed", syncLang);
     return () => window.removeEventListener("tg:lang-changed", syncLang);
   }, []);
+
+  // iPhone / iPad: stop the zoom-on-focus. See lockIosViewportScale.
+  // Re-applied after each navigation in case the head is re-rendered.
+  useEffect(() => {
+    lockIosViewportScale();
+    return router.subscribe("onResolved", lockIosViewportScale);
+  }, [router]);
 
   // Analytics pageviews — this is a SPA, so a route change doesn't
   // reload the page, so a single page-load pageview would badly

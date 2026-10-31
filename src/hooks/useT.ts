@@ -252,6 +252,36 @@ export function useT() {
   }, [lang]);
 }
 
+/**
+ * Translate one UI key into a SPECIFIC language — not the one on screen.
+ *
+ * Beka 2026-10-31: "ენას რომ ანახლებ, ცვლილების შეტყობინება გამოდის
+ * ძველ ენაზე და არა ახალზე". The /language picker built its "Language
+ * updated" toast with the `t` from the render that was still in the
+ * OLD language, so someone switching to Georgian was told so in
+ * English. Messages that confirm a language change must be written in
+ * the language just chosen; this waits for that language's static
+ * dictionary chunk (usually already cached) and falls back to the
+ * runtime cache, then English, exactly like `useT`.
+ */
+export async function translateUiKeyFor(
+  lang: string,
+  key: UiKey,
+  vars?: Record<string, string | number>,
+): Promise<string> {
+  const norm = normalizeLang(lang);
+  const source = UI_STRINGS[key] ?? key;
+  if (norm === "en") return format(source, vars);
+  try {
+    await ensureStaticLocale(norm);
+  } catch {
+    /* fall through to the runtime cache / English */
+  }
+  const fromStatic = staticUiLookup(norm, key);
+  if (fromStatic !== null) return format(fromStatic, vars);
+  return format(uiLookup(norm, source) ?? source, vars);
+}
+
 /* ─── Free-form translator (destination names, blurbs, etc.) ─── */
 
 export function useTranslated(texts: string[] | readonly string[]): string[] {

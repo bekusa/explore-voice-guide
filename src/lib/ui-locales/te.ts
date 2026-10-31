@@ -356,7 +356,7 @@ export const TE: Partial<Record<UiKey, string>> = {
   "tm.loading.candleLit.title": "కొవ్వొత్తి వెలిగింది…",
   "tm.loading.candleLit.sub": "మీ పాత్ర ముందుకు అడుగుపెడుతోంది",
   "tm.loading.scrollUnfolds.title": "చుట్ట విప్పుకుంటోంది…",
-  "tm.loading.scrollUnfolds.sub": "Claude అనుకరణను పూర్తి చేస్తోంది",
+  "tm.loading.scrollUnfolds.sub": "అనుకరణ పూర్తవుతోంది",
   "tm.role.merchant.label": "వ్యాపారి",
   "tm.role.merchant.hint": "ప్రతిచోటా వ్యాపారం చేస్తాడు, స్వేచ్ఛగా తిరుగుతాడు",
   "tm.role.soldier.label": "సైనికుడు / కాపలాదారు",

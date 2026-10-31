@@ -356,7 +356,7 @@ export const HY: Partial<Record<UiKey, string>> = {
   "tm.loading.candleLit.title": "Մոմը վառվել է…",
   "tm.loading.candleLit.sub": "ձեր կերպարը առաջ է գալիս",
   "tm.loading.scrollUnfolds.title": "Մագաղաթը բացվում է…",
-  "tm.loading.scrollUnfolds.sub": "Claude-ն ավարտում է սիմուլյացիան",
+  "tm.loading.scrollUnfolds.sub": "Սիմուլյացիան ավարտվում է",
   "tm.role.merchant.label": "Վաճառական",
   "tm.role.merchant.hint": "Առևտուր է անում ամենուր, շարժվում է ազատ",
   "tm.role.soldier.label": "Զինվոր / Պահակ",

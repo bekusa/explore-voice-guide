@@ -356,7 +356,7 @@ export const SW: Partial<Record<UiKey, string>> = {
   "tm.loading.candleLit.title": "Mshumaa umewashwa…",
   "tm.loading.candleLit.sub": "mhusika wako anasonga mbele",
   "tm.loading.scrollUnfolds.title": "Kitabu cha kukunjwa kinafunguka…",
-  "tm.loading.scrollUnfolds.sub": "Claude anakamilisha maigizo",
+  "tm.loading.scrollUnfolds.sub": "Maigizo yanakamilishwa",
   "tm.role.merchant.label": "Mfanyabiashara",
   "tm.role.merchant.hint": "Hufanya biashara kila mahali, husafiri kwa uhuru",
   "tm.role.soldier.label": "Askari / Mlinzi",

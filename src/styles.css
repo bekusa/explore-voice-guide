@@ -516,3 +516,34 @@ html:not(.light) .map-dark .leaflet-control-attribution a {
   color: oklch(0.44 0.1 70) !important;
   border-color: oklch(0.84 0.08 80) !important;
 }
+
+/* ── iOS app: no sideways scrolling ───────────────────────────────
+   Beka 2026-10-31, first iOS TestFlight build: "ეკრანი არ აკეთებს
+   სრულ ფულსქრინს სიგანეზე. ისქროლება სიგანეზე".
+
+   1. Sonner's phone layout (≤600px) gives the toast list
+      `left: 16px; width: 100%`, so while a toast is up the list
+      sticks 16px past the right edge of the screen. Chrome doesn't
+      let a fixed element widen the page; WebKit (every iPhone) does,
+      so each toast made the page slide sideways. `width: auto`
+      between the existing 16px left/right offsets keeps the list on
+      screen, and the toast itself fills it — same size and position
+      as before (16px from each edge).
+   2. Belt and braces for anything else that pokes out: `clip` on
+      the root stops the viewport scrolling sideways without making
+      <html> a scroll container, so position: sticky keeps working.
+      Browsers without `clip` (iOS 15) simply ignore it.
+   The other half of this bug — iOS zooming into small inputs and
+   then not letting go — is handled in __root.tsx
+   (lockIosViewportScale). */
+@media (max-width: 600px) {
+  [data-sonner-toaster] {
+    width: auto !important;
+  }
+  [data-sonner-toaster] [data-sonner-toast] {
+    width: 100% !important;
+  }
+}
+html {
+  overflow-x: clip;
+}

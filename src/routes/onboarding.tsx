@@ -11,7 +11,8 @@ import {
 import { clearVoicePreviewCache, playVoicePreview } from "@/lib/voicePreview";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { useT } from "@/hooks/useT";
+import { translateUiKeyFor, useT } from "@/hooks/useT";
+import { setStoredLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -145,7 +146,19 @@ function OnboardingPage() {
       );
 
       if (error) throw error;
-      toast.success(t("toast.allSet"), { description: t("toast.allSetDesc") });
+      // Beka 2026-10-31: "ენა ვერ შევცვალე, რამდენჯერმე მომიწია
+      // ცვლილება რომ დაემახსოვრებინა". Onboarding saved the choice to
+      // the PROFILE only. The UI reads the DEVICE (tg.lang, "the device
+      // wins" — see useUiLang), so after onboarding the app stayed in
+      // English, and /language then showed the profile's language as
+      // already ticked, so tapping it did nothing. Store it on the
+      // device too, before the toast, so the toast is in that language.
+      setStoredLang(selectedLang.code);
+      const [allSet, allSetDesc] = await Promise.all([
+        translateUiKeyFor(selectedLang.code, "toast.allSet"),
+        translateUiKeyFor(selectedLang.code, "toast.allSetDesc"),
+      ]);
+      toast.success(allSet, { description: allSetDesc });
       navigate({ to: "/" });
     } catch (err) {
       // Surface the Supabase error code in the toast so the next
@@ -431,9 +444,12 @@ function VoiceStep({
                         <span className="text-[14px] font-semibold text-foreground">
                           {v.display}
                         </span>
+                        {/* Beka 2026-10-31: "ენებზე აწერია ქლაუდი … ყველა ენაზე
+                            ამოუშალე". Settings dropped the "· Cloud" suffix on
+                            2026-10-03; this onboarding copy of the list still
+                            had it. Gender alone, same as settings.tsx. */}
                         <span className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                          {v.gender === "female" ? t("voice.female") : t("voice.male")} ·{" "}
-                          {t("voice.cloud")}
+                          {v.gender === "female" ? t("voice.female") : t("voice.male")}
                         </span>
                       </span>
                       {active && (

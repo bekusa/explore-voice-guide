@@ -500,7 +500,7 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "tm.loading.candleLit.title": "Sinindihan ang kandila…",
   "tm.loading.candleLit.sub": "sumusulong ang karakter mo",
   "tm.loading.scrollUnfolds.title": "Bumubuka ang balumbon…",
-  "tm.loading.scrollUnfolds.sub": "tinatapos ni Claude ang simulation",
+  "tm.loading.scrollUnfolds.sub": "tinatapos ang simulation",
   "tm.role.merchant.label": "Mangangalakal",
   "tm.role.merchant.hint": "Nakikipagkalakalan saanman, malayang gumagalaw",
   "tm.role.soldier.label": "Sundalo / Bantay",

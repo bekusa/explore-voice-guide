@@ -356,7 +356,7 @@ export const SR: Partial<Record<UiKey, string>> = {
   "tm.loading.candleLit.title": "Свећа је упаљена…",
   "tm.loading.candleLit.sub": "ваш лик ступа напред",
   "tm.loading.scrollUnfolds.title": "Свитак се одмотава…",
-  "tm.loading.scrollUnfolds.sub": "Claude завршава симулацију",
+  "tm.loading.scrollUnfolds.sub": "Симулација се завршава",
   "tm.role.merchant.label": "Трговац",
   "tm.role.merchant.hint": "Тргује свуда, креће се слободно",
   "tm.role.soldier.label": "Војник / Стражар",

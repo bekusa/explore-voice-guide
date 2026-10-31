@@ -356,7 +356,7 @@ export const AZ: Partial<Record<UiKey, string>> = {
   "tm.loading.candleLit.title": "Şam yandırıldı…",
   "tm.loading.candleLit.sub": "personajınız öndə addımlayır",
   "tm.loading.scrollUnfolds.title": "Tumar açılır…",
-  "tm.loading.scrollUnfolds.sub": "Claude simulyasiyanı tamamlayır",
+  "tm.loading.scrollUnfolds.sub": "Simulyasiya tamamlanır",
   "tm.role.merchant.label": "Tacir",
   "tm.role.merchant.hint": "Hər yerdə ticarət edir, sərbəst hərəkət edir",
   "tm.role.soldier.label": "Əsgər / Keşikçi",

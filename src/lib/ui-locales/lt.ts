@@ -486,7 +486,7 @@ export const LT: Partial<Record<UiKey, string>> = {
   "tm.loading.candleLit.title": "Uždegta žvakė…",
   "tm.loading.candleLit.sub": "jūsų veikėjas žengia į priekį",
   "tm.loading.scrollUnfolds.title": "Ritinys skleidžiasi…",
-  "tm.loading.scrollUnfolds.sub": "Claude užbaigia simuliaciją",
+  "tm.loading.scrollUnfolds.sub": "Simuliacija baigiama",
   "tm.role.merchant.label": "Pirklys",
   "tm.role.merchant.hint": "Prekiauja visur, juda laisvai",
   "tm.role.soldier.label": "Karys / Sargybinis",

@@ -21,7 +21,8 @@
     "webContentsDebuggingEnabled": false
   },
   "ios": {
-    "contentInset": "automatic",
+    "contentInset": "never",
+    "backgroundColor": "#0f0f0f",
     "limitsNavigationsToAppBoundDomains": false
   },
   "plugins": {

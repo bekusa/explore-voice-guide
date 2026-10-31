@@ -76,6 +76,45 @@ export function setStoredLang(code: string) {
     /* ignore */
   }
   window.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: norm }));
+  void mirrorLangToNative(norm);
+}
+
+/**
+ * Native copy of the language (iOS / Android app only).
+ *
+ * Beka 2026-10-31, testing the iOS build: the language didn't stick.
+ * The main cause was onboarding + /language (see those files), but the
+ * app also had a weaker spot: WKWebView writes localStorage to disk
+ * lazily, so an app swiped away right after a pick can come back
+ * without it. Capacitor Preferences (UserDefaults on iOS,
+ * SharedPreferences on Android) is the durable copy; on start-up
+ * restoreLangFromNative() puts it back if localStorage lost it.
+ * "tg.lang" is already on the KEEP list in useAuth's sign-out wipe.
+ */
+async function mirrorLangToNative(code: string): Promise<void> {
+  try {
+    const { Capacitor } = await import("@capacitor/core");
+    if (!Capacitor.isNativePlatform()) return;
+    const { Preferences } = await import("@capacitor/preferences");
+    await Preferences.set({ key: STORAGE_KEY, value: code });
+  } catch {
+    /* plugin missing or not native — localStorage alone */
+  }
+}
+
+/** See mirrorLangToNative. Call once on client start-up. */
+export async function restoreLangFromNative(): Promise<void> {
+  if (!isBrowser() || hasStoredLang()) return;
+  try {
+    const { Capacitor } = await import("@capacitor/core");
+    if (!Capacitor.isNativePlatform()) return;
+    const { Preferences } = await import("@capacitor/preferences");
+    const { value } = await Preferences.get({ key: STORAGE_KEY });
+    // Re-check: a pick made while we waited outranks the old copy.
+    if (value && !hasStoredLang()) setStoredLang(value);
+  } catch {
+    /* plugin missing or not native */
+  }
 }
 
 export function onLangChange(cb: (lang: string) => void): () => void {
@@ -671,7 +710,7 @@ export const UI_STRINGS = {
   "tm.loading.candleLit.title": "The candle is lit…",
   "tm.loading.candleLit.sub": "your character steps forward",
   "tm.loading.scrollUnfolds.title": "The scroll unfolds…",
-  "tm.loading.scrollUnfolds.sub": "Claude is finishing the simulation",
+  "tm.loading.scrollUnfolds.sub": "Finishing the simulation",
   "tm.role.merchant.label": "Merchant",
   "tm.role.merchant.hint": "Trades everywhere, moves freely",
   "tm.role.soldier.label": "Soldier / Guard",

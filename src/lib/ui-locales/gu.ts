@@ -480,7 +480,7 @@ export const GU: Partial<Record<UiKey, string>> = {
   "tm.loading.candleLit.title": "દીવો પ્રગટ્યો…",
   "tm.loading.candleLit.sub": "તમારું પાત્ર આગળ આવે છે",
   "tm.loading.scrollUnfolds.title": "પોથી ખૂલી રહી છે…",
-  "tm.loading.scrollUnfolds.sub": "Claude સિમ્યુલેશન પૂરું કરી રહ્યું છે",
+  "tm.loading.scrollUnfolds.sub": "સિમ્યુલેશન પૂર્ણ થઈ રહ્યું છે",
   "tm.role.merchant.label": "વેપારી",
   "tm.role.merchant.hint": "બધે વેપાર કરે છે, મુક્તપણે ફરે છે",
   "tm.role.soldier.label": "સૈનિક / રક્ષક",

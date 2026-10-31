@@ -356,7 +356,7 @@ export const MR: Partial<Record<UiKey, string>> = {
   "tm.loading.candleLit.title": "मेणबत्ती पेटली…",
   "tm.loading.candleLit.sub": "तुमचे पात्र पुढे येते",
   "tm.loading.scrollUnfolds.title": "गुंडाळी उलगडत आहे…",
-  "tm.loading.scrollUnfolds.sub": "Claude सिम्युलेशन पूर्ण करत आहे",
+  "tm.loading.scrollUnfolds.sub": "सिम्युलेशन पूर्ण होत आहे",
   "tm.role.merchant.label": "व्यापारी",
   "tm.role.merchant.hint": "सर्वत्र व्यापार करतो, मुक्तपणे फिरतो",
   "tm.role.soldier.label": "सैनिक / रक्षक",

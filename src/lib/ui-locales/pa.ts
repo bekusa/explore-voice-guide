@@ -485,7 +485,7 @@ export const PA: Partial<Record<UiKey, string>> = {
   "tm.loading.candleLit.title": "ਦੀਵਾ ਜਗ ਪਿਆ…",
   "tm.loading.candleLit.sub": "ਤੁਹਾਡਾ ਪਾਤਰ ਅੱਗੇ ਆ ਰਿਹਾ ਹੈ",
   "tm.loading.scrollUnfolds.title": "ਪੱਤਰੀ ਖੁੱਲ੍ਹ ਰਹੀ ਹੈ…",
-  "tm.loading.scrollUnfolds.sub": "Claude ਸਿਮੂਲੇਸ਼ਨ ਪੂਰੀ ਕਰ ਰਿਹਾ ਹੈ",
+  "tm.loading.scrollUnfolds.sub": "ਸਿਮੂਲੇਸ਼ਨ ਪੂਰੀ ਹੋ ਰਹੀ ਹੈ",
   "tm.role.merchant.label": "ਵਪਾਰੀ",
   "tm.role.merchant.hint": "ਹਰ ਥਾਂ ਵਪਾਰ ਕਰਦਾ, ਆਜ਼ਾਦ ਘੁੰਮਦਾ",
   "tm.role.soldier.label": "ਸਿਪਾਹੀ / ਪਹਿਰੇਦਾਰ",

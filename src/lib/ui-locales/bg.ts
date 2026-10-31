@@ -356,7 +356,7 @@ export const BG: Partial<Record<UiKey, string>> = {
   "tm.loading.candleLit.title": "Свещта е запалена…",
   "tm.loading.candleLit.sub": "вашият герой пристъпва напред",
   "tm.loading.scrollUnfolds.title": "Свитъкът се разгръща…",
-  "tm.loading.scrollUnfolds.sub": "Claude завършва симулацията",
+  "tm.loading.scrollUnfolds.sub": "Симулацията се завършва",
   "tm.role.merchant.label": "Търговец",
   "tm.role.merchant.hint": "Търгува навсякъде, движи се свободно",
   "tm.role.soldier.label": "Войник / Стражар",

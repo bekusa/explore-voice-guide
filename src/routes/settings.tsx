@@ -41,6 +41,7 @@ import { LANGUAGES, getPreviewPhrase, type Language } from "@/lib/languages";
 import { clearAll, getSaved, updateItem } from "@/lib/savedStore";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
+import { hasStoredLang } from "@/lib/i18n";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { fetchGuideFresh, attractionSlug } from "@/lib/api";
 import { clearOfflineStore, fetchAndCacheTour } from "@/lib/offlineStore";
@@ -127,7 +128,11 @@ function SettingsPage() {
       .maybeSingle()
       .then(({ data }) => {
         if (cancelled || !data) return;
-        if (data.preferred_language) setLangCode(data.preferred_language);
+        // Only when the device has no language of its own. Beka
+        // 2026-10-31: the profile's language overrode the device's here,
+        // so the Language row could show Georgian while the app was in
+        // English (same root cause as /language — see language.tsx).
+        if (data.preferred_language && !hasStoredLang()) setLangCode(data.preferred_language);
         // Only accept Azure-shaped voice names (locale prefix +
         // "Neural" suffix). Legacy browser URIs ("Google US English",
         // "Microsoft David Mobile - …", "browser-default") get

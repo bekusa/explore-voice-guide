@@ -484,7 +484,7 @@ export const LV: Partial<Record<UiKey, string>> = {
   "tm.loading.candleLit.title": "Svece ir iedegta…",
   "tm.loading.candleLit.sub": "jūsu tēls sper soli uz priekšu",
   "tm.loading.scrollUnfolds.title": "Rullis atritinās…",
-  "tm.loading.scrollUnfolds.sub": "Claude pabeidz simulāciju",
+  "tm.loading.scrollUnfolds.sub": "Simulācija tiek pabeigta",
   "tm.role.merchant.label": "Tirgotājs",
   "tm.role.merchant.hint": "Tirgojas visur, pārvietojas brīvi",
   "tm.role.soldier.label": "Karavīrs / Sargs",

@@ -494,7 +494,7 @@ export const UZ: Partial<Record<UiKey, string>> = {
   "tm.loading.candleLit.title": "Sham yoqildi…",
   "tm.loading.candleLit.sub": "qahramoningiz oldinga chiqmoqda",
   "tm.loading.scrollUnfolds.title": "O'ram ochilmoqda…",
-  "tm.loading.scrollUnfolds.sub": "Claude simulyatsiyani yakunlamoqda",
+  "tm.loading.scrollUnfolds.sub": "Simulyatsiya yakunlanmoqda",
   "tm.role.merchant.label": "Savdogar",
   "tm.role.merchant.hint": "Hamma joyda savdo qiladi, erkin yuradi",
   "tm.role.soldier.label": "Askar / Qo'riqchi",

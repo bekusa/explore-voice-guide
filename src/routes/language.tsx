@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { LANGUAGES, type Language } from "@/lib/languages";
-import { setStoredLang, getStoredLang } from "@/lib/i18n";
-import { useT } from "@/hooks/useT";
+import { setStoredLang, getStoredLang, hasStoredLang, normalizeLang } from "@/lib/i18n";
+import { translateUiKeyFor, useT } from "@/hooks/useT";
 
 /**
  * Resolve a stored language code (could be short like "en" / "ka" or
@@ -92,9 +92,18 @@ function LanguagePage() {
     setActive((cur) => (cur === stored ? cur : stored));
   }, []);
 
-  // Load current preferred language from profile
+  // Load current preferred language from profile — ONLY when this
+  // device has never picked one. Beka 2026-10-31: "ენა ვერ შევცვალე,
+  // რამდენჯერმე მომიწია ცვლილება". This effect used to run always, so
+  // the profile's language (e.g. Georgian, saved during onboarding)
+  // was ticked here while the app itself was still in English. Tapping
+  // the ticked row hit the "already active" early return in pick() and
+  // did nothing — you had to pick some other language first and then
+  // come back. The device is what the UI shows (useUiLang), so the
+  // device is what this list ticks.
   useEffect(() => {
     if (!user) return;
+    if (hasStoredLang()) return;
     let cancelled = false;
     supabase
       .from("profiles")
@@ -139,7 +148,18 @@ function LanguagePage() {
   }, [query]);
 
   const pick = async (lang: Language) => {
-    if (lang.code === active || pending) return;
+    if (pending) return;
+    // "Already the language" means already the DEVICE's language — the
+    // one the UI is really in — not merely the ticked row (see the
+    // profile effect above). Re-picking it just goes home.
+    if (
+      resolveLanguage(active).code === lang.code &&
+      hasStoredLang() &&
+      normalizeLang(getStoredLang()) === normalizeLang(lang.code)
+    ) {
+      navigate({ to: "/" });
+      return;
+    }
     setPending(lang.code);
     try {
       if (user) {
@@ -155,7 +175,11 @@ function LanguagePage() {
       }
       setActive(lang.code);
       setStoredLang(lang.code);
-      toast.success(t("toast.langUpdated"), {
+      // In the NEW language. `t` belongs to the render that is still in
+      // the old one — Beka 2026-10-31: "ცვლილების შეტყობინება გამოდის
+      // ძველ ენაზე". See translateUiKeyFor in hooks/useT.ts.
+      const updated = await translateUiKeyFor(lang.code, "toast.langUpdated");
+      toast.success(updated, {
         description: `${lang.flag} ${lang.native}`,
       });
       // Brief delay so the user sees the checkmark before we leave

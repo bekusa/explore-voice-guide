@@ -356,7 +356,7 @@ export const TA: Partial<Record<UiKey, string>> = {
   "tm.loading.candleLit.title": "மெழுகுவர்த்தி ஏற்றப்பட்டது…",
   "tm.loading.candleLit.sub": "உங்கள் கதாபாத்திரம் முன்னே வருகிறது",
   "tm.loading.scrollUnfolds.title": "சுருள் விரிகிறது…",
-  "tm.loading.scrollUnfolds.sub": "Claude உருவகப்படுத்துதலை முடிக்கிறது",
+  "tm.loading.scrollUnfolds.sub": "உருவகப்படுத்துதல் நிறைவடைகிறது",
   "tm.role.merchant.label": "வணிகர்",
   "tm.role.merchant.hint": "எங்கும் வர்த்தகம் செய்கிறார், சுதந்திரமாக நகர்கிறார்",
   "tm.role.soldier.label": "வீரர் / காவலர்",

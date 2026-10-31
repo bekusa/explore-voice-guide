@@ -488,7 +488,7 @@ export const KK: Partial<Record<UiKey, string>> = {
   "tm.loading.candleLit.title": "Шам жағылды…",
   "tm.loading.candleLit.sub": "кейіпкеріңіз алға шығуда",
   "tm.loading.scrollUnfolds.title": "Шиыршық ашылуда…",
-  "tm.loading.scrollUnfolds.sub": "Claude симуляцияны аяқтауда",
+  "tm.loading.scrollUnfolds.sub": "Симуляция аяқталуда",
   "tm.role.merchant.label": "Саудагер",
   "tm.role.merchant.hint": "Барлық жерде сауда жасайды, еркін жүреді",
   "tm.role.soldier.label": "Жауынгер / Күзетші",

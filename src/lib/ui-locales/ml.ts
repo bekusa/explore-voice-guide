@@ -490,7 +490,7 @@ export const ML: Partial<Record<UiKey, string>> = {
   "tm.loading.candleLit.title": "വിളക്ക് കൊളുത്തി…",
   "tm.loading.candleLit.sub": "നിങ്ങളുടെ കഥാപാത്രം മുന്നോട്ട് വരുന്നു",
   "tm.loading.scrollUnfolds.title": "ചുരുൾ നിവരുന്നു…",
-  "tm.loading.scrollUnfolds.sub": "Claude സിമുലേഷൻ പൂർത്തിയാക്കുന്നു",
+  "tm.loading.scrollUnfolds.sub": "സിമുലേഷൻ പൂർത്തിയാകുന്നു",
   "tm.role.merchant.label": "വ്യാപാരി",
   "tm.role.merchant.hint": "എല്ലായിടത്തും കച്ചവടം, സ്വതന്ത്രമായി സഞ്ചരിക്കുന്നു",
   "tm.role.soldier.label": "പടയാളി / കാവൽക്കാരൻ",

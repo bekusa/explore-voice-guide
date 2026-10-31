@@ -356,7 +356,7 @@ export const AF: Partial<Record<UiKey, string>> = {
   "tm.loading.candleLit.title": "Die kers is aangesteek…",
   "tm.loading.candleLit.sub": "jou karakter tree vorentoe",
   "tm.loading.scrollUnfolds.title": "Die boekrol ontvou…",
-  "tm.loading.scrollUnfolds.sub": "Claude voltooi die simulasie",
+  "tm.loading.scrollUnfolds.sub": "Die simulasie word voltooi",
   "tm.role.merchant.label": "Handelaar",
   "tm.role.merchant.hint": "Handel oral, beweeg vryelik",
   "tm.role.soldier.label": "Soldaat / Wag",
