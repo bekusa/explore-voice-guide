@@ -484,11 +484,6 @@ html:not(.light) .map-dark .leaflet-control-attribution a {
    a museum should inform, not alarm: most of ours are "the narration
    didn't load, try again", not data loss.
    ─────────────────────────────────────────────────────────────────── */
-.lokali-toast-error {
-  background: oklch(0.26 0.055 35) !important;
-  color: oklch(0.9 0.06 50) !important;
-  border-color: oklch(0.42 0.08 35) !important;
-}
 /* The toast's action button — the gold pill. Beka 2026-11-01: "Sign in
    ღილაკი გაზარდე, ჩასვი აპლიკაციის ოქროსფერ ღილაკის ფერში."
 
@@ -514,47 +509,66 @@ html:not(.light) .map-dark .leaflet-control-attribution a {
   transform: scale(0.95);
 }
 
-/* Success is WARM, not green. Beka 2026-11-01: "გასტილე აპლიკაციის
-   სტილში." A green panel is the one colour nowhere else in Lokali —
-   the whole app is espresso and gold — so a confirmation in green
-   read as a system dialog from some other product. This is the card
-   surface with a gold cast and a gold-leaning text tone, which is
-   what "it worked" looks like in this palette. The tick icon still
-   carries the meaning; the panel no longer has to shout it. */
-.lokali-toast-success {
-  background: oklch(0.24 0.03 75) !important;
-  color: oklch(0.93 0.06 85) !important;
-  border-color: oklch(0.45 0.09 78) !important;
+/* ── The toast surface: cream, in BOTH themes ────────────────────
+   Beka 2026-11-01: "ფონი თეთრი იყოს… ჩვენს ფერებში
+   თეთრი-კრემისფერი… როგორც Sign in-ში გვქონდა მომეწონა."
+
+   These are not new colours. They are the app's own daylight tokens
+   — --background / --foreground from the .light block above — pinned
+   here so a toast reads the same whether the app is in night or day
+   mode. A warm cream card lifting off the dark UI is what made the
+   sign-in prompt look right; following the theme would turn it back
+   into charcoal-on-charcoal at night.
+
+   Specificity: these have to beat Sonner's own [data-sonner-toast]
+   rules, hence !important — the same reason .lokali-toast-action
+   above is written this way rather than as utility classes. */
+[data-sonner-toast] {
+  background: oklch(0.98 0.008 80) !important;
+  color: oklch(0.22 0.014 60) !important;
+  border: 1px solid oklch(0.9 0.012 80) !important;
 }
-.lokali-toast-success [data-icon] {
-  color: oklch(0.84 0.13 80) !important;
+[data-sonner-toast] [data-title] {
+  color: oklch(0.22 0.014 60) !important;
+  font-weight: 600 !important;
 }
-.lokali-toast-warning {
-  background: oklch(0.27 0.05 75) !important;
-  color: oklch(0.91 0.07 85) !important;
-  border-color: oklch(0.45 0.09 75) !important;
+[data-sonner-toast] [data-description] {
+  /* Warm grey, not the dark-theme muted token, which would vanish. */
+  color: oklch(0.46 0.022 68) !important;
 }
-/* Daylight theme — same hues, inverted lightness so the text stays
-   legible on parchment instead of glowing. */
-.light .lokali-toast-error {
-  background: oklch(0.96 0.025 40) !important;
-  color: oklch(0.42 0.12 32) !important;
-  border-color: oklch(0.82 0.07 40) !important;
+[data-sonner-toast] [data-close-button] {
+  background: oklch(0.95 0.01 75) !important;
+  border-color: oklch(0.88 0.012 78) !important;
+  color: oklch(0.38 0.02 65) !important;
 }
-/* Daylight twin of the warm success above — same hue family, flipped
-   lightness so it sits on parchment instead of glowing. */
-.light .lokali-toast-success {
-  background: oklch(0.97 0.025 85) !important;
-  color: oklch(0.42 0.1 65) !important;
-  border-color: oklch(0.85 0.07 80) !important;
+
+/* ── State lives in the ICON, never in the panel ─────────────────
+   Beka 2026-11-01: "ყველა პოპაპი გადააქციე Sign in to listen
+   სტილში."
+
+   Before, each state painted the whole toast — green for success,
+   red for error. Even at low chroma that is a coloured slab across
+   the top of the screen, firing for things as small as "Language
+   updated". Now one surface for everything and a single tinted
+   icon, which is exactly why the sign-in prompt read well.
+
+   One set of values, not two: the panel no longer changes with the
+   theme, so neither should these. All chosen to sit on cream. Hooked
+   to Sonner's [data-type], so every toast.success / .error /
+   .warning / .info in the app picks it up — all 85 of them, without
+   touching a single call site. */
+[data-sonner-toast][data-type="success"] [data-icon] {
+  color: oklch(0.56 0.14 62) !important;
 }
-.light .lokali-toast-success [data-icon] {
-  color: oklch(0.58 0.14 60) !important;
+[data-sonner-toast][data-type="error"] [data-icon] {
+  /* Terracotta, not signal red: clearly wrong, still in palette. */
+  color: oklch(0.52 0.16 32) !important;
 }
-.light .lokali-toast-warning {
-  background: oklch(0.96 0.03 85) !important;
-  color: oklch(0.44 0.1 70) !important;
-  border-color: oklch(0.84 0.08 80) !important;
+[data-sonner-toast][data-type="warning"] [data-icon] {
+  color: oklch(0.58 0.14 70) !important;
+}
+[data-sonner-toast][data-type="info"] [data-icon] {
+  color: oklch(0.5 0.05 70) !important;
 }
 
 /* ── iOS app: no sideways scrolling ───────────────────────────────

@@ -13,8 +13,14 @@ const Toaster = ({ ...props }: ToasterProps) => {
              card in the app rather than a hole punched in it.
              Beka 2026-11-01: "ბექგრაუნდ ფერიც შეცვალე აპლიკაციის
              სტილში იყოს." */
+          /* Layout only. The COLOURS live in styles.css on
+             [data-sonner-toast], because the toast is deliberately
+             cream in BOTH themes — a theme-following `bg-card` would
+             make it charcoal at night, which is the opposite of what
+             Beka asked for (2026-11-01: "ფონი თეთრი იყოს… ჩვენს
+             ფერებში თეთრი-კრემისფერი"). */
           toast:
-            "group toast group-[.toaster]:bg-card group-[.toaster]:text-foreground group-[.toaster]:border-border/70 group-[.toaster]:rounded-2xl group-[.toaster]:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.65)]",
+            "group toast group-[.toaster]:rounded-2xl group-[.toaster]:shadow-[0_14px_38px_-12px_rgba(0,0,0,0.55)]",
           title: "group-[.toast]:text-[14px] group-[.toast]:font-semibold",
           description:
             "group-[.toast]:text-muted-foreground group-[.toast]:text-[12px] group-[.toast]:leading-snug",
@@ -35,15 +41,24 @@ const Toaster = ({ ...props }: ToasterProps) => {
              Same reasoning as .lokali-toast-* below it. */
           actionButton: "lokali-toast-action",
           cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
-          /* Warm, low-chroma state tones in place of Sonner's stock
-           * red/green. Defined in styles.css (.lokali-toast-*) rather
-           * than as utility classes here because each one needs a
-           * daylight-theme variant too, and `richColors` has been
-           * turned off in __root.tsx so these win without a fight.
-           * Beka 2026-10-06 — "წითელი ძალიან აგრესიულია". */
-          error: "lokali-toast-error",
-          success: "lokali-toast-success",
-          warning: "lokali-toast-warning",
+          /* NO per-state panel classes any more. Beka 2026-11-01:
+           * "ყველა პოპაპი გადააქციე Sign in to listen სტილში."
+           *
+           * Every toast now renders on the same card surface as the
+           * sign-in prompt. The state is carried by the ICON alone —
+           * coloured in styles.css off Sonner's own
+           * [data-type='success'|'error'|…] attribute.
+           *
+           * Why this is better and not just different: a full green
+           * or red panel is the loudest element on the screen, and it
+           * fires for things like "Language updated", which is not
+           * news worth shouting. A neutral card with a gold tick says
+           * the same thing without hijacking the page — and it is the
+           * one toast Beka singled out as looking right.
+           *
+           * The .lokali-toast-* classes were the previous attempt at
+           * this (lower-chroma panels, 2026-10-06). They were an
+           * improvement but still panels; this removes the panel. */
         },
       }}
       {...props}
