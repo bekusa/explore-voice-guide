@@ -489,10 +489,45 @@ html:not(.light) .map-dark .leaflet-control-attribution a {
   color: oklch(0.9 0.06 50) !important;
   border-color: oklch(0.42 0.08 35) !important;
 }
+/* The toast's action button — the gold pill. Beka 2026-11-01: "Sign in
+   ღილაკი გაზარდე, ჩასვი აპლიკაციის ოქროსფერ ღილაკის ფერში."
+
+   Written here with !important rather than as Tailwind classes on the
+   component, because Sonner's own `[data-button]` rules beat utility
+   classes — that is why the previous `group-[.toast]:bg-primary` had
+   no visible effect and the button stayed Sonner's default grey.
+
+   36px tall so it is a comfortable thumb target next to the title,
+   which is the point: in a sign-in prompt the button IS the message. */
+.lokali-toast-action {
+  background: var(--gradient-gold) !important;
+  color: var(--primary-foreground) !important;
+  height: 2.25rem !important;
+  padding-inline: 1rem !important;
+  border-radius: 9999px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  flex-shrink: 0 !important;
+  transition: transform 0.2s ease !important;
+}
+.lokali-toast-action:active {
+  transform: scale(0.95);
+}
+
+/* Success is WARM, not green. Beka 2026-11-01: "გასტილე აპლიკაციის
+   სტილში." A green panel is the one colour nowhere else in Lokali —
+   the whole app is espresso and gold — so a confirmation in green
+   read as a system dialog from some other product. This is the card
+   surface with a gold cast and a gold-leaning text tone, which is
+   what "it worked" looks like in this palette. The tick icon still
+   carries the meaning; the panel no longer has to shout it. */
 .lokali-toast-success {
-  background: oklch(0.26 0.04 150) !important;
-  color: oklch(0.9 0.06 150) !important;
-  border-color: oklch(0.42 0.07 150) !important;
+  background: oklch(0.24 0.03 75) !important;
+  color: oklch(0.93 0.06 85) !important;
+  border-color: oklch(0.45 0.09 78) !important;
+}
+.lokali-toast-success [data-icon] {
+  color: oklch(0.84 0.13 80) !important;
 }
 .lokali-toast-warning {
   background: oklch(0.27 0.05 75) !important;
@@ -506,10 +541,15 @@ html:not(.light) .map-dark .leaflet-control-attribution a {
   color: oklch(0.42 0.12 32) !important;
   border-color: oklch(0.82 0.07 40) !important;
 }
+/* Daylight twin of the warm success above — same hue family, flipped
+   lightness so it sits on parchment instead of glowing. */
 .light .lokali-toast-success {
-  background: oklch(0.96 0.025 150) !important;
-  color: oklch(0.4 0.09 150) !important;
-  border-color: oklch(0.82 0.06 150) !important;
+  background: oklch(0.97 0.025 85) !important;
+  color: oklch(0.42 0.1 65) !important;
+  border-color: oklch(0.85 0.07 80) !important;
+}
+.light .lokali-toast-success [data-icon] {
+  color: oklch(0.58 0.14 60) !important;
 }
 .light .lokali-toast-warning {
   background: oklch(0.96 0.03 85) !important;

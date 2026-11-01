@@ -521,7 +521,22 @@ function RootComponent() {
           warm espresso and gold, which is why Beka read it as
           aggressive. The three states are still colour-coded, now via
           .lokali-toast-* in styles.css at about a third the chroma. */}
-      <Toaster position="top-center" duration={4000} closeButton />
+      {/* Pushed clear of the status bar. Beka 2026-11-01, Android:
+          "ეფარება საათს და ტელეფონის პარამეტრებს".
+          The WebView runs under `viewport-fit=cover`, so the page
+          starts at the physical top of the screen and a 16px offset
+          put the toast straight over the clock and the signal icons.
+          Same formula the app already uses for `pt-safe` (styles.css),
+          with a little more room because a toast is heavier than a
+          pill: the safe-area inset when the OS reports one, and a
+          3rem floor for anything that reports 0. */}
+      <Toaster
+        position="top-center"
+        duration={4000}
+        closeButton
+        offset={{ top: "max(1rem, env(safe-area-inset-top, 0px))" }}
+        mobileOffset={{ top: "max(3rem, calc(env(safe-area-inset-top, 0px) + 1rem))" }}
+      />
     </>
   );
 }

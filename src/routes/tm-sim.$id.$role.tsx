@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { ATTRACTIONS_BY_ID, ROLES_META, TIME_MACHINE_ROLES } from "@/lib/timeMachineData";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
 import { useAuth } from "@/hooks/useAuth";
-import { useRequireSignIn } from "@/hooks/useRequireSignIn";
+import { useRequireSignIn, showSignInToast } from "@/hooks/useRequireSignIn";
 import { isTmSaved, onTmSavedChange, toggleTmSaved } from "@/lib/tmSavedStore";
 import { useT, useTranslated } from "@/hooks/useT";
 import type { UiKey } from "@/lib/i18n";
@@ -109,19 +109,17 @@ function TimeMachineSimulationPage() {
   const { user, loading: authLoading } = useAuth();
   const tryOpenAudio = () => {
     if (authLoading) {
-      toast.info(t("auth.listenSignInTitle"), {
-        description: t("auth.listenSignInDesc"),
-      });
+      // Auth is still resolving — a one-line nudge, no paragraph.
+      toast(t("auth.listenSignInTitle"));
       return;
     }
     if (!user) {
-      toast.error(t("auth.listenSignInTitle"), {
-        description: t("auth.listenSignInDesc"),
-        action: {
-          label: t("auth.listenSignInCta"),
-          onClick: () => navigate({ to: "/auth" }),
-        },
-      });
+      // Shared with useRequireSignIn so all four sign-in prompts in
+      // the app look and behave identically. Beka 2026-11-01 — not an
+      // error, so no red panel and no warning icon.
+      showSignInToast(t("auth.listenSignInTitle"), t("auth.listenSignInCta"), () =>
+        navigate({ to: "/auth" }),
+      );
       return;
     }
     // heroTitle / ttsScript are declared further down; this runs on
@@ -151,8 +149,7 @@ function TimeMachineSimulationPage() {
     // /results. Anonymous mode passes (the gate only rejects fully
     // signed-out users); cloud mirror happens only for real users.
     if (!requireSignIn(user, "save")) return;
-    const displayTitle =
-      moment?.name ?? `${id} — ${role}`;
+    const displayTitle = moment?.name ?? `${id} — ${role}`;
     const willSave = toggleTmSaved(id, role, displayTitle);
     setSaved(willSave);
   };

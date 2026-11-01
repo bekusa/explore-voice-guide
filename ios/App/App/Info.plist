@@ -44,6 +44,12 @@
 	<!-- Asked only when the user taps the locate button, never at launch. -->
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Lokali uses your location to show attractions near you and your position on the map.</string>
+	<!-- Beka 2026-11-01: Apple flagged build 2 with ITMS-90683. The
+	     Geolocation plugin's code references the "Always" permission
+	     API, so Apple wants this string even though Lokali only ever
+	     asks for "While Using". Never shown unless that changes. -->
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Lokali uses your location only while you use the app, to show attractions near you and your position on the map.</string>
 	<!-- The audio guide keeps playing with the screen locked or while
 	     another app (Maps, Camera) is open. -->
 	<key>UIBackgroundModes</key>

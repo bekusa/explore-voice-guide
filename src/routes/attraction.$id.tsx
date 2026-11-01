@@ -73,7 +73,7 @@ import { useSavedItems } from "@/hooks/useSavedItems";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useAuth } from "@/hooks/useAuth";
 import { useLazyPlacePhoto, useLazyPlaceGallery } from "@/hooks/useLazyPlacePhoto";
-import { useRequireSignIn } from "@/hooks/useRequireSignIn";
+import { useRequireSignIn, showSignInToast } from "@/hooks/useRequireSignIn";
 import { haptic } from "@/lib/haptics";
 import {
   audioId as makeAudioId,
@@ -903,19 +903,17 @@ function AttractionPage() {
     // otherwise a hard refresh on a /attraction page could let an
     // already-signed-in user fall through the !user branch.
     if (authLoading) {
-      toast.info(t("auth.listenSignInTitle"), {
-        description: t("auth.listenSignInDesc"),
-      });
+      // Auth is still resolving — a one-line nudge, no paragraph.
+      toast(t("auth.listenSignInTitle"));
       return;
     }
     if (!user) {
-      toast.error(t("auth.listenSignInTitle"), {
-        description: t("auth.listenSignInDesc"),
-        action: {
-          label: t("auth.listenSignInCta"),
-          onClick: () => navigate({ to: "/auth" }),
-        },
-      });
+      // Shared with useRequireSignIn so all four sign-in prompts in
+      // the app look and behave identically. Beka 2026-11-01 — not an
+      // error, so no red panel and no warning icon.
+      showSignInToast(t("auth.listenSignInTitle"), t("auth.listenSignInCta"), () =>
+        navigate({ to: "/auth" }),
+      );
       return;
     }
     // Heavy haptic on a primary CTA — the "Begin journey" tap is
