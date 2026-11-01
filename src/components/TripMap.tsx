@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 // Leaflet's stylesheet MUST come with the component — without it the
 // tile panes render unpositioned and the map looks frozen/blank.
 import "leaflet/dist/leaflet.css";
+import { destroyLeafletMap } from "@/lib/destroyLeafletMap";
 import type { TripItem } from "@/lib/tripsStore";
 
 /**
@@ -26,9 +27,7 @@ export function TripMap({ items }: { items: TripItem[] }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<unknown>(null);
 
-  const pins = items.filter(
-    (i) => typeof i.lat === "number" && typeof i.lng === "number",
-  );
+  const pins = items.filter((i) => typeof i.lat === "number" && typeof i.lng === "number");
   const pinKey = pins.map((p) => `${p.id}:${p.lat},${p.lng}`).join("|");
 
   useEffect(() => {
@@ -50,7 +49,7 @@ export function TripMap({ items }: { items: TripItem[] }) {
       if (el.clientHeight === 0) el.style.height = "224px";
 
       if (mapRef.current) {
-        (mapRef.current as { remove: () => void }).remove();
+        destroyLeafletMap(mapRef.current);
         mapRef.current = null;
       }
 
@@ -132,7 +131,7 @@ export function TripMap({ items }: { items: TripItem[] }) {
       timers.forEach((t) => clearTimeout(t));
       ro?.disconnect();
       if (mapRef.current) {
-        (mapRef.current as { remove: () => void }).remove();
+        destroyLeafletMap(mapRef.current);
         mapRef.current = null;
       }
     };

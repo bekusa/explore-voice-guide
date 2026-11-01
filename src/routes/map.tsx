@@ -7,12 +7,10 @@ import { useSavedItems } from "@/hooks/useSavedItems";
 import { useAuth } from "@/hooks/useAuth";
 import { listTrips, listTripItems, type Trip } from "@/lib/tripsStore";
 import { attractionSlug, setAttractionHint } from "@/lib/api";
-import {
-  getCurrentLocation,
-  getLocationPermissionState,
-} from "@/lib/geolocation";
+import { getCurrentLocation, getLocationPermissionState } from "@/lib/geolocation";
 import { useT } from "@/hooks/useT";
 import "leaflet/dist/leaflet.css";
+import { destroyLeafletMap } from "@/lib/destroyLeafletMap";
 
 export const Route = createFileRoute("/map")({
   head: () => ({
@@ -224,8 +222,7 @@ function MapPage() {
       cancelled = true;
       invalidateTimers.forEach((t) => window.clearTimeout(t));
       ro?.disconnect();
-      const map = mapRef.current as { remove?: () => void } | null;
-      map?.remove?.();
+      destroyLeafletMap(mapRef.current);
       mapRef.current = null;
     };
   }, []);
@@ -520,9 +517,7 @@ function MapPage() {
             <div className="grid h-12 w-12 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow">
               <Navigation className="h-4 w-4" />
             </div>
-            <h2 className="mt-3 font-display text-[18px] leading-tight">
-              {t("map.locAskTitle")}
-            </h2>
+            <h2 className="mt-3 font-display text-[18px] leading-tight">{t("map.locAskTitle")}</h2>
             <p className="mt-1.5 text-[12px] leading-[1.5] text-muted-foreground">
               {t("map.locAskBody")}
             </p>

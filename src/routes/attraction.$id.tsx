@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import "leaflet/dist/leaflet.css";
+import { destroyLeafletMap } from "@/lib/destroyLeafletMap";
 import {
   ArrowLeft,
   MapPin,
@@ -2377,8 +2378,10 @@ function MapSection({
     })();
     return () => {
       cancelled = true;
-      const map = mapRef.current as { remove?: () => void } | null;
-      map?.remove?.();
+      // Not a bare remove() — a zoom animation still in flight would
+      // fire its callback on the dead map 250 ms later. See
+      // destroyLeafletMap.ts for the Leaflet source this works around.
+      destroyLeafletMap(mapRef.current);
       mapRef.current = null;
       markersRef.current = [];
       setReady(false);
