@@ -19,21 +19,35 @@
 
 export const LEGAL_UPDATED = "2026-05-16";
 
+/**
+ * The Privacy Policy has its own date since 2026-11-02 (Beka, iOS App
+ * Store submission). Apple's App Privacy answers have to match this
+ * text (guideline 5.1.1), and the old wording was out of date: it did
+ * not mention Sign in with Apple, it called usage data "anonymous"
+ * although usage_events stores the user ID when someone is signed in,
+ * it said coordinates are processed on our servers (they never leave
+ * the device), and it left out error reports. The Terms did not change,
+ * so they keep LEGAL_UPDATED.
+ */
+export const PRIVACY_UPDATED = "2026-11-02";
+
 export const PRIVACY_EN = `# Privacy Policy
 
-**Last updated:** ${LEGAL_UPDATED}
+**Last updated:** ${PRIVACY_UPDATED}
 
 Lokali ("we", "us") respects your privacy. This Policy explains what we collect, why, and what we do with it. By using the Lokali app or website, you agree to this Policy.
 
 ## 1. What we collect
 
-**Account data.** If you sign up with email, we store your email address and a hashed password. If you sign in with Google, we receive your name, email, and profile photo from Google's OAuth flow. If you use Guest mode, we issue an anonymous user ID and store no personal information.
+**Account data.** If you sign up with email, we store your email address and a hashed password. If you sign in with Google, we receive your name, email, and profile photo from Google's OAuth flow. If you sign in with Apple, we receive your email address (or Apple's private relay address, if you choose to hide yours) and, if you choose to share it, your name. If you use Guest mode, we issue an anonymous user ID and store no personal information.
 
 **Saved tours.** When you save a tour, your selection (place name, language, voice) is stored against your account so it syncs across devices.
 
-**Location.** We request location permission only when you tap the locate button on the Map page. We use it solely to centre the map and compute distances to nearby attractions. Your coordinates are processed in your device and on our servers transiently — we do not store them.
+**Location.** We request location permission only when you tap the locate button on the Map page, and only while you use the app. Your coordinates are used on your device to centre the map and show nearby attractions. We do not send them to our servers and do not store them. The map images for that area are loaded from OpenStreetMap.
 
-**Usage data.** We log anonymous, aggregated metrics about how many tours are generated and which languages are used. We do not log the contents of the guides or anything that identifies you personally.
+**Usage data.** We record how the app is used: which pages are opened and actions such as playing a guide, together with the platform (website or app), operating system, browser and device type. Each record carries a random ID that the app creates on your device and, if you are signed in, your user ID. We use this only to understand and improve Lokali. It is not used for advertising and is not shared with anyone.
+
+**Error reports.** When something in the app fails, it sends us a technical report: the page, the error message, the app version and, if a search failed, the search text. Error reports do not include your name, email address or user ID.
 
 ## 2. What we do not collect
 
@@ -50,7 +64,9 @@ Lokali uses these processors to deliver the service. Each is bound by their own 
 - **Anthropic / Claude API** (AI-generated guide text): https://www.anthropic.com/legal/privacy
 - **Microsoft Azure Speech** (voice narration): https://privacy.microsoft.com
 - **Google Cloud Translation** (UI translation): https://cloud.google.com/privacy
-- **Google Maps / Places** (map tiles, place lookup): https://policies.google.com/privacy
+- **Google Maps / Places** (place lookup, photos): https://policies.google.com/privacy
+- **OpenStreetMap** (map images): https://osmfoundation.org/wiki/Privacy_Policy
+- **Apple** (Sign in with Apple): https://www.apple.com/legal/privacy/
 - **Cloudflare** (hosting, CDN): https://www.cloudflare.com/privacypolicy/
 
 We send only the data each service needs to perform its function. We do not give third parties bulk access to your data.
@@ -81,19 +97,21 @@ Email: lokaliapps@gmail.com
 
 export const PRIVACY_KA = `# კონფიდენციალურობის პოლიტიკა
 
-**ბოლო განახლება:** ${LEGAL_UPDATED}
+**ბოლო განახლება:** ${PRIVACY_UPDATED}
 
 Lokali ("ჩვენ") პატივს სცემს თქვენს კონფიდენციალურობას. ეს პოლიტიკა აღწერს რას ვაგროვებთ, რატომ და როგორ ვიყენებთ. Lokali-ის გამოყენებით თქვენ ეთანხმებით ამ პოლიტიკას.
 
 ## 1. რას ვაგროვებთ
 
-**ანგარიშის მონაცემები.** თუ ელ.ფოსტით რეგისტრირდებით, ვინახავთ თქვენს ელ.ფოსტის მისამართს და hashed პაროლს. Google-ით შესვლისას ვიღებთ თქვენს სახელს, ელ.ფოსტას და ფოტოს Google-ის OAuth-დან. სტუმრის რეჟიმში გაძლევთ ანონიმურ user ID-ს და პერსონალურ ინფორმაციას არ ვინახავთ.
+**ანგარიშის მონაცემები.** თუ ელ.ფოსტით რეგისტრირდებით, ვინახავთ თქვენს ელ.ფოსტის მისამართს და hashed პაროლს. Google-ით შესვლისას ვიღებთ თქვენს სახელს, ელ.ფოსტას და ფოტოს Google-ის OAuth-დან. Apple-ით შესვლისას ვიღებთ თქვენს ელ.ფოსტას (ან Apple-ის დამალულ მისამართს, თუ საკუთარს დამალავთ) და, თუ გაგვიზიარებთ, თქვენს სახელს. სტუმრის რეჟიმში გაძლევთ ანონიმურ user ID-ს და პერსონალურ ინფორმაციას არ ვინახავთ.
 
 **შენახული ტურები.** ტურის შენახვისას თქვენი არჩევანი (ადგილის სახელი, ენა, ხმა) ინახება თქვენი ანგარიშის წინააღმდეგ, რომ მოწყობილობებს შორის გადაიცეს.
 
-**მდებარეობა.** მდებარეობის ნებართვას ვითხოვთ მხოლოდ მაშინ, როცა რუკის გვერდზე გადააჭერ Locate ღილაკს. ვიყენებთ მხოლოდ რუკის ცენტრირებისთვის და ღირშესანიშნაობების მანძილის გამოსათვლელად. კოორდინატებს მოწყობილობაში და სერვერებზე გარდამავლად ვამუშავებთ — არ ვინახავთ.
+**მდებარეობა.** მდებარეობის ნებართვას ვითხოვთ მხოლოდ მაშინ, როცა რუკის გვერდზე Locate ღილაკს დააჭერთ, და მხოლოდ აპის გამოყენების დროს. კოორდინატები თქვენს მოწყობილობაზე გამოიყენება რუკის ცენტრირებისა და ახლომდებარე ღირშესანიშნაობების საჩვენებლად. ჩვენს სერვერებზე არ იგზავნება და არ ვინახავთ. ამ ადგილის რუკის სურათები OpenStreetMap-იდან იტვირთება.
 
-**გამოყენების მონაცემები.** ვაგროვებთ ანონიმურ, აგრეგირებულ მეტრიკებს — რამდენი ტური დაგენერირდა, რომელი ენები გამოიყენება. გიდების შინაარსს ან თქვენს იდენტიფიკაციას არ ვწერთ.
+**გამოყენების მონაცემები.** ვინიშნავთ, როგორ გამოიყენება აპი: რომელი გვერდები იხსნება და მოქმედებებს, მაგალითად გიდის მოსმენას, ასევე პლატფორმას (საიტი თუ აპი), ოპერაციულ სისტემას, ბრაუზერსა და მოწყობილობის ტიპს. ყოველ ჩანაწერს ახლავს შემთხვევითი ID, რომელსაც აპი თქვენს მოწყობილობაზე ქმნის, და, თუ ანგარიშით ხართ შესული, თქვენი user ID. ამას მხოლოდ Lokali-ის გასაუმჯობესებლად ვიყენებთ. რეკლამისთვის არ გამოიყენება და არავის ვუზიარებთ.
+
+**შეცდომების ანგარიშები.** როცა აპში რამე ვერ მუშაობს, ის გვიგზავნის ტექნიკურ ანგარიშს: გვერდს, შეცდომის ტექსტს, აპის ვერსიას და, თუ ძებნა ჩავარდა, საძიებო ტექსტს. ამ ანგარიშში თქვენი სახელი, ელ.ფოსტა ან user ID არ შედის.
 
 ## 2. რას არ ვაგროვებთ
 
@@ -110,7 +128,9 @@ Lokali იყენებს ამ პროცესორებს:
 - **Anthropic / Claude API** (AI-გენერირებული ტექსტი): https://www.anthropic.com/legal/privacy
 - **Microsoft Azure Speech** (ხმის ნარაცია): https://privacy.microsoft.com
 - **Google Cloud Translation** (UI თარგმანი): https://cloud.google.com/privacy
-- **Google Maps / Places** (რუკის ფილები, ადგილების ძებნა): https://policies.google.com/privacy
+- **Google Maps / Places** (ადგილების ძებნა, ფოტოები): https://policies.google.com/privacy
+- **OpenStreetMap** (რუკის სურათები): https://osmfoundation.org/wiki/Privacy_Policy
+- **Apple** (Sign in with Apple): https://www.apple.com/legal/privacy/
 - **Cloudflare** (hosting, CDN): https://www.cloudflare.com/privacypolicy/
 
 თითოეულ სერვისს მხოლოდ აუცილებელ მონაცემებს ვუგზავნით. ნაყარი წვდომა მათ არ აქვთ.
