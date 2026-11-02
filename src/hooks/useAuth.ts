@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -133,46 +133,87 @@ async function clearAllLocalUserData(): Promise<void> {
   }
 }
 
-export function useAuth() {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+/* ─── One shared auth store ───────────────────────────────────────
+ *
+ * Beka 2026-11-02, iPhone: "ქვემოთ მენიუს რომ აჭერ როცა sign in ხარ
+ * მენიუს ღილაკები წამიერად ხტუნავს".
+ *
+ * Every page renders its own MobileFrame, so the TabBar mounts afresh
+ * on each tab tap. useAuth() used to keep the session in per-component
+ * state that started at `user = null` and only filled in once that
+ * mount's own getSession() answered. For that moment the signed-in-only
+ * Trips tab was missing: four tabs, then five, and every icon slid
+ * sideways. Guests have no Trips tab, which is why only signed-in users
+ * saw it. Any other `user`-gated UI flickered the same way.
+ *
+ * Now there is ONE store for the whole app: one Supabase listener, one
+ * getSession(). A component that mounts later reads the answer that is
+ * already known, so the TabBar renders right the first time.
+ *
+ * useSyncExternalStore with a server snapshot keeps hydration safe: the
+ * render React hydrates against the server's HTML still sees "no user,
+ * loading" (what the server rendered), and React switches to the real
+ * session right after. Same reasoning as the #418 fix in useUiLang.
+ */
+type AuthSnapshot = { session: Session | null; resolved: boolean };
 
-  useEffect(() => {
-    // 1) Subscribe FIRST (avoids missing events during getSession)
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-      setUser(newSession?.user ?? null);
+const SERVER_SNAPSHOT: AuthSnapshot = { session: null, resolved: false };
+let authSnapshot: AuthSnapshot = SERVER_SNAPSHOT;
+const authListeners = new Set<() => void>();
+let authStarted = false;
+
+function setAuthSnapshot(next: AuthSnapshot) {
+  authSnapshot = next;
+  authListeners.forEach((cb) => cb());
+}
+
+function startAuthStore() {
+  if (authStarted || typeof window === "undefined") return;
+  authStarted = true;
+
+  // 1) Subscribe FIRST (avoids missing events during getSession).
+  //    Never unsubscribed: it lives as long as the app does.
+  supabase.auth.onAuthStateChange((_event, newSession) => {
+    setAuthSnapshot({ session: newSession, resolved: true });
+  });
+
+  // 2) Then read the existing session.
+  //
+  // Beka 2026-06-13 — guarded with catch. supabase.auth.getSession()
+  // tries to refresh the token by hitting the Supabase REST endpoint;
+  // when offline this throws "TypeError: failed to fetch", which used
+  // to surface as a visible toast on the Saved page (the offline shell
+  // users see). Swallow it, keep whatever we have and stop "loading";
+  // the listener above picks up the real session once the network is
+  // back.
+  supabase.auth
+    .getSession()
+    .then(({ data }) => {
+      setAuthSnapshot({ session: data.session, resolved: true });
+    })
+    .catch((err) => {
+      console.debug("[useAuth] getSession failed (likely offline)", err);
+      setAuthSnapshot({ session: authSnapshot.session, resolved: true });
     });
+}
 
-    // 2) Then read existing session.
-    //
-    // Beka 2026-06-13 — guard with try/catch + the navigator.onLine
-    // check. supabase.auth.getSession() tries to refresh the token
-    // by hitting the Supabase REST endpoint; when offline this
-    // throws "TypeError: failed to fetch" and the error bubbles up
-    // as a visible toast on the Saved page (the offline shell users
-    // see). We still need to populate state from whatever cached
-    // session storage gives us, so swallow the rejection and let
-    // the loading flag flip without raising.
-    supabase.auth
-      .getSession()
-      .then(({ data }) => {
-        setSession(data.session);
-        setUser(data.session?.user ?? null);
-      })
-      .catch((err) => {
-        // Common offline path — log at debug level and keep the
-        // current state. The auth state listener above will pick
-        // up the real session as soon as the network comes back.
-        console.debug("[useAuth] getSession failed (likely offline)", err);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+function subscribeAuth(cb: () => void) {
+  startAuthStore();
+  authListeners.add(cb);
+  return () => {
+    authListeners.delete(cb);
+  };
+}
 
-    return () => sub.subscription.unsubscribe();
-  }, []);
+export function useAuth() {
+  const snap = useSyncExternalStore(
+    subscribeAuth,
+    () => authSnapshot,
+    () => SERVER_SNAPSHOT,
+  );
+  const session = snap.session;
+  const user: User | null = session?.user ?? null;
+  const loading = !snap.resolved;
 
   /**
    * Sign out the current Supabase session AND wipe every local
