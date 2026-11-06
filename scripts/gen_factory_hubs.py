@@ -338,7 +338,7 @@ def city_hub(slug):
     if c_url:
         foot.append(f'<a href="{c_url}">More in {txt(cname)}</a>')
     foot.append(f'<a href="{G.EDIT}">Editorial process</a>')
-    H += ["<footer>", " &middot; ".join(foot), "</footer>", "</main>", appbar_of(old, slug), "", "</body>", "</html>"]
+    H += ["<footer>", " &middot; ".join(foot), "</footer>", "</main>", appbar_of(old, slug), G.SHEET, "</body>", "</html>"]
     wr(f"en/{slug}.html", NL.join(H))
     return {"slug": slug, "name": name, "n": n, "country": cname, "url": url, "top": top, "existing": bool(old), "noindex": noindex,
             "img": img}
@@ -461,7 +461,7 @@ def country_hub(cname, cities_upd, loose):
              f'<a class="btn ghost" href="https://lokali.travel/">Try it in the browser</a></div></div>'
              + (f'<div class="ap-img"><img src="{esc(img)}" alt="" loading="lazy" decoding="async"></div>' if img else "") + "</section>")
     H += ["<footer>", f'<a href="{BASE}/explore/index.html">All cities</a> &middot; <a href="{G.EDIT}">Editorial process</a>', "</footer>", "</main>",
-          appbar_of(old, f"country-{slug}"), "", "</body>", "</html>"]
+          appbar_of(old, f"country-{slug}"), G.SHEET, "</body>", "</html>"]
     wr(f"en/country/{slug}.html", NL.join(H))
     return {"country": cname, "slug": slug, "total": total, "cities": nc, "loose": len(loose), "existing": bool(old)}
 

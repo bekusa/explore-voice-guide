@@ -252,6 +252,8 @@ SVG = {
 MAPSVG = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2.9 6.4-6.4 2.9 2.9-6.4z"/></svg>'
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' + NL +
          '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">')
+# The app card. One file, no ?v=: edit public/explore/assets/lk-sheet.js and every page follows.
+SHEET = '<script src="/explore/assets/lk-sheet.js" defer></script>'
 TOPBAR = ('<header class="topbar"><div class="wrap"><a class="brand" href="https://lokali.travel/">Lokali</a><nav class="nav">'
           '<a href="https://lokali.travel/explore/index.html" class="on">Explore</a><a href="https://lokali.travel/blog.html">Journal</a></nav>'
           '<div class="tb-right"><a class="getapp" href="https://play.google.com/store/apps/details?id=app.lokali.travel&amp;utm_source=seo&amp;utm_medium=explore&amp;utm_campaign=topbar-en" rel="nofollow" target="_blank">Get the app</a></div></div></header>')
@@ -435,7 +437,7 @@ def page(a, pool):
     if hub_url:
         foot.append(f'<a href="{hub_url}">{txt(hub["name"])}</a>')
     foot.append(f'<a href="{EDIT}">Editorial process</a>')
-    H += ["<footer>", " &middot; ".join(foot), "</footer>", "</main>", appbar(a["city"]), "", "</body>", "</html>"]
+    H += ["<footer>", " &middot; ".join(foot), "</footer>", "</main>", appbar(a["city"]), SHEET, "</body>", "</html>"]
     return NL.join(H), {"url": url, "title": ttl, "desc": desc, "words": len(" ".join(paras).split()), "nearby": len(nb)}
 
 

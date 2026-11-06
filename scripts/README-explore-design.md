@@ -18,3 +18,14 @@ Files:
 The restyler keeps the head, hreflang, canonical and JSON-LD byte-for-byte. It refuses to write
 if the counts of alternates, ld+json or canonical change. It never invents text; non-English pages
 reuse their own localized CTA, headings and footer.
+
+## App card (lk-sheet), 2026-11-06
+
+Every /explore/ attraction, city and country page in every language ends with
+`<script src="/explore/assets/lk-sheet.js" defer></script>` (no `?v=`). The card's
+settings (on/off, which page types, timing, hide-for-days) and its wording in all
+47 page languages are the two blocks at the top of `public/explore/assets/lk-sheet.js`
+— that file is the only place to edit; a push updates every page. The file is served
+without Cache-Control, so browsers revalidate it (ETag) and pick up a change at once.
+Test any page with `?lksheet=1`. Generators that write pages must append the same tag
+(`gen_factory_en.SHEET` does).
