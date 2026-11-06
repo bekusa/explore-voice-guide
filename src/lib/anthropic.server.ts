@@ -30,6 +30,40 @@ const telemetryDb = supabaseAdmin as unknown as SupabaseClient;
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 
 /**
+ * Frankfurt relay for region-blocked calls. Beka 2026-11-04: "ეს
+ * მოაგვარე."
+ *
+ * A Cloudflare Worker's outbound fetch leaves from whichever edge
+ * served the READER, so someone browsing near an unsupported country
+ * pushes our call to Anthropic out of that country and gets:
+ *
+ *     403 { "type": "forbidden", "message": "Request not allowed" }
+ *
+ * By edge colo in error_logs: HKG (Hong Kong) 103 events since 5 Oct,
+ * DME (Moscow) 17 in a single day, KBP (Kyiv) 21 in one burst. Hong
+ * Kong, mainland China and Russia are not on Anthropic's supported
+ * list. Smart Placement was tried first and does not fix it — it
+ * moves the Worker toward the origin, not the egress country.
+ *
+ * The Supabase project is eu-central-1 (Frankfurt) and Germany IS
+ * supported, so relaying through it always presents a German IP.
+ *
+ * ── Only on 403, never by default ────────────────────────────────
+ * The overwhelming majority of calls succeed on the direct path.
+ * Routing everything through Frankfurt would add a hop to every
+ * request and make Supabase a hard dependency of the core feature
+ * for no benefit. So the relay is a RETRY, taken only when Anthropic
+ * has already refused us for region — the one case it fixes.
+ */
+const ANTHROPIC_PROXY_URL =
+  "https://dwyajguhgyjbgkpzjaln.supabase.co/functions/v1/anthropic-proxy";
+
+/** Anthropic's exact wording when the calling IP is in a blocked country. */
+function isRegionBlock(status: number, body: string): boolean {
+  return status === 403 && /request not allowed/i.test(body);
+}
+
+/**
  * Default model. Sonnet-class for the narrated guide (and any caller
  * that doesn't override `model:`) because Beka reverted from Haiku —
  * Haiku's terse style was hurting the narrated guide quality.
@@ -220,6 +254,84 @@ async function callClaudeOnce(opts: ClaudeCallOpts): Promise<string> {
       );
       await new Promise((resolve) => setTimeout(resolve, waitMs));
       continue;
+    }
+
+    /* Region block → retry once through Frankfurt. Beka 2026-11-04.
+     *
+     * Placed AFTER the retryable (429 / 5xx) branch on purpose: a
+     * region refusal is not transient and re-sending it to the same
+     * edge would fail identically every time. The only thing that
+     * changes the outcome is changing where the call leaves from.
+     *
+     * Done inline rather than by recursing into callClaudeOnce so
+     * this can never loop: one direct attempt, one relayed attempt,
+     * then the error surfaces.
+     *
+     * Auth: the service-role key the server already holds. The Edge
+     * Function has verify_jwt on, so without it Supabase's gateway
+     * rejects the call before our code runs — the relay is not an
+     * open door to Beka's Anthropic credit. */
+    if (isRegionBlock(res.status, errText)) {
+      const serviceKey =
+        process.env.EXTERNAL_SUPABASE_SERVICE_ROLE_KEY ??
+        process.env.SUPABASE_SERVICE_ROLE_KEY ??
+        "";
+      if (serviceKey) {
+        console.warn(
+          `[anthropic] region-blocked at the edge — retrying via Frankfurt relay`,
+        );
+        try {
+          const relayed = await fetch(ANTHROPIC_PROXY_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${serviceKey}`,
+              apikey: serviceKey,
+              // Used only until ANTHROPIC_API_KEY is set as a secret
+              // on the Edge Function; the function prefers its own.
+              "x-anthropic-key": apiKey,
+              "anthropic-version": "2023-06-01",
+            },
+            body: JSON.stringify({
+              model,
+              max_tokens: maxTokens,
+              temperature,
+              system: opts.system,
+              messages: [{ role: "user", content: opts.user }],
+            }),
+          });
+
+          if (relayed.ok) {
+            const data = (await relayed.json()) as {
+              content?: Array<{ type?: string; text?: string }>;
+            };
+            const block = (data.content ?? []).find((b) => b?.type === "text");
+            const text = block?.text ?? "";
+            if (text.trim()) return text;
+            throw new Error("[anthropic] empty text content via relay");
+          }
+
+          // The relay ran but Anthropic still refused. Worth saying
+          // plainly, because it means the problem is NOT the region
+          // and the diagnosis needs revisiting.
+          const relayErr = await relayed.text().catch(() => "");
+          throw new Error(
+            `[anthropic] ${res.status} region-blocked; Frankfurt relay also failed ` +
+              `(${relayed.status})` +
+              (relayErr ? ` — ${relayErr.slice(0, 200)}` : ""),
+          );
+        } catch (relayFailure) {
+          // A thrown relay error is already shaped above; anything
+          // else (network, DNS) gets wrapped so the original region
+          // block is still visible in the message.
+          const msg =
+            relayFailure instanceof Error ? relayFailure.message : String(relayFailure);
+          if (msg.startsWith("[anthropic]")) throw relayFailure;
+          throw new Error(
+            `[anthropic] ${res.status} region-blocked; relay unreachable — ${msg.slice(0, 200)}`,
+          );
+        }
+      }
     }
 
     // Beka 2026-09-05 diagnostic: record WHICH Cloudflare edge the
