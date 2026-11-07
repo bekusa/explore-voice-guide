@@ -86,6 +86,10 @@ export const KA: Partial<Record<UiKey, string>> = {
   // Google Play banner
   "playBanner.cta": "გადმოწერე აპი",
   "playBanner.dismiss": "დახურვა",
+  "playBanner.appStoreAlt": "გადმოწერე App Store-დან",
+  "playBanner.playAlt": "გადმოწერე Google Play-დან",
+  "playBanner.qrTitle": "გადმოწერე აპი ტელეფონზე",
+  "playBanner.qrHint": "დაასკანერე ტელეფონის კამერით",
   "profile.title": "პროფილი",
   "profile.account": "ანგარიში",
   "profile.openSettings": "პარამეტრები",

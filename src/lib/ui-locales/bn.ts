@@ -637,4 +637,8 @@ export const BN: Partial<Record<UiKey, string>> = {
   "map.allSaved": "সব",
   "playBanner.cta": "অ্যাপটি পান",
   "playBanner.dismiss": "সরান",
+  "playBanner.appStoreAlt": "App Store থেকে ডাউনলোড করুন",
+  "playBanner.playAlt": "Google Play থেকে পান",
+  "playBanner.qrTitle": "ফোনে অ্যাপটি নিন",
+  "playBanner.qrHint": "ফোনের ক্যামেরা দিয়ে স্ক্যান করুন",
 };

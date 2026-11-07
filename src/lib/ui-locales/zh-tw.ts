@@ -626,4 +626,8 @@ export const ZH_TW: Partial<Record<UiKey, string>> = {
   "map.allSaved": "全部",
   "playBanner.cta": "取得應用程式",
   "playBanner.dismiss": "關閉",
+  "playBanner.appStoreAlt": "在 App Store 下載",
+  "playBanner.playAlt": "在 Google Play 下載",
+  "playBanner.qrTitle": "在手機上下載 App",
+  "playBanner.qrHint": "用手機相機掃描",
 };

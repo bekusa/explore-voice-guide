@@ -100,6 +100,10 @@ export const FIL: Partial<Record<UiKey, string>> = {
   // Google Play banner
   "playBanner.cta": "Kunin ang app",
   "playBanner.dismiss": "Isara",
+  "playBanner.appStoreAlt": "I-download sa App Store",
+  "playBanner.playAlt": "Kunin ito sa Google Play",
+  "playBanner.qrTitle": "Kunin ang app sa phone mo",
+  "playBanner.qrHint": "I-scan gamit ang camera ng phone mo",
   "profile.title": "Profile",
   "profile.account": "Account",
   "profile.openSettings": "Mga Setting",

@@ -580,4 +580,8 @@ export const SW: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Zote",
   "playBanner.cta": "Pata programu",
   "playBanner.dismiss": "Ondoa",
+  "playBanner.appStoreAlt": "Pakua kwenye App Store",
+  "playBanner.playAlt": "Ipate kwenye Google Play",
+  "playBanner.qrTitle": "Pata programu kwenye simu yako",
+  "playBanner.qrHint": "Changanua kwa kamera ya simu yako",
 };

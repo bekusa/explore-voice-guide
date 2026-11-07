@@ -631,4 +631,8 @@ export const AR: Partial<Record<UiKey, string>> = {
   "map.allSaved": "الكل",
   "playBanner.cta": "احصل على التطبيق",
   "playBanner.dismiss": "تجاهل",
+  "playBanner.appStoreAlt": "حمّله من App Store",
+  "playBanner.playAlt": "احصل عليه من Google Play",
+  "playBanner.qrTitle": "احصل على التطبيق على هاتفك",
+  "playBanner.qrHint": "امسح الرمز بكاميرا هاتفك",
 };

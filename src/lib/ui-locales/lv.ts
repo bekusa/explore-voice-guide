@@ -91,6 +91,10 @@ export const LV: Partial<Record<UiKey, string>> = {
   // Google Play banner
   "playBanner.cta": "Iegūt lietotni",
   "playBanner.dismiss": "Aizvērt",
+  "playBanner.appStoreAlt": "Lejupielādēt App Store",
+  "playBanner.playAlt": "Iegūstiet Google Play",
+  "playBanner.qrTitle": "Lejupielādējiet lietotni tālrunī",
+  "playBanner.qrHint": "Skenējiet ar tālruņa kameru",
   "profile.title": "Profils",
   "profile.account": "Konts",
   "profile.openSettings": "Iestatījumi",

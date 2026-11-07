@@ -580,4 +580,8 @@ export const AF: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Almal",
   "playBanner.cta": "Kry die app",
   "playBanner.dismiss": "Maak toe",
+  "playBanner.appStoreAlt": "Laai af op die App Store",
+  "playBanner.playAlt": "Kry dit op Google Play",
+  "playBanner.qrTitle": "Kry die toep op jou foon",
+  "playBanner.qrHint": "Skandeer met jou foon se kamera",
 };

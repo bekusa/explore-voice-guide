@@ -636,4 +636,8 @@ export const VI: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Tất cả",
   "playBanner.cta": "Tải ứng dụng",
   "playBanner.dismiss": "Đóng",
+  "playBanner.appStoreAlt": "Tải về trên App Store",
+  "playBanner.playAlt": "Tải về trên Google Play",
+  "playBanner.qrTitle": "Tải ứng dụng về điện thoại",
+  "playBanner.qrHint": "Quét bằng camera điện thoại",
 };

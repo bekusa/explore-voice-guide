@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, Outlet, useMatchRoute } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
@@ -8,6 +8,7 @@ import { CityCard } from "@/components/CityCard";
 import { CITY_LIST } from "@/lib/cityList";
 import { useT, useTranslated } from "@/hooks/useT";
 import { LANGUAGE_COUNT_LABEL } from "@/lib/languages";
+import { isNativeApp } from "@/lib/appStores";
 
 // `q` is optional and carries NO default. It used to be
 // `fallback(z.string(), "").default("")`, which made the router normalise
@@ -53,6 +54,12 @@ function DestinationsPage() {
   const [query, setQuery] = useState(q ?? "");
   const matchRoute = useMatchRoute();
   const inChild = matchRoute({ to: "/destinations/$slug", fuzzy: true });
+  // Inside the Capacitor app the static /explore/ pages must not be reachable
+  // from here: they carry "Get the app" store buttons, and Apple 2.3.10
+  // forbids Google Play links in the iOS app. The server HTML keeps the link
+  // (crawlers need it); the app drops it right after hydration.
+  const [inApp, setInApp] = useState(false);
+  useEffect(() => setInApp(isNativeApp()), []);
 
   // CRITICAL: ALL hooks (useTranslated, useMemo) must run on every
   // render of DestinationsPage, including renders where we're about
@@ -153,12 +160,14 @@ function DestinationsPage() {
               extension fall through to the static asset handler. Do not
               "tidy" this back to /explore/ without fixing asset routing. */}
           <div className="px-5 pb-24 pt-8 text-center">
-            <a
-              href="/explore/index.html"
-              className="text-[11px] text-muted-foreground/70 transition-smooth hover:text-primary"
-            >
-              Explore audio guides by city
-            </a>
+            {!inApp && (
+              <a
+                href="/explore/index.html"
+                className="text-[11px] text-muted-foreground/70 transition-smooth hover:text-primary"
+              >
+                Explore audio guides by city
+              </a>
+            )}
           </div>
         </div>
       </div>

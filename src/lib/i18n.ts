@@ -228,9 +228,13 @@ export const UI_STRINGS = {
   "highlights.sortEra": "Era",
   "highlights.tabGuide": "About",
   "highlights.tabWorks": "Artworks",
-  // Google Play banner (web visitors only)
+  // App store banner (web visitors only; App Store / Google Play by platform)
   "playBanner.cta": "Get the app",
   "playBanner.dismiss": "Dismiss",
+  "playBanner.appStoreAlt": "Download on the App Store",
+  "playBanner.playAlt": "Get it on Google Play",
+  "playBanner.qrTitle": "Get the app on your phone",
+  "playBanner.qrHint": "Scan with your phone's camera",
   "profile.title": "Profile",
   "profile.account": "Account",
   "profile.openSettings": "Settings",

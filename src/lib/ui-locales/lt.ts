@@ -92,6 +92,10 @@ export const LT: Partial<Record<UiKey, string>> = {
   // Google Play banner
   "playBanner.cta": "Atsisiųsti programėlę",
   "playBanner.dismiss": "Uždaryti",
+  "playBanner.appStoreAlt": "Atsisiųskite iš App Store",
+  "playBanner.playAlt": "Gaukite iš Google Play",
+  "playBanner.qrTitle": "Įsidiekite programėlę telefone",
+  "playBanner.qrHint": "Nuskaitykite telefono kamera",
   "profile.title": "Profilis",
   "profile.account": "Paskyra",
   "profile.openSettings": "Nustatymai",

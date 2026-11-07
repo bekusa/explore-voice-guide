@@ -580,4 +580,8 @@ export const BG: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Всички",
   "playBanner.cta": "Изтегли приложението",
   "playBanner.dismiss": "Отхвърли",
+  "playBanner.appStoreAlt": "Изтеглете от App Store",
+  "playBanner.playAlt": "Изтеглете от Google Play",
+  "playBanner.qrTitle": "Изтеглете приложението на телефона си",
+  "playBanner.qrHint": "Сканирайте с камерата на телефона си",
 };

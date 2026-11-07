@@ -580,4 +580,8 @@ export const HR: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Sve",
   "playBanner.cta": "Preuzmi aplikaciju",
   "playBanner.dismiss": "Odbaci",
+  "playBanner.appStoreAlt": "Preuzmite na App Storeu",
+  "playBanner.playAlt": "Nabavite na Google Playu",
+  "playBanner.qrTitle": "Preuzmite aplikaciju na mobitel",
+  "playBanner.qrHint": "Skenirajte kamerom mobitela",
 };

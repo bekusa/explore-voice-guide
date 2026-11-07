@@ -98,6 +98,10 @@ export const UZ: Partial<Record<UiKey, string>> = {
   // Google Play banner
   "playBanner.cta": "Ilovani olish",
   "playBanner.dismiss": "Yopish",
+  "playBanner.appStoreAlt": "App Store'dan yuklab oling",
+  "playBanner.playAlt": "Google Play'dan oling",
+  "playBanner.qrTitle": "Ilovani telefoningizga yuklab oling",
+  "playBanner.qrHint": "Telefon kamerasi bilan skanerlang",
   "profile.title": "Profil",
   "profile.account": "Hisob",
   "profile.openSettings": "Sozlamalar",

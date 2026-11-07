@@ -208,8 +208,9 @@ export function logVisit(path?: string): void {
 }
 
 /**
- * Count clicks on any Google Play link (the floating banner today, any
- * future placement automatically) as `play_store_click`. One delegated
+ * Count clicks on any store link (the floating banner today, any future
+ * placement automatically): Google Play as `play_store_click`, the App
+ * Store (iOS app approved 2026-11-07) as `app_store_click`. One delegated
  * listener on document, installed once from the root component — so new
  * links need no extra wiring. `placement` comes from the nearest
  * data-placement attribute, falling back to the current path.
@@ -222,14 +223,19 @@ export function installPlayStoreClickTracking(): void {
     "click",
     (e) => {
       try {
-        const a = (e.target as Element | null)?.closest?.("a[href*='play.google.com']");
+        const a = (e.target as Element | null)?.closest?.(
+          "a[href*='play.google.com'], a[href*='apps.apple.com']",
+        );
         if (!a) return;
+        const event = /apps\.apple\.com/.test(a.getAttribute("href") || "")
+          ? "app_store_click"
+          : "play_store_click";
         const placement =
           a.closest("[data-placement]")?.getAttribute("data-placement") ??
           (typeof location !== "undefined" ? location.pathname : null);
         const info = clientInfo();
         trackEvent(
-          "play_store_click",
+          event,
           { placement, path: location.pathname, browser: info.browser, device: info.device },
           currentUserId,
         );

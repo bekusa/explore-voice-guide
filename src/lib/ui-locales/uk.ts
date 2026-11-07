@@ -635,4 +635,8 @@ export const UK: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Усе",
   "playBanner.cta": "Завантажити застосунок",
   "playBanner.dismiss": "Закрити",
+  "playBanner.appStoreAlt": "Завантажте в App Store",
+  "playBanner.playAlt": "Завантажте з Google Play",
+  "playBanner.qrTitle": "Встановіть застосунок на телефон",
+  "playBanner.qrHint": "Відскануйте камерою телефона",
 };

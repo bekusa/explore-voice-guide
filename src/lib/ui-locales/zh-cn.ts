@@ -627,4 +627,8 @@ export const ZH_CN: Partial<Record<UiKey, string>> = {
   "map.allSaved": "全部",
   "playBanner.cta": "获取应用",
   "playBanner.dismiss": "关闭",
+  "playBanner.appStoreAlt": "在 App Store 下载",
+  "playBanner.playAlt": "在 Google Play 上获取",
+  "playBanner.qrTitle": "在手机上获取应用",
+  "playBanner.qrHint": "用手机相机扫码",
 };

@@ -633,4 +633,8 @@ export const UR: Partial<Record<UiKey, string>> = {
   "map.allSaved": "سب",
   "playBanner.cta": "ایپ حاصل کریں",
   "playBanner.dismiss": "خارج کریں",
+  "playBanner.appStoreAlt": "App Store سے ڈاؤن لوڈ کریں",
+  "playBanner.playAlt": "Google Play پر حاصل کریں",
+  "playBanner.qrTitle": "اپنے فون پر ایپ حاصل کریں",
+  "playBanner.qrHint": "فون کے کیمرے سے اسکین کریں",
 };

@@ -639,4 +639,8 @@ export const MS: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Semua",
   "playBanner.cta": "Dapatkan apl",
   "playBanner.dismiss": "Tutup",
+  "playBanner.appStoreAlt": "Muat turun di App Store",
+  "playBanner.playAlt": "Dapatkan di Google Play",
+  "playBanner.qrTitle": "Dapatkan aplikasi di telefon anda",
+  "playBanner.qrHint": "Imbas dengan kamera telefon",
 };

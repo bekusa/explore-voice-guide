@@ -634,4 +634,8 @@ export const HI: Partial<Record<UiKey, string>> = {
   "map.allSaved": "सभी",
   "playBanner.cta": "ऐप पाएं",
   "playBanner.dismiss": "बंद करें",
+  "playBanner.appStoreAlt": "App Store से डाउनलोड करें",
+  "playBanner.playAlt": "Google Play पर पाएं",
+  "playBanner.qrTitle": "अपने फ़ोन पर ऐप पाएं",
+  "playBanner.qrHint": "फ़ोन के कैमरे से स्कैन करें",
 };

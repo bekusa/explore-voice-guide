@@ -94,6 +94,10 @@ export const PA: Partial<Record<UiKey, string>> = {
   // Google Play banner
   "playBanner.cta": "ਐਪ ਲਵੋ",
   "playBanner.dismiss": "ਬੰਦ ਕਰੋ",
+  "playBanner.appStoreAlt": "App Store ਤੋਂ ਡਾਊਨਲੋਡ ਕਰੋ",
+  "playBanner.playAlt": "Google Play ਤੋਂ ਪ੍ਰਾਪਤ ਕਰੋ",
+  "playBanner.qrTitle": "ਆਪਣੇ ਫ਼ੋਨ ਵਿੱਚ ਐਪ ਲਓ",
+  "playBanner.qrHint": "ਫ਼ੋਨ ਦੇ ਕੈਮਰੇ ਨਾਲ ਸਕੈਨ ਕਰੋ",
   "profile.title": "ਪ੍ਰੋਫਾਈਲ",
   "profile.account": "ਖਾਤਾ",
   "profile.openSettings": "ਸੈਟਿੰਗਾਂ",

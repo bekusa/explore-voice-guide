@@ -634,4 +634,8 @@ export const FA: Partial<Record<UiKey, string>> = {
   "map.allSaved": "همه",
   "playBanner.cta": "دریافت برنامه",
   "playBanner.dismiss": "رد کردن",
+  "playBanner.appStoreAlt": "دانلود از App Store",
+  "playBanner.playAlt": "دریافت از Google Play",
+  "playBanner.qrTitle": "اپلیکیشن را روی گوشی‌تان نصب کنید",
+  "playBanner.qrHint": "با دوربین گوشی اسکن کنید",
 };

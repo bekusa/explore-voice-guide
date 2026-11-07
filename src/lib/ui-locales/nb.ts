@@ -637,4 +637,8 @@ export const NB: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Alle",
   "playBanner.cta": "Hent appen",
   "playBanner.dismiss": "Avvis",
+  "playBanner.appStoreAlt": "Last ned fra App Store",
+  "playBanner.playAlt": "Tilgjengelig på Google Play",
+  "playBanner.qrTitle": "Last ned appen på mobilen",
+  "playBanner.qrHint": "Skann med mobilkameraet",
 };

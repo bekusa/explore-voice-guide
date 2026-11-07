@@ -94,6 +94,10 @@ export const ML: Partial<Record<UiKey, string>> = {
   // Google Play banner
   "playBanner.cta": "ആപ്പ് നേടുക",
   "playBanner.dismiss": "അടയ്ക്കുക",
+  "playBanner.appStoreAlt": "App Store-ൽ നിന്ന് ഡൗൺലോഡ് ചെയ്യുക",
+  "playBanner.playAlt": "Google Play-ൽ നിന്ന് നേടുക",
+  "playBanner.qrTitle": "ഫോണിൽ ആപ്പ് നേടുക",
+  "playBanner.qrHint": "ഫോൺ ക്യാമറ ഉപയോഗിച്ച് സ്കാൻ ചെയ്യുക",
   "profile.title": "പ്രൊഫൈൽ",
   "profile.account": "അക്കൗണ്ട്",
   "profile.openSettings": "ക്രമീകരണങ്ങൾ",

@@ -629,4 +629,8 @@ export const HE: Partial<Record<UiKey, string>> = {
   "map.allSaved": "הכול",
   "playBanner.cta": "קבלו את האפליקציה",
   "playBanner.dismiss": "סגור",
+  "playBanner.appStoreAlt": "להורדה ב-App Store",
+  "playBanner.playAlt": "זמין ב-Google Play",
+  "playBanner.qrTitle": "הורידו את האפליקציה לטלפון",
+  "playBanner.qrHint": "סרקו עם מצלמת הטלפון",
 };

@@ -580,4 +580,8 @@ export const HY: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Բոլորը",
   "playBanner.cta": "Ստանալ հավելվածը",
   "playBanner.dismiss": "Անտեսել",
+  "playBanner.appStoreAlt": "Ներբեռնել App Store-ից",
+  "playBanner.playAlt": "Ստանալ Google Play-ում",
+  "playBanner.qrTitle": "Ներբեռնեք հավելվածը ձեր հեռախոսում",
+  "playBanner.qrHint": "Սկանավորեք հեռախոսի տեսախցիկով",
 };

@@ -635,4 +635,8 @@ export const PL: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Wszystkie",
   "playBanner.cta": "Pobierz aplikację",
   "playBanner.dismiss": "Zamknij",
+  "playBanner.appStoreAlt": "Pobierz z App Store",
+  "playBanner.playAlt": "Pobierz z Google Play",
+  "playBanner.qrTitle": "Pobierz aplikację na telefon",
+  "playBanner.qrHint": "Zeskanuj aparatem telefonu",
 };

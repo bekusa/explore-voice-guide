@@ -633,4 +633,8 @@ export const KO: Partial<Record<UiKey, string>> = {
   "map.allSaved": "전체",
   "playBanner.cta": "앱 받기",
   "playBanner.dismiss": "닫기",
+  "playBanner.appStoreAlt": "App Store에서 다운로드",
+  "playBanner.playAlt": "Google Play에서 다운로드",
+  "playBanner.qrTitle": "휴대폰에 앱을 설치하세요",
+  "playBanner.qrHint": "휴대폰 카메라로 스캔하세요",
 };

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { HomeScreen } from "@/components/HomeScreen";
 import { LANGUAGE_COUNT_LABEL } from "@/lib/languages";
+import { APP_STORE_URL, PLAY_URL } from "@/lib/appStores";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -84,7 +85,8 @@ const ORG_JSON_LD = {
       description: `Lokali makes free AI-narrated audio guides for landmarks and museums in 190+ cities, in ${LANGUAGE_COUNT_LABEL} languages.`,
       email: "contact@lokali.travel",
       sameAs: [
-        "https://play.google.com/store/apps/details?id=app.lokali.travel",
+        PLAY_URL,
+        APP_STORE_URL,
         "https://www.facebook.com/profile.php?id=61594728502493",
         "https://www.instagram.com/lokali.travel",
       ],
@@ -104,7 +106,25 @@ const ORG_JSON_LD = {
       name: "Lokali: AI Audio Tour & Guide",
       operatingSystem: "Android",
       applicationCategory: "TravelApplication",
-      url: "https://play.google.com/store/apps/details?id=app.lokali.travel",
+      url: PLAY_URL,
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
+      publisher: {
+        "@id": "https://lokali.travel/#organization",
+      },
+    },
+    // iOS app (approved 2026-11-07) as its own entity: each store listing
+    // keeps its own url, and the Android #app id stays untouched.
+    {
+      "@type": "MobileApplication",
+      "@id": "https://lokali.travel/#app-ios",
+      name: "Lokali: AI Audio Tour & Guide",
+      operatingSystem: "iOS",
+      applicationCategory: "TravelApplication",
+      url: APP_STORE_URL,
       offers: {
         "@type": "Offer",
         price: "0",

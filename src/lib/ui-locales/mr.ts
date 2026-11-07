@@ -580,4 +580,8 @@ export const MR: Partial<Record<UiKey, string>> = {
   "map.allSaved": "सर्व",
   "playBanner.cta": "अ‍ॅप मिळवा",
   "playBanner.dismiss": "डिसमिस करा",
+  "playBanner.appStoreAlt": "App Store वरून डाउनलोड करा",
+  "playBanner.playAlt": "Google Play वर मिळवा",
+  "playBanner.qrTitle": "फोनवर ॲप मिळवा",
+  "playBanner.qrHint": "फोनच्या कॅमेऱ्याने स्कॅन करा",
 };

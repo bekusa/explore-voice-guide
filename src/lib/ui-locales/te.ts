@@ -580,4 +580,8 @@ export const TE: Partial<Record<UiKey, string>> = {
   "map.allSaved": "అన్నీ",
   "playBanner.cta": "యాప్ పొందండి",
   "playBanner.dismiss": "తీసివేయి",
+  "playBanner.appStoreAlt": "App Store నుండి డౌన్‌లోడ్ చేసుకోండి",
+  "playBanner.playAlt": "Google Playలో పొందండి",
+  "playBanner.qrTitle": "మీ ఫోన్‌లో యాప్ పొందండి",
+  "playBanner.qrHint": "ఫోన్ కెమెరాతో స్కాన్ చేయండి",
 };

@@ -580,4 +580,8 @@ export const AZ: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Hamısı",
   "playBanner.cta": "Tətbiqi yüklə",
   "playBanner.dismiss": "Bağla",
+  "playBanner.appStoreAlt": "App Store-dan yükləyin",
+  "playBanner.playAlt": "Google Play-dən əldə edin",
+  "playBanner.qrTitle": "Tətbiqi telefonunuza yükləyin",
+  "playBanner.qrHint": "Telefonunuzun kamerası ilə skan edin",
 };

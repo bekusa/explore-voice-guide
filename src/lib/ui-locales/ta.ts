@@ -580,4 +580,8 @@ export const TA: Partial<Record<UiKey, string>> = {
   "map.allSaved": "அனைத்தும்",
   "playBanner.cta": "ஆப்ஸைப் பெறுங்கள்",
   "playBanner.dismiss": "நிராகரி",
+  "playBanner.appStoreAlt": "App Store-இல் பதிவிறக்குங்கள்",
+  "playBanner.playAlt": "Google Play-இல் பெறுங்கள்",
+  "playBanner.qrTitle": "உங்கள் தொலைபேசியில் செயலியைப் பெறுங்கள்",
+  "playBanner.qrHint": "தொலைபேசி கேமராவால் ஸ்கேன் செய்யுங்கள்",
 };

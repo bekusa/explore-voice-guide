@@ -35,3 +35,11 @@ within `nearbyMaxKm` (3 km), read from the page's own Nearby rail (`.rail .pcard
 name + "x.x km"). With none that close it says "{city}: more free audio guides in the
 app." (`TEXT.<lang>.city`), using the page's JSON-LD `addressLocality`, else the last
 breadcrumb link. Nothing is fetched; the card only repeats what the page already shows.
+
+v6 (2026-11-07, iOS app approved): the store side follows the device — iPhone/iPad
+(incl. iPadOS "Mac + touch") → Apple's official App Store badge, Android → Google Play,
+laptop/desktop → QR (`assets/app-qr-explore.svg` → https://lokali.travel/app, which sends
+each phone to its store) + both badges, any other device → both badges. Badge files:
+`assets/app-store-badge.svg` (Apple's official black badge, self-hosted) and
+`assets/google-play-badge.png`. Inside the iOS/Android app the card never shows
+(`isNativePlatform()`), per Apple guideline 2.3.10.

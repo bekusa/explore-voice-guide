@@ -646,4 +646,8 @@ export const EL: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Όλα",
   "playBanner.cta": "Λήψη εφαρμογής",
   "playBanner.dismiss": "Απόρριψη",
+  "playBanner.appStoreAlt": "Λήψη από το App Store",
+  "playBanner.playAlt": "Διαθέσιμο στο Google Play",
+  "playBanner.qrTitle": "Κατεβάστε την εφαρμογή στο κινητό σας",
+  "playBanner.qrHint": "Σαρώστε με την κάμερα του κινητού σας",
 };

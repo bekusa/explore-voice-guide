@@ -638,4 +638,8 @@ export const NL: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Alles",
   "playBanner.cta": "Download de app",
   "playBanner.dismiss": "Sluiten",
+  "playBanner.appStoreAlt": "Download in de App Store",
+  "playBanner.playAlt": "Ontdek het op Google Play",
+  "playBanner.qrTitle": "Download de app op je telefoon",
+  "playBanner.qrHint": "Scan met de camera van je telefoon",
 };

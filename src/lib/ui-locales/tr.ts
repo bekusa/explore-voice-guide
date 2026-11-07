@@ -640,4 +640,8 @@ export const TR: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Hepsi",
   "playBanner.cta": "Uygulamayı indir",
   "playBanner.dismiss": "Kapat",
+  "playBanner.appStoreAlt": "App Store'dan indirin",
+  "playBanner.playAlt": "Google Play'den alın",
+  "playBanner.qrTitle": "Uygulamayı telefonunuza indirin",
+  "playBanner.qrHint": "Telefonunuzun kamerasıyla tarayın",
 };

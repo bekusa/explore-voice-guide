@@ -580,4 +580,8 @@ export const SR: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Све",
   "playBanner.cta": "Преузми апликацију",
   "playBanner.dismiss": "Одбаци",
+  "playBanner.appStoreAlt": "Преузмите са App Store-а",
+  "playBanner.playAlt": "Набавите на Google Play-у",
+  "playBanner.qrTitle": "Преузмите апликацију на телефон",
+  "playBanner.qrHint": "Скенирајте камером телефона",
 };

@@ -112,11 +112,13 @@ export function MobileFrame({
             <InlineAudioPanel />
           </div>
         )}
-        {/* "Get it on Google Play" pill — WEB visitors only (the
-            component self-hides inside the Capacitor app + after
-            dismissal). Pinned above the TabBar, below the player's
-            z-30 so the audio player wins when both are up. Beka
-            2026-07-31, production launch. */}
+        {/* "Get the app" pill — WEB visitors only (the component
+            self-hides inside the Capacitor app, after dismissal and in
+            iOS Safari, where Apple's Smart App Banner takes over).
+            App Store on iPhone/iPad, Google Play on Android, both on
+            desktop. Pinned above the TabBar, below the player's z-30
+            so the audio player wins when both are up. Beka 2026-07-31,
+            production launch; platform-aware since 2026-11-07. */}
         {!narrating && (
           <div
             className={`absolute inset-x-0 z-20 ${

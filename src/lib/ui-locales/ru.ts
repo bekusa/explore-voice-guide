@@ -635,4 +635,8 @@ export const RU: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Всё",
   "playBanner.cta": "Установить приложение",
   "playBanner.dismiss": "Закрыть",
+  "playBanner.appStoreAlt": "Загрузите в App Store",
+  "playBanner.playAlt": "Доступно в Google Play",
+  "playBanner.qrTitle": "Установите приложение на телефон",
+  "playBanner.qrHint": "Отсканируйте камерой телефона",
 };

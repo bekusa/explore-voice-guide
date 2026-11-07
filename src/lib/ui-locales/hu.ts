@@ -636,4 +636,8 @@ export const HU: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Mind",
   "playBanner.cta": "Alkalmazás letöltése",
   "playBanner.dismiss": "Bezárás",
+  "playBanner.appStoreAlt": "Letöltés az App Store-ból",
+  "playBanner.playAlt": "Szerezd meg a Google Playen",
+  "playBanner.qrTitle": "Töltsd le az appot a telefonodra",
+  "playBanner.qrHint": "Olvasd be a telefonod kamerájával",
 };

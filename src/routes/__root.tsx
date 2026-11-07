@@ -17,6 +17,7 @@ import {
   installPlayStoreClickTracking,
 } from "@/lib/analytics";
 import { LANGUAGE_COUNT_LABEL } from "@/lib/languages";
+import { APP_STORE_ID } from "@/lib/appStores";
 import { installClientErrorGuard } from "@/lib/clientErrorGuard";
 import { restoreLangFromNative } from "@/lib/i18n";
 import { reportClientError } from "@/lib/reportClientError";
@@ -169,6 +170,12 @@ export const Route = createRootRoute({
       // to match Lokali's charcoal. Without this the system bar
       // looks like a default light strip on top of the dark app.
       { name: "theme-color", content: "#0F0F0F" },
+      // Smart App Banner (iOS app approved 2026-11-07). Only Apple's
+      // Safari on iPhone/iPad draws it ("Get"/"Open" bar at the top);
+      // other browsers ignore the tag, and it never shows inside our
+      // own app's WKWebView. PlayStoreBanner hides itself in iOS Safari
+      // so the visitor never sees two banners for the same app.
+      { name: "apple-itunes-app", content: `app-id=${APP_STORE_ID}` },
       // viewport-fit=cover unlocks env(safe-area-inset-*) CSS values so
       // we can pad around iPhone notches and Android system bars
       // (status bar at top, navigation gestures at bottom). Without

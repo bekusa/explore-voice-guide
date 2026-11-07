@@ -637,4 +637,8 @@ export const FI: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Kaikki",
   "playBanner.cta": "Hanki sovellus",
   "playBanner.dismiss": "Sulje",
+  "playBanner.appStoreAlt": "Lataa App Storesta",
+  "playBanner.playAlt": "Lataa Google Playsta",
+  "playBanner.qrTitle": "Lataa sovellus puhelimeesi",
+  "playBanner.qrHint": "Skannaa puhelimen kameralla",
 };

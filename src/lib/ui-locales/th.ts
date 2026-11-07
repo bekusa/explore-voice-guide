@@ -632,4 +632,8 @@ export const TH: Partial<Record<UiKey, string>> = {
   "map.allSaved": "ทั้งหมด",
   "playBanner.cta": "ดาวน์โหลดแอป",
   "playBanner.dismiss": "ปิด",
+  "playBanner.appStoreAlt": "ดาวน์โหลดบน App Store",
+  "playBanner.playAlt": "ดาวน์โหลดบน Google Play",
+  "playBanner.qrTitle": "ดาวน์โหลดแอปลงโทรศัพท์",
+  "playBanner.qrHint": "สแกนด้วยกล้องโทรศัพท์",
 };

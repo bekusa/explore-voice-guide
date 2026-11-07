@@ -634,4 +634,8 @@ export const CS: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Vše",
   "playBanner.cta": "Získat aplikaci",
   "playBanner.dismiss": "Zavřít",
+  "playBanner.appStoreAlt": "Stáhnout v App Storu",
+  "playBanner.playAlt": "Nyní na Google Play",
+  "playBanner.qrTitle": "Stáhněte si aplikaci do telefonu",
+  "playBanner.qrHint": "Naskenujte fotoaparátem telefonu",
 };

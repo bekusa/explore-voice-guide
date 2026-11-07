@@ -637,4 +637,8 @@ export const RO: Partial<Record<UiKey, string>> = {
   "map.allSaved": "Toate",
   "playBanner.cta": "Descarcă aplicația",
   "playBanner.dismiss": "Închide",
+  "playBanner.appStoreAlt": "Descarcă din App Store",
+  "playBanner.playAlt": "Descarcă de pe Google Play",
+  "playBanner.qrTitle": "Descarcă aplicația pe telefon",
+  "playBanner.qrHint": "Scanează cu camera telefonului",
 };

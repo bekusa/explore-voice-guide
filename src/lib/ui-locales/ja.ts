@@ -637,4 +637,8 @@ export const JA: Partial<Record<UiKey, string>> = {
   "map.allSaved": "すべて",
   "playBanner.cta": "アプリを入手",
   "playBanner.dismiss": "閉じる",
+  "playBanner.appStoreAlt": "App Storeからダウンロード",
+  "playBanner.playAlt": "Google Play で手に入れよう",
+  "playBanner.qrTitle": "スマホにアプリを入れよう",
+  "playBanner.qrHint": "スマホのカメラでスキャン",
 };

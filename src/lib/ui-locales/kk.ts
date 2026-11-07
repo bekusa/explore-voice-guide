@@ -94,6 +94,10 @@ export const KK: Partial<Record<UiKey, string>> = {
   // Google Play banner
   "playBanner.cta": "Қолданбаны алу",
   "playBanner.dismiss": "Жабу",
+  "playBanner.appStoreAlt": "App Store-дан жүктеп алыңыз",
+  "playBanner.playAlt": "Google Play-ден алыңыз",
+  "playBanner.qrTitle": "Қолданбаны телефонға жүктеңіз",
+  "playBanner.qrHint": "Телефон камерасымен сканерлеңіз",
   "profile.title": "Профиль",
   "profile.account": "Аккаунт",
   "profile.openSettings": "Параметрлер",
