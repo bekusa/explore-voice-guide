@@ -249,6 +249,8 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
   var SB = "https://dwyajguhgyjbgkpzjaln.supabase.co/rest/v1/usage_events";
   var PK = "sb_publishable_9e0MpAV3FKmVGhMLw8u2ig_FL5ZqzHd";
   var demo = /[?&]lksheet=1/.test(location.search);
+  // ?lksheet=reset forgets an earlier "×" on this device (testing: a closed card stays hidden hideForDays)
+  if (/[?&]lksheet=reset/.test(location.search)) { try { localStorage.removeItem("lk_sheet_closed_at"); } catch (e) {} }
 
   // Inside our iOS/Android app no store link may show (Apple 2.3.10). The native shell defines
   // window.Capacitor with isNativePlatform() → true; a web copy of @capacitor/core says false.
@@ -470,7 +472,8 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
   function expand() { el.classList.remove("lks-mini"); el.innerHTML = full(); track("sheet_expand"); }
   function close() {
     el.classList.remove("on"); setTimeout(function () { el.remove(); }, 350);
-    try { localStorage.setItem(KEY, String(Date.now())); } catch (e) {}
+    // a "×" while testing with ?lksheet=1 must not hide the card from this device for a week
+    if (!demo) { try { localStorage.setItem(KEY, String(Date.now())); } catch (e) {} }
     track("sheet_close");
   }
   function onClick(e) {
