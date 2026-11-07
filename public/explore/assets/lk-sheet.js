@@ -1,4 +1,4 @@
-/* lk-sheet.js v6 — the "get the app" card on every /explore/ page, in every language.
+/* lk-sheet.js v7 — the "get the app" card on every /explore/ page, in every language.
  *
  * ── ONE PLACE TO EDIT ────────────────────────────────────────────────────────
  * Everything you may want to change is in SETTINGS and TEXT right below.
@@ -14,6 +14,9 @@
  * Store by device (v6, iOS launch 2026-11-07): iPhone/iPad → App Store badge, Android → Google Play,
  * laptop/desktop → QR to lokali.travel/app (picks the store for the phone that scans it) + both
  * badges, any other device → both badges. Badges are the official Apple/Google artwork.
+ * Nearby places (v7): from assets/near/<lang>/<city>.json — built from every published page's
+ * coordinates by scripts/build-near-index.py (rerun it after generating pages); the page's own
+ * Nearby rail is the fallback.
  * Desktop: cream card bottom-right — title, nearby places, app screenshot, store side.
  * Mobile:  compact bar (~20% of the screen, Google's intrusive-interstitial guidance);
  *          tapping it opens the full card.
@@ -33,6 +36,9 @@ var LK_SHEET_SETTINGS = {
   nearbyMaxKm: 3,            // "Nearby: …" lists places at most this far (from the page's own Nearby list)
   nearbyCount: 3,            // ...and at most this many of them
   cityLine: true,            // no place that close -> "{city}: more free audio guides in the app." instead
+  nearbyIndex: true,         // read assets/near/<lang>/<city>.json (scripts/build-near-index.py); false = page rail only
+  areaMaxKm: 50,             // nothing within nearbyMaxKm -> "In the area: X 12 km" for places this close…
+  areaCount: 2,              // …at most this many
   playUrl: "https://play.google.com/store/apps/details?id=app.lokali.travel",
   appStoreUrl: "https://apps.apple.com/app/id6828065471",
   qrImage: "app-qr-explore.svg", // in assets/: QR of https://lokali.travel/app?utm_source=seo&utm_medium=qr&utm_campaign=explore
@@ -40,187 +46,188 @@ var LK_SHEET_SETTINGS = {
   webLinkLangs: { en: 1 }    // "Listen in your browser" deep link only where the page name is the app's name
 };
 
-/* {place} = the page's h1, {near} = up to nearbyCount nearest places with distances ("Abanotubani 200 m · Metekhi Church 300 m"),
+/* {place} = the page's h1, {near} = up to nearbyCount nearest places with distances ("Abanotubani 200 m · Metekhi Church 300 m";
+ *   `near` within nearbyMaxKm, `area` = the fallback within areaMaxKm),
  * {city} = the page's city as the page itself writes it. <b>…</b> is allowed. */
 var LK_SHEET_TEXT = {
   en: { tag: "Free audio guide", title: "{place} is just the start.", titleHub: "{place} — free audio guides in your language.",
-    near: "Nearby: {near}.", city: "{city}: more free audio guides in the app.", sub: "Hear the full story with Lokali&rsquo;s <b>free audio guide</b> — in your language, offline.",
+    near: "Nearby: {near}.", area: "In the area: {near}.", city: "{city}: more free audio guides in the app.", sub: "Hear the full story with Lokali&rsquo;s <b>free audio guide</b> — in your language, offline.",
     subHub: "Every place on this page has a <b>free audio guide</b> in the Lokali app — in your language, offline.",
     offline: "offline", more: "More", scan: "Scan with your phone's camera", cam: "iPhone → App Store · Android → Google Play",
     pts: "50+ languages|Works offline|No ads", web: "Listen in your browser", close: "Close", label: "Get the Lokali app" },
-  af: { tag: "Gratis oudiogids", title: "{place} is net die begin.", titleHub: "{place} — gratis oudiogidse in jou taal.", near: "Naby: {near}.", city: "{city}: nog gratis oudiogidse in die toep.",
+  af: { tag: "Gratis oudiogids", title: "{place} is net die begin.", titleHub: "{place} — gratis oudiogidse in jou taal.", near: "Naby: {near}.", area: "In die omgewing: {near}.", city: "{city}: nog gratis oudiogidse in die toep.",
     sub: "Hoor die hele storie met Lokali se <b>gratis oudiogids</b> — in jou taal, vanlyn.", subHub: "Elke plek op hierdie bladsy het 'n <b>gratis oudiogids</b> in die Lokali-toep — in jou taal, vanlyn.",
     offline: "vanlyn", more: "Meer", scan: "Skandeer met jou foon se kamera",
     pts: "50+ tale|Werk vanlyn|Geen advertensies", web: "Luister in jou blaaier", close: "Maak toe", label: "Kry die Lokali-toep" },
-  ar: { tag: "دليل صوتي مجاني", title: "{place} ليس سوى البداية.", titleHub: "{place} — أدلة صوتية مجانية بلغتك.", near: "بالقرب: {near}.", city: "{city}: المزيد من الأدلة الصوتية المجانية في التطبيق.",
+  ar: { tag: "دليل صوتي مجاني", title: "{place} ليس سوى البداية.", titleHub: "{place} — أدلة صوتية مجانية بلغتك.", near: "بالقرب: {near}.", area: "في المنطقة: {near}.", city: "{city}: المزيد من الأدلة الصوتية المجانية في التطبيق.",
     sub: "استمع إلى القصة كاملة مع <b>الدليل الصوتي المجاني</b> من Lokali — بلغتك ودون اتصال.", subHub: "لكل مكان في هذه الصفحة <b>دليل صوتي مجاني</b> في تطبيق Lokali — بلغتك ودون اتصال.",
     offline: "دون اتصال", more: "المزيد", scan: "امسح الرمز بكاميرا هاتفك",
     pts: "أكثر من 50 لغة|يعمل دون اتصال|بلا إعلانات", web: "استمع في المتصفح", close: "إغلاق", label: "احصل على تطبيق Lokali" },
-  az: { tag: "Pulsuz audio bələdçi", title: "{place} yalnız başlanğıcdır.", titleHub: "{place} — öz dilinizdə pulsuz audio bələdçilər.", near: "Yaxınlıqda: {near}.", city: "{city}: tətbiqdə daha çox pulsuz audio bələdçi.",
+  az: { tag: "Pulsuz audio bələdçi", title: "{place} yalnız başlanğıcdır.", titleHub: "{place} — öz dilinizdə pulsuz audio bələdçilər.", near: "Yaxınlıqda: {near}.", area: "Ətrafda: {near}.", city: "{city}: tətbiqdə daha çox pulsuz audio bələdçi.",
     sub: "Lokali-nin <b>pulsuz audio bələdçisi</b> ilə bütün hekayəni dinləyin — öz dilinizdə, oflayn.", subHub: "Bu səhifədəki hər yerin Lokali tətbiqində <b>pulsuz audio bələdçisi</b> var — öz dilinizdə, oflayn.",
     offline: "oflayn", more: "Ətraflı", scan: "Telefonunuzun kamerası ilə skan edin",
     pts: "50+ dil|Oflayn işləyir|Reklamsız", web: "Brauzerdə dinləyin", close: "Bağla", label: "Lokali tətbiqini yükləyin" },
-  bg: { tag: "Безплатен аудиогид", title: "{place} е само началото.", titleHub: "{place} — безплатни аудиогидове на вашия език.", near: "Наблизо: {near}.", city: "{city}: още безплатни аудиогидове в приложението.",
+  bg: { tag: "Безплатен аудиогид", title: "{place} е само началото.", titleHub: "{place} — безплатни аудиогидове на вашия език.", near: "Наблизо: {near}.", area: "В района: {near}.", city: "{city}: още безплатни аудиогидове в приложението.",
     sub: "Чуйте цялата история с <b>безплатния аудиогид</b> на Lokali — на вашия език, офлайн.", subHub: "Всяко място на тази страница има <b>безплатен аудиогид</b> в приложението Lokali — на вашия език, офлайн.",
     offline: "офлайн", more: "Още", scan: "Сканирайте с камерата на телефона си",
     pts: "50+ езика|Работи офлайн|Без реклами", web: "Слушайте в браузъра", close: "Затвори", label: "Изтеглете приложението Lokali" },
-  bn: { tag: "ফ্রি অডিও গাইড", title: "{place} শুধু শুরু।", titleHub: "{place} — আপনার ভাষায় ফ্রি অডিও গাইড।", near: "কাছেই: {near}।", city: "{city}: অ্যাপে আরও ফ্রি অডিও গাইড।",
+  bn: { tag: "ফ্রি অডিও গাইড", title: "{place} শুধু শুরু।", titleHub: "{place} — আপনার ভাষায় ফ্রি অডিও গাইড।", near: "কাছেই: {near}।", area: "আশেপাশের এলাকায়: {near}।", city: "{city}: অ্যাপে আরও ফ্রি অডিও গাইড।",
     sub: "Lokali-র <b>ফ্রি অডিও গাইডে</b> পুরো গল্প শুনুন — আপনার ভাষায়, অফলাইনে।", subHub: "এই পাতার প্রতিটি জায়গার জন্য Lokali অ্যাপে <b>ফ্রি অডিও গাইড</b> আছে — আপনার ভাষায়, অফলাইনে।",
     offline: "অফলাইন", more: "আরও", scan: "ফোনের ক্যামেরা দিয়ে স্ক্যান করুন",
     pts: "50+ ভাষা|অফলাইনে চলে|বিজ্ঞাপন নেই", web: "ব্রাউজারে শুনুন", close: "বন্ধ করুন", label: "Lokali অ্যাপ নিন" },
-  cs: { tag: "Audioprůvodce zdarma", title: "{place} je jen začátek.", titleHub: "{place} — audioprůvodci zdarma ve vašem jazyce.", near: "Nedaleko: {near}.", city: "{city}: další audioprůvodci zdarma v aplikaci.",
+  cs: { tag: "Audioprůvodce zdarma", title: "{place} je jen začátek.", titleHub: "{place} — audioprůvodci zdarma ve vašem jazyce.", near: "Nedaleko: {near}.", area: "V okolí: {near}.", city: "{city}: další audioprůvodci zdarma v aplikaci.",
     sub: "Poslechněte si celý příběh s <b>audioprůvodcem zdarma</b> od Lokali — ve vašem jazyce, offline.", subHub: "Každé místo na této stránce má v aplikaci Lokali <b>audioprůvodce zdarma</b> — ve vašem jazyce, offline.",
     offline: "offline", more: "Více", scan: "Naskenujte fotoaparátem telefonu",
     pts: "50+ jazyků|Funguje offline|Bez reklam", web: "Poslouchat v prohlížeči", close: "Zavřít", label: "Stáhněte aplikaci Lokali" },
-  da: { tag: "Gratis lydguide", title: "{place} er kun begyndelsen.", titleHub: "{place} — gratis lydguides på dit sprog.", near: "I nærheden: {near}.", city: "{city}: flere gratis lydguides i appen.",
+  da: { tag: "Gratis lydguide", title: "{place} er kun begyndelsen.", titleHub: "{place} — gratis lydguides på dit sprog.", near: "I nærheden: {near}.", area: "I området: {near}.", city: "{city}: flere gratis lydguides i appen.",
     sub: "Hør hele historien med Lokalis <b>gratis lydguide</b> — på dit sprog, offline.", subHub: "Alle steder på denne side har en <b>gratis lydguide</b> i Lokali-appen — på dit sprog, offline.",
     offline: "offline", more: "Mere", scan: "Scan med telefonens kamera",
     pts: "50+ sprog|Virker offline|Ingen reklamer", web: "Lyt i browseren", close: "Luk", label: "Hent Lokali-appen" },
-  de: { tag: "Kostenloser Audioguide", title: "{place} ist erst der Anfang.", titleHub: "{place} — kostenlose Audioguides in deiner Sprache.", near: "In der Nähe: {near}.", city: "{city}: weitere kostenlose Audioguides in der App.",
+  de: { tag: "Kostenloser Audioguide", title: "{place} ist erst der Anfang.", titleHub: "{place} — kostenlose Audioguides in deiner Sprache.", near: "In der Nähe: {near}.", area: "In der Umgebung: {near}.", city: "{city}: weitere kostenlose Audioguides in der App.",
     sub: "Hör die ganze Geschichte mit dem <b>kostenlosen Audioguide</b> von Lokali — in deiner Sprache, offline.", subHub: "Jeder Ort auf dieser Seite hat einen <b>kostenlosen Audioguide</b> in der Lokali-App — in deiner Sprache, offline.",
     offline: "offline", more: "Mehr", scan: "Mit der Handykamera scannen",
     pts: "50+ Sprachen|Funktioniert offline|Keine Werbung", web: "Im Browser anhören", close: "Schließen", label: "Lokali-App holen" },
-  el: { tag: "Δωρεάν ηχητικός οδηγός", title: "{place}: μόνο η αρχή.", titleHub: "{place} — δωρεάν ηχητικοί οδηγοί στη γλώσσα σας.", near: "Κοντά: {near}.", city: "{city}: περισσότεροι δωρεάν ηχητικοί οδηγοί στην εφαρμογή.",
+  el: { tag: "Δωρεάν ηχητικός οδηγός", title: "{place}: μόνο η αρχή.", titleHub: "{place} — δωρεάν ηχητικοί οδηγοί στη γλώσσα σας.", near: "Κοντά: {near}.", area: "Στην περιοχή: {near}.", city: "{city}: περισσότεροι δωρεάν ηχητικοί οδηγοί στην εφαρμογή.",
     sub: "Ακούστε όλη την ιστορία με τον <b>δωρεάν ηχητικό οδηγό</b> του Lokali — στη γλώσσα σας, εκτός σύνδεσης.", subHub: "Κάθε μέρος σε αυτή τη σελίδα έχει <b>δωρεάν ηχητικό οδηγό</b> στην εφαρμογή Lokali — στη γλώσσα σας, εκτός σύνδεσης.",
     offline: "εκτός σύνδεσης", more: "Περισσότερα", scan: "Σαρώστε με την κάμερα του κινητού σας",
     pts: "50+ γλώσσες|Λειτουργεί εκτός σύνδεσης|Χωρίς διαφημίσεις", web: "Ακούστε στο πρόγραμμα περιήγησης", close: "Κλείσιμο", label: "Κατεβάστε την εφαρμογή Lokali" },
-  es: { tag: "Audioguía gratis", title: "{place} es solo el principio.", titleHub: "{place}: audioguías gratis en tu idioma.", near: "Cerca: {near}.", city: "{city}: más audioguías gratis en la app.",
+  es: { tag: "Audioguía gratis", title: "{place} es solo el principio.", titleHub: "{place}: audioguías gratis en tu idioma.", near: "Cerca: {near}.", area: "En la zona: {near}.", city: "{city}: más audioguías gratis en la app.",
     sub: "Escucha toda la historia con la <b>audioguía gratis</b> de Lokali, en tu idioma y sin conexión.", subHub: "Cada lugar de esta página tiene una <b>audioguía gratis</b> en la app Lokali, en tu idioma y sin conexión.",
     offline: "sin conexión", more: "Más", scan: "Escanea con la cámara del móvil",
     pts: "50+ idiomas|Funciona sin conexión|Sin anuncios", web: "Escuchar en el navegador", close: "Cerrar", label: "Descarga la app Lokali" },
-  fa: { tag: "راهنمای صوتی رایگان", title: "{place} تازه آغاز راه است.", titleHub: "{place} — راهنماهای صوتی رایگان به زبان شما.", near: "در نزدیکی: {near}.", city: "{city}: راهنماهای صوتی رایگان بیشتر در اپلیکیشن.",
+  fa: { tag: "راهنمای صوتی رایگان", title: "{place} تازه آغاز راه است.", titleHub: "{place} — راهنماهای صوتی رایگان به زبان شما.", near: "در نزدیکی: {near}.", area: "در این منطقه: {near}.", city: "{city}: راهنماهای صوتی رایگان بیشتر در اپلیکیشن.",
     sub: "کل داستان را با <b>راهنمای صوتی رایگان</b> Lokali بشنوید — به زبان خودتان و آفلاین.", subHub: "هر مکان در این صفحه در اپلیکیشن Lokali <b>راهنمای صوتی رایگان</b> دارد — به زبان خودتان و آفلاین.",
     offline: "آفلاین", more: "بیشتر", scan: "با دوربین گوشی اسکن کنید",
     pts: "بیش از ۵۰ زبان|کار به‌صورت آفلاین|بدون تبلیغ", web: "در مرورگر گوش دهید", close: "بستن", label: "اپلیکیشن Lokali را بگیرید" },
-  fi: { tag: "Ilmainen ääniopas", title: "{place} on vasta alkua.", titleHub: "{place} — ilmaisia ääniopastuksia omalla kielelläsi.", near: "Lähellä: {near}.", city: "{city}: lisää ilmaisia ääniopastuksia sovelluksessa.",
+  fi: { tag: "Ilmainen ääniopas", title: "{place} on vasta alkua.", titleHub: "{place} — ilmaisia ääniopastuksia omalla kielelläsi.", near: "Lähellä: {near}.", area: "Lähiseudulla: {near}.", city: "{city}: lisää ilmaisia ääniopastuksia sovelluksessa.",
     sub: "Kuuntele koko tarina Lokalin <b>ilmaisella ääniopastuksella</b> — omalla kielelläsi, offline.", subHub: "Jokaisella tämän sivun kohteella on <b>ilmainen ääniopas</b> Lokali-sovelluksessa — omalla kielelläsi, offline.",
     offline: "offline", more: "Lisää", scan: "Skannaa puhelimen kameralla",
     pts: "50+ kieltä|Toimii offline|Ei mainoksia", web: "Kuuntele selaimessa", close: "Sulje", label: "Lataa Lokali-sovellus" },
-  fr: { tag: "Audioguide gratuit", title: "{place}, ce n'est que le début.", titleHub: "{place} : audioguides gratuits dans votre langue.", near: "À proximité : {near}.", city: "{city} : d'autres audioguides gratuits dans l'appli.",
+  fr: { tag: "Audioguide gratuit", title: "{place}, ce n'est que le début.", titleHub: "{place} : audioguides gratuits dans votre langue.", near: "À proximité : {near}.", area: "Dans les environs : {near}.", city: "{city} : d'autres audioguides gratuits dans l'appli.",
     sub: "Écoutez toute l'histoire avec l'<b>audioguide gratuit</b> Lokali — dans votre langue, hors ligne.", subHub: "Chaque lieu de cette page a un <b>audioguide gratuit</b> dans l'appli Lokali — dans votre langue, hors ligne.",
     offline: "hors ligne", more: "Plus", scan: "Scannez avec l'appareil photo de votre téléphone",
     pts: "50+ langues|Fonctionne hors ligne|Sans publicité", web: "Écouter dans le navigateur", close: "Fermer", label: "Obtenir l'appli Lokali" },
-  he: { tag: "מדריך קולי חינם", title: "{place} — זו רק ההתחלה.", titleHub: "{place} — מדריכים קוליים חינם בשפה שלכם.", near: "בקרבת מקום: {near}.", city: "{city}: עוד מדריכים קוליים חינם באפליקציה.",
+  he: { tag: "מדריך קולי חינם", title: "{place} — זו רק ההתחלה.", titleHub: "{place} — מדריכים קוליים חינם בשפה שלכם.", near: "בקרבת מקום: {near}.", area: "באזור: {near}.", city: "{city}: עוד מדריכים קוליים חינם באפליקציה.",
     sub: "האזינו לסיפור המלא עם <b>המדריך הקולי החינמי</b> של Lokali — בשפה שלכם, גם בלי חיבור.", subHub: "לכל מקום בעמוד הזה יש <b>מדריך קולי חינם</b> באפליקציית Lokali — בשפה שלכם, גם בלי חיבור.",
     offline: "בלי חיבור", more: "עוד", scan: "סרקו עם מצלמת הטלפון",
     pts: "יותר מ-50 שפות|עובד בלי חיבור|בלי פרסומות", web: "האזינו בדפדפן", close: "סגירה", label: "הורידו את אפליקציית Lokali" },
-  hi: { tag: "मुफ़्त ऑडियो गाइड", title: "{place} तो बस शुरुआत है।", titleHub: "{place} — आपकी भाषा में मुफ़्त ऑडियो गाइड।", near: "पास में: {near}।", city: "{city}: ऐप में और भी मुफ़्त ऑडियो गाइड।",
+  hi: { tag: "मुफ़्त ऑडियो गाइड", title: "{place} तो बस शुरुआत है।", titleHub: "{place} — आपकी भाषा में मुफ़्त ऑडियो गाइड।", near: "पास में: {near}।", area: "आसपास के इलाके में: {near}।", city: "{city}: ऐप में और भी मुफ़्त ऑडियो गाइड।",
     sub: "Lokali के <b>मुफ़्त ऑडियो गाइड</b> के साथ पूरी कहानी सुनें — आपकी भाषा में, ऑफ़लाइन।", subHub: "इस पेज की हर जगह के लिए Lokali ऐप में <b>मुफ़्त ऑडियो गाइड</b> है — आपकी भाषा में, ऑफ़लाइन।",
     offline: "ऑफ़लाइन", more: "और", scan: "फ़ोन के कैमरे से स्कैन करें",
     pts: "50+ भाषाएँ|ऑफ़लाइन चलता है|कोई विज्ञापन नहीं", web: "ब्राउज़र में सुनें", close: "बंद करें", label: "Lokali ऐप पाएँ" },
-  hr: { tag: "Besplatni audiovodič", title: "{place} samo je početak.", titleHub: "{place} — besplatni audiovodiči na vašem jeziku.", near: "U blizini: {near}.", city: "{city}: još besplatnih audiovodiča u aplikaciji.",
+  hr: { tag: "Besplatni audiovodič", title: "{place} samo je početak.", titleHub: "{place} — besplatni audiovodiči na vašem jeziku.", near: "U blizini: {near}.", area: "U okolici: {near}.", city: "{city}: još besplatnih audiovodiča u aplikaciji.",
     sub: "Poslušajte cijelu priču uz Lokalijev <b>besplatni audiovodič</b> — na vašem jeziku, izvanmrežno.", subHub: "Svako mjesto na ovoj stranici ima <b>besplatni audiovodič</b> u aplikaciji Lokali — na vašem jeziku, izvanmrežno.",
     offline: "izvanmrežno", more: "Više", scan: "Skenirajte kamerom mobitela",
     pts: "50+ jezika|Radi izvanmrežno|Bez oglasa", web: "Slušajte u pregledniku", close: "Zatvori", label: "Preuzmite aplikaciju Lokali" },
-  hu: { tag: "Ingyenes audioguide", title: "{place} csak a kezdet.", titleHub: "{place} — ingyenes audioguide-ok a saját nyelveden.", near: "A közelben: {near}.", city: "{city}: további ingyenes audioguide-ok az alkalmazásban.",
+  hu: { tag: "Ingyenes audioguide", title: "{place} csak a kezdet.", titleHub: "{place} — ingyenes audioguide-ok a saját nyelveden.", near: "A közelben: {near}.", area: "A környéken: {near}.", city: "{city}: további ingyenes audioguide-ok az alkalmazásban.",
     sub: "Hallgasd meg a teljes történetet a Lokali <b>ingyenes audioguide-jával</b> — a saját nyelveden, offline.", subHub: "Az oldal minden helyéhez van <b>ingyenes audioguide</b> a Lokali alkalmazásban — a saját nyelveden, offline.",
     offline: "offline", more: "Több", scan: "Olvasd be a telefonod kamerájával",
     pts: "50+ nyelv|Offline is működik|Nincs reklám", web: "Hallgasd a böngészőben", close: "Bezárás", label: "Töltsd le a Lokali alkalmazást" },
-  hy: { tag: "Անվճար աուդիոգիդ", title: "{place} — սա միայն սկիզբն է։", titleHub: "{place} — անվճար աուդիոգիդեր ձեր լեզվով։", near: "Մոտակայքում՝ {near}։", city: "{city}՝ ավելի շատ անվճար աուդիոգիդեր հավելվածում։",
+  hy: { tag: "Անվճար աուդիոգիդ", title: "{place} — սա միայն սկիզբն է։", titleHub: "{place} — անվճար աուդիոգիդեր ձեր լեզվով։", near: "Մոտակայքում՝ {near}։", area: "Շրջակայքում՝ {near}։", city: "{city}՝ ավելի շատ անվճար աուդիոգիդեր հավելվածում։",
     sub: "Լսեք ամբողջ պատմությունը Lokali-ի <b>անվճար աուդիոգիդով</b>՝ ձեր լեզվով, առանց ինտերնետի։", subHub: "Այս էջի ամեն վայր Lokali հավելվածում ունի <b>անվճար աուդիոգիդ</b>՝ ձեր լեզվով, առանց ինտերնետի։",
     offline: "առանց ինտերնետի", more: "Ավելին", scan: "Սկանավորեք հեռախոսի տեսախցիկով",
     pts: "50+ լեզու|Աշխատում է առանց ինտերնետի|Առանց գովազդի", web: "Լսեք բրաուզերում", close: "Փակել", label: "Ներբեռնեք Lokali հավելվածը" },
-  id: { tag: "Pemandu audio gratis", title: "{place} baru permulaan.", titleHub: "{place} — pemandu audio gratis dalam bahasamu.", near: "Di dekat sini: {near}.", city: "{city}: lebih banyak pemandu audio gratis di aplikasi.",
+  id: { tag: "Pemandu audio gratis", title: "{place} baru permulaan.", titleHub: "{place} — pemandu audio gratis dalam bahasamu.", near: "Di dekat sini: {near}.", area: "Di sekitarnya: {near}.", city: "{city}: lebih banyak pemandu audio gratis di aplikasi.",
     sub: "Dengarkan kisah lengkapnya dengan <b>pemandu audio gratis</b> Lokali — dalam bahasamu, tanpa internet.", subHub: "Setiap tempat di halaman ini punya <b>pemandu audio gratis</b> di aplikasi Lokali — dalam bahasamu, tanpa internet.",
     offline: "tanpa internet", more: "Lainnya", scan: "Pindai dengan kamera ponsel",
     pts: "50+ bahasa|Bisa tanpa internet|Tanpa iklan", web: "Dengarkan di browser", close: "Tutup", label: "Dapatkan aplikasi Lokali" },
-  it: { tag: "Audioguida gratuita", title: "{place} è solo l'inizio.", titleHub: "{place}: audioguide gratuite nella tua lingua.", near: "Nei dintorni: {near}.", city: "{city}: altre audioguide gratuite nell'app.",
+  it: { tag: "Audioguida gratuita", title: "{place} è solo l'inizio.", titleHub: "{place}: audioguide gratuite nella tua lingua.", near: "Nei dintorni: {near}.", area: "In zona: {near}.", city: "{city}: altre audioguide gratuite nell'app.",
     sub: "Ascolta tutta la storia con l'<b>audioguida gratuita</b> di Lokali, nella tua lingua e offline.", subHub: "Ogni luogo di questa pagina ha un'<b>audioguida gratuita</b> nell'app Lokali, nella tua lingua e offline.",
     offline: "offline", more: "Altro", scan: "Inquadra con la fotocamera del telefono",
     pts: "50+ lingue|Funziona offline|Senza pubblicità", web: "Ascolta nel browser", close: "Chiudi", label: "Scarica l'app Lokali" },
-  ja: { tag: "無料オーディオガイド", title: "{place}は、ほんの始まり。", titleHub: "{place} — あなたの言語で聞ける無料オーディオガイド", near: "近く：{near}。", city: "{city}：アプリでさらに無料オーディオガイドを。",
+  ja: { tag: "無料オーディオガイド", title: "{place}は、ほんの始まり。", titleHub: "{place} — あなたの言語で聞ける無料オーディオガイド", near: "近く：{near}。", area: "周辺：{near}。", city: "{city}：アプリでさらに無料オーディオガイドを。",
     sub: "Lokaliの<b>無料オーディオガイド</b>で、物語のすべてを。あなたの言語で、オフラインでも。", subHub: "このページのすべての場所に、Lokaliアプリの<b>無料オーディオガイド</b>があります。あなたの言語で、オフラインでも。",
     offline: "オフライン", more: "詳しく", scan: "スマホのカメラでスキャン",
     pts: "50以上の言語|オフラインで使える|広告なし", web: "ブラウザで聴く", close: "閉じる", label: "Lokaliアプリを入手" },
-  ka: { tag: "უფასო აუდიოგიდი", title: "{place} — მხოლოდ დასაწყისია.", titleHub: "{place} — უფასო აუდიოგიდები თქვენს ენაზე.", near: "ახლოს: {near}.", city: "{city}: კიდევ ბევრი უფასო აუდიოგიდი აპში.",
+  ka: { tag: "უფასო აუდიოგიდი", title: "{place} — მხოლოდ დასაწყისია.", titleHub: "{place} — უფასო აუდიოგიდები თქვენს ენაზე.", near: "ახლოს: {near}.", area: "მიდამოებში: {near}.", city: "{city}: კიდევ ბევრი უფასო აუდიოგიდი აპში.",
     sub: "მოისმინეთ მთელი ისტორია Lokali-ს <b>უფასო აუდიოგიდით</b> — თქვენს ენაზე, ინტერნეტის გარეშე.", subHub: "ამ გვერდზე ყველა ადგილს Lokali-ს აპში <b>უფასო აუდიოგიდი</b> აქვს — თქვენს ენაზე, ინტერნეტის გარეშე.",
     offline: "ოფლაინ", more: "მეტი", scan: "დაასკანერე ტელეფონის კამერით",
     pts: "50+ ენა|მუშაობს ოფლაინ|რეკლამის გარეშე", web: "მოუსმინეთ ბრაუზერში", close: "დახურვა", label: "ჩამოტვირთეთ Lokali" },
-  ko: { tag: "무료 오디오 가이드", title: "{place}, 이제 시작일 뿐입니다.", titleHub: "{place} — 내 언어로 듣는 무료 오디오 가이드", near: "근처: {near}.", city: "{city}: 앱에서 더 많은 무료 오디오 가이드를 만나보세요.",
+  ko: { tag: "무료 오디오 가이드", title: "{place}, 이제 시작일 뿐입니다.", titleHub: "{place} — 내 언어로 듣는 무료 오디오 가이드", near: "근처: {near}.", area: "주변 지역: {near}.", city: "{city}: 앱에서 더 많은 무료 오디오 가이드를 만나보세요.",
     sub: "Lokali <b>무료 오디오 가이드</b>로 모든 이야기를 들어 보세요. 내 언어로, 오프라인에서도.", subHub: "이 페이지의 모든 장소에 Lokali 앱 <b>무료 오디오 가이드</b>가 있습니다. 내 언어로, 오프라인에서도.",
     offline: "오프라인", more: "더 보기", scan: "휴대폰 카메라로 스캔하세요",
     pts: "50개 이상 언어|오프라인 지원|광고 없음", web: "브라우저에서 듣기", close: "닫기", label: "Lokali 앱 받기" },
-  mr: { tag: "मोफत ऑडिओ गाइड", title: "{place} ही तर फक्त सुरुवात आहे.", titleHub: "{place} — तुमच्या भाषेत मोफत ऑडिओ गाइड.", near: "जवळ: {near}.", city: "{city}: ॲपमध्ये आणखी मोफत ऑडिओ गाइड.",
+  mr: { tag: "मोफत ऑडिओ गाइड", title: "{place} ही तर फक्त सुरुवात आहे.", titleHub: "{place} — तुमच्या भाषेत मोफत ऑडिओ गाइड.", near: "जवळ: {near}.", area: "परिसरात: {near}.", city: "{city}: ॲपमध्ये आणखी मोफत ऑडिओ गाइड.",
     sub: "Lokali च्या <b>मोफत ऑडिओ गाइड</b>सह संपूर्ण कथा ऐका — तुमच्या भाषेत, ऑफलाइन.", subHub: "या पानावरील प्रत्येक ठिकाणासाठी Lokali अॅपमध्ये <b>मोफत ऑडिओ गाइड</b> आहे — तुमच्या भाषेत, ऑफलाइन.",
     offline: "ऑफलाइन", more: "अधिक", scan: "फोनच्या कॅमेऱ्याने स्कॅन करा",
     pts: "50+ भाषा|ऑफलाइन चालते|जाहिराती नाहीत", web: "ब्राउझरमध्ये ऐका", close: "बंद करा", label: "Lokali अॅप मिळवा" },
-  ms: { tag: "Panduan audio percuma", title: "{place} hanyalah permulaan.", titleHub: "{place} — panduan audio percuma dalam bahasa anda.", near: "Berdekatan: {near}.", city: "{city}: lebih banyak panduan audio percuma dalam aplikasi.",
+  ms: { tag: "Panduan audio percuma", title: "{place} hanyalah permulaan.", titleHub: "{place} — panduan audio percuma dalam bahasa anda.", near: "Berdekatan: {near}.", area: "Di kawasan sekitar: {near}.", city: "{city}: lebih banyak panduan audio percuma dalam aplikasi.",
     sub: "Dengar kisah penuh dengan <b>panduan audio percuma</b> Lokali — dalam bahasa anda, luar talian.", subHub: "Setiap tempat di halaman ini mempunyai <b>panduan audio percuma</b> dalam aplikasi Lokali — dalam bahasa anda, luar talian.",
     offline: "luar talian", more: "Lagi", scan: "Imbas dengan kamera telefon",
     pts: "50+ bahasa|Berfungsi luar talian|Tiada iklan", web: "Dengar dalam pelayar", close: "Tutup", label: "Dapatkan aplikasi Lokali" },
-  nb: { tag: "Gratis lydguide", title: "{place} er bare begynnelsen.", titleHub: "{place} — gratis lydguider på ditt språk.", near: "I nærheten: {near}.", city: "{city}: flere gratis lydguider i appen.",
+  nb: { tag: "Gratis lydguide", title: "{place} er bare begynnelsen.", titleHub: "{place} — gratis lydguider på ditt språk.", near: "I nærheten: {near}.", area: "I området: {near}.", city: "{city}: flere gratis lydguider i appen.",
     sub: "Hør hele historien med Lokalis <b>gratis lydguide</b> — på ditt språk, offline.", subHub: "Alle steder på denne siden har en <b>gratis lydguide</b> i Lokali-appen — på ditt språk, offline.",
     offline: "offline", more: "Mer", scan: "Skann med mobilkameraet",
     pts: "50+ språk|Fungerer offline|Ingen reklame", web: "Lytt i nettleseren", close: "Lukk", label: "Last ned Lokali-appen" },
-  nl: { tag: "Gratis audiotour", title: "{place} is nog maar het begin.", titleHub: "{place} — gratis audiotours in jouw taal.", near: "In de buurt: {near}.", city: "{city}: meer gratis audiotours in de app.",
+  nl: { tag: "Gratis audiotour", title: "{place} is nog maar het begin.", titleHub: "{place} — gratis audiotours in jouw taal.", near: "In de buurt: {near}.", area: "In de omgeving: {near}.", city: "{city}: meer gratis audiotours in de app.",
     sub: "Hoor het hele verhaal met de <b>gratis audiotour</b> van Lokali — in jouw taal, offline.", subHub: "Elke plek op deze pagina heeft een <b>gratis audiotour</b> in de Lokali-app — in jouw taal, offline.",
     offline: "offline", more: "Meer", scan: "Scan met de camera van je telefoon",
     pts: "50+ talen|Werkt offline|Geen advertenties", web: "Luister in je browser", close: "Sluiten", label: "Download de Lokali-app" },
-  pl: { tag: "Darmowy audioprzewodnik", title: "{place} to dopiero początek.", titleHub: "{place} — darmowe audioprzewodniki w twoim języku.", near: "W pobliżu: {near}.", city: "{city}: więcej darmowych audioprzewodników w aplikacji.",
+  pl: { tag: "Darmowy audioprzewodnik", title: "{place} to dopiero początek.", titleHub: "{place} — darmowe audioprzewodniki w twoim języku.", near: "W pobliżu: {near}.", area: "W okolicy: {near}.", city: "{city}: więcej darmowych audioprzewodników w aplikacji.",
     sub: "Posłuchaj całej historii z <b>darmowym audioprzewodnikiem</b> Lokali — w twoim języku, offline.", subHub: "Każde miejsce na tej stronie ma <b>darmowy audioprzewodnik</b> w aplikacji Lokali — w twoim języku, offline.",
     offline: "offline", more: "Więcej", scan: "Zeskanuj aparatem telefonu",
     pts: "50+ języków|Działa offline|Bez reklam", web: "Słuchaj w przeglądarce", close: "Zamknij", label: "Pobierz aplikację Lokali" },
-  "pt-br": { tag: "Audioguia grátis", title: "{place} é só o começo.", titleHub: "{place}: audioguias grátis no seu idioma.", near: "Perto: {near}.", city: "{city}: mais audioguias grátis no app.",
+  "pt-br": { tag: "Audioguia grátis", title: "{place} é só o começo.", titleHub: "{place}: audioguias grátis no seu idioma.", near: "Perto: {near}.", area: "Na região: {near}.", city: "{city}: mais audioguias grátis no app.",
     sub: "Ouça a história completa com o <b>audioguia grátis</b> da Lokali — no seu idioma, offline.", subHub: "Cada lugar desta página tem um <b>audioguia grátis</b> no app Lokali — no seu idioma, offline.",
     offline: "offline", more: "Mais", scan: "Escaneie com a câmera do celular",
     pts: "50+ idiomas|Funciona offline|Sem anúncios", web: "Ouça no navegador", close: "Fechar", label: "Baixe o app Lokali" },
-  "pt-pt": { tag: "Audioguia gratuito", title: "{place} é só o começo.", titleHub: "{place}: audioguias gratuitos na sua língua.", near: "Perto: {near}.", city: "{city}: mais audioguias gratuitos na aplicação.",
+  "pt-pt": { tag: "Audioguia gratuito", title: "{place} é só o começo.", titleHub: "{place}: audioguias gratuitos na sua língua.", near: "Perto: {near}.", area: "Na zona: {near}.", city: "{city}: mais audioguias gratuitos na aplicação.",
     sub: "Ouça a história completa com o <b>audioguia gratuito</b> da Lokali — na sua língua, offline.", subHub: "Cada local desta página tem um <b>audioguia gratuito</b> na app Lokali — na sua língua, offline.",
     offline: "offline", more: "Mais", scan: "Leia com a câmara do telemóvel",
     pts: "50+ línguas|Funciona offline|Sem anúncios", web: "Ouça no navegador", close: "Fechar", label: "Descarregue a app Lokali" },
-  ro: { tag: "Ghid audio gratuit", title: "{place} este doar începutul.", titleHub: "{place} — ghiduri audio gratuite în limba ta.", near: "În apropiere: {near}.", city: "{city}: mai multe ghiduri audio gratuite în aplicație.",
+  ro: { tag: "Ghid audio gratuit", title: "{place} este doar începutul.", titleHub: "{place} — ghiduri audio gratuite în limba ta.", near: "În apropiere: {near}.", area: "În zonă: {near}.", city: "{city}: mai multe ghiduri audio gratuite în aplicație.",
     sub: "Ascultă toată povestea cu <b>ghidul audio gratuit</b> Lokali — în limba ta, offline.", subHub: "Fiecare loc de pe această pagină are un <b>ghid audio gratuit</b> în aplicația Lokali — în limba ta, offline.",
     offline: "offline", more: "Mai mult", scan: "Scanează cu camera telefonului",
     pts: "50+ de limbi|Funcționează offline|Fără reclame", web: "Ascultă în browser", close: "Închide", label: "Descarcă aplicația Lokali" },
-  ru: { tag: "Бесплатный аудиогид", title: "{place} — только начало.", titleHub: "{place} — бесплатные аудиогиды на вашем языке.", near: "Рядом: {near}.", city: "{city}: ещё больше бесплатных аудиогидов в приложении.",
+  ru: { tag: "Бесплатный аудиогид", title: "{place} — только начало.", titleHub: "{place} — бесплатные аудиогиды на вашем языке.", near: "Рядом: {near}.", area: "В окрестностях: {near}.", city: "{city}: ещё больше бесплатных аудиогидов в приложении.",
     sub: "Послушайте всю историю с <b>бесплатным аудиогидом</b> Lokali — на вашем языке, офлайн.", subHub: "У каждого места на этой странице есть <b>бесплатный аудиогид</b> в приложении Lokali — на вашем языке, офлайн.",
     offline: "офлайн", more: "Подробнее", scan: "Отсканируйте камерой телефона",
     pts: "50+ языков|Работает офлайн|Без рекламы", web: "Слушать в браузере", close: "Закрыть", label: "Скачать приложение Lokali" },
-  sr: { tag: "Бесплатни аудио-водич", title: "{place} је само почетак.", titleHub: "{place} — бесплатни аудио-водичи на вашем језику.", near: "У близини: {near}.", city: "{city}: још бесплатних аудио-водича у апликацији.",
+  sr: { tag: "Бесплатни аудио-водич", title: "{place} је само почетак.", titleHub: "{place} — бесплатни аудио-водичи на вашем језику.", near: "У близини: {near}.", area: "У околини: {near}.", city: "{city}: још бесплатних аудио-водича у апликацији.",
     sub: "Послушајте целу причу уз <b>бесплатни аудио-водич</b> Lokali — на вашем језику, офлајн.", subHub: "Свако место на овој страници има <b>бесплатни аудио-водич</b> у апликацији Lokali — на вашем језику, офлајн.",
     offline: "офлајн", more: "Више", scan: "Скенирајте камером телефона",
     pts: "50+ језика|Ради офлајн|Без реклама", web: "Слушајте у прегледачу", close: "Затвори", label: "Преузмите апликацију Lokali" },
-  sv: { tag: "Gratis ljudguide", title: "{place} är bara början.", titleHub: "{place} — gratis ljudguider på ditt språk.", near: "I närheten: {near}.", city: "{city}: fler gratis ljudguider i appen.",
+  sv: { tag: "Gratis ljudguide", title: "{place} är bara början.", titleHub: "{place} — gratis ljudguider på ditt språk.", near: "I närheten: {near}.", area: "I området: {near}.", city: "{city}: fler gratis ljudguider i appen.",
     sub: "Hör hela historien med Lokalis <b>gratis ljudguide</b> — på ditt språk, offline.", subHub: "Varje plats på den här sidan har en <b>gratis ljudguide</b> i Lokali-appen — på ditt språk, offline.",
     offline: "offline", more: "Mer", scan: "Skanna med mobilens kamera",
     pts: "50+ språk|Fungerar offline|Ingen reklam", web: "Lyssna i webbläsaren", close: "Stäng", label: "Hämta Lokali-appen" },
-  sw: { tag: "Mwongozo wa sauti bure", title: "{place} ni mwanzo tu.", titleHub: "{place} — miongozo ya sauti bure kwa lugha yako.", near: "Karibu: {near}.", city: "{city}: miongozo zaidi ya sauti bure kwenye programu.",
+  sw: { tag: "Mwongozo wa sauti bure", title: "{place} ni mwanzo tu.", titleHub: "{place} — miongozo ya sauti bure kwa lugha yako.", near: "Karibu: {near}.", area: "Katika eneo hili: {near}.", city: "{city}: miongozo zaidi ya sauti bure kwenye programu.",
     sub: "Sikiliza hadithi nzima kwa <b>mwongozo wa sauti bure</b> wa Lokali — kwa lugha yako, bila intaneti.", subHub: "Kila mahali kwenye ukurasa huu pana <b>mwongozo wa sauti bure</b> kwenye programu ya Lokali — kwa lugha yako, bila intaneti.",
     offline: "bila intaneti", more: "Zaidi", scan: "Changanua kwa kamera ya simu yako",
     pts: "Lugha 50+|Inafanya kazi bila intaneti|Hakuna matangazo", web: "Sikiliza kwenye kivinjari", close: "Funga", label: "Pata programu ya Lokali" },
-  ta: { tag: "இலவச ஆடியோ வழிகாட்டி", title: "{place} ஒரு தொடக்கம் மட்டுமே.", titleHub: "{place} — உங்கள் மொழியில் இலவச ஆடியோ வழிகாட்டிகள்.", near: "அருகில்: {near}.", city: "{city}: செயலியில் மேலும் இலவச ஆடியோ வழிகாட்டிகள்.",
+  ta: { tag: "இலவச ஆடியோ வழிகாட்டி", title: "{place} ஒரு தொடக்கம் மட்டுமே.", titleHub: "{place} — உங்கள் மொழியில் இலவச ஆடியோ வழிகாட்டிகள்.", near: "அருகில்: {near}.", area: "இப்பகுதியில்: {near}.", city: "{city}: செயலியில் மேலும் இலவச ஆடியோ வழிகாட்டிகள்.",
     sub: "Lokali-யின் <b>இலவச ஆடியோ வழிகாட்டி</b>யுடன் முழுக் கதையையும் கேளுங்கள் — உங்கள் மொழியில், ஆஃப்லைனில்.", subHub: "இந்தப் பக்கத்தில் உள்ள ஒவ்வொரு இடத்திற்கும் Lokali செயலியில் <b>இலவச ஆடியோ வழிகாட்டி</b> உள்ளது — உங்கள் மொழியில், ஆஃப்லைனில்.",
     offline: "ஆஃப்லைன்", more: "மேலும்", scan: "தொலைபேசி கேமராவால் ஸ்கேன் செய்யுங்கள்",
     pts: "50+ மொழிகள்|ஆஃப்லைனில் இயங்கும்|விளம்பரங்கள் இல்லை", web: "உலாவியில் கேளுங்கள்", close: "மூடு", label: "Lokali செயலியைப் பெறுங்கள்" },
-  te: { tag: "ఉచిత ఆడియో గైడ్", title: "{place} కేవలం ఆరంభం మాత్రమే.", titleHub: "{place} — మీ భాషలో ఉచిత ఆడియో గైడ్‌లు.", near: "సమీపంలో: {near}.", city: "{city}: యాప్‌లో మరిన్ని ఉచిత ఆడియో గైడ్‌లు.",
+  te: { tag: "ఉచిత ఆడియో గైడ్", title: "{place} కేవలం ఆరంభం మాత్రమే.", titleHub: "{place} — మీ భాషలో ఉచిత ఆడియో గైడ్‌లు.", near: "సమీపంలో: {near}.", area: "ఈ ప్రాంతంలో: {near}.", city: "{city}: యాప్‌లో మరిన్ని ఉచిత ఆడియో గైడ్‌లు.",
     sub: "Lokali <b>ఉచిత ఆడియో గైడ్</b>తో పూర్తి కథ వినండి — మీ భాషలో, ఆఫ్‌లైన్‌లో.", subHub: "ఈ పేజీలోని ప్రతి ప్రదేశానికి Lokali యాప్‌లో <b>ఉచిత ఆడియో గైడ్</b> ఉంది — మీ భాషలో, ఆఫ్‌లైన్‌లో.",
     offline: "ఆఫ్‌లైన్", more: "మరిన్ని", scan: "ఫోన్ కెమెరాతో స్కాన్ చేయండి",
     pts: "50+ భాషలు|ఆఫ్‌లైన్‌లో పనిచేస్తుంది|ప్రకటనలు లేవు", web: "బ్రౌజర్‌లో వినండి", close: "మూసివేయి", label: "Lokali యాప్ పొందండి" },
-  th: { tag: "ไกด์เสียงฟรี", title: "{place} เป็นเพียงจุดเริ่มต้น", titleHub: "{place} — ไกด์เสียงฟรีในภาษาของคุณ", near: "ใกล้เคียง: {near}", city: "{city}: ไกด์เสียงฟรีอีกมากมายในแอป",
+  th: { tag: "ไกด์เสียงฟรี", title: "{place} เป็นเพียงจุดเริ่มต้น", titleHub: "{place} — ไกด์เสียงฟรีในภาษาของคุณ", near: "ใกล้เคียง: {near}", area: "ในพื้นที่ใกล้เคียง: {near}", city: "{city}: ไกด์เสียงฟรีอีกมากมายในแอป",
     sub: "ฟังเรื่องราวทั้งหมดด้วย<b>ไกด์เสียงฟรี</b>ของ Lokali — ในภาษาของคุณ ใช้งานออฟไลน์ได้", subHub: "ทุกสถานที่ในหน้านี้มี<b>ไกด์เสียงฟรี</b>ในแอป Lokali — ในภาษาของคุณ ใช้งานออฟไลน์ได้",
     offline: "ออฟไลน์", more: "เพิ่มเติม", scan: "สแกนด้วยกล้องโทรศัพท์",
     pts: "50+ ภาษา|ใช้งานออฟไลน์ได้|ไม่มีโฆษณา", web: "ฟังในเบราว์เซอร์", close: "ปิด", label: "ดาวน์โหลดแอป Lokali" },
-  tr: { tag: "Ücretsiz sesli rehber", title: "{place} sadece bir başlangıç.", titleHub: "{place} — kendi dilinizde ücretsiz sesli rehberler.", near: "Yakında: {near}.", city: "{city}: uygulamada daha fazla ücretsiz sesli rehber.",
+  tr: { tag: "Ücretsiz sesli rehber", title: "{place} sadece bir başlangıç.", titleHub: "{place} — kendi dilinizde ücretsiz sesli rehberler.", near: "Yakında: {near}.", area: "Bölgede: {near}.", city: "{city}: uygulamada daha fazla ücretsiz sesli rehber.",
     sub: "Lokali'nin <b>ücretsiz sesli rehberiyle</b> hikâyenin tamamını dinleyin — kendi dilinizde, çevrimdışı.", subHub: "Bu sayfadaki her yerin Lokali uygulamasında <b>ücretsiz sesli rehberi</b> var — kendi dilinizde, çevrimdışı.",
     offline: "çevrimdışı", more: "Daha fazla", scan: "Telefonunuzun kamerasıyla tarayın",
     pts: "50+ dil|Çevrimdışı çalışır|Reklamsız", web: "Tarayıcıda dinleyin", close: "Kapat", label: "Lokali uygulamasını indirin" },
-  uk: { tag: "Безкоштовний аудіогід", title: "{place} — лише початок.", titleHub: "{place} — безкоштовні аудіогіди вашою мовою.", near: "Поруч: {near}.", city: "{city}: ще більше безкоштовних аудіогідів у застосунку.",
+  uk: { tag: "Безкоштовний аудіогід", title: "{place} — лише початок.", titleHub: "{place} — безкоштовні аудіогіди вашою мовою.", near: "Поруч: {near}.", area: "В околицях: {near}.", city: "{city}: ще більше безкоштовних аудіогідів у застосунку.",
     sub: "Послухайте всю історію з <b>безкоштовним аудіогідом</b> Lokali — вашою мовою, офлайн.", subHub: "Кожне місце на цій сторінці має <b>безкоштовний аудіогід</b> у застосунку Lokali — вашою мовою, офлайн.",
     offline: "офлайн", more: "Більше", scan: "Відскануйте камерою телефона",
     pts: "50+ мов|Працює офлайн|Без реклами", web: "Слухати в браузері", close: "Закрити", label: "Завантажити застосунок Lokali" },
-  ur: { tag: "مفت آڈیو گائیڈ", title: "{place} تو بس آغاز ہے۔", titleHub: "{place} — آپ کی زبان میں مفت آڈیو گائیڈز۔", near: "قریب: {near}۔", city: "{city}: ایپ میں مزید مفت آڈیو گائیڈز۔",
+  ur: { tag: "مفت آڈیو گائیڈ", title: "{place} تو بس آغاز ہے۔", titleHub: "{place} — آپ کی زبان میں مفت آڈیو گائیڈز۔", near: "قریب: {near}۔", area: "اس علاقے میں: {near}۔", city: "{city}: ایپ میں مزید مفت آڈیو گائیڈز۔",
     sub: "Lokali کی <b>مفت آڈیو گائیڈ</b> کے ساتھ پوری کہانی سنیں — آپ کی زبان میں، آف لائن۔", subHub: "اس صفحے کی ہر جگہ کے لیے Lokali ایپ میں <b>مفت آڈیو گائیڈ</b> موجود ہے — آپ کی زبان میں، آف لائن۔",
     offline: "آف لائن", more: "مزید", scan: "فون کے کیمرے سے اسکین کریں",
     pts: "50+ زبانیں|آف لائن چلتی ہے|کوئی اشتہار نہیں", web: "براؤزر میں سنیں", close: "بند کریں", label: "Lokali ایپ حاصل کریں" },
-  vi: { tag: "Hướng dẫn âm thanh miễn phí", title: "{place} mới chỉ là khởi đầu.", titleHub: "{place} — hướng dẫn âm thanh miễn phí bằng ngôn ngữ của bạn.", near: "Gần đây: {near}.", city: "{city}: thêm nhiều hướng dẫn âm thanh miễn phí trong ứng dụng.",
+  vi: { tag: "Hướng dẫn âm thanh miễn phí", title: "{place} mới chỉ là khởi đầu.", titleHub: "{place} — hướng dẫn âm thanh miễn phí bằng ngôn ngữ của bạn.", near: "Gần đây: {near}.", area: "Trong khu vực: {near}.", city: "{city}: thêm nhiều hướng dẫn âm thanh miễn phí trong ứng dụng.",
     sub: "Nghe toàn bộ câu chuyện với <b>hướng dẫn âm thanh miễn phí</b> của Lokali — bằng ngôn ngữ của bạn, ngoại tuyến.", subHub: "Mọi địa điểm trên trang này đều có <b>hướng dẫn âm thanh miễn phí</b> trong ứng dụng Lokali — bằng ngôn ngữ của bạn, ngoại tuyến.",
     offline: "ngoại tuyến", more: "Thêm", scan: "Quét bằng camera điện thoại",
     pts: "50+ ngôn ngữ|Dùng ngoại tuyến|Không quảng cáo", web: "Nghe trên trình duyệt", close: "Đóng", label: "Tải ứng dụng Lokali" },
-  "zh-cn": { tag: "免费语音导览", title: "{place}，只是开始。", titleHub: "{place}——用你的语言收听免费语音导览", near: "附近：{near}。", city: "{city}：应用里还有更多免费语音导览。",
+  "zh-cn": { tag: "免费语音导览", title: "{place}，只是开始。", titleHub: "{place}——用你的语言收听免费语音导览", near: "附近：{near}。", area: "周边：{near}。", city: "{city}：应用里还有更多免费语音导览。",
     sub: "用 Lokali 的<b>免费语音导览</b>听完整故事——支持你的语言，可离线使用。", subHub: "本页每个地点在 Lokali 应用中都有<b>免费语音导览</b>——支持你的语言，可离线使用。",
     offline: "离线", more: "更多", scan: "用手机相机扫码",
     pts: "50+ 种语言|可离线使用|无广告", web: "在浏览器中收听", close: "关闭", label: "获取 Lokali 应用" },
-  "zh-tw": { tag: "免費語音導覽", title: "{place}，只是開始。", titleHub: "{place}——用你的語言收聽免費語音導覽", near: "附近：{near}。", city: "{city}：App 裡還有更多免費語音導覽。",
+  "zh-tw": { tag: "免費語音導覽", title: "{place}，只是開始。", titleHub: "{place}——用你的語言收聽免費語音導覽", near: "附近：{near}。", area: "周邊：{near}。", city: "{city}：App 裡還有更多免費語音導覽。",
     sub: "用 Lokali 的<b>免費語音導覽</b>聽完整故事——支援你的語言，可離線使用。", subHub: "本頁每個地點在 Lokali App 中都有<b>免費語音導覽</b>——支援你的語言，可離線使用。",
     offline: "離線", more: "更多", scan: "用手機相機掃描",
     pts: "50+ 種語言|可離線使用|無廣告", web: "在瀏覽器中收聽", close: "關閉", label: "取得 Lokali App" }
@@ -277,7 +284,7 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
   var qr = store === "both" && desk; // a laptop/desktop: one QR serves both phones
 
   function km(s) { var m = /([\d.]+)\s*km/.exec(s || ""); return m ? parseFloat(m[1]) : 99; }
-  var near = hub ? [] : [].slice.call(document.querySelectorAll(".rail .pcard")).map(function (a) {
+  var near = hub ? [] : [].slice.call(document.querySelectorAll(".rail .pcard")).map(function (a) { // fallback: the page's Nearby rail
     var b = a.querySelector("b"), sm = a.querySelector("small");
     return { name: b ? b.textContent.trim() : "", km: km(sm && sm.textContent) };
   }).filter(function (n) { return n.name && n.name !== here && n.km <= S.nearbyMaxKm; }).sort(function (a, b) { return a.km - b.km; })
@@ -299,7 +306,7 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
   function track(ev, extra) {
     if (demo) return;
     try {
-      var p = { page: slug, city: city, lang: lang, kind: kind, layout: desk ? "desktop" : "mobile", store: store, nearby: near.length, v: 6 };
+      var p = { page: slug, city: city, lang: lang, kind: kind, layout: desk ? "desktop" : "mobile", store: store, nearby: near.length, tier: near.length ? tier : "none", v: 7 };
       for (var k in extra || {}) p[k] = extra[k];
       fetch(SB, { method: "POST", keepalive: true, headers: { apikey: PK, Authorization: "Bearer " + PK, "Content-Type": "application/json", Prefer: "return=minimal" },
         body: JSON.stringify({ event: ev, anon_id: anon(), props: p }) });
@@ -314,11 +321,44 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
 
   var P = esc(here);
   var title = tx(hub ? "titleHub" : "title", { place: P });
-  var nearList = near.map(function (n) { return esc(n.name) + "&nbsp;" + dist(n.km); }).join(" &middot; ");
-  var nearTxt = near.length ? tx("near", { near: nearList }) + " "
-    : (!hub && S.cityLine && cityShown ? tx("city", { city: esc(cityShown) }) + " " : "");
-  var sub = hub ? tx("subHub") : nearTxt + tx("sub");
-  var line = "<b>" + tx("tag") + "</b> &middot; " + (near.length ? esc(near[0].name) + " " + dist(near[0].km) : tx("offline"));
+  var sub, line, tier = "near";
+  function setTexts() {
+    var nearList = near.map(function (n) { return esc(n.name) + "&nbsp;" + dist(n.km); }).join(" &middot; ");
+    var nearTxt = near.length ? tx(tier, { near: nearList }) + " "
+      : (!hub && S.cityLine && cityShown ? tx("city", { city: esc(cityShown) }) + " " : "");
+    sub = hub ? tx("subHub") : nearTxt + tx("sub");
+    line = "<b>" + tx("tag") + "</b> &middot; " + (near.length ? esc(near[0].name) + " " + dist(near[0].km) : tx("offline"));
+  }
+  setTexts();
+
+  // Nearby index: every published page within nearbyMaxKm, by coordinates. Until it has
+  // answered (or 2 s passed) show() waits, so the card never changes under the reader.
+  var nearDone = hub || !S.nearbyIndex, pendingShow = false;
+  function nearSettled() { if (nearDone) return; nearDone = true; if (pendingShow) { pendingShow = false; show(); } }
+  if (!nearDone) {
+    var dec = function (x) { try { return decodeURIComponent(x); } catch (e) { return x; } };
+    var slugKey = dec(slug);
+    setTimeout(nearSettled, 2000);
+    try {
+      fetch(A + "near/" + encodeURIComponent(lang) + "/" + encodeURIComponent(dec(city)) + ".json")
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          var l = d && d[slugKey];
+          if (l && l.length && !nearDone) {
+            var ok = l.filter(function (n) { return n[0] && n[0] !== here; });
+            var walk = ok.filter(function (n) { return n[1] <= S.nearbyMaxKm; }).slice(0, S.nearbyCount || 1);
+            var area = ok.filter(function (n) { return n[1] <= S.areaMaxKm; }).slice(0, S.areaCount || 1);
+            var pick = walk.length ? walk : area;
+            if (pick.length) {
+              near = pick.map(function (n) { return { name: n[0], km: n[1] }; });
+              tier = walk.length ? "near" : "area";
+              setTexts();
+            }
+          }
+          nearSettled();
+        }, nearSettled);
+    } catch (e) { nearSettled(); }
+  }
   var pts = tx("pts").split("|").join("<br>");
   // Official artwork only: Apple's black badge (no standalone Apple logo) and Google's badge.
   var asBadge = '<a class="lks-badge lks-as" data-t="app_store" href="' + S.appStoreUrl + '" rel="nofollow" target="_blank"><img src="' + A +
@@ -362,7 +402,9 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
 
   var el, shown = false;
   function show() {
-    if (shown) return; shown = true;
+    if (shown) return;
+    if (!nearDone) { pendingShow = true; return; }
+    shown = true;
     if (!document.getElementById("lks-css")) { var st = document.createElement("style"); st.id = "lks-css"; st.textContent = css; document.head.appendChild(st); }
     el = document.createElement("aside");
     el.className = "lks" + (desk ? " lks-desk" : " lks-mini");

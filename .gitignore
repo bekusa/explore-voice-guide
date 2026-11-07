@@ -47,3 +47,9 @@ _to_delete/
 
 # content factory dry-run output (tools/content-factory)
 cf-out/
+
+# SEO agent (tools/seo-agent): raw exports and run marker
+tools/seo-agent/data/
+tools/seo-agent/.active
+tools/seo-agent/.inactive
+tools/seo-agent/**/*.sqlite

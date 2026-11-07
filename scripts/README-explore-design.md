@@ -43,3 +43,11 @@ each phone to its store) + both badges, any other device → both badges. Badge 
 `assets/app-store-badge.svg` (Apple's official black badge, self-hosted) and
 `assets/google-play-badge.png`. Inside the iOS/Android app the card never shows
 (`isNativePlatform()`), per Apple guideline 2.3.10.
+
+v7 (2026-11-07): nearby places come from `assets/near/<lang>/<city>.json`, built by
+`scripts/build-near-index.py` from every published attraction page (h1 + JSON-LD
+coordinates): up to 5 pages within 3 km per page, same language first, topped up with
+English pages when the language has fewer, noindex duplicates and the place itself
+excluded. The card waits for that file (max 2 s) and falls back to the page's Nearby
+rail. **Rerun `python scripts/build-near-index.py` after any page generation**, or new
+pages will be missing from their neighbours' cards.

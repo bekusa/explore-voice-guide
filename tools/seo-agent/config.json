@@ -1,0 +1,124 @@
+{
+  "version": "1.0.0",
+  "updated": "2026-11-07",
+  "site": {
+    "canonical_host": "https://lokali.travel",
+    "legacy_hosts": ["https://www.lokali.travel", "https://lokali.ge", "https://www.lokali.ge"],
+    "sitemaps": ["public/sitemap.xml", "public/sitemap-main.xml", "public/sitemap-explore.xml", "public/sitemap-blog.xml"],
+    "robots": "public/robots.txt",
+    "llms_txt": "public/llms.txt",
+    "redirects": "public/_redirects",
+    "indexnow_key_file": "public/a7f3c91e5b2d48069c1fa73e8d2b5064.txt",
+    "static_root": "public",
+    "explore_root": "public/explore",
+    "blog_index": "public/blog.html",
+    "blog_root": "public/blog",
+    "about_root": "public/about",
+    "generators": ["scripts/gen_factory_en.py", "scripts/gen_factory_hubs.py", "scripts/build-explore-hub.mjs", "scripts/build-explore-canonical.py", "scripts/fix-meta.py"],
+    "stores": {
+      "play": "https://play.google.com/store/apps/details?id=app.lokali.travel",
+      "app_store": "https://apps.apple.com/app/id6828065471"
+    },
+    "social": {
+      "facebook": "https://www.facebook.com/profile.php?id=61594728502493",
+      "instagram": "https://www.instagram.com/lokali.travel"
+    },
+    "utm": "utm_source=seo&utm_medium=explore&utm_campaign=<lang>&utm_content=<city>"
+  },
+  "ceilings": {
+    "max_window_pct": 50,
+    "usage_check_every_ops": 25,
+    "openrush_weekly_credits": null,
+    "openrush_stop_at_pct": 80,
+    "openrush_monthly_credits_plan": null
+  },
+  "change_budget": {
+    "weekly": {"template_changes": 3, "static_regenerations": 1, "articles": 1, "deployments": 1},
+    "monthly_multiplier": 2,
+    "prune_max_share_of_indexed_per_week": 0.05
+  },
+  "thresholds": {
+    "wave_gate_weeks": 6,
+    "wave_first_reading_weeks": 2,
+    "wave_indexed_share_go": 0.60,
+    "wave_indexed_share_stop": 0.30,
+    "crawled_not_indexed_quality_flag": 0.40,
+    "discovered_not_indexed_crawl_flag": 0.40,
+    "non_english_cohort_min_share_of_english": 0.50,
+    "prune_min_months": 6,
+    "prune_max_impressions": 10,
+    "prune_max_clicks": 0,
+    "striking_distance_positions": [5, 20],
+    "striking_distance_min_impressions_28d": 50,
+    "decay_click_drop": 0.30,
+    "cannibalisation_weeks": 4,
+    "root_cause_cohort_share": 0.05,
+    "cwv": {"lcp_ms": 2500, "inp_ms": 200, "cls": 0.1, "regression_flag": 0.20},
+    "expected_ctr_by_position": {"1": 0.27, "2": 0.15, "3": 0.10, "4": 0.07, "5": 0.06, "6": 0.04, "7": 0.035, "8": 0.03, "9": 0.025, "10": 0.02},
+    "tier1_impressions_window_days": 90
+  },
+  "samples": {
+    "weekly": {"sitemap_urls": 50, "inspections_per_cohort": 20, "cwv_pages": 5, "changed_urls_postcheck": 10, "control_urls_postcheck": 10},
+    "monthly": {"sitemap_urls": 200, "inspections_per_cohort": 50, "cwv_pages": 10},
+    "destructive_preview_urls": 20,
+    "calibration_sample_share": 0.05,
+    "disagreement_rate_flag": 0.10,
+    "max_retries": 2
+  },
+  "models": {
+    "orchestrator": "session",
+    "extraction_classification": "claude-haiku-4-5",
+    "audits_drafts": "claude-sonnet-4-5",
+    "strategy_destructive_retro_selfmod_skillreview": "claude-opus-5-5",
+    "verifier_destructive": "claude-opus-5-5",
+    "verifier_routine": "claude-sonnet-4-5",
+    "second_opinion_on_rejections": "claude-sonnet-4-5",
+    "claude_seo_parallelism_cap": 3
+  },
+  "languages": {
+    "core": ["en", "tr", "ka", "ru"],
+    "category_vocabulary": {
+      "en": ["audio guide", "free audio guide", "audio guide app", "audio tour app", "self guided walking tour app", "izi travel alternative"],
+      "tr": ["sesli rehber", "gezi rehberi", "gezilecek yerler", "sesli rehber uygulaması"],
+      "ka": ["აუდიოგიდი", "აუდიო გიდი", "ღირსშესანიშნაობები", "უფასო აუდიოგიდი"],
+      "ru": ["аудиогид", "аудиогид приложение", "что посмотреть", "экскурсия", "бесплатный аудиогид"],
+      "de": ["Audioguide", "Audioguide App"],
+      "es": ["audioguía", "audioguía app"],
+      "fr": ["audioguide", "application audioguide"],
+      "it": ["audioguida", "audioguide"]
+    },
+    "engines": {"google": true, "bing": true, "yandex": "ask_q4"},
+    "tracked_queries_per_language": [200, 300]
+  },
+  "competitors": ["izi.travel", "audiala.com", "gpsmycity.com", "voicemap.me", "smart-guide.org", "ricksteves.com", "artsandculture.google.com", "tripadvisor.com", "atlasobscura.com", "lonelyplanet.com"],
+  "crawlers": {
+    "search_index_always_allowed": ["Googlebot", "Bingbot", "Applebot", "OAI-SearchBot", "Claude-SearchBot", "PerplexityBot", "DuckDuckBot"],
+    "training_bots_decision_q7": ["GPTBot", "ClaudeBot", "Google-Extended", "Applebot-Extended", "CCBot", "meta-externalagent", "Bytespider"],
+    "user_fetchers": ["ChatGPT-User", "Claude-User", "Perplexity-User"],
+    "live_test_user_agents": {
+      "Googlebot-mobile": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+      "Bingbot": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm) Chrome/116.0.1938.76 Safari/537.36",
+      "OAI-SearchBot": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36; compatible; OAI-SearchBot/1.3; +https://openai.com/searchbot",
+      "PerplexityBot": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; PerplexityBot/1.0; +https://perplexity.ai/perplexitybot)",
+      "ClaudeBot": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; ClaudeBot/1.0; +claudebot@anthropic.com)",
+      "GPTBot": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.3; +https://openai.com/gptbot)"
+    }
+  },
+  "openrush_credit_costs": {
+    "describe_capabilities": 0, "list_connections": 0, "export_dataset": 1,
+    "get_search_performance": 2, "inspect_serp": 2, "research_keywords": 3, "inspect_page": 3,
+    "inspect_keyword": 5, "discover_competitors": 7, "inspect_domain": 9, "audit_site": 9, "inspect_backlinks": 9,
+    "inspect_search_visibility": 10, "compare_keyword_coverage": 12, "inspect_ai_visibility": 20,
+    "discover_ai_citations": 22, "compare_backlink_gap": 40
+  },
+  "secrets_expected": ["GSC_SERVICE_ACCOUNT_JSON", "BING_WMT_API_KEY", "PSI_API_KEY", "EXTERNAL_SUPABASE_URL", "EXTERNAL_SUPABASE_SERVICE_ROLE_KEY"],
+  "skills": {
+    "imported": {
+      "agricidaniel/claude-seo": {"pinned_sha": null, "version": "v2.2.5", "licence": "MIT", "status": "not_yet_imported", "extensions_enabled": ["bing-webmaster-if-key"], "extensions_disabled": ["dataforseo", "firecrawl", "banana", "ahrefs", "se-ranking", "profound"]},
+      "coreyhaines31/marketingskills": {"pinned_sha": null, "licence": "MIT", "status": "not_yet_imported", "only": ["ai-seo", "programmatic-seo", "site-architecture", "schema", "link-building", "aso", "directory-submissions", "public-relations", "competitors", "product-marketing", "marketing-loops"]}
+    },
+    "never_import_from": ["aitmpl.com", "davila7/claude-code-templates"]
+  },
+  "standing_approvals_confirmed": false,
+  "onboarding_answers_recorded": false
+}
