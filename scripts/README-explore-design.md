@@ -51,3 +51,14 @@ English pages when the language has fewer, noindex duplicates and the place itse
 excluded. The card waits for that file (max 2 s) and falls back to the page's Nearby
 rail. **Rerun `python scripts/build-near-index.py` after any page generation**, or new
 pages will be missing from their neighbours' cards.
+
+App screen in the card (2026-11-07): `assets/app/<city>.anim.webp` — animated WebP loops of
+real app screens captured from lokali.travel (city screen → city page → a cached guide →
+language picker; Paris: still + language picker; others: `cities`). 100–280 KB, loaded only
+when the card shows; `SETTINGS.appAnimation = false` or the visitor's "reduce motion"
+setting falls back to the still `<city>.webp`. Pages in the other 44 languages show the app
+in their own language: `assets/app/lang/<lang>.anim.webp` (home → Hagia Sophia guide → language
+picker, captured with the app set to that language; UI strings only from the bundled
+ui-locales, /api/translate was blocked, so place names stay as the app shows them) + the
+still `<lang>.webp`; the list is `SETTINGS.appLangs`. Blog pages get the card too (kind `blog`,
+generic title, no nearby list); `scripts/soro-sync.py` writes the script tag into new posts.

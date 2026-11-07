@@ -43,6 +43,11 @@ var LK_SHEET_SETTINGS = {
   appStoreUrl: "https://apps.apple.com/app/id6828065471",
   qrImage: "app-qr-explore.svg", // in assets/: QR of https://lokali.travel/app?utm_source=seo&utm_medium=qr&utm_campaign=explore
   appScreens: { tbilisi: 1, rome: 1, istanbul: 1, paris: 1 }, // cities with their own app screenshot in assets/app/
+  appAnimation: true,        // assets/app/<city>.anim.webp — a few real app screens in a loop (false = the still .webp);
+                             // visitors who switched animations off in their OS always get the still
+  appLangs: "af ar az bg bn cs da de el es fa fi fr he hi hr hu hy id it ja ka ko mr ms nb nl pl pt-br pt-pt ro ru sr sv sw ta te th tr uk ur vi zh-cn zh-tw",
+                             // ^ pages in these languages show the app in their own language: assets/app/lang/<lang>.anim.webp
+                             //   (+ the still <lang>.webp); English pages keep the city versions above
   webLinkLangs: { en: 1 }    // "Listen in your browser" deep link only where the page name is the app's name
 };
 
@@ -320,7 +325,12 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
   var webUrl = !hub && S.webLinkLangs[lang] ? "https://lokali.travel/attraction/" + encodeURIComponent(here.toLowerCase().replace(/\s+/g, "-")) +
     "?name=" + encodeURIComponent(here) + (cityName ? "&city=" + encodeURIComponent(cityName) : "") +
     "&utm_source=seo&utm_medium=sheet&utm_content=" + encodeURIComponent(slug) : "";
-  var shot = A + "app/" + (S.appScreens[city] ? city : "cities") + ".webp";
+  var still = false;
+  try { still = !S.appAnimation || window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+  var appLang = { pt: "pt-br", zh: "zh-cn" }[lang] || lang;
+  var shot = lang !== "en" && (" " + S.appLangs + " ").indexOf(" " + appLang + " ") >= 0
+    ? A + "app/lang/" + appLang + (still ? ".webp" : ".anim.webp")
+    : A + "app/" + (S.appScreens[city] ? city : "cities") + (still ? ".webp" : ".anim.webp");
 
   var P = esc(here);
   var title = tx(hub ? "titleHub" : "title", { place: P });
