@@ -29,8 +29,8 @@
 var LK_SHEET_SETTINGS = {
   enabled: true,
   showOn: { attraction: true, city: true, country: true, blog: true }, // blog = /blog.html and /blog/<post>.html
-  showAfterSeconds: 12,      // show anyway after this long (Beka 2026-11-07: 25 → 12)
-  engagedAfterSeconds: 10,   // ...or earlier, once this long has passed AND
+  showAfterSeconds: 5,       // show anyway after this long (Beka 2026-11-07: 25 → 12 → 5)
+  engagedAfterSeconds: 5,    // ...or earlier, once this long has passed AND
   engagedScroll: 0.5,        // ...the visitor has scrolled past this share of the page
   hideForDays: 7,            // after "×", stay hidden this long
   nearbyMaxKm: 3,            // "Nearby: …" lists places at most this far (from the page's own Nearby list)
@@ -41,6 +41,8 @@ var LK_SHEET_SETTINGS = {
   areaCount: 2,              // …at most this many
   playUrl: "https://play.google.com/store/apps/details?id=app.lokali.travel",
   appStoreUrl: "https://apps.apple.com/app/id6828065471",
+  appLink: "https://lokali.travel/app", // picks the store by device; QR + both badges elsewhere
+  fixPageLinks: true,        // the pages' own "Get the app" / "Open the Lokali app" buttons → the visitor's store
   qrImage: "app-qr-explore.svg", // in assets/: QR of https://lokali.travel/app?utm_source=seo&utm_medium=qr&utm_campaign=explore
   appScreens: { tbilisi: 1, rome: 1, istanbul: 1, paris: 1 }, // cities with their own app screenshot in assets/app/
   appAnimation: true,        // assets/app/<city>.anim.webp — a few real app screens in a loop (false = the still .webp);
@@ -258,6 +260,38 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
     } catch (e) {}
     return true;
   }
+  // The pages' own buttons ("Get the app" in the top bar, "Open the Lokali app", the blog CTA,
+  // the bottom #gpb pill) are generated as Google Play links. Point them at the visitor's
+  // store: iPhone/iPad → App Store, Android → Google Play (as generated), anything else →
+  // lokali.travel/app (QR + both badges). utm_* tags are kept. Inside our app they are hidden
+  // (Apple 2.3.10), and on iPhone the #gpb pill (Google Play logo) gives way to the card.
+  function fixStoreLinks() {
+    var ua = navigator.userAgent || "", inApp = nativeApp();
+    var ios = /iPhone|iPad|iPod/.test(ua) || ((/Macintosh/.test(ua) || navigator.platform === "MacIntel") && navigator.maxTouchPoints > 1);
+    var android = !ios && /Android/i.test(ua);
+    var seg = location.pathname.split("/").filter(Boolean);
+    var tag = "utm_source=seo&utm_medium=" + (seg[0] === "explore" ? "explore" : "blog") +
+      "&utm_campaign=" + encodeURIComponent(seg[1] || "index") + "&utm_content=" + encodeURIComponent((seg[2] || "").replace(/\.html$/, ""));
+    var links = [].slice.call(document.querySelectorAll('a[href*="play.google.com/store/apps/details?id=app.lokali.travel"]'));
+    // the gold "Open the Lokali app" / "Get the Lokali app" buttons of the newer pages point at
+    // the web app's home page; they mean the app, so they get the store link too
+    var gold = [].slice.call(document.querySelectorAll('a.btn.gold[href="https://lokali.travel"], a.btn.gold[href="https://lokali.travel/"]'));
+    links.concat(gold).forEach(function (a) {
+      if (a.closest && a.closest(".lks")) return;
+      if (inApp) { if (gold.indexOf(a) < 0) a.style.display = "none"; return; }
+      var q = gold.indexOf(a) >= 0 ? tag
+        : (a.href.split("?")[1] || "").split("&").filter(function (p) { return /^utm_/.test(p); }).join("&");
+      a.href = ios ? S.appStoreUrl : android ? S.playUrl + (q ? "&" + q : "") : S.appLink + (q ? "?" + q : "");
+      a.setAttribute("data-store", ios ? "app_store" : android ? "play" : "app_link");
+    });
+    var gpb = document.getElementById("gpb");
+    if (gpb && (ios || inApp)) gpb.style.display = "none";
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest && e.target.closest("a[data-store]");
+      if (a) track("page_cta_click", { store: a.getAttribute("data-store"), href: a.href });
+    }, true);
+  }
+  if (S.fixPageLinks) { try { fixStoreLinks(); } catch (e) {} }
   if (!S.enabled || nativeApp()) return;
   try { var t = +localStorage.getItem(KEY); if (!demo && t && Date.now() - t < S.hideForDays * 864e5) return; } catch (e) {}
 
@@ -314,7 +348,7 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
   function track(ev, extra) {
     if (demo) return;
     try {
-      var p = { page: slug, city: city, lang: lang, kind: kind, layout: desk ? "desktop" : "mobile", store: store, nearby: near.length, tier: near.length ? tier : "none", v: 7 };
+      var p = { page: slug || location.pathname, city: city, lang: lang || document.documentElement.lang, kind: kind, layout: desk ? "desktop" : "mobile", store: store, nearby: near ? near.length : 0, tier: near && near.length ? tier : "none", v: 7 };
       for (var k in extra || {}) p[k] = extra[k];
       fetch(SB, { method: "POST", keepalive: true, headers: { apikey: PK, Authorization: "Bearer " + PK, "Content-Type": "application/json", Prefer: "return=minimal" },
         body: JSON.stringify({ event: ev, anon_id: anon(), props: p }) });

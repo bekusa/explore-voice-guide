@@ -52,6 +52,15 @@ excluded. The card waits for that file (max 2 s) and falls back to the page's Ne
 rail. **Rerun `python scripts/build-near-index.py` after any page generation**, or new
 pages will be missing from their neighbours' cards.
 
+Page store buttons (2026-11-07, `SETTINGS.fixPageLinks`): lk-sheet.js also rewrites the pages'
+own buttons — top-bar "Get the app", the #gpb pill, the blog CTA (all generated as Google Play
+links) and the gold "Open / Get the Lokali app" buttons (which pointed at lokali.travel/) — to
+the visitor's store: iPhone/iPad → App Store, Android → Google Play, else lokali.travel/app;
+utm_* kept, clicks tracked as `page_cta_click`. Inside the app the store buttons are hidden and
+on iPhone the #gpb pill (Google Play logo) is hidden. The generators now emit the Play link for
+the gold buttons too (`gen_factory_en.store_url`); explore/index.html (lk_index.py) loads the
+script for the same reason (it shows no card). The card itself shows after 5 s.
+
 App screen in the card (2026-11-07): `assets/app/<city>.anim.webp` — animated WebP loops of
 real app screens captured from lokali.travel (city screen → city page → a cached guide →
 language picker; Paris: still + language picker; others: `cities`). 100–280 KB, loaded only

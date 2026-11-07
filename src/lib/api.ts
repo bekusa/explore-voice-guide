@@ -793,6 +793,21 @@ export function unslugAttraction(slug: string): string {
  */
 export type AttractionHint = {
   name?: string;
+  /**
+   * The English baseline name, when the card that linked here had one
+   * (`name_en`, set on every translated row by
+   * translateAttractionsPayload). Carried separately from `name` so the
+   * attraction page can show the user their own language while sending
+   * canonical English to /api/guide and /api/photo.
+   *
+   * Beka 2026-11-07: without this the page saw only the translated
+   * `name`. "Side Mosque" reaches Russian as "Боковая мечеть"
+   * ("боковой" = lateral — Gemini translated the PLACE name as an
+   * adjective), /api/guide round-tripped that back to "bokovaya
+   * mosque", and every tap paid a fresh 40-s Sonnet generation for a
+   * place that does not exist.
+   */
+  name_en?: string;
   city?: string;
   photo?: string;
 };

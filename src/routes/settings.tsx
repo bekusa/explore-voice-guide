@@ -333,7 +333,13 @@ function SettingsPage() {
     const voice = resolveAzureVoice(language.code, voiceName) ?? "";
     for (const item of saved) {
       try {
-        const script = await fetchGuideFresh(item.name, language.code);
+        // English name where the saved row kept one. This loop runs
+        // over EVERY saved tour, so with the translated name a
+        // non-English user's "download all" was a bulk order for
+        // fresh Sonnet generations of places that don't exist
+        // ("Боковая мечеть" → "bokovaya mosque"). `item.id` is still
+        // the original slug, so updateItem below is unaffected.
+        const script = await fetchGuideFresh(item.attraction?.name_en ?? item.name, language.code);
         if (script) {
           // Mirror the script onto the saved item itself so the Saved page can
           // show "Guide cached" + use it directly when offline.

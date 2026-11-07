@@ -323,10 +323,36 @@ function AttractionPage() {
    * render. Seed from the URL (which the server also sees), then
    * adopt device state in an effect. */
   const [hint, setHint] = useState<ReturnType<typeof getAttractionHint>>(null);
+  /* Has the hint effect run yet? Beka 2026-11-07.
+   *
+   * Moving the hint read into an effect (above) fixed #418 but left the
+   * FIRST render hintless, and the guide effect below fires on that
+   * render — so the very first /api/guide call went out with no city
+   * at all. Every cached_guides row his phone created that morning has
+   * `city_normalized = ''`, which is exactly the blindness BUG 2 added
+   * the city to the cache key to prevent.
+   *
+   * The fix is to wait one tick, not to move the read back into
+   * render. Both effects run in the same commit (this one is declared
+   * first), so the guide effect skips once and then runs with the real
+   * hint. Nothing reads storage during render, so #418 stays fixed.
+   *
+   * Tracked as "which id the hint belongs to" rather than a plain
+   * boolean, so that navigating from one attraction to the next (the
+   * nearby-places markers do exactly that, same component, new `id`)
+   * makes it false again for one render. A boolean would stay true and
+   * let the guide effect fire once on the mismatched pair: the new
+   * id's name with the previous place's city. */
+  const [hintFor, setHintFor] = useState<string | null>(null);
+  const hintLoaded = hintFor === id;
   useEffect(() => {
     setHint(getAttractionHint(id));
+    setHintFor(id);
   }, [id]);
   const searchName = hint?.name ?? search.name;
+  /* Canonical English from the linking card, when it had one. This is
+   * what goes to /api/guide — see guideLookupName below. */
+  const searchNameEn = hint?.name_en;
   const searchCity = hint?.city ?? search.city;
   const searchPhoto = hint?.photo ?? search.photo;
   const navigate = useNavigate();
@@ -466,7 +492,14 @@ function AttractionPage() {
     if (seed?.attraction) {
       setAttraction((cur) => (cur && cur.city ? cur : seed.attraction));
     }
-    const cached = getCachedGuideData(fallbackName, language, interest);
+    /* Keyed the same way the guide effect below keys it (English where
+     * the hint supplied one), or this seed looks in a drawer nothing
+     * was ever put in and every revisit flashes empty before the
+     * network answers. `guideLookupName` itself is declared further
+     * down and so cannot go in the deps array, which is evaluated
+     * during render — this mirrors its first two branches, which is
+     * all that is available this early. */
+    const cached = getCachedGuideData(searchNameEn ?? fallbackName, language, interest);
     if (cached?.script) {
       setGuide((cur) => cur ?? cached);
     }
@@ -474,7 +507,7 @@ function AttractionPage() {
     // this on every language/interest change would let a stale cache
     // entry stomp a fresh fetch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, searchName, fallbackName]);
+  }, [id, searchName, searchNameEn, fallbackName]);
 
   /* Play Store review prompt — the actual attempt. Beka 2026-09-19.
    *
@@ -567,17 +600,47 @@ function AttractionPage() {
   // fetch until the translation arrives. The hero shows the
   // category-icon placeholder during the brief wait, which is
   // cleaner than the wrong-photo flash Beka caught on the Louvre.
+  //
+  // `searchNameEn` (2026-11-07) is the same thing arriving one step
+  // earlier: the linking card now puts its `name_en` in the hint, so
+  // the right photo can load on the FIRST render instead of waiting
+  // for the attractions fetch to re-supply it.
   const heroLookupName = useMemo(() => {
     if (attraction?.name_en) return attraction.name_en;
+    if (searchNameEn) return searchNameEn;
     const candidate = attraction?.name ?? searchName ?? fallbackName;
     if (candidate && /^[\x20-\x7E]+$/.test(candidate)) return candidate;
     return null;
-  }, [attraction?.name_en, attraction?.name, searchName, fallbackName]);
+  }, [attraction?.name_en, attraction?.name, searchNameEn, searchName, fallbackName]);
   const heroFetched = useLazyPlacePhoto(heroLookupName, {
     cityHint: heroCity,
     skip: !!attraction?.image_url,
   });
   const heroPhoto = attraction?.image_url ?? heroFetched;
+  /* The name /api/guide is asked about. Beka 2026-11-07.
+   *
+   * This used to be `attraction?.name ?? fallbackName` — the DISPLAY
+   * name, in the user's language. That is what sent "Боковая мечеть"
+   * to the guide endpoint, where normalizeToCanonicalEnglish turned it
+   * back into "bokovaya mosque": no cache row, a 40-s Sonnet
+   * generation, and a junk row nobody can ever hit. Worse, two names
+   * resolved to the wrong REAL place — "Храм Афины" (Temple of Athena,
+   * in Side) came back as Athens' Parthenon, so the script he heard
+   * was about another country.
+   *
+   * The display name stays as it is; only the lookup changes. Note the
+   * guide still comes back in the user's language: `language` is
+   * detected separately from `fallbackName`, and /api/guide generates
+   * the English baseline then translates it. Sending canonical English
+   * is what lets a Russian and a Japanese visitor share one cache row.
+   *
+   * Unlike heroLookupName this never returns null — the guide has to
+   * be asked about something — so a translated name is still the last
+   * resort, same as before. */
+  const guideLookupName = useMemo(
+    () => attraction?.name_en ?? searchNameEn ?? attraction?.name ?? fallbackName,
+    [attraction?.name_en, searchNameEn, attraction?.name, fallbackName],
+  );
   // Multi-photo gallery for the hero carousel — pulled from
   // Wikipedia's media-list endpoint. Beka asked for a carousel on
   // /attraction/$id mirroring what /destinations/$slug got, so the
@@ -718,7 +781,10 @@ function AttractionPage() {
   // separately, so swapping pulls a different (or fetches a fresh)
   // bias-tilted guide.
   useEffect(() => {
-    const name = attraction?.name ?? fallbackName;
+    // Wait for the hint. One skipped tick, and in exchange the call
+    // below carries the city and the English name — see hintLoaded.
+    if (!hintLoaded) return;
+    const name = guideLookupName;
     // Pass the host city to the guide endpoint so Claude can anchor
     // the script to the right place. Without this, generic-named
     // places ("Riyki Park") get cross-continent facts because the
@@ -750,7 +816,7 @@ function AttractionPage() {
     return () => {
       cancelled = true;
     };
-  }, [attraction?.name, attraction?.city, fallbackName, language, interest, searchCity]);
+  }, [guideLookupName, attraction?.city, language, interest, searchCity, hintLoaded]);
 
   // Hero photo handled by useLazyPlacePhoto declared above.
 
@@ -1069,6 +1135,7 @@ function AttractionPage() {
             so the user always knows where to find them. */}
         <ActionRow
           name={a?.name ?? fallbackName}
+          guideName={guideLookupName}
           attraction={a}
           heroPhoto={heroPhoto}
           heroSlides={heroSlides}
@@ -1329,6 +1396,7 @@ function AttractionPage() {
  */
 function ActionRow({
   name,
+  guideName,
   attraction,
   heroPhoto,
   heroSlides,
@@ -1341,6 +1409,19 @@ function ActionRow({
   onPlay,
 }: {
   name: string;
+  /** The parent's `guideLookupName` — canonical English where we have
+   *  it. Every guide-cache operation in here (the Offline pill's
+   *  lookup, both download fetches, the stale-guide eviction) must use
+   *  THIS and not `name`, or the row the page fetched and the row this
+   *  row reads are two different rows.
+   *
+   *  Beka 2026-11-07: with the display name, tapping Download on a
+   *  Russian card asked /api/guide about "Боковая мечеть" → "bokovaya
+   *  mosque", a second 40-s generation of a place that doesn't exist,
+   *  while the page itself had already cached the real one. `name`
+   *  stays for what the user reads and for the saved-item slug (that
+   *  one must not change — existing saved rows are keyed by it). */
+  guideName: string;
   attraction: Attraction | null;
   /** Resolved hero photo URL (Wikipedia / Azure Blob / Google Places).
    *  Passed from the parent so Download can persist it as a data URL
@@ -1413,7 +1494,7 @@ function ActionRow({
   useEffect(() => {
     let cancelled = false;
     const refresh = async () => {
-      const hasScript = !!getCachedGuide(name, language, interest);
+      const hasScript = !!getCachedGuide(guideName, language, interest);
       if (!hasScript) {
         if (!cancelled) setCached(false);
         return;
@@ -1447,7 +1528,7 @@ function ActionRow({
       cancelled = true;
       unsubscribe();
     };
-  }, [name, language, interest, id]);
+  }, [guideName, language, interest, id]);
 
   const [downloading, setDownloading] = useState(false);
 
@@ -1564,7 +1645,7 @@ function ActionRow({
         // undefined on a cold attraction page. If the fetch fails
         // (network drop, Anthropic 5xx) we bail with audioReady=false
         // so the user can retry from the Saved tab.
-        const script = await fetchGuideFresh(name, language, interest);
+        const script = await fetchGuideFresh(guideName, language, interest);
         if (!script) {
           updateItem(id, { audioReady: false });
           toast.warning(t("attr.savedNoAudioTitle"), {
@@ -1615,7 +1696,7 @@ function ActionRow({
     // audio + script blobs from offlineStore, freeing space and
     // letting the user redownload fresh later.
     if (cached) {
-      removeCachedGuide(name, language, interest);
+      removeCachedGuide(guideName, language, interest);
       // Audio + script blobs in offlineStore — wipe every voice the
       // cached-state probe knows about. Beka 2026-06-13 — if we
       // only wiped the default voice and the user had downloaded
@@ -1657,7 +1738,7 @@ function ActionRow({
       // 1) Script (text). fetchGuideFresh writes it into guideCache
       //    AND returns the text so we can pipe it into the audio
       //    fetch below — no second API hit.
-      const script = await fetchGuideFresh(name, language, interest);
+      const script = await fetchGuideFresh(guideName, language, interest);
       if (!script) {
         toast.error(t("toast.noGuide"));
         return;
@@ -1736,7 +1817,7 @@ function ActionRow({
         // Same trip offer as toggleSave — a download implies a save.
         if (user) setShowTripSheet(true);
       } else {
-        removeCachedGuide(name, language, interest);
+        removeCachedGuide(guideName, language, interest);
         setCached(false);
         toast.error(t("toast.downloadFailed"), {
           description: t("toast.tryAgain"),
@@ -2458,6 +2539,7 @@ function MapSection({
           const targetSlug = attractionSlug(item.name);
           setAttractionHint(targetSlug, {
             name: item.name,
+            ...(item.attraction?.name_en ? { name_en: item.attraction.name_en } : {}),
             city: (item.attraction.city as string | undefined) ?? cityHint,
           });
           navigate({ to: "/attraction/$id", params: { id: targetSlug } });
@@ -2490,6 +2572,7 @@ function MapSection({
             const targetSlug = attractionSlug(item.name);
             setAttractionHint(targetSlug, {
               name: item.name,
+              ...(item.attraction?.name_en ? { name_en: item.attraction.name_en } : {}),
               city: (item.attraction.city as string | undefined) ?? cityHint,
             });
             navigate({ to: "/attraction/$id", params: { id: targetSlug } });

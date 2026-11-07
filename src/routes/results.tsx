@@ -567,10 +567,52 @@ export function ResultCard({
   // Places to disambiguate generic attraction names.
   cityContext: string;
 }) {
-  const slug = useMemo(() => attractionSlug(attraction.name), [attraction.name]);
+  /* Slug from the ENGLISH name, never the translated one. Beka
+   * 2026-11-07: he searched "Side, Turkey" with the UI in Russian and
+   * every tap burned a fresh 40-s Sonnet generation. Cause found in
+   * his own data: Gemini translates the `name` field (deliberately —
+   * cards must read in the user's language), and for Side it renders
+   * the PLACE name as the adjective "боковой" (lateral):
+   *
+   *     Side Museum      → Боковой музей
+   *     Side Mosque      → Боковая мечеть
+   *     Side Lighthouse  → Боковой маяк
+   *
+   * The slug became the Russian string, so /attraction/$id carried it,
+   * /api/guide received it, and normalizeToCanonicalEnglish round-
+   * tripped it back as "bokovaya mosque" / "bokovoy lighthouse" —
+   * names of places that do not exist. Cache miss every time, and the
+   * junk row can never be hit again (20 taps that morning → 12 rows
+   * with hit_count 1). Two of them resolved to the WRONG REAL PLACE:
+   * "Храм Афины" (Temple of Athena, in Side) became Athens' Parthenon,
+   * and the Vespasian Gate became Rome's Arch of Titus — so the guide
+   * he heard was about the wrong country.
+   *
+   * `name_en` is preserved on every translated row by
+   * translateAttractionsPayload for exactly this purpose, and the
+   * photo lookup below already uses it (the Statue-of-Liberty fix).
+   * The slug was the one technical handle still reading `name`.
+   *
+   * Changing this changes the URL for non-English users, which is
+   * correct and also makes it shareable: a Russian and an English
+   * visitor now land on the same /attraction/side-museum. */
+  const slug = useMemo(
+    () => attractionSlug(attraction.name_en ?? attraction.name),
+    [attraction.name_en, attraction.name],
+  );
   const online = useOnlineStatus();
   const savedItems = useSavedItems();
-  const isFav = savedItems.some((s) => s.id === slug) || isSaved(slug);
+  /* The slug this card used BEFORE the English-name fix above. Anything
+   * a non-English user saved until now is keyed by it, so without this
+   * check their saved places would show an empty heart the first time
+   * they see this build and could be saved a second time under the new
+   * slug. Recognise both; new saves use `slug`. Identical strings for
+   * English rows, where name_en is absent. */
+  const legacySlug = useMemo(() => attractionSlug(attraction.name), [attraction.name]);
+  const isFav =
+    savedItems.some((s) => s.id === slug || s.id === legacySlug) ||
+    isSaved(slug) ||
+    isSaved(legacySlug);
   const t = useT();
 
   const [open, setOpen] = useState(false);
@@ -592,13 +634,19 @@ export function ResultCard({
   const [imgFailed, setImgFailed] = useState(false);
   const photo = imgFailed ? null : (attraction.image_url ?? fetched);
 
+  // The name every guide-cache operation on this card uses: the
+  // lookup, the download, the un-download. English where we have it,
+  // so all three agree with each other AND with what the attraction
+  // page writes — see the note on `slug` above.
+  const guideName = attraction.name_en ?? attraction.name;
+
   // Live "Offline" state — flips when a download finishes / cache cleared.
   const [cached, setCached] = useState(false);
   useEffect(() => {
-    const refresh = () => setCached(!!getCachedGuide(attraction.name, language));
+    const refresh = () => setCached(!!getCachedGuide(guideName, language));
     refresh();
     return onGuideCacheChange(refresh);
-  }, [attraction.name, language]);
+  }, [guideName, language]);
 
   const [downloading, setDownloading] = useState(false);
   const { user } = useAuth();
@@ -608,7 +656,10 @@ export function ResultCard({
     e.preventDefault();
     e.stopPropagation();
     if (isFav) {
+      // Both keys — `isFav` accepts either, so un-saving has to clear
+      // either, or a pre-fix save becomes impossible to remove here.
       removeItem(slug);
+      if (legacySlug !== slug) removeItem(legacySlug);
       toast(t("toast.removedFromSaved"));
       return;
     }
@@ -645,7 +696,7 @@ export function ResultCard({
     // delete YOUR cache). Beka caught the tile stuck on with no way
     // back.
     if (cached) {
-      removeCachedGuide(attraction.name, language);
+      removeCachedGuide(guideName, language);
       setCached(false);
       toast(t("toast.removedFromOffline"));
       return;
@@ -662,7 +713,10 @@ export function ResultCard({
     if (!checkEmailVerified(user, t)) return;
     setDownloading(true);
     try {
-      const script = await fetchGuideFresh(attraction.name, language);
+      // English name for the FETCH (same reason as `slug` above — the
+      // translated one mints a junk cache row for a place that does
+      // not exist), translated name for what the user is told.
+      const script = await fetchGuideFresh(guideName, language);
       if (script) {
         toast.success(t("toast.downloaded"), { description: attraction.name });
         setCached(true);
@@ -804,6 +858,14 @@ export function ResultCard({
               e.stopPropagation();
               setAttractionHint(slug, {
                 name: attraction.name,
+                // The English baseline travels WITH the hint. Without
+                // it the attraction page only ever saw the translated
+                // `name` and sent that to /api/guide — see the note on
+                // `slug` above for what "Side Mosque" came back as.
+                // The page prefers this for every technical handle
+                // (guide fetch, photo lookup, museum match) and keeps
+                // `name` for what the user reads.
+                ...(attraction.name_en ? { name_en: attraction.name_en } : {}),
                 city: cityContext,
                 ...(photo ? { photo } : {}),
               });

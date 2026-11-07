@@ -241,6 +241,7 @@ doc = f'''<!DOCTYPE html>
  document.addEventListener('click',function(e){{if(!e.target.closest('.search'))res.classList.remove('on')}});
 }})();
 </script>
+<script src="/explore/assets/lk-sheet.js" defer></script>
 </body>
 </html>
 '''

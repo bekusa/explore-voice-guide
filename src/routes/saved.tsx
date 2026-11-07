@@ -278,6 +278,11 @@ function SavedRow({ item }: { item: SavedItem }) {
             onClick={() => {
               setAttractionHint(slug, {
                 name: item.name,
+                // Canonical English from the row we saved, so reopening
+                // a saved place asks /api/guide about the same name the
+                // first visit did instead of minting a second row off
+                // the translated one (Beka 2026-11-07).
+                ...(item.attraction?.name_en ? { name_en: item.attraction.name_en } : {}),
                 ...(typeof item.attraction.city === "string" && item.attraction.city
                   ? { city: item.attraction.city }
                   : {}),

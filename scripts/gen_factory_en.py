@@ -259,6 +259,14 @@ TOPBAR = ('<header class="topbar"><div class="wrap"><a class="brand" href="https
           '<div class="tb-right"><a class="getapp" href="https://play.google.com/store/apps/details?id=app.lokali.travel&amp;utm_source=seo&amp;utm_medium=explore&amp;utm_campaign=topbar-en" rel="nofollow" target="_blank">Get the app</a></div></div></header>')
 
 
+def store_url(content):
+    """Store link for the gold "Open / Get the Lokali app" buttons (Beka 2026-11-07: they
+    pointed at the web app's home page). lk-sheet.js swaps it for the App Store on iPhone and
+    for lokali.travel/app on desktop."""
+    return ("https://play.google.com/store/apps/details?id=app.lokali.travel&amp;utm_source=seo&amp;utm_medium=explore"
+            "&amp;utm_campaign=en&amp;utm_content=" + esc(content))
+
+
 def appbar(content):
     return ('<div class="appbar-cta" id="gpb"><div class="pill"><a href="https://play.google.com/store/apps/details?id=app.lokali.travel&amp;utm_source=seo&amp;utm_medium=explore&amp;utm_campaign=en&amp;utm_content='
             + esc(content) + '" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 48 48" width="24" height="24" style="flex-shrink:0"><path d="M24,24 L12,35 L12,13 Z" fill="#00B0FF"/><path d="M24,24 L36,35 L36,13 Z" fill="#00E676"/><path d="M24,24 L12,13 L24,3 Z" fill="#FFC400"/><path d="M24,24 L36,13 L24,3 Z" fill="#FF3D57"/></svg><span class="lb"><small>Google Play</small><b>Get the app</b></span></a><button class="x" aria-label="Dismiss" onclick="try{localStorage.setItem(\'lokali.playbanner.dismissed.v1\',\'1\')}catch(e){};document.getElementById(\'gpb\').classList.remove(\'show\')">&#10005;</button></div></div><script>(function(){var d=false;try{d=localStorage.getItem("lokali.playbanner.dismissed.v1")==="1"}catch(e){}if(!window.Capacitor&&!d){document.getElementById("gpb").classList.add("show")}})();</script>')
@@ -383,7 +391,7 @@ def page(a, pool):
     ghost = (f'<a class="btn ghost" href="{hub_url}">{txt(hub["name"])} &rarr;</a>' if hub_url else
              f'<a class="btn ghost" href="{c_url}">{txt(a["country"])} &rarr;</a>' if c_url else "")
     copy = (f'<div class="hero-copy"><span class="badge">Free audio guide</span><h1>{txt(t)}</h1><p class="geo">{geo}</p><div class="btns">'
-            f'<a class="btn gold" href="https://lokali.travel" rel="nofollow" target="_blank"><span class="pl">&#9654;</span>Open the Lokali app</a>{ghost}</div></div>')
+            f'<a class="btn gold" href="{store_url(a["city"])}" rel="nofollow" target="_blank"><span class="pl">&#9654;</span>Open the Lokali app</a>{ghost}</div></div>')
     if a["img"]:
         H.append(f'<section class="hero"><img src="{esc(a["img"])}" alt="{esc(t)}" fetchpriority="high" decoding="async"><span class="ov"></span>{copy}</section>')
         cdt = a["credit"]
@@ -429,7 +437,7 @@ def page(a, pool):
     ap_img = f'<div class="ap-img"><img src="{esc(a["img"])}" alt="" loading="lazy" decoding="async"></div>' if a["img"] else ""
     H.append(f'<section class="apppanel"><div class="ap-copy"><span class="eyebrow">Free &middot; 50+ languages &middot; offline</span>'
              f'<h3>Hear {txt(t)} <em>in your language</em></h3><p>The full story, narrated, in 50+ languages. Download it before you go and it plays offline, '
-             f'at your own pace, with no ticket and no tour group.</p><div class="btns"><a class="btn gold" href="https://lokali.travel" rel="nofollow" target="_blank">'
+             f'at your own pace, with no ticket and no tour group.</p><div class="btns"><a class="btn gold" href="{store_url(a["city"])}" rel="nofollow" target="_blank">'
              f'<span class="pl">&#9654;</span>Get the Lokali app</a><a class="btn ghost" href="https://lokali.travel/">Try it in the browser</a></div></div>{ap_img}</section>')
     foot = [f'<a href="{BASE}/explore/index.html">All cities</a>']
     if c_url:

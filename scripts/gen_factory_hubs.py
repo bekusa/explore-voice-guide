@@ -298,7 +298,7 @@ def city_hub(slug):
     crumbs.append(f"<span>{txt(name)}</span>")
     H.append('<nav class="crumbs" aria-label="Breadcrumb">' + ' <span class="sep">&rsaquo;</span> '.join(crumbs) + "</nav>")
     copy = (f'<div class="hero-copy"><span class="badge">{n} free audio {guides}</span><h1>{txt(name)}</h1><p class="tag">{tag}</p><div class="btns">'
-            f'<a class="btn gold" href="https://lokali.travel" rel="nofollow" target="_blank"><span class="pl">&#9654;</span>Open the Lokali app</a>'
+            f'<a class="btn gold" href="{G.store_url(slug)}" rel="nofollow" target="_blank"><span class="pl">&#9654;</span>Open the Lokali app</a>'
             f'<a class="btn ghost" href="#places">See all {n} places &darr;</a></div></div>')
     if img:
         H.append(f'<section class="hero"><img src="{esc(img)}" alt="{esc(name)}" fetchpriority="high" decoding="async"><span class="ov"></span>{copy}</section>')
@@ -331,7 +331,7 @@ def city_hub(slug):
     H.append("</div>")
     H.append(f'<section class="apppanel"><div class="ap-copy"><span class="eyebrow">Free &middot; 50+ languages &middot; offline</span><h3>Walk {txt(name)} '
              f'<em>with a guide in your ear</em></h3><p>All {n} {guides} for {txt(name)}, free, offline and in your language. Download them before you land.</p>'
-             f'<div class="btns"><a class="btn gold" href="https://lokali.travel" rel="nofollow" target="_blank"><span class="pl">&#9654;</span>Get the Lokali app</a>'
+             f'<div class="btns"><a class="btn gold" href="{G.store_url(slug)}" rel="nofollow" target="_blank"><span class="pl">&#9654;</span>Get the Lokali app</a>'
              f'<a class="btn ghost" href="https://lokali.travel/">Try it in the browser</a></div></div>'
              + (f'<div class="ap-img"><img src="{esc(img)}" alt="" loading="lazy" decoding="async"></div>' if img else "") + "</section>")
     foot = [f'<a href="{BASE}/explore/index.html">All cities</a>']
