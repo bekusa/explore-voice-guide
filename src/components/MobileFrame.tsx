@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { Sparkles } from "lucide-react";
 import { TabBar } from "@/components/TabBar";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
-import { PlayStoreBanner } from "@/components/PlayStoreBanner";
 import { InlineAudioPanel } from "@/components/InlineAudioPanel";
 import { useIsNarrating } from "@/hooks/useNarration";
 import { useT } from "@/hooks/useT";
@@ -112,24 +111,11 @@ export function MobileFrame({
             <InlineAudioPanel />
           </div>
         )}
-        {/* "Get the app" pill — WEB visitors only (the component
-            self-hides inside the Capacitor app, after dismissal and in
-            iOS Safari, where Apple's Smart App Banner takes over).
-            App Store on iPhone/iPad, Google Play on Android, both on
-            desktop. Pinned above the TabBar, below the player's z-30
-            so the audio player wins when both are up. Beka 2026-07-31,
-            production launch; platform-aware since 2026-11-07. */}
-        {!narrating && (
-          <div
-            className={`absolute inset-x-0 z-20 ${
-              hideTabBar
-                ? "bottom-[max(28px,env(safe-area-inset-bottom))]"
-                : "bottom-[calc(88px+max(16px,env(safe-area-inset-bottom)))]"
-            }`}
-          >
-            <PlayStoreBanner />
-          </div>
-        )}
+        {/* No "get the app" banner in the web app. Beka 2026-11-07: these
+            are the same pages the iOS/Android app shows, so store prompts
+            live only on the static /explore/ pages and the blog
+            (public/explore/assets/lk-sheet.js), never here.
+            PlayStoreBanner.tsx is kept, unused, in case that changes. */}
         {!hideTabBar && <TabBar />}
       </div>
     </div>

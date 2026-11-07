@@ -403,6 +403,7 @@ def article_html(it, css):
 </main>
 <footer>Lokali &mdash; free AI audio guides for travellers, in your own language.<br><a href="{SITE}/">Open Lokali</a> &middot; <a href="{SITE}/blog.html">Journal</a></footer>
 </div>
+<script src="/explore/assets/lk-sheet.js" defer></script>
 </body>
 </html>
 """

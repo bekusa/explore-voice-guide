@@ -28,7 +28,7 @@
  */
 var LK_SHEET_SETTINGS = {
   enabled: true,
-  showOn: { attraction: true, city: true, country: true },
+  showOn: { attraction: true, city: true, country: true, blog: true }, // blog = /blog.html and /blog/<post>.html
   showAfterSeconds: 25,      // show anyway after this long
   engagedAfterSeconds: 10,   // ...or earlier, once this long has passed AND
   engagedScroll: 0.5,        // ...the visitor has scrolled past this share of the page
@@ -53,6 +53,7 @@ var LK_SHEET_TEXT = {
   en: { tag: "Free audio guide", title: "{place} is just the start.", titleHub: "{place} — free audio guides in your language.",
     near: "Nearby: {near}.", area: "In the area: {near}.", city: "{city}: more free audio guides in the app.", sub: "Hear the full story with Lokali&rsquo;s <b>free audio guide</b> — in your language, offline.",
     subHub: "Every place on this page has a <b>free audio guide</b> in the Lokali app — in your language, offline.",
+    subBlog: "<b>Free audio guides</b> for 190+ cities and museums — in your language, offline.",
     offline: "offline", more: "More", scan: "Scan with your phone's camera", cam: "iPhone → App Store · Android → Google Play",
     pts: "50+ languages|Works offline|No ads", web: "Listen in your browser", close: "Close", label: "Get the Lokali app" },
   af: { tag: "Gratis oudiogids", title: "{place} is net die begin.", titleHub: "{place} — gratis oudiogidse in jou taal.", near: "Naby: {near}.", area: "In die omgewing: {near}.", city: "{city}: nog gratis oudiogidse in die toep.",
@@ -256,18 +257,20 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
   try { var t = +localStorage.getItem(KEY); if (!demo && t && Date.now() - t < S.hideForDays * 864e5) return; } catch (e) {}
 
   // /explore/<lang>/<city>/<slug>.html = attraction, /explore/<lang>/<city>.html = city hub,
-  // /explore/<lang>/country/<x>.html = country hub. Anything else (index, assets) gets no card.
+  // /explore/<lang>/country/<x>.html = country hub, /blog.html + /blog/<post>.html = blog (the
+  // Journal, English). Anything else (the explore index, assets, the web app) gets no card.
   var parts = location.pathname.replace(/\/index\.html$/, ".html").replace(/\/$/, ".html").split("/").filter(Boolean);
-  if (parts[0] !== "explore" || parts.length < 3 || parts.length > 4) return;
-  var lang = parts[1].toLowerCase();
-  var kind = parts.length === 4 ? (parts[2] === "country" ? "country" : "attraction") : "city";
+  var blog = (parts.length === 1 && parts[0] === "blog.html") || (parts.length === 2 && parts[0] === "blog" && /\.html$/.test(parts[1]));
+  if (!blog && (parts[0] !== "explore" || parts.length < 3 || parts.length > 4)) return;
+  var lang = blog ? (document.documentElement.lang || "en").toLowerCase() : parts[1].toLowerCase();
+  var kind = blog ? "blog" : parts.length === 4 ? (parts[2] === "country" ? "country" : "attraction") : "city";
   if (!S.showOn[kind]) return;
   var hub = kind !== "attraction";
   var slug = parts[parts.length - 1].replace(/\.html$/, "");
-  var city = hub ? slug : parts[2];
+  var city = blog ? "" : hub ? slug : parts[2];
 
-  var h1 = document.querySelector(".hero h1"); if (!h1) return;
-  var here = h1.textContent.trim();
+  var h1 = blog ? null : document.querySelector(".hero h1"); if (!blog && !h1) return;
+  var here = blog ? "Lokali" : h1.textContent.trim();
   var T = LK_SHEET_TEXT[lang] || LK_SHEET_TEXT[lang.split("-")[0]] || LK_SHEET_TEXT.en;
   function tx(k, v) {
     var s = T[k] != null ? T[k] : LK_SHEET_TEXT.en[k];
@@ -326,19 +329,22 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
     var nearList = near.map(function (n) { return esc(n.name) + "&nbsp;" + dist(n.km); }).join(" &middot; ");
     var nearTxt = near.length ? tx(tier, { near: nearList }) + " "
       : (!hub && S.cityLine && cityShown ? tx("city", { city: esc(cityShown) }) + " " : "");
-    sub = hub ? tx("subHub") : nearTxt + tx("sub");
+    sub = blog ? tx("subBlog") : hub ? tx("subHub") : nearTxt + tx("sub");
     line = "<b>" + tx("tag") + "</b> &middot; " + (near.length ? esc(near[0].name) + " " + dist(near[0].km) : tx("offline"));
   }
   setTexts();
 
-  // Nearby index: every published page within nearbyMaxKm, by coordinates. Until it has
-  // answered (or 2 s passed) show() waits, so the card never changes under the reader.
-  var nearDone = hub || !S.nearbyIndex, pendingShow = false;
+  // Nearby index: every published page within nearbyMaxKm, by coordinates. Fetched only
+  // when the card is due (like its images), never at page load — a crawler or a reader who
+  // leaves early costs nothing. show() waits for the answer (max 1.5 s), so the card never
+  // changes under the reader.
+  var nearDone = hub || !S.nearbyIndex, pendingShow = false, nearAsked = false;
   function nearSettled() { if (nearDone) return; nearDone = true; if (pendingShow) { pendingShow = false; show(); } }
-  if (!nearDone) {
+  function loadNear() {
+    if (nearAsked) return; nearAsked = true;
     var dec = function (x) { try { return decodeURIComponent(x); } catch (e) { return x; } };
     var slugKey = dec(slug);
-    setTimeout(nearSettled, 2000);
+    setTimeout(nearSettled, 1500);
     try {
       fetch(A + "near/" + encodeURIComponent(lang) + "/" + encodeURIComponent(dec(city)) + ".json")
         .then(function (r) { return r.ok ? r.json() : null; })
@@ -403,7 +409,7 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
   var el, shown = false;
   function show() {
     if (shown) return;
-    if (!nearDone) { pendingShow = true; return; }
+    if (!nearDone) { pendingShow = true; loadNear(); return; }
     shown = true;
     if (!document.getElementById("lks-css")) { var st = document.createElement("style"); st.id = "lks-css"; st.textContent = css; document.head.appendChild(st); }
     el = document.createElement("aside");
