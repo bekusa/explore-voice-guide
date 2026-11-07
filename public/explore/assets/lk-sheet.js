@@ -29,7 +29,7 @@
 var LK_SHEET_SETTINGS = {
   enabled: true,
   showOn: { attraction: true, city: true, country: true, blog: true }, // blog = /blog.html and /blog/<post>.html
-  showAfterSeconds: 25,      // show anyway after this long
+  showAfterSeconds: 12,      // show anyway after this long (Beka 2026-11-07: 25 → 12)
   engagedAfterSeconds: 10,   // ...or earlier, once this long has passed AND
   engagedScroll: 0.5,        // ...the visitor has scrolled past this share of the page
   hideForDays: 7,            // after "×", stay hidden this long
