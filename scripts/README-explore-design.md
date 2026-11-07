@@ -29,3 +29,9 @@ settings (on/off, which page types, timing, hide-for-days) and its wording in al
 without Cache-Control, so browsers revalidate it (ETag) and pick up a change at once.
 Test any page with `?lksheet=1`. Generators that write pages must append the same tag
 (`gen_factory_en.SHEET` does).
+
+v5 (2026-11-07): on attraction pages the card lists up to `nearbyCount` (3) places
+within `nearbyMaxKm` (3 km), read from the page's own Nearby rail (`.rail .pcard`
+name + "x.x km"). With none that close it says "{city}: more free audio guides in the
+app." (`TEXT.<lang>.city`), using the page's JSON-LD `addressLocality`, else the last
+breadcrumb link. Nothing is fetched; the card only repeats what the page already shows.
