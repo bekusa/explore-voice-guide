@@ -23,7 +23,7 @@
  * on a Postgres round-trip too. A failed write is logged and
  * swallowed: the cache is an optimization, not a source of truth.
  */
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 // We deliberately don't reuse `supabaseAdmin` here. Lovable Cloud
 // auto-manages the SUPABASE_* prefixed env vars and points them at
@@ -165,6 +165,62 @@ export type GuideKey = {
  *  stay reachable through the fallback lookup below. */
 function cityKey(city?: string): string {
   return normalizeName(city ?? "");
+}
+
+/**
+ * English guides whose name contains `token` — candidates for "is this
+ * the same place under another name?". Beka 2026-11-08 (Pérouges: the
+ * guide existed as "perouges" and was generated again as "medieval
+ * city of perouges"). See lib/guideAlias.server.ts for how they are
+ * judged; this only fetches.
+ *
+ * Same interest, English baseline only (the row every language is
+ * translated from), never the requested name itself, and — when the
+ * request knows its city — only that city or the legacy '' bucket, so a
+ * same-named cathedral in another city is never even offered. Most-used
+ * rows first. A plain substring match; with letters-only tokens there
+ * is nothing to escape.
+ */
+export async function findGuideCandidates(
+  key: GuideKey,
+  token: string,
+  limit = 6,
+): Promise<{ name: string; city: string; payload: unknown }[]> {
+  // The narrow DbWithCache type only models .eq(); this query needs the
+  // full builder, which the underlying client has.
+  const db = getDb() as unknown as SupabaseClient | null;
+  if (!db || !token) return [];
+  const city = cityKey(key.city);
+  try {
+    let q = db
+      .from("cached_guides")
+      .select("name_normalized, city_normalized, payload")
+      .eq("language", "en")
+      .eq("interest", key.interest)
+      .ilike("name_normalized", `%${token}%`)
+      .neq("name_normalized", normalizeName(key.name))
+      .order("hit_count", { ascending: false })
+      .limit(limit);
+    if (city) q = q.in("city_normalized", [city, ""]);
+    const { data, error } = await q;
+    if (error) {
+      console.warn("[sharedCache] findGuideCandidates error", error.message);
+      return [];
+    }
+    return (data ?? [])
+      .filter((r) => {
+        const s = (r.payload as { script?: unknown } | null)?.script;
+        return typeof s === "string" && s.trim().length > 0;
+      })
+      .map((r) => ({
+        name: String(r.name_normalized),
+        city: String(r.city_normalized ?? ""),
+        payload: r.payload,
+      }));
+  } catch (err) {
+    console.warn("[sharedCache] findGuideCandidates threw", err);
+    return [];
+  }
 }
 
 export async function getCachedGuide(key: GuideKey): Promise<unknown | null> {

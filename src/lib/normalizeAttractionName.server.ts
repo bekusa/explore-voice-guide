@@ -104,6 +104,46 @@ export async function normalizeToCanonicalEnglish(
     return trimmed;
   }
 
+  /* Latin-script name + non-Latin UI language → already canonical.
+   * Beka 2026-11-08.
+   *
+   * He opened "Medieval City of Pérouges" today and it generated from
+   * scratch although he had listened to it in October. Both visits are
+   * in the data:
+   *
+   *   10-16, UI ka: "Medieval City of Pérouges" → (Haiku) "Pérouges"
+   *                 → cache key "perouges"
+   *   11-08, UI en: "Medieval City of Perouges" → unchanged
+   *                 → cache key "medieval city of perouges"   ← miss
+   *
+   * One "é" decided it. The ASCII fast path above missed on the accent,
+   * the Georgian Wikipedia had nothing for a French title, and Haiku
+   * then followed prompt rule 1 (use the Wikipedia article title, which
+   * is just "Pérouges") over rule 2 (leave a correct English name
+   * alone). Same place, two keys, a second full Sonnet generation.
+   *
+   * What the logs say about where the line belongs — every
+   * latin-extended resolution so far, by UI language:
+   *   fr 39, hu 16, de 13, pl 10, pt-br 9, it 6, es 3, cs 2, nl 1
+   *       → the input IS in that language and translating it is right:
+   *         "Wieża Tokijska" → "Tokyo Tower", "Mura della città di
+   *         Xi'an" → "Xi'an City Wall". Untouched by this rule.
+   *   ka 4 (all four this Pérouges), ru 1 ("Süleymaniye Mosque",
+   *       returned unchanged after a wasted call)
+   *       → a Georgian or Russian speaker cannot be typing their OWN
+   *         language in Latin letters; a Latin name in that UI is the
+   *         place's own name, accents and all. Nothing to translate.
+   *
+   * So the rule keys on the UI language's script, not on the accent.
+   * Unknown or Latin-script languages (and sr, which is written both
+   * ways) keep the existing Wikipedia → Haiku path. normalizeName()
+   * folds the diacritics afterwards, so "Pérouges" and "Perouges"
+   * still land on one key. */
+  const baseLang = sourceLang.toLowerCase().split("-")[0];
+  if (NON_LATIN_SCRIPT_LANGS.has(baseLang) && isLatinScriptOnly(trimmed)) {
+    return trimmed;
+  }
+
   const cacheKey = `${sourceLang.toLowerCase()}:${trimmed.toLowerCase()}`;
   const cached = nameCache.get(cacheKey);
   // A warm in-worker hit is not a resolution event — it is the same
@@ -232,6 +272,27 @@ export async function normalizeToCanonicalEnglish(
     });
     return trimmed;
   }
+}
+
+/**
+ * UI languages whose native script is not Latin — see the Pérouges
+ * note in normalizeToCanonicalEnglish. Base codes of every language
+ * in lib/languages.ts that qualifies. Deliberately NOT listed: sr
+ * (Serbian is routinely written in Latin too) and every Latin-script
+ * language, which keep the translate path.
+ */
+const NON_LATIN_SCRIPT_LANGS = new Set(
+  "ka el ru uk bg kk hy he ar fa ur hi mr bn pa gu ta te ml th ja ko zh".split(" "),
+);
+
+/**
+ * True when every letter is Latin — accented ones included — and there
+ * is at least one letter. Digits, spaces, punctuation and combining
+ * marks are allowed around them. "Medieval City of Pérouges" → true;
+ * "Мечеть Сулеймание" or "ფოთი" → false.
+ */
+function isLatinScriptOnly(s: string): boolean {
+  return /\p{L}/u.test(s) && /^(?:\p{Script=Latin}|\P{L})+$/u.test(s);
 }
 
 /**

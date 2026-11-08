@@ -1047,14 +1047,47 @@ export type PlaceDetails = {
  * missing). Callers should render the block only on a non-null result
  * with at least one populated field.
  */
-export async function fetchPlaceDetails(
+/* One in-flight/settled request per place, shared by every caller.
+ * Beka 2026-11-08: the attraction page now reads these details too (the
+ * pin and the Google Maps link come from them — see placeLatLng in
+ * attraction.$id.tsx), on top of PracticalInfo. Without this the page
+ * would fire the request twice per view, and /api/place-details is a
+ * paid Google call on a miss.
+ *
+ * Keyed on name + city only — the same two fields the server's cache
+ * key uses. lat/lng are just a location bias for the search, so a call
+ * that arrives before or after the coordinates must still share. */
+const placeDetailsInFlight = new Map<string, Promise<PlaceDetails | null>>();
+
+export function fetchPlaceDetails(
   name: string,
   city?: string,
   lat?: number | null,
   lng?: number | null,
 ): Promise<PlaceDetails | null> {
   const n = (name ?? "").trim();
-  if (!n) return null;
+  if (!n) return Promise.resolve(null);
+  const key = `${n.toLowerCase()}|${(city ?? "").trim().toLowerCase()}`;
+  const existing = placeDetailsInFlight.get(key);
+  if (existing) return existing;
+  const p = fetchPlaceDetailsOnce(n, city, lat, lng);
+  placeDetailsInFlight.set(key, p);
+  // A null (network failure OR no match — the two look the same here)
+  // must not stick for the life of the tab: drop it so the next view
+  // asks again. That costs nothing extra for a genuine no-match, which
+  // the server negative-caches; it just lets a failure recover.
+  void p.then((d) => {
+    if (d === null) placeDetailsInFlight.delete(key);
+  });
+  return p;
+}
+
+async function fetchPlaceDetailsOnce(
+  n: string,
+  city?: string,
+  lat?: number | null,
+  lng?: number | null,
+): Promise<PlaceDetails | null> {
   try {
     const params = new URLSearchParams({ name: n });
     if (city?.trim()) params.set("city", city.trim());

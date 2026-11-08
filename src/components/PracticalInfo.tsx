@@ -92,9 +92,38 @@ function weekdayNames(locale: string): string[] {
   }
 }
 
-/** True when the whole week is one unbounded period — Google's 24/7 shape. */
+/**
+ * True when the periods cover the whole week — Google's 24/7 answer.
+ *
+ * Beka 2026-11-08: this used to recognise ONE shape only, a single
+ * period with no `close`. Not one of the 62 cached 24/7 places is
+ * stored that way. All of them are a single week-long period that
+ * closes one minute before it reopens, e.g. Pérouges:
+ *     open { day 0, 00:00 } → close { day 6, 23:59 }
+ * (and Hagia Sophia day 3 → day 2, Charles Bridge day 1 → day 0…).
+ * So "Open 24 hours" never rendered; those places showed a one-row
+ * "week" schedule instead, and an "Open now" that was always true.
+ *
+ * Measured by total length rather than by shape, so every encoding
+ * counts: the no-close form, the wrapped week-minus-a-minute form, and
+ * seven daily 00:00–23:59 periods (7 × 1439 = 10 073 minutes, which is
+ * why the threshold allows a few minutes short of a full 10 080).
+ */
 function isAlwaysOpen(periods: OpeningPeriod[]): boolean {
-  return periods.length === 1 && !periods[0].close && periods[0].open.time === "0000";
+  const WEEK = 7 * 1440;
+  let total = 0;
+  for (const p of periods) {
+    const openMin = hhmmToMinutes(p.open.time);
+    if (openMin === null) return false;
+    if (!p.close) return true; // open-ended period: open from here on
+    const closeMin = hhmmToMinutes(p.close.time);
+    if (closeMin === null) return false;
+    const start = p.open.day * 1440 + openMin;
+    let end = p.close.day * 1440 + closeMin;
+    if (end <= start) end += WEEK;
+    total += end - start;
+  }
+  return total >= WEEK - 10;
 }
 
 /**
@@ -176,8 +205,27 @@ export function PracticalInfo({
   const days = useMemo(() => weekdayNames(locale), [locale]);
 
   const periods = details?.periods ?? null;
-  const hasHours = Array.isArray(periods) && periods.length > 0;
-  const alwaysOpen = hasHours && isAlwaysOpen(periods);
+  /* "Open 24 hours" every day is treated as NO hours. Beka 2026-11-08:
+   * "Medieval city of Pérouges არასწორადაა სამუშაო საათები. თუ არ იცი
+   * ზუსტად საერთოდ არ აჩვენო!"
+   *
+   * Google answered Pérouges with Open 24 hours × 7. So did 61 other
+   * cached places, and they split into two kinds — neither of which
+   * should be shown:
+   *   - open-air places where hours mean nothing: Charles Bridge,
+   *     Chinatown, Batumi Boulevard, a village square in Pérouges
+   *   - plain WRONG answers: Hagia Sophia (a working mosque, closed to
+   *     visitors at prayer times), Burj Khalifa (the observation deck
+   *     keeps hours), Spinalonga (ticketed, seasonal). The text search
+   *     takes Google's first result, and for these it landed on the
+   *     surrounding square or area rather than the monument.
+   * A 24/7 answer therefore never tells a visitor anything true they
+   * can act on, and sometimes tells them something false. Hiding it is
+   * the "if you don't know it exactly, don't show it" rule applied to
+   * the one shape we can recognise for certain. Website and phone still
+   * render; only the hours row goes. The cached rows are untouched, so
+   * this is reversible here alone. */
+  const hasHours = Array.isArray(periods) && periods.length > 0 && !isAlwaysOpen(periods);
 
   // Only computed when Google gave us the place's UTC offset — see the
   // timezone note in the component header.
@@ -221,11 +269,11 @@ export function PracticalInfo({
             >
               <Clock className="h-4 w-4 shrink-0 text-primary" />
               <div className="min-w-0 flex-1">
-                {alwaysOpen ? (
-                  <span className="text-[13px] font-semibold text-foreground">
-                    {t("attr.open24")}
-                  </span>
-                ) : openNow === null ? (
+                {/* The "Open 24 hours" label that used to head this
+                    ternary is gone with the 24/7 rule above: such
+                    places never reach this row now. attr.open24 stays
+                    in the locales in case the rule is ever reversed. */}
+                {openNow === null ? (
                   // No offset from Google → show the schedule, but no
                   // status claim we can't stand behind.
                   <span className="text-[13px] font-semibold text-foreground">
@@ -248,7 +296,7 @@ export function PracticalInfo({
               />
             </button>
 
-            {expanded && !alwaysOpen && (
+            {expanded && (
               <div className="px-4 pb-3.5">
                 {weekOrder.map((dayIdx) => {
                   const list = byDay.get(dayIdx) ?? [];

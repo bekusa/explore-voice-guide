@@ -548,6 +548,14 @@ function CityAttractionsSection({
 }) {
   const t = useT();
   const [items, setItems] = useState<Attraction[]>([]);
+  /* Everything the first fetch returned, not just the 10 on screen.
+   * Beka 2026-11-08 (Rome "thinking" on Show more): a cached city
+   * comes back with up to 30 rows in one response. The page used to
+   * keep 10 and throw the other 20 away, then ask the server for "10
+   * more" — which went to Sonnet for 36 s to regenerate what had just
+   * been discarded. Show more now reveals these first, instantly, and
+   * only calls the server once they run out. */
+  const [allRows, setAllRows] = useState<Attraction[]>([]);
   const [pageCount, setPageCount] = useState(1);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -563,17 +571,20 @@ function CityAttractionsSection({
     let cancelled = false;
     setLoading(true);
     setItems([]);
+    setAllRows([]);
     setPageCount(1);
     fetchAttractions(query, lang)
       .then((res) => {
         if (cancelled) return;
-        const list = Array.isArray(res) ? res.slice(0, CITY_PAGE_SIZE) : [];
-        setItems(list);
+        const all = Array.isArray(res) ? res.slice(0, CITY_PAGE_SIZE * CITY_MAX_PAGES) : [];
+        setAllRows(all);
+        setItems(all.slice(0, CITY_PAGE_SIZE));
       })
       .catch((err) => {
         if (cancelled) return;
         console.error("[city] fetchAttractions failed", err);
         setItems([]);
+        setAllRows([]);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -587,6 +598,12 @@ function CityAttractionsSection({
 
   const handleLoadMore = async () => {
     if (loadingMore || !canLoadMore) return;
+    // Rows we already hold come first — no network, no wait.
+    if (allRows.length > items.length) {
+      setItems(allRows.slice(0, items.length + CITY_PAGE_SIZE));
+      setPageCount((p) => p + 1);
+      return;
+    }
     setLoadingMore(true);
     try {
       // Use ENGLISH source names (`name_en`) when available — Claude

@@ -9,8 +9,21 @@ strings module (esstr.py, destr.py, ...). Nothing is machine-translated.
 import json,os,re,sys,math,html,glob,importlib
 import statistics as st
 from collections import defaultdict
+from urllib.parse import quote_plus
 sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 from lib import key,slug
+
+
+def gmaps_url(a):
+    """Google Maps link that opens the PLACE by name, never a coordinate pin.
+    Beka 2026-11-08: "გუგლის ლინკი იყოს სათაურით და არა კოორდინატით" — a
+    ?query=lat,lng link drops a bare pin and opens no place card. Uses the
+    ENGLISH key + city slug rather than this page's translated title: Google
+    resolves the English name most reliably, whatever the page language.
+    Same rule as gmaps_url() in gen_factory_en.py and placeMapsHref in the
+    app. Raw URL: html.escape() it for HTML attributes."""
+    q=", ".join(x for x in (a.get('key'),(a.get('city') or '').replace('-',' ')) if x)
+    return "https://www.google.com/maps/search/?api=1&query="+quote_plus(q)
 
 LANG=sys.argv[1]; D=importlib.import_module(sys.argv[2])
 # WD is the DATA directory: the guide export (g_*.json), facts.json, photos.json,
@@ -245,7 +258,7 @@ def page(a,nearby):
     if a['image']: ta["image"]=html.unescape(a['image'])
     if a['lat'] is not None:
         ta["geo"]={"@type":"GeoCoordinates","latitude":a['lat'],"longitude":a['lng']}
-        ta["hasMap"]=f"https://www.google.com/maps/search/?api=1&query={a['lat']}%2C{a['lng']}"
+        ta["hasMap"]=gmaps_url(a)
     ta["address"]={"@type":"PostalAddress","addressLocality":city,"addressCountry":a['cc']}
     if a['type']: ta["additionalType"]=a['type']
     cr=[{"@type":"ListItem","position":1,"name":"Lokali","item":BASE},
@@ -304,9 +317,8 @@ def page(a,nearby):
             L.append(f'<a href="{BASE}/explore/{LANG}/{cs}/{sl}.html">{txt(nm)}<span class="km">{km:.1f} km</span></a>')
         L.append('</div>'+NL+'</section>')
     if a['lat'] is not None:
-        q=f"{a['lat']}%2C{a['lng']}"
         L.append(f'<section>{NL}<h2 class="sec">{D.SEC["map"]}</h2>{NL}<div class="mapcard">'
-          f'<a href="https://www.google.com/maps/search/?api=1&amp;query={q}" target="_blank" '
+          f'<a href="{html.escape(gmaps_url(a))}" target="_blank" '
           f'rel="noopener noreferrer"><span class="ic">{ICM}</span>{D.UI["maps"]}'
           f'<span class="arr">&rsaquo;</span></a></div>{NL}'
           f'<p class="map-note">{D.SENT["route"].format(t=txt(t))}</p>{NL}</section>')

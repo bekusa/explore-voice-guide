@@ -386,6 +386,71 @@ async function handleExtensionRequest(
   _rawBody: string,
   extras: ExtensionExtras,
 ): Promise<Response> {
+  /* ── Cache first. Beka 2026-11-08 ─────────────────────────────────
+   * "lokali.travel/destinations/rome-ზე ძალიან დიდი ხანი იფიქრა" —
+   * on "Show more", past the first 10.
+   *
+   * This function used to go straight to Sonnet on every call. Rome's
+   * English row already held 30 attractions (hit 22 times), yet his
+   * tap at 15:33 today was a 36-second Sonnet generation. And it was
+   * pure waste: the merge below caps the row at 30, so with the row
+   * already full every newly generated item was sliced off and never
+   * stored. Every "Show more" on every full city paid again, forever.
+   *
+   * Now the cached rows answer first:
+   *   1. the user's-language row, minus everything already on screen;
+   *   2. for a non-English user, unseen rows from the English baseline,
+   *      translated (Gemini, ~2 s) and merged into their row;
+   *   3. the English row already at the 30 cap with nothing unseen →
+   *      empty answer, which tells the client there is no next page;
+   *   4. only then Sonnet, exactly as before.
+   * A row counts as shown when its display name OR its English name is
+   * in `exclude` — /destinations sends English names, /results the
+   * display ones. */
+  {
+    const shown = new Set(extras.exclude.map((s) => s.trim().toLowerCase()));
+    const unseen = (rows: Record<string, unknown>[]) =>
+      rows.filter((row) => {
+        const n = typeof row.name === "string" ? row.name.trim().toLowerCase() : "";
+        const ne = typeof row.name_en === "string" ? row.name_en.trim().toLowerCase() : "";
+        return n.length > 0 && !shown.has(n) && !(ne && shown.has(ne));
+      });
+
+    const ownRows = extractAttractionsArray(await getCachedAttractions(key));
+    const ownUnseen = unseen(ownRows);
+    if (ownUnseen.length > 0) {
+      return jsonResponse({ attractions: ownUnseen.slice(0, extras.count) }, 200, "EXTEND-HIT");
+    }
+
+    const enKeyForCache = { ...key, language: "en" };
+    const enRows = wantsTranslation
+      ? extractAttractionsArray(await getCachedAttractions(enKeyForCache))
+      : ownRows;
+
+    if (wantsTranslation) {
+      const enUnseen = unseen(enRows).slice(0, extras.count);
+      if (enUnseen.length > 0) {
+        const { payload, translated: ok } = await translateAttractionsPayload(
+          { attractions: enUnseen },
+          userLang,
+        );
+        const fresh = extractAttractionsArray(payload);
+        if (ok && fresh.length > 0) {
+          await putCachedAttractions(key, {
+            attractions: mergeAttractions(ownRows, fresh).slice(0, 30),
+          });
+          return jsonResponse({ attractions: fresh }, 200, "EXTEND-TRANSLATED-HIT");
+        }
+        // Translation failed: English beats a 36-second wait.
+        return jsonResponse({ attractions: enUnseen }, 200, "EXTEND-HIT-EN");
+      }
+    }
+
+    if (enRows.length >= 30) {
+      return jsonResponse({ attractions: [] }, 200, "EXTEND-FULL", "cache-at-cap");
+    }
+  }
+
   let parsed: unknown;
   try {
     const system = buildAttractionsSystem();

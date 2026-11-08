@@ -5,6 +5,7 @@ import { translateGuidePayload } from "@/lib/translatePayload.server";
 import { callClaude, parseClaudeJson } from "@/lib/anthropic.server";
 import { buildGuideSystem, buildGuideUser } from "@/lib/prompts";
 import { normalizeToCanonicalEnglish } from "@/lib/normalizeAttractionName.server";
+import { findSamePlaceGuide } from "@/lib/guideAlias.server";
 import { describeThrown, logError } from "@/lib/errorLog.server";
 import { normalizeGuidePayload } from "@/lib/guidePostprocess";
 
@@ -74,6 +75,39 @@ export const Route = createFileRoute("/api/guide")({
             );
             if (ok) await putCachedGuide(key, translated);
             return jsonResponse(translated, 200, ok ? "TRANSLATED" : "TRANSLATE-FAILED");
+          }
+        }
+
+        // 2b. Same place, other name? Beka 2026-11-08 — "Medieval City
+        // of Perouges" was generated from scratch although "perouges"
+        // was cached. Ask the existing guides before paying for a new
+        // one; see lib/guideAlias.server.ts. A reuse is stored under the
+        // requested name as well, so the next request for it is a plain
+        // HIT in step 1 and this never runs twice for one name.
+        if (key) {
+          const same = await findSamePlaceGuide(key, rawKey?.name ?? key.name);
+          if (same) {
+            await putCachedGuide({ ...key, language: "en" }, same.payload);
+            if (!wantsTranslation) {
+              return jsonResponse(same.payload, 200, "ALIAS");
+            }
+            // The other name may already have this language — reuse it
+            // rather than translating the English again.
+            const theirs = await getCachedGuide({
+              ...key,
+              name: same.name,
+              city: same.city,
+            });
+            if (theirs !== null && hasGuideScript(theirs)) {
+              await putCachedGuide(key, theirs);
+              return jsonResponse(theirs, 200, "ALIAS");
+            }
+            const { payload: translated, translated: ok } = await translateGuidePayload(
+              same.payload,
+              userLang,
+            );
+            if (ok) await putCachedGuide(key, translated);
+            return jsonResponse(translated, 200, ok ? "ALIAS-TRANSLATED" : "ALIAS-NO-TRANS");
           }
         }
 

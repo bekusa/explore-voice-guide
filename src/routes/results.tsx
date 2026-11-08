@@ -38,6 +38,7 @@ import { useLazyPlacePhoto } from "@/hooks/useLazyPlacePhoto";
 import { useAuth } from "@/hooks/useAuth";
 import { useRequireSignIn } from "@/hooks/useRequireSignIn";
 import { AttractionCardShell } from "@/components/AttractionCardShell";
+import { AddToTripSheet } from "@/components/AddToTripSheet";
 import { checkEmailVerified } from "@/components/EmailVerificationBanner";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useSavedItems } from "@/hooks/useSavedItems";
@@ -649,6 +650,7 @@ export function ResultCard({
   }, [guideName, language]);
 
   const [downloading, setDownloading] = useState(false);
+  const [showTripSheet, setShowTripSheet] = useState(false);
   const { user } = useAuth();
   const requireSignIn = useRequireSignIn();
 
@@ -685,6 +687,12 @@ export function ResultCard({
     toast.success(t("toast.saved"), {
       description: t("toast.savedDesc"),
     });
+    // Offer to file it into a trip — the same sheet the attraction
+    // page's Save opens. Beka 2026-11-08: "მოძიებული ლისტიდან რომ Save
+    // ღილაკს, არ მიჩვენებს რომელ ტრიპში ჩავიწერო… დაამატე ლისტიდან
+    // Save-ზე იგივე ფუნქციონალი." Same rule as there: any session
+    // (which requireSignIn above has already guaranteed).
+    if (user) setShowTripSheet(true);
   };
 
   const downloadOffline = async (e: React.MouseEvent) => {
@@ -751,158 +759,179 @@ export function ResultCard({
   const cityChip = cityContext || null;
 
   return (
-    <AttractionCardShell
-      open={open}
-      onToggle={() => setOpen((v) => !v)}
-      photo={photo}
-      imgAlt={attraction.name}
-      onImgError={() => setImgFailed(true)}
-      animationStyle={{
-        animation: `float-up 0.5s ${index * 0.06 + 0.05}s var(--transition-smooth) both`,
-      }}
-      toggleLabel={{ collapse: t("card.collapse"), expand: t("card.expand") }}
-      topPill={
-        cached ? (
-          <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-background/70 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-primary backdrop-blur-md">
-            <Download className="h-2.5 w-2.5" /> {t("card.offline")}
-          </span>
-        ) : undefined
-      }
-      titleContent={
-        <>
-          <div className="flex items-center gap-2">
-            <h3
-              className="truncate text-[16px] font-semibold leading-tight text-foreground"
-              style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
-            >
-              {attraction.name}
-            </h3>
-            {isUnescoSite(attraction.name_en ?? attraction.name, {
-              city: cityChip,
-              type: attraction.type ?? attraction.category,
-              description: attraction.outside_desc ?? attraction.description,
-            }) && <UnescoBadge />}
-          </div>
-          <p className="my-1.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            <Headphones className="h-2.5 w-2.5" /> {t("card.audioGuide")}
-          </p>
-          <div className="flex flex-wrap items-center gap-2.5 text-[11px] text-muted-foreground">
-            {attraction.duration && (
-              <span className="inline-flex items-center gap-1">
-                <Clock className="h-2.5 w-2.5" /> {attraction.duration}
-              </span>
-            )}
-            {typeof attraction.rating === "number" && (
-              <span className="inline-flex items-center gap-1 text-primary">
-                <Star className="h-2.5 w-2.5 fill-primary" /> {attraction.rating.toFixed(2)}
-              </span>
-            )}
-            {cityChip && (
-              <span className="inline-flex items-center gap-1">
-                <MapPin className="h-2.5 w-2.5" /> {cityChip}
-              </span>
-            )}
-          </div>
-        </>
-      }
-      actionCount={3}
-      actions={
-        <>
-          <button
-            onClick={toggleSave}
-            aria-pressed={isFav}
-            className={`flex flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] transition-smooth whitespace-normal break-words ${
-              isFav
-                ? "border-primary/60 bg-primary/15 text-primary"
-                : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
-            }`}
-          >
-            {isFav ? (
-              <BookmarkCheck className="h-4 w-4 fill-current" />
-            ) : (
-              <Bookmark className="h-4 w-4" />
-            )}
-            {isFav ? t("card.saved") : t("card.save")}
-          </button>
-
-          <button
-            onClick={downloadOffline}
-            disabled={downloading}
-            className={`flex flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] transition-smooth whitespace-normal break-words ${
-              cached
-                ? "border-primary/60 bg-primary/15 text-primary"
-                : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
-            } disabled:cursor-wait disabled:opacity-70`}
-          >
-            {downloading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : cached ? (
-              <CheckCircle2 className="h-4 w-4" />
-            ) : (
-              <Download className="h-4 w-4" />
-            )}
-            {downloading ? t("card.saving") : cached ? t("card.offline") : t("card.download")}
-          </button>
-
-          <Link
-            to="/attraction/$id"
-            params={{ id: slug }}
-            // Stash the city + photo hint in sessionStorage so the
-            // attraction page renders the right slide-1 photo and
-            // disambiguates the right city without dragging them
-            // through the URL. Without `city` the photo lookup runs
-            // city-blind and generic names like "Grand Palace"
-            // resolve to a Tbilisi-area restaurant because the
-            // Google Places key has Tbilisi region bias.
-            onClick={(e) => {
-              e.stopPropagation();
-              setAttractionHint(slug, {
-                name: attraction.name,
-                // The English baseline travels WITH the hint. Without
-                // it the attraction page only ever saw the translated
-                // `name` and sent that to /api/guide — see the note on
-                // `slug` above for what "Side Mosque" came back as.
-                // The page prefers this for every technical handle
-                // (guide fetch, photo lookup, museum match) and keeps
-                // `name` for what the user reads.
-                ...(attraction.name_en ? { name_en: attraction.name_en } : {}),
-                city: cityContext,
-                ...(photo ? { photo } : {}),
-              });
-            }}
-            className="flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-gold px-2 py-2.5 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02] whitespace-normal break-words"
-          >
-            <ArrowRight className="h-4 w-4" />
-            {t("card.details")}
-          </Link>
-        </>
-      }
-      body={
-        <div className="border-t border-border px-4 pb-4 pt-4 mt-3">
-          {(typeChip || cityChip) && (
-            <div className="flex flex-wrap items-center gap-2">
-              {typeChip && (
-                <span className="rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  {typeChip}
+    <>
+      <AttractionCardShell
+        open={open}
+        onToggle={() => setOpen((v) => !v)}
+        photo={photo}
+        imgAlt={attraction.name}
+        onImgError={() => setImgFailed(true)}
+        animationStyle={{
+          animation: `float-up 0.5s ${index * 0.06 + 0.05}s var(--transition-smooth) both`,
+        }}
+        toggleLabel={{ collapse: t("card.collapse"), expand: t("card.expand") }}
+        topPill={
+          cached ? (
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-background/70 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-primary backdrop-blur-md">
+              <Download className="h-2.5 w-2.5" /> {t("card.offline")}
+            </span>
+          ) : undefined
+        }
+        titleContent={
+          <>
+            <div className="flex items-center gap-2">
+              <h3
+                className="truncate text-[16px] font-semibold leading-tight text-foreground"
+                style={{ fontFamily: "'Playfair Display', ui-serif, Georgia, serif" }}
+              >
+                {attraction.name}
+              </h3>
+              {isUnescoSite(attraction.name_en ?? attraction.name, {
+                city: cityChip,
+                type: attraction.type ?? attraction.category,
+                description: attraction.outside_desc ?? attraction.description,
+              }) && <UnescoBadge />}
+            </div>
+            <p className="my-1.5 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <Headphones className="h-2.5 w-2.5" /> {t("card.audioGuide")}
+            </p>
+            <div className="flex flex-wrap items-center gap-2.5 text-[11px] text-muted-foreground">
+              {attraction.duration && (
+                <span className="inline-flex items-center gap-1">
+                  <Clock className="h-2.5 w-2.5" /> {attraction.duration}
+                </span>
+              )}
+              {typeof attraction.rating === "number" && (
+                <span className="inline-flex items-center gap-1 text-primary">
+                  <Star className="h-2.5 w-2.5 fill-primary" /> {attraction.rating.toFixed(2)}
                 </span>
               )}
               {cityChip && (
-                <span className="rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  {cityChip}
+                <span className="inline-flex items-center gap-1">
+                  <MapPin className="h-2.5 w-2.5" /> {cityChip}
                 </span>
               )}
             </div>
-          )}
+          </>
+        }
+        actionCount={3}
+        actions={
+          <>
+            <button
+              onClick={toggleSave}
+              aria-pressed={isFav}
+              className={`flex flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] transition-smooth whitespace-normal break-words ${
+                isFav
+                  ? "border-primary/60 bg-primary/15 text-primary"
+                  : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+              }`}
+            >
+              {isFav ? (
+                <BookmarkCheck className="h-4 w-4 fill-current" />
+              ) : (
+                <Bookmark className="h-4 w-4" />
+              )}
+              {isFav ? t("card.saved") : t("card.save")}
+            </button>
 
-          {description && (
-            <p className="mt-3 text-[12px] leading-[1.55] text-muted-foreground">{description}</p>
-          )}
-          {teaser && (
-            <p className="mt-2 text-[12.5px] italic leading-[1.55] text-foreground/80">{teaser}</p>
-          )}
-        </div>
-      }
-    />
+            <button
+              onClick={downloadOffline}
+              disabled={downloading}
+              className={`flex flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] transition-smooth whitespace-normal break-words ${
+                cached
+                  ? "border-primary/60 bg-primary/15 text-primary"
+                  : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+              } disabled:cursor-wait disabled:opacity-70`}
+            >
+              {downloading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : cached ? (
+                <CheckCircle2 className="h-4 w-4" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+              {downloading ? t("card.saving") : cached ? t("card.offline") : t("card.download")}
+            </button>
+
+            <Link
+              to="/attraction/$id"
+              params={{ id: slug }}
+              // Stash the city + photo hint in sessionStorage so the
+              // attraction page renders the right slide-1 photo and
+              // disambiguates the right city without dragging them
+              // through the URL. Without `city` the photo lookup runs
+              // city-blind and generic names like "Grand Palace"
+              // resolve to a Tbilisi-area restaurant because the
+              // Google Places key has Tbilisi region bias.
+              onClick={(e) => {
+                e.stopPropagation();
+                setAttractionHint(slug, {
+                  name: attraction.name,
+                  // The English baseline travels WITH the hint. Without
+                  // it the attraction page only ever saw the translated
+                  // `name` and sent that to /api/guide — see the note on
+                  // `slug` above for what "Side Mosque" came back as.
+                  // The page prefers this for every technical handle
+                  // (guide fetch, photo lookup, museum match) and keeps
+                  // `name` for what the user reads.
+                  ...(attraction.name_en ? { name_en: attraction.name_en } : {}),
+                  city: cityContext,
+                  ...(photo ? { photo } : {}),
+                });
+              }}
+              className="flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-gold px-2 py-2.5 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] text-primary-foreground shadow-glow transition-smooth hover:scale-[1.02] whitespace-normal break-words"
+            >
+              <ArrowRight className="h-4 w-4" />
+              {t("card.details")}
+            </Link>
+          </>
+        }
+        body={
+          <div className="border-t border-border px-4 pb-4 pt-4 mt-3">
+            {(typeChip || cityChip) && (
+              <div className="flex flex-wrap items-center gap-2">
+                {typeChip && (
+                  <span className="rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    {typeChip}
+                  </span>
+                )}
+                {cityChip && (
+                  <span className="rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    {cityChip}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {description && (
+              <p className="mt-3 text-[12px] leading-[1.55] text-muted-foreground">{description}</p>
+            )}
+            {teaser && (
+              <p className="mt-2 text-[12.5px] italic leading-[1.55] text-foreground/80">
+                {teaser}
+              </p>
+            )}
+          </div>
+        }
+      />
+      {showTripSheet && user && (
+        // Same place shape the attraction page sends, so a trip item
+        // added from the list is indistinguishable from one added from
+        // the detail page: the English-name slug, the city the search
+        // was for, the photo the card is already showing.
+        <AddToTripSheet
+          place={{
+            slug,
+            name: attraction.name,
+            city: (typeof attraction.city === "string" && attraction.city) || cityContext || null,
+            imageUrl: photo ?? attraction.image_url ?? null,
+            lat: typeof attraction.lat === "number" ? attraction.lat : null,
+            lng: typeof attraction.lng === "number" ? attraction.lng : null,
+          }}
+          onClose={() => setShowTripSheet(false)}
+        />
+      )}
+    </>
   );
 }
 

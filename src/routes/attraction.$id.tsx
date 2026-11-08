@@ -58,6 +58,7 @@ import {
   fetchGuideData,
   fetchGuideFresh,
   fetchMuseumHighlights,
+  fetchPlaceDetails,
   fetchPlacePhoto,
   getAttractionHint,
   setAttractionHint,
@@ -66,6 +67,7 @@ import {
   type Attraction,
   type GuideData,
   type MuseumHighlight,
+  type PlaceDetails,
 } from "@/lib/api";
 import { findMuseumByName, type Museum } from "@/lib/topMuseums";
 import { usePreferredLanguage } from "@/hooks/usePreferredLanguage";
@@ -641,6 +643,88 @@ function AttractionPage() {
     () => attraction?.name_en ?? searchNameEn ?? attraction?.name ?? fallbackName,
     [attraction?.name_en, searchNameEn, attraction?.name, fallbackName],
   );
+
+  /* ── Where the place actually is ── Beka 2026-11-08 (#1).
+   *
+   * "კოორდინატები იყოს არა ზუსტი ლოკაცია, არამედ გუგლის
+   * ადგილმდებარეობაზე მონიშნული… ცუდია როდესაც კოორდინატებს იღებ
+   * რუკიდან და არა დასახელებით."
+   *
+   * Until now the pin, the coordinate link in the header and the
+   * "Directions" button all came from `attraction.lat/lng` — numbers
+   * Sonnet wrote into the attractions list — or failing that from a
+   * Nominatim geocode of the name. Both links then dropped a bare pin
+   * at those numbers (maps/search?query=48.86,2.33), so even when the
+   * numbers were close, Google opened "a point near the Louvre", not
+   * the Louvre: no name, no hours, no reviews, and directions to a
+   * spot that may be the wrong side of the building.
+   *
+   * PracticalInfo was already asking Google Places about this exact
+   * place on every view (for opening hours) and getting back Google's
+   * own pin and the place's own Maps link — then using neither. This
+   * reads that same answer (the request is shared; see
+   * placeDetailsInFlight in lib/api.ts — no second paid call):
+   *   - pin:  Google's location, the one Google Maps itself shows
+   *   - link: Google's googleMapsUri, which opens the place card;
+   *           failing that a search BY NAME, never by coordinates
+   * Sonnet's / Nominatim's numbers stay as the fallback and as the
+   * search's location bias.
+   *
+   * One guard: if Google's answer is more than 50 km from ours, its
+   * text search matched a different place (same-named church in
+   * another city), so the guide's own coordinates win and the link
+   * falls back to the name search. */
+  const detailsCity =
+    (typeof attraction?.city === "string" ? attraction.city : null) || searchCity || undefined;
+  const fallbackLat =
+    typeof attraction?.lat === "number" ? attraction.lat : (geocoded?.lat ?? null);
+  const fallbackLng =
+    typeof attraction?.lng === "number" ? attraction.lng : (geocoded?.lng ?? null);
+  const [placeDetails, setPlaceDetails] = useState<PlaceDetails | null>(null);
+  useEffect(() => {
+    // Same wait as the guide effect: without the hint the city is not
+    // known yet, and the server caches the answer by name + city.
+    if (!hintLoaded) return;
+    let cancelled = false;
+    setPlaceDetails(null);
+    fetchPlaceDetails(guideLookupName, detailsCity, fallbackLat, fallbackLng).then((d) => {
+      if (!cancelled) setPlaceDetails(d);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // lat/lng deliberately left out: they are only a search bias, the
+    // shared request is keyed on name + city, and re-running when the
+    // background attractions fetch fills them in would change nothing.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [guideLookupName, detailsCity, hintLoaded]);
+
+  const googlePlaceTrusted = useMemo(() => {
+    if (
+      !placeDetails ||
+      typeof placeDetails.lat !== "number" ||
+      typeof placeDetails.lng !== "number"
+    ) {
+      return false;
+    }
+    if (fallbackLat === null || fallbackLng === null) return true;
+    return haversineKm(fallbackLat, fallbackLng, placeDetails.lat, placeDetails.lng) <= 50;
+  }, [placeDetails, fallbackLat, fallbackLng]);
+
+  const placeLatLng = useMemo<{ lat: number; lng: number } | null>(() => {
+    if (googlePlaceTrusted && placeDetails?.lat != null && placeDetails?.lng != null) {
+      return { lat: placeDetails.lat, lng: placeDetails.lng };
+    }
+    return fallbackLat !== null && fallbackLng !== null
+      ? { lat: fallbackLat, lng: fallbackLng }
+      : null;
+  }, [googlePlaceTrusted, placeDetails, fallbackLat, fallbackLng]);
+
+  const placeMapsHref =
+    (googlePlaceTrusted && placeDetails?.mapsUrl) ||
+    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      [guideLookupName, detailsCity].filter(Boolean).join(", "),
+    )}`;
   // Multi-photo gallery for the hero carousel — pulled from
   // Wikipedia's media-list endpoint. Beka asked for a carousel on
   // /attraction/$id mirroring what /destinations/$slug got, so the
@@ -1107,23 +1191,26 @@ function AttractionPage() {
                   </span>
                 </>
               )}
-              {typeof a?.lat === "number" && typeof a?.lng === "number" && (
+              {placeLatLng && (
                 <>
                   <span className="h-3 w-px bg-foreground/25" />
-                  {/* Tap → Google Maps. Uses the search-with-query URL
-                      so on mobile this hands off to the Maps app and the
-                      user gets directions from their current location
-                      automatically. `?api=1` is Google's documented
-                      cross-platform deep-link format. */}
+                  {/* Tap → the place's own Google Maps card (Google's
+                      googleMapsUri), or a search BY NAME — no longer a
+                      bare pin at the guide's coordinates. See
+                      placeMapsHref above.
+                      Labelled "Google Maps", not "41.902, 12.484": Beka
+                      2026-11-08 — the link is the place, so it should not
+                      read like a coordinate. A brand name, identical in
+                      every UI language, so no translation was needed. */}
                   <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${a.lat},${a.lng}`}
+                    href={placeMapsHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 underline-offset-4 hover:text-primary hover:underline"
                     aria-label={t("attr.openInGmapsAria", { name: a?.name ?? fallbackName })}
                   >
                     <MapPin className="h-3.5 w-3.5" />
-                    {a.lat.toFixed(3)}, {a.lng.toFixed(3)}
+                    Google Maps
                   </a>
                 </>
               )}
@@ -1140,8 +1227,9 @@ function AttractionPage() {
           heroPhoto={heroPhoto}
           heroSlides={heroSlides}
           cityHint={(typeof a?.city === "string" ? a.city : null) || searchCity || null}
-          latHint={typeof a?.lat === "number" ? a.lat : (geocoded?.lat ?? null)}
-          lngHint={typeof a?.lng === "number" ? a.lng : (geocoded?.lng ?? null)}
+          // Google's pin where we trust it — trip maps plot these.
+          latHint={placeLatLng?.lat ?? null}
+          lngHint={placeLatLng?.lng ?? null}
           language={language}
           interest={interest}
           starting={starting}
@@ -1329,13 +1417,20 @@ function AttractionPage() {
 
             Placed directly above the map: hours/phone/website and
             "where is it" are the same practical question, and both
-            belong after the story rather than interrupting it. */}
+            belong after the story rather than interrupting it.
+
+            Same name + city as the page's own placeDetails request, so
+            the two share one call (2026-11-08). The ENGLISH name now,
+            not the display one: the server caches by name + city, so
+            "ლუვრი|paris" was a separate paid Google lookup from
+            "louvre|paris" — and the English name is also the one Google
+            matches best. */}
         {showGuideTab && (
           <PracticalInfo
-            name={a?.name ?? fallbackName}
-            city={(typeof a?.city === "string" ? a.city : null) || searchCity || undefined}
-            lat={typeof a?.lat === "number" ? a.lat : geocoded?.lat}
-            lng={typeof a?.lng === "number" ? a.lng : geocoded?.lng}
+            name={guideLookupName}
+            city={detailsCity}
+            lat={fallbackLat}
+            lng={fallbackLng}
           />
         )}
 
@@ -1362,8 +1457,9 @@ function AttractionPage() {
             this naturally land at the bottom. */}
         {showGuideTab && (
           <MapSection
-            lat={typeof a?.lat === "number" ? a.lat : geocoded?.lat}
-            lng={typeof a?.lng === "number" ? a.lng : geocoded?.lng}
+            lat={placeLatLng?.lat}
+            lng={placeLatLng?.lng}
+            mapsHref={placeMapsHref}
             name={a?.name ?? fallbackName}
             currentSlug={id}
             cityHint={(typeof a?.city === "string" ? a.city : null) || searchCity || undefined}
@@ -1892,8 +1988,12 @@ function ActionRow({
             imageUrl:
               heroPhoto ??
               (typeof attraction?.image_url === "string" ? attraction.image_url : null),
-            lat: typeof attraction?.lat === "number" ? attraction.lat : latHint,
-            lng: typeof attraction?.lng === "number" ? attraction.lng : lngHint,
+            // latHint/lngHint first since 2026-11-08: the parent now
+            // resolves them to Google's pin (placeLatLng) and only falls
+            // back to the guide's own numbers itself, so preferring the
+            // raw attraction coords here would undo that for trip maps.
+            lat: latHint ?? (typeof attraction?.lat === "number" ? attraction.lat : null),
+            lng: lngHint ?? (typeof attraction?.lng === "number" ? attraction.lng : null),
           }}
           onClose={() => setShowTripSheet(false)}
         />
@@ -2385,12 +2485,17 @@ function ChipsSection({
 function MapSection({
   lat,
   lng,
+  mapsHref,
   name,
   currentSlug,
   cityHint,
 }: {
   lat?: number;
   lng?: number;
+  /** The parent's placeMapsHref: Google's own place link, or a search
+   *  by name. Replaces the coordinate-pin URL this section used to
+   *  build for itself (Beka 2026-11-08, #1). */
+  mapsHref: string;
   name: string;
   currentSlug: string;
   /** City fallback for the nearby-pin attraction hints. Beka/tsc
@@ -2605,7 +2710,7 @@ function MapSection({
   }, [ready, lat, lng, name, nearby, navigate, t]);
 
   if (typeof lat !== "number" || typeof lng !== "number") return null;
-  const gmapsHref = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  const gmapsHref = mapsHref;
   const nearbyHint =
     nearby.length > 0
       ? nearby.length === 1

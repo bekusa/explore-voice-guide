@@ -36,6 +36,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { MobileFrame } from "@/components/MobileFrame";
+import { TripPlaceSearch } from "@/components/TripPlaceSearch";
 import { useAuth } from "@/hooks/useAuth";
 import { useT } from "@/hooks/useT";
 import { setAttractionHint } from "@/lib/api";
@@ -732,6 +733,15 @@ function TripPage() {
                   {t("trips.shareHint")}
                 </p>
               )}
+
+              {/* Search + add without leaving the trip (Beka
+                  2026-11-08). Above the empty state on purpose: on an
+                  empty trip it is the first thing to do. */}
+              <TripPlaceSearch
+                tripId={trip.id}
+                tripName={trip.name}
+                onAdded={() => void refresh()}
+              />
 
               {items && items.length === 0 && (
                 <div className="mt-8 rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center">

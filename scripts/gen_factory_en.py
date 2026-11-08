@@ -18,6 +18,21 @@ writes <stage-dir>/en/<city>/<slug>.html + <slug>/index.html, and plan.json
 (city hubs and country hubs the pages expect; built by gen_factory_hubs.py).
 """
 import json, os, re, sys, math, html, collections
+from urllib.parse import quote_plus
+
+
+def gmaps_url(name, place):
+    """Google Maps link that opens the PLACE, searched by name — never a
+    coordinate pin. Beka 2026-11-08: "გუგლის ლინკი იყოს სათაურით და არა
+    კოორდინატით". A ?query=41.9017,12.4836 link drops a bare pin at a point
+    and opens no place card (no name, hours or reviews), and when the
+    guide's coordinates are slightly off the directions go to the wrong
+    spot. "Name, City" lets Google open its own listing for the place. The
+    app's attraction pages follow the same rule (placeMapsHref in
+    src/routes/attraction.$id.tsx). Raw URL: html.escape() it for HTML."""
+    q = ", ".join(x for x in (name, place) if x)
+    return "https://www.google.com/maps/search/?api=1&query=" + quote_plus(q)
+
 
 W = os.environ.get("FACTORY_DATA", "/sessions/affectionate-awesome-planck/mnt/outputs/w1")
 STAGE = sys.argv[1]
@@ -343,7 +358,7 @@ def page(a, pool):
     if a["img"]:
         ta["image"] = a["img"]
     ta["geo"] = {"@type": "GeoCoordinates", "latitude": a["lat"], "longitude": a["lng"]}
-    ta["hasMap"] = f"https://www.google.com/maps/search/?api=1&query={a['lat']:.4f}%2C{a['lng']:.4f}"
+    ta["hasMap"] = gmaps_url(t, a["city_disp"] or a["country"])
     addr = {"@type": "PostalAddress", "addressLocality": a["city_disp"] or a["country"]}
     if a["cc"]:
         addr["addressCountry"] = a["cc"]
@@ -424,7 +439,7 @@ def page(a, pool):
     H.append(sec("Questions", "Common questions", '<div class="faq">' + NL + NL.join(
         f"<h3>{txt(q)}</h3>{NL}<p>{txt(x)}</p>" for q, x in F) + NL + "</div>"))
     H.append(sec("Location", "On the map",
-                 f'<div class="mapcard"><a href="https://www.google.com/maps/search/?api=1&amp;query={a["lat"]:.4f}%2C{a["lng"]:.4f}" target="_blank" rel="noopener noreferrer">'
+                 f'<div class="mapcard"><a href="{html.escape(gmaps_url(t, a["city_disp"] or a["country"]))}" target="_blank" rel="noopener noreferrer">'
                  f'<span class="ic">{MAPSVG}</span>Open in Google Maps<span class="arr">&rsaquo;</span></a></div>{NL}'
                  f'<p class="map-note">Opens directions to {txt(t)} from your location.</p>'))
     H.append("</div>")

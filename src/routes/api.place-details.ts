@@ -133,6 +133,46 @@ type NewApiPlace = {
  * future provider swap touches only this function. Rows written by an
  * earlier version stay readable.
  */
+/**
+ * Drop "Open 24 hours, every day" — never stored, never sent.
+ * Beka 2026-11-08: "ეგეთ შემთხვევაში საერთოდ არ დააწეროს და არ გამოაჩინოს."
+ *
+ * Of the 62 cached places Google answered 24/7, none was useful: the
+ * open-air ones (Charles Bridge, a village square in Pérouges) have no
+ * hours to speak of, and the rest were wrong — Hagia Sophia, Burj
+ * Khalifa and Spinalonga all keep visiting hours; the text search had
+ * matched the square or area around them. So a 24/7 answer is treated
+ * as "unknown": hours removed here (new lookups are cached without
+ * them, and the 62 older rows are cleaned on the way out), and
+ * PracticalInfo.tsx applies the same test as a second line.
+ *
+ * Measured by total length, not by shape — Google stores the full week
+ * as one period that closes a minute before it reopens (Pérouges:
+ * day 0 00:00 → day 6 23:59), not as a period with no close.
+ */
+function withoutAlwaysOpenHours(d: PlaceDetails): PlaceDetails {
+  const periods = d.periods;
+  if (!Array.isArray(periods) || periods.length === 0) return d;
+  const WEEK = 7 * 1440;
+  const toMin = (t: string) => {
+    const m = /^(\d{2})(\d{2})$/.exec(t);
+    return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+  };
+  let total = 0;
+  for (const p of periods) {
+    const o = toMin(p.open.time);
+    if (o === null) return d;
+    if (!p.close) return { ...d, periods: null, weekdayText: null };
+    const c = toMin(p.close.time);
+    if (c === null) return d;
+    const start = p.open.day * 1440 + o;
+    let end = p.close.day * 1440 + c;
+    if (end <= start) end += WEEK;
+    total += end - start;
+  }
+  return total >= WEEK - 10 ? { ...d, periods: null, weekdayText: null } : d;
+}
+
 function toStoredPeriods(periods: NewApiPeriod[] | undefined): OpeningPeriod[] | null {
   if (!Array.isArray(periods) || periods.length === 0) return null;
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -274,7 +314,7 @@ export const Route = createFileRoute("/api/place-details")({
         // 1. Cache first — always, and including negative rows.
         const hit = await getCachedPlaceDetails(key, TTL_MS);
         if (hit) {
-          return corsJson(hit.notFound ? { notFound: true } : hit, {
+          return corsJson(hit.notFound ? { notFound: true } : withoutAlwaysOpenHours(hit), {
             // Let the CDN and the WebView hold it for a day. The row
             // itself lives 30 days; a 24h edge cache just keeps repeat
             // views off Supabase entirely.
@@ -316,7 +356,9 @@ export const Route = createFileRoute("/api/place-details")({
           return corsJson({ notFound: true });
         }
 
-        const payload: PlaceDetails = details ?? { notFound: true };
+        const payload: PlaceDetails = details
+          ? withoutAlwaysOpenHours(details)
+          : { notFound: true };
 
         // 4. Cache write — AWAITED. Cloudflare Workers kill floating
         //    promises the instant the Response is returned; the

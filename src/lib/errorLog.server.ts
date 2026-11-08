@@ -119,7 +119,11 @@ export type NameResolver =
   /** Claude Haiku — costs money and invents spellings ("Photi"). */
   | "haiku"
   /** Nothing resolved it; the raw input was used unchanged. */
-  | "unchanged";
+  | "unchanged"
+  /** Guide cache miss checked against existing guides of the same place
+   *  under another name (lib/guideAlias.server.ts). resolved_to = the
+   *  existing name that was reused, or null when none matched. */
+  | "alias";
 
 /**
  * Record how a non-Latin place name got turned into a cache key.

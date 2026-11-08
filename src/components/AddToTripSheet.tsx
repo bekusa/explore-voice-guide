@@ -1,5 +1,6 @@
 import { Check, Luggage, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { useT } from "@/hooks/useT";
 import { haptic } from "@/lib/haptics";
@@ -92,7 +93,15 @@ export function AddToTripSheet({
     }
   }
 
-  return (
+  /* Portalled to <body>. Beka 2026-11-08: the sheet now also opens from
+   * the result cards on /results, and those cards scale on hover/press.
+   * A transformed ancestor turns `position: fixed` into "fixed to that
+   * ancestor", so rendered in place the sheet would have pinned itself
+   * to the bottom of one card instead of the screen. Sending it to
+   * <body> makes it independent of wherever it is mounted. Only ever
+   * shown after a tap, so `document` always exists here; the guard is
+   * for the type checker and any future server render. */
+  const sheet = (
     // Floating card pinned above the tab bar — same visual family as
     // InlineAudioPanel. Fixed positioning keeps it above the page
     // scroll; z-index sits under toasts, over content.
@@ -165,4 +174,5 @@ export function AddToTripSheet({
       </div>
     </div>
   );
+  return typeof document === "undefined" ? sheet : createPortal(sheet, document.body);
 }

@@ -69,7 +69,8 @@ import imgKyiv from "@/assets/destinations/TimeMachine/kyiv.webp";
 // Per-attraction-id → imported image URL. Eight ids (jerusalem,
 // hannibal, tutankhamun, baghdad_golden, carthage, kyoto, angkor,
 // great_zimbabwe) don't have curated pictures yet — img() falls
-// through to the LoremFlickr fallback for those.
+// through to PLACEHOLDER_IMAGE for those (LoremFlickr until
+// 2026-11-08; see the note on PLACEHOLDER_IMAGE for why it went).
 const IMAGE_BY_ID: Record<string, string> = {
   rhodes_colossus: imgRhodes,
   alexandria_library: imgAlexandria,
@@ -98,18 +99,55 @@ const IMAGE_BY_ID: Record<string, string> = {
   kiev_batu: imgKyiv,
 };
 
-// Themed photos via LoremFlickr — used as the fallback for any id
-// without a curated local picture in IMAGE_BY_ID. Keyword-matched +
-// deterministic seed so the same keyword always returns the same
-// photo across reloads.
-const flickr = (keywords: string) => {
-  const seed = Math.abs([...keywords].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0));
-  return `https://loremflickr.com/900/540/${encodeURIComponent(keywords)}?lock=${seed}`;
-};
+/* Fallback for the eight moments without a curated picture.
+ * Beka 2026-11-08: "Time Travel-ზე აირია სურათები, ყველაზე არ მიჩვენებს,
+ * მაგალითად Hannibal Crosses the Alps."
+ *
+ * Those eight (jerusalem_crucifixion, hannibal_alps, tutankhamun,
+ * baghdad_golden, carthage, kyoto, angkor_wat, great_zimbabwe) used to
+ * fall through to LoremFlickr — a service that returns a RANDOM Flickr
+ * photo for a keyword list. Hannibal's keywords were "alps,snow,
+ * mountain", so his card showed whatever snowy hiking photo Flickr
+ * served that day; the "deterministic" lock seed only pinned which
+ * random photo. That is the "mixed up" half. LoremFlickr is also slow
+ * and often down, at which point the card's onError hides the <img>
+ * entirely — the "doesn't show" half.
+ *
+ * Replaced with an inline SVG: the app's dark-gold gradient and a gold
+ * hourglass line icon. It is never wrong, never blank, needs no
+ * network, and is clearly a placeholder rather than a photo pretending
+ * to be the scene. Stays until each id gets a curated picture in
+ * IMAGE_BY_ID like the other 25 — adding one there is all it takes;
+ * this function is then simply never reached for it.
+ *
+ * No text in it: the card and the hero already print the moment's
+ * name in the user's language, and an SVG can't follow the UI locale. */
+const PLACEHOLDER_IMAGE = (() => {
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 540">` +
+    `<defs>` +
+    `<radialGradient id="g" cx="50%" cy="42%" r="75%">` +
+    `<stop offset="0" stop-color="#3b2c16"/><stop offset="0.6" stop-color="#1f1710"/>` +
+    `<stop offset="1" stop-color="#0f0b08"/></radialGradient>` +
+    `</defs>` +
+    `<rect width="900" height="540" fill="url(#g)"/>` +
+    // lucide "hourglass", 24×24, scaled ×7 and centred
+    `<g transform="translate(366 186) scale(7)" fill="none" stroke="#c9a24a" ` +
+    `stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" opacity="0.85">` +
+    `<path d="M5 22h14"/><path d="M5 2h14"/>` +
+    `<path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/>` +
+    `<path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>` +
+    `</g></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+})();
 
-/** Resolve the image URL for a given attraction id. */
-function img(id: string, fallbackKeywords: string): string {
-  return IMAGE_BY_ID[id] ?? flickr(fallbackKeywords);
+/**
+ * Resolve the image URL for a given attraction id. The second argument
+ * was LoremFlickr's keyword list; kept in every call site as a note of
+ * what a curated picture for that moment should show.
+ */
+function img(id: string, _subjectNote: string): string {
+  return IMAGE_BY_ID[id] ?? PLACEHOLDER_IMAGE;
 }
 
 export const ATTRACTIONS: Attraction[] = [
