@@ -16,7 +16,33 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 import { brokeredPreviewStorage } from "./previewAuthStorage";
 
-const SUPABASE_URL = "https://dwyajguhgyjbgkpzjaln.supabase.co";
+/* Custom domain, live since 2026-11-08. Beka asked why Google's
+ * sign-in screen said "continue to dwyajguhgyjbgkpzjaln.supabase.co"
+ * instead of Lokali — that line is the domain of the OAuth redirect
+ * URI, so the only way to change it is to serve auth from our own
+ * host. Supabase's Custom Domain add-on ($10/month on the Lokali
+ * project) now maps auth.lokali.travel onto this project.
+ *
+ * Both hosts work — Supabase keeps the original alive — but the
+ * consent screen only reads better if the CLIENT uses the custom one,
+ * because supabase-js builds the authorize URL (and its redirect_uri)
+ * from whatever URL it was constructed with. Pointing this constant
+ * at the old host would have left the screen exactly as it was and
+ * made the $10 buy nothing.
+ *
+ * Both callbacks are registered on the Google OAuth client
+ * (859999970433-lh1p…, project "Lokali Production", which lives under
+ * a DIFFERENT Google account than the default one in Chrome — see
+ * task #25). Keep the old one there: it is what makes this change
+ * reversible, and what kept sign-in working while the two were out of
+ * step. The CNAME + the _acme-challenge.auth TXT record at GoDaddy
+ * must also stay, or Supabase cannot renew the certificate.
+ *
+ * NOT changed on purpose: the Edge Function URL in
+ * lib/anthropic.server.ts. That is a server-to-server call where the
+ * host is never shown to anyone, so it keeps the original domain and
+ * one less thing depends on this DNS record. */
+const SUPABASE_URL = "https://auth.lokali.travel";
 const SUPABASE_PUBLISHABLE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3eWFqZ3VoZ3lqYmdrcHpqYWxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4MzMzNjksImV4cCI6MjA5MzQwOTM2OX0.MoTEVP6ktmgwDm18NonHxudM3LyFyu5kdkHtX8jSkLE";
 

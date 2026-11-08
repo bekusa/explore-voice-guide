@@ -10,7 +10,10 @@ import { getRequest } from "@tanstack/react-start/server";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 
-const SUPABASE_URL = "https://dwyajguhgyjbgkpzjaln.supabase.co";
+// Custom domain since 2026-11-08 — the full story is on the matching
+// constant in client.ts. This one validates incoming tokens, so it
+// must point at the same issuer the client authenticates against.
+const SUPABASE_URL = "https://auth.lokali.travel";
 const SUPABASE_PUBLISHABLE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3eWFqZ3VoZ3lqYmdrcHpqYWxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4MzMzNjksImV4cCI6MjA5MzQwOTM2OX0.MoTEVP6ktmgwDm18NonHxudM3LyFyu5kdkHtX8jSkLE";
 

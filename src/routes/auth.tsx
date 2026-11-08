@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
-import { Loader2, Mail, Lock, ArrowLeft, User as UserIcon } from "lucide-react";
+import { Loader2, Mail, Lock, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -43,8 +43,15 @@ type Mode = "signin" | "signup" | "reset";
  *   1. this type + a button below
  *   2. the provider enabled in Supabase Dashboard → Authentication →
  *      Providers, with its client id/secret
- *   3. the redirect URL registered on the provider's own side
- *      (https://dwyajguhgyjbgkpzjaln.supabase.co/auth/v1/callback)
+ *   3. the redirect URL registered on the provider's own side.
+ *      Since the custom domain went live (2026-11-08) that is
+ *          https://auth.lokali.travel/auth/v1/callback
+ *      which is also what the Supabase dashboard now displays for
+ *      each provider. Register the old
+ *          https://dwyajguhgyjbgkpzjaln.supabase.co/auth/v1/callback
+ *      alongside it rather than instead of it — both resolve to the
+ *      same project, and keeping the pair is what lets the custom
+ *      domain be turned off again without locking everyone out.
  */
 export type OAuthProvider = "google" | "apple" | "facebook" | "azure";
 
@@ -147,9 +154,9 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   // Beka 2026-09-19: added facebook + azure (Microsoft). "azure" is
   // Supabase's provider id for Microsoft accounts — NOT "microsoft".
-  const [oauthLoading, setOauthLoading] = useState<
-    null | OAuthProvider | "guest"
-  >(null);
+  // (The "guest" member went with the Continue-as-guest button,
+  // 2026-11-08 — only real providers can be in flight now.)
+  const [oauthLoading, setOauthLoading] = useState<null | OAuthProvider>(null);
   // True only inside the native iOS app — gates the real Apple button.
   const [isIOSApp, setIsIOSApp] = useState(false);
   useEffect(() => {
@@ -320,19 +327,9 @@ function AuthPage() {
     }
   };
 
-  /* ─── Anonymous mode ─── */
-  const continueAsGuest = async () => {
-    setOauthLoading("guest");
-    try {
-      const { error } = await supabase.auth.signInAnonymously();
-      if (error) throw error;
-      // onAuthStateChange in the effect above handles the redirect.
-    } catch (err) {
-      setOauthLoading(null);
-      const msg = err instanceof Error ? err.message : t("auth.somethingWrong");
-      toast.error(t("auth.signInFailed"), { description: msg });
-    }
-  };
+  /* continueAsGuest() — which called supabase.auth.signInAnonymously()
+   * — was removed with its button on 2026-11-08. See the note where
+   * the button used to render, further down. */
 
   /* ─── Password reset ─── */
   const sendResetEmail = async (e: FormEvent) => {
@@ -619,28 +616,34 @@ function AuthPage() {
               )}
             </button>
 
-            {/* Anonymous mode — let users try the app without an
-                account. Their saves + downloads stay on-device; if
-                they later sign up we link the anonymous user to a
-                real email so the data carries over. Supabase
-                requires "Enable anonymous sign-ins" toggled on in
-                Authentication → Providers settings. */}
-            <button
-              type="button"
-              onClick={continueAsGuest}
-              disabled={!!oauthLoading || loading}
-              className="mt-8 flex h-11 items-center justify-center gap-2 rounded-full border border-dashed border-border bg-transparent px-4 text-[12px] font-medium text-muted-foreground hover:border-primary/40 hover:text-foreground transition-smooth disabled:opacity-60"
-            >
-              {oauthLoading === "guest" ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <UserIcon className="h-3.5 w-3.5" />
-              )}
-              {t("auth.continueAsGuest")}
-            </button>
-            <p className="mt-2 text-center text-[10.5px] leading-relaxed text-muted-foreground/70 max-w-[280px] mx-auto">
-              {t("auth.guestNote")}
-            </p>
+            {/* "Continue as guest" USED TO BE HERE. Removed by Beka
+                2026-11-08.
+
+                It called supabase.auth.signInAnonymously(), which
+                created a real but invisible row in auth.users and let
+                someone save, download and rate without ever giving an
+                email. 48 such accounts exist, 25 of them opened the
+                app in the last 30 days.
+
+                Those 48 are deliberately left alone: anonymous
+                sign-ins stay ENABLED in Supabase → Authentication →
+                Providers, so their sessions keep refreshing and their
+                saved tours, trips and ratings keep working. Only the
+                door is closed — nobody new becomes a guest. Turning
+                that Supabase toggle off is what would strand them, so
+                do not turn it off.
+
+                Everything else that knows about anonymous users stays
+                as it is and is still reachable: the Guest-mode badge
+                in Settings, the save/download/listen gates (which
+                accept any session, anonymous included), ratings and
+                trips. The three auth.*SignInDesc strings that invited
+                guest mode were already dead before this change — the
+                toast redesign dropped descriptions entirely — so no
+                translation in any of the 52 locales had to change.
+                `auth.continueAsGuest` and `auth.guestNote` are now
+                unused; left in the locale files so this is one JSX
+                block to restore if the decision is reversed. */}
           </>
         )}
       </div>
