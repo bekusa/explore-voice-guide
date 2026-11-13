@@ -107,6 +107,10 @@ export const Route = createFileRoute("/results")({
     meta: [
       { title: "Search results — Lokali" },
       { name: "description", content: "Curated attractions matching your search across Tbilisi." },
+      // Internal search results (2026-11-10): Search Console reported
+      // /results and /results?q=London as "Soft 404". Search result pages
+      // have nothing of their own to rank; links stay followable.
+      { name: "robots", content: "noindex, follow" },
     ],
   }),
   component: ResultsPage,

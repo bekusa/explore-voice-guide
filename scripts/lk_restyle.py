@@ -260,6 +260,8 @@ if __name__ == "__main__":
             s = open(p, encoding="utf-8").read()
             if MARK in s and not force: return rel, "skip", 0
             doc = restyle(rel, s, SC[rel]["k"], IMG)
+            import lk_post  # Listen buttons, no location counts, "Updated" line at the bottom
+            doc = lk_post.finish(doc, rel)
             if s.count('<link rel="alternate"') != doc.count('<link rel="alternate"'): raise ValueError("hreflang lost")
             if s.count("application/ld+json") != doc.count("application/ld+json"): raise ValueError("ld+json lost")
             if not doc.rstrip().endswith("</html>"): raise ValueError("tail")

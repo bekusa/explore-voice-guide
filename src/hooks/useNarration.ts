@@ -23,6 +23,7 @@ const SERVER_SNAPSHOT: NarrationState = {
   paused: false,
   current: 0,
   total: 0,
+  rate: 1,
 };
 
 export function useNarration(): NarrationState {

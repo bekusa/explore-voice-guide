@@ -9,6 +9,7 @@
  *   - show it sooner / later:                SETTINGS.showAfterSeconds, engagedAfterSeconds
  *   - nearby places in the card:             SETTINGS.nearbyMaxKm, nearbyCount, cityLine
  *   - wording in a language:                 TEXT.<lang> (missing keys fall back to TEXT.en)
+ *   - the pages' "Listen" buttons:           wording LK_LISTEN_TEXT below, look lk-listen.css
  * ─────────────────────────────────────────────────────────────────────────────
  *
  * Store by device (v6, iOS launch 2026-11-07): iPhone/iPad → App Store badge, Android → Google Play,
@@ -50,8 +51,72 @@ var LK_SHEET_SETTINGS = {
   appLangs: "af ar az bg bn cs da de el es fa fi fr he hi hr hu hy id it ja ka ko mr ms nb nl pl pt-br pt-pt ro ru sr sv sw ta te th tr uk ur vi zh-cn zh-tw",
                              // ^ pages in these languages show the app in their own language: assets/app/lang/<lang>.anim.webp
                              //   (+ the still <lang>.webp); English pages keep the city versions above
-  webLinkLangs: { en: 1 }    // "Listen in your browser" deep link only where the page name is the app's name
+  webLinkLangs: { en: 1 },   // "Listen in your browser" deep link only where the page name is the app's name
+  listenText: true           // the pages' "Listen" buttons take their wording from LK_LISTEN_TEXT below
 };
+
+/* ── "Listen" buttons (2026-11-12): THE wording of the app buttons on every page ─────────────
+ * Top bar ("Listen in app"), the big ▶ button ("Listen to this guide" + "Free · 5 min · in the
+ * Lokali app") and the Journal's buttons, in the page's own language (/explore/<lang>/…, else
+ * <html lang>). Change a word here and it changes on every page at once; the page HTML carries
+ * the same words for search engines (scripts/lk_listen.py reads this block, so keep it strict
+ * JSON: double quotes, no trailing commas, no comments inside). The look is in lk-listen.css.
+ * Minutes / counts / names are the page's own facts (data-min, data-n, data-name on the button).
+ * Optional keys a language may add: cityTitle / countryTitle ({name}); without them hub buttons use
+ * "guides". No counts on purpose (Beka 2026-11-13): they go stale as guides are added. The keys
+ * places / place1 / guidesN / guide1 still work if ever added back. langs: explore index only. */
+// LISTEN-TEXT-BEGIN
+var LK_LISTEN_TEXT = {
+  "en": {"app": "Listen in app", "guide": "Listen to this guide", "guides": "Listen to the guides", "free": "Free", "inapp": "in the Lokali app",
+         "cityTitle": "Listen to {name} guides", "countryTitle": "Listen to guides in {name}", "langs": "50+ languages"},
+  "fr": {"app": "Écouter dans l'app", "guide": "Écouter ce guide", "guides": "Écouter les guides", "free": "Gratuit", "inapp": "dans l'app Lokali"},
+  "de": {"app": "In der App hören", "guide": "Diesen Guide anhören", "guides": "Die Guides anhören", "free": "Kostenlos", "inapp": "in der Lokali-App"},
+  "es": {"app": "Escuchar en la app", "guide": "Escuchar esta guía", "guides": "Escuchar las guías", "free": "Gratis", "inapp": "en la app Lokali"},
+  "it": {"app": "Ascolta nell'app", "guide": "Ascolta questa guida", "guides": "Ascolta le guide", "free": "Gratis", "inapp": "nell'app Lokali"},
+  "nl": {"app": "Luister in de app", "guide": "Luister naar deze gids", "guides": "Luister naar de gidsen", "free": "Gratis", "inapp": "in de Lokali-app"},
+  "pl": {"app": "Słuchaj w aplikacji", "guide": "Posłuchaj tego przewodnika", "guides": "Posłuchaj przewodników", "free": "Za darmo", "inapp": "w aplikacji Lokali"},
+  "sv": {"app": "Lyssna i appen", "guide": "Lyssna på guiden", "guides": "Lyssna på guiderna", "free": "Gratis", "inapp": "i Lokali-appen"},
+  "nb": {"app": "Lytt i appen", "guide": "Lytt til guiden", "guides": "Lytt til guidene", "free": "Gratis", "inapp": "i Lokali-appen"},
+  "da": {"app": "Lyt i appen", "guide": "Lyt til guiden", "guides": "Lyt til guiderne", "free": "Gratis", "inapp": "i Lokali-appen"},
+  "fi": {"app": "Kuuntele sovelluksessa", "guide": "Kuuntele tämä opas", "guides": "Kuuntele oppaat", "free": "Ilmainen", "inapp": "Lokali-sovelluksessa"},
+  "cs": {"app": "Poslouchat v aplikaci", "guide": "Poslechněte si tohoto průvodce", "guides": "Poslechněte si průvodce", "free": "Zdarma", "inapp": "v aplikaci Lokali"},
+  "hu": {"app": "Hallgasd az appban", "guide": "Hallgasd meg ezt az idegenvezetést", "guides": "Hallgasd meg az idegenvezetéseket", "free": "Ingyenes", "inapp": "a Lokali appban"},
+  "ro": {"app": "Ascultă în aplicație", "guide": "Ascultă acest ghid", "guides": "Ascultă ghidurile", "free": "Gratuit", "inapp": "în aplicația Lokali"},
+  "hr": {"app": "Slušaj u aplikaciji", "guide": "Poslušaj ovaj vodič", "guides": "Poslušaj vodiče", "free": "Besplatno", "inapp": "u aplikaciji Lokali"},
+  "ru": {"app": "Слушать в приложении", "guide": "Слушать этот аудиогид", "guides": "Слушать аудиогиды", "free": "Бесплатно", "inapp": "в приложении Lokali"},
+  "uk": {"app": "Слухати в застосунку", "guide": "Слухати цей аудіогід", "guides": "Слухати аудіогіди", "free": "Безкоштовно", "inapp": "у застосунку Lokali"},
+  "bg": {"app": "Слушай в приложението", "guide": "Слушай този аудиогид", "guides": "Слушай аудиогидовете", "free": "Безплатно", "inapp": "в приложението Lokali"},
+  "sr": {"app": "Слушај у апликацији", "guide": "Послушај овај водич", "guides": "Послушај водиче", "free": "Бесплатно", "inapp": "у апликацији Lokali"},
+  "el": {"app": "Ακούστε στην εφαρμογή", "guide": "Ακούστε αυτόν τον οδηγό", "guides": "Ακούστε τους οδηγούς", "free": "Δωρεάν", "inapp": "στην εφαρμογή Lokali"},
+  "tr": {"app": "Uygulamada dinle", "guide": "Bu rehberi dinle", "guides": "Rehberleri dinle", "free": "Ücretsiz", "inapp": "Lokali uygulamasında"},
+  "az": {"app": "Tətbiqdə dinlə", "guide": "Bu bələdçini dinlə", "guides": "Bələdçiləri dinlə", "free": "Pulsuz", "inapp": "Lokali tətbiqində"},
+  "hy": {"app": "Լսել հավելվածում", "guide": "Լսել այս ուղեցույցը", "guides": "Լսել ուղեցույցները", "free": "Անվճար", "inapp": "Lokali հավելվածում"},
+  "ka": {"app": "მოუსმინეთ აპში", "guide": "მოუსმინეთ გიდს", "guides": "მოუსმინეთ გიდებს", "free": "უფასო", "inapp": "Lokali-ს აპში"},
+  "ar": {"app": "استمع في التطبيق", "guide": "استمع إلى هذا الدليل", "guides": "استمع إلى الأدلة", "free": "مجانًا", "inapp": "في تطبيق Lokali"},
+  "he": {"app": "האזינו באפליקציה", "guide": "האזינו למדריך הזה", "guides": "האזינו למדריכים", "free": "חינם", "inapp": "באפליקציית Lokali"},
+  "fa": {"app": "در اپ گوش دهید", "guide": "به این راهنما گوش دهید", "guides": "به راهنماها گوش دهید", "free": "رایگان", "inapp": "در اپ Lokali"},
+  "ur": {"app": "ایپ میں سنیں", "guide": "یہ گائیڈ سنیں", "guides": "گائیڈز سنیں", "free": "مفت", "inapp": "Lokali ایپ میں"},
+  "hi": {"app": "ऐप में सुनें", "guide": "यह गाइड सुनें", "guides": "गाइड सुनें", "free": "मुफ़्त", "inapp": "Lokali ऐप में"},
+  "bn": {"app": "অ্যাপে শুনুন", "guide": "এই গাইডটি শুনুন", "guides": "গাইডগুলো শুনুন", "free": "বিনামূল্যে", "inapp": "Lokali অ্যাপে"},
+  "ta": {"app": "ஆப்பில் கேளுங்கள்", "guide": "இந்த வழிகாட்டியைக் கேளுங்கள்", "guides": "வழிகாட்டிகளைக் கேளுங்கள்", "free": "இலவசம்", "inapp": "Lokali ஆப்பில்"},
+  "te": {"app": "యాప్‌లో వినండి", "guide": "ఈ గైడ్ వినండి", "guides": "గైడ్‌లు వినండి", "free": "ఉచితం", "inapp": "Lokali యాప్‌లో"},
+  "mr": {"app": "ॲपमध्ये ऐका", "guide": "हा गाइड ऐका", "guides": "गाइड ऐका", "free": "मोफत", "inapp": "Lokali ॲपमध्ये"},
+  "ja": {"app": "アプリで聴く", "guide": "このガイドを聴く", "guides": "ガイドを聴く", "free": "無料", "inapp": "Lokaliアプリで"},
+  "ko": {"app": "앱에서 듣기", "guide": "이 가이드 듣기", "guides": "가이드 듣기", "free": "무료", "inapp": "Lokali 앱에서"},
+  "zh": {"app": "在应用中收听", "guide": "收听本导览", "guides": "收听导览", "free": "免费", "inapp": "在 Lokali 应用中"},
+  "zh-cn": {"app": "在应用中收听", "guide": "收听本导览", "guides": "收听导览", "free": "免费", "inapp": "在 Lokali 应用中"},
+  "zh-tw": {"app": "在 App 中收聽", "guide": "收聽本導覽", "guides": "收聽導覽", "free": "免費", "inapp": "在 Lokali App 中"},
+  "th": {"app": "ฟังในแอป", "guide": "ฟังไกด์นี้", "guides": "ฟังไกด์", "free": "ฟรี", "inapp": "ในแอป Lokali"},
+  "vi": {"app": "Nghe trong ứng dụng", "guide": "Nghe hướng dẫn này", "guides": "Nghe các hướng dẫn", "free": "Miễn phí", "inapp": "trong ứng dụng Lokali"},
+  "id": {"app": "Dengarkan di aplikasi", "guide": "Dengarkan panduan ini", "guides": "Dengarkan panduannya", "free": "Gratis", "inapp": "di aplikasi Lokali"},
+  "ms": {"app": "Dengar dalam aplikasi", "guide": "Dengar panduan ini", "guides": "Dengar panduan", "free": "Percuma", "inapp": "dalam aplikasi Lokali"},
+  "sw": {"app": "Sikiliza kwenye programu", "guide": "Sikiliza mwongozo huu", "guides": "Sikiliza miongozo", "free": "Bure", "inapp": "kwenye programu ya Lokali"},
+  "af": {"app": "Luister in die app", "guide": "Luister na hierdie gids", "guides": "Luister na die gidse", "free": "Gratis", "inapp": "in die Lokali-app"},
+  "pt": {"app": "Ouvir na app", "guide": "Ouvir este guia", "guides": "Ouvir os guias", "free": "Grátis", "inapp": "na app Lokali"},
+  "pt-pt": {"app": "Ouvir na app", "guide": "Ouvir este guia", "guides": "Ouvir os guias", "free": "Grátis", "inapp": "na app Lokali"},
+  "pt-br": {"app": "Ouvir no app", "guide": "Ouvir este guia", "guides": "Ouvir os guias", "free": "Grátis", "inapp": "no app Lokali"}
+};
+// LISTEN-TEXT-END
 
 /* {place} = the page's h1, {near} = up to nearbyCount nearest places with distances ("Abanotubani 200 m · Metekhi Church 300 m";
  *   `near` within nearbyMaxKm, `area` = the fallback within areaMaxKm),
@@ -262,11 +327,33 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
     } catch (e) {}
     return true;
   }
-  // The pages' own buttons ("Get the app" in the top bar, "Open the Lokali app", the blog CTA,
-  // the bottom #gpb pill) are generated as Google Play links. Point them at the visitor's
-  // store: iPhone/iPad → App Store, Android → Google Play (as generated), anything else →
-  // lokali.travel/app (QR + both badges). utm_* tags are kept. Inside our app they are hidden
-  // (Apple 2.3.10), and on iPhone the #gpb pill (Google Play logo) gives way to the card.
+  // The pages' own buttons ("Listen in app" in the top bar, the big ▶ button, the blog CTA) are
+  // generated as Google Play links. Point them at the visitor's store: iPhone/iPad → App Store,
+  // Android → Google Play (as generated), anything else → lokali.travel/app (QR + both badges).
+  // utm_* tags are kept. Inside our app they are hidden (Apple 2.3.10). The bottom #gpb bar is
+  // left alone here: storeBar() below gives it both store badges.
+  // This attraction's guide in the web app (lokali.travel/attraction/…), or "" on hubs and pages
+  // with no usable name. English pages use their own h1 and city (they carry the app's names);
+  // other languages use their English twin's address (hreflang="en"), so the app finds the same
+  // guide and plays it in the visitor's app language.
+  function webGuide(seg) {
+    if (seg[0] !== "explore" || seg.length !== 4 || seg[2] === "country") return "";
+    var lg = seg[1], name = "", city = "";
+    if (S.webLinkLangs[lg]) {
+      var h = document.querySelector(".hero h1"), cr = document.querySelectorAll(".crumbs a");
+      name = h ? h.textContent.trim() : "";
+      city = cr.length ? cr[cr.length - 1].textContent.trim() : "";
+    } else {
+      var en = document.querySelector('link[rel="alternate"][hreflang="en"]');
+      var p = en && (en.getAttribute("href").split("/explore/en/")[1] || "").replace(/\.html$/, "").split("/");
+      if (!p || p.length !== 2) return "";
+      try { name = decodeURIComponent(p[1]).replace(/-\d+$/, "").replace(/-/g, " "); city = decodeURIComponent(p[0]).replace(/-/g, " "); } catch (e) { return ""; }
+    }
+    if (!name) return "";
+    return "https://lokali.travel/attraction/" + encodeURIComponent(name.toLowerCase().replace(/\s+/g, "-")) +
+      "?name=" + encodeURIComponent(name) + (city ? "&city=" + encodeURIComponent(city) : "") +
+      "&utm_source=seo&utm_medium=explore&utm_campaign=" + encodeURIComponent(lg) + "&utm_content=" + encodeURIComponent(seg[3].replace(/\.html$/, ""));
+  }
   function fixStoreLinks() {
     var ua = navigator.userAgent || "", inApp = nativeApp();
     var ios = /iPhone|iPad|iPod/.test(ua) || ((/Macintosh/.test(ua) || navigator.platform === "MacIntel") && navigator.maxTouchPoints > 1);
@@ -278,22 +365,90 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
     // the gold "Open the Lokali app" / "Get the Lokali app" buttons of the newer pages point at
     // the web app's home page; they mean the app, so they get the store link too
     var gold = [].slice.call(document.querySelectorAll('a.btn.gold[href="https://lokali.travel"], a.btn.gold[href="https://lokali.travel/"]'));
+    var web = webGuide(seg);
     links.concat(gold).forEach(function (a) {
-      if (a.closest && a.closest(".lks")) return;
+      if (a.closest && (a.closest(".lks") || a.closest("#gpb"))) return; // the card and the bottom bar set their own
       if (inApp) { if (gold.indexOf(a) < 0) a.style.display = "none"; return; }
       var q = gold.indexOf(a) >= 0 ? tag
         : (a.href.split("?")[1] || "").split("&").filter(function (p) { return /^utm_/.test(p); }).join("&");
+      // On a computer there is no store to send people to: the big "Listen to this guide" button
+      // opens this guide in the web app instead, where it plays straight away (Beka 2026-11-13,
+      // Louvre: "the guide doesn't open"). Phones still go to their store.
+      if (!ios && !android && web && a.classList.contains("play")) { a.href = web; a.setAttribute("data-store", "web"); return; }
       a.href = ios ? S.appStoreUrl : android ? S.playUrl + (q ? "&" + q : "") : S.appLink + (q ? "?" + q : "");
       a.setAttribute("data-store", ios ? "app_store" : android ? "play" : "app_link");
     });
+    // "Try it in the browser" (the app panel's second button) opens this guide too, not the home page
+    if (web) [].forEach.call(document.querySelectorAll('a.btn.ghost[href="https://lokali.travel/"]'), function (a) {
+      if (!inApp) { a.href = web; a.setAttribute("data-store", "web"); }
+    });
     var gpb = document.getElementById("gpb");
-    if (gpb && (ios || inApp)) gpb.style.display = "none";
+    if (gpb && inApp) gpb.style.display = "none";
     document.addEventListener("click", function (e) {
       var a = e.target.closest && e.target.closest("a[data-store]");
       if (a) track("page_cta_click", { store: a.getAttribute("data-store"), href: a.href });
     }, true);
   }
   if (S.fixPageLinks) { try { fixStoreLinks(); } catch (e) {} }
+
+  // The bottom bar on phones (#gpb, generated as a Google Play pill) shows BOTH official store
+  // badges, the visitor's own store first (Beka 2026-11-13: "the App Store button belongs there
+  // too"). Built here so one edit changes every page; lk-listen.css keeps the bar invisible until
+  // this has run (class lk-ready), so nobody sees the old pill flash. Hidden inside our app.
+  function storeBar() {
+    var gpb = document.getElementById("gpb"), pill = gpb && gpb.querySelector(".pill");
+    if (!pill) return;
+    if (nativeApp()) { gpb.style.display = "none"; return; }
+    var ua = navigator.userAgent || "";
+    var ios = /iPhone|iPad|iPod/.test(ua) || ((/Macintosh/.test(ua) || navigator.platform === "MacIntel") && navigator.maxTouchPoints > 1);
+    var old = pill.querySelector("a:not(.lkb)");
+    var q = old ? (old.getAttribute("href").split("?")[1] || "").split("&").filter(function (p) { return /^utm_/.test(p); }).join("&") : "";
+    var apple = '<a class="lkb" data-store="app_store" href="' + S.appStoreUrl + '" target="_blank" rel="noopener noreferrer">' +
+      '<img src="' + A + 'app-store-badge.svg" alt="Download on the App Store" width="108" height="36"></a>';
+    var play = '<a class="lkb lkb-play" data-store="play" href="' + S.playUrl + (q ? "&" + q : "") + '" target="_blank" rel="noopener noreferrer">' +
+      '<img src="' + A + 'google-play-badge.png" alt="Get it on Google Play" width="140" height="54"></a>';
+    if (!pill.querySelector(".lkb-row")) {
+      var row = document.createElement("span");
+      row.className = "lkb-row";
+      row.innerHTML = ios ? apple + play : play + apple;
+      if (old) old.remove();
+      pill.insertBefore(row, pill.querySelector(".x"));
+    }
+    gpb.classList.add("lk-ready");
+  }
+  try { storeBar(); } catch (e) { var g = document.getElementById("gpb"); if (g) g.classList.add("lk-ready"); }
+
+  // The "Listen" buttons' words come from LK_LISTEN_TEXT, so one edit there reaches every page.
+  // The HTML already says the same (scripts/lk_listen.py writes it from the same table), so this
+  // normally changes nothing; it matters the day the wording changes. The ▶ circle stays.
+  function listenText() {
+    var seg = location.pathname.split("/").filter(Boolean);
+    var lg = (seg[0] === "explore" && seg[1] && seg[1].indexOf(".") < 0 ? seg[1] : (document.documentElement.lang || "en")).toLowerCase();
+    var X = LK_LISTEN_TEXT, E = X.en, al = { "zh-hans": "zh-cn", "zh-hant": "zh-tw" };
+    var L = X[lg] || X[al[lg]] || X[lg.split("-")[0]] || E;
+    function k(n) { return L[n] != null ? L[n] : E[n]; }
+    function own(n) { return L[n]; } // optional keys: no English fallback
+    [].forEach.call(document.querySelectorAll("a.getapp, .lkl"), function (a) {
+      var t = a.lastChild;
+      if (t && t.nodeType === 3) t.nodeValue = k("app");
+    });
+    [].forEach.call(document.querySelectorAll("a.btn.play"), function (a) {
+      var d = a.dataset, b = a.querySelector(".bt b"), s = a.querySelector(".bt small");
+      if (!b || !s) return;
+      var kind = d.kind || "attraction", n = +d.n || 0, title = kind === "attraction" ? k("guide") : k("guides"), sub = [k("free")];
+      if (kind === "attraction" && d.min) sub.push(d.min);
+      if ((kind === "city" || kind === "country") && d.name) {
+        var tt = own(kind === "city" ? "cityTitle" : "countryTitle");
+        if (tt) title = tt.replace("{name}", d.name);
+        var cnt = kind === "city" ? (n === 1 ? own("place1") : own("places")) : (n === 1 ? own("guide1") : own("guidesN"));
+        if (tt && n && cnt) sub.push(cnt.replace("{n}", n));
+      }
+      if (kind === "index") sub.push(k("langs"));
+      sub.push(k("inapp"));
+      b.textContent = title; s.textContent = sub.join(" · ");
+    });
+  }
+  if (S.listenText) { try { listenText(); } catch (e) {} }
   if (!S.enabled || nativeApp()) return;
   try { var t = +localStorage.getItem(KEY); if (!demo && t && Date.now() - t < S.hideForDays * 864e5) return; } catch (e) {}
 

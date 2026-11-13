@@ -140,7 +140,20 @@ export type NarrationState = {
   paused: boolean;
   current: number;
   total: number;
+  /** Playback speed — one of NARRATION_RATES. See setNarrationRate. */
+  rate: number;
 };
+
+/* Playback speed. Beka 2026-11-12: "ხმის აჩქარება - 1x, 1.25x, 1.5x, 2x
+ * … ერთი ღილაკი … თითო დაჭერისას შემდეგზე გადადიოდეს. დეფაულტად იყოს 1x."
+ *
+ * Kept OUTSIDE `state` resets on purpose: stopNarration() wipes the
+ * state when a guide is closed, but someone who listens at 1.5x wants
+ * the next guide at 1.5x too, not to re-tap the button every time. It
+ * is not written to storage, so every fresh app start is back at 1x —
+ * which is the "default 1x" he asked for. */
+export const NARRATION_RATES = [1, 1.25, 1.5, 2] as const;
+let rate = 1;
 
 const EMPTY: NarrationState = {
   request: null,
@@ -150,9 +163,30 @@ const EMPTY: NarrationState = {
   paused: false,
   current: 0,
   total: 0,
+  rate: 1,
 };
 
 let state: NarrationState = { ...EMPTY };
+
+/**
+ * Put the chosen speed on the element. BOTH properties, because loading a
+ * new src resets `playbackRate` to `defaultPlaybackRate` — setting only the
+ * first would silently drop back to 1x at the start of every new guide.
+ * Pitch is preserved explicitly (the browsers' default, but older WebViews
+ * expose only the prefixed name): a 1.5x guide must sound like the same
+ * narrator talking faster, not a cartoon.
+ */
+function applyRate(a: HTMLAudioElement): void {
+  try {
+    a.defaultPlaybackRate = rate;
+    a.playbackRate = rate;
+    const p = a as HTMLAudioElement & { preservesPitch?: boolean; webkitPreservesPitch?: boolean };
+    p.preservesPitch = true;
+    p.webkitPreservesPitch = true;
+  } catch {
+    /* an element mid-teardown can throw; the next src load re-applies */
+  }
+}
 const listeners = new Set<(s: NarrationState) => void>();
 
 /**
@@ -180,6 +214,7 @@ function audio(): HTMLAudioElement | null {
   if (el) return el;
   el = new Audio();
   el.preload = "auto";
+  applyRate(el);
   installMediaHandlers();
 
   el.addEventListener("play", () => {
@@ -330,6 +365,7 @@ export function setNarrationUrl(url: string): void {
   emit();
   if (!a) return;
   a.src = url;
+  applyRate(a);
   void a.play().catch(() => {
     /* autoplay blocked — the transport buttons still work */
   });
@@ -364,6 +400,22 @@ export function seekBy(delta: number): void {
   seekNarration(a.currentTime + delta);
 }
 
+/** Set the playback speed (see NARRATION_RATES). Applies immediately. */
+export function setNarrationRate(next: number): void {
+  rate = next;
+  const a = audio();
+  if (a) applyRate(a);
+  state.rate = rate;
+  emit();
+  syncPositionState(); // the lock-screen scrubber advances at this speed too
+}
+
+/** The speed button: 1x → 1.25x → 1.5x → 2x → back to 1x. */
+export function cycleNarrationRate(): void {
+  const i = NARRATION_RATES.indexOf(rate as (typeof NARRATION_RATES)[number]);
+  setNarrationRate(NARRATION_RATES[(i + 1) % NARRATION_RATES.length]);
+}
+
 export function restartNarration(): void {
   const a = audio();
   if (!a) return;
@@ -393,7 +445,8 @@ export function stopNarration(): void {
     }
   }
   fetchClaim = null;
-  state = { ...EMPTY };
+  // The speed survives closing a guide — see the note on `rate`.
+  state = { ...EMPTY, rate };
   emit();
   syncMediaMetadata(); // request is null now → clears the lock-screen card
 }

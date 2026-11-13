@@ -1,0 +1,17 @@
+{
+  "_about": "Pages kept out of search (noindex, follow) because their guide text describes another place. Applied by scripts/hold-pages.py. To release one: remove it here, regenerate the page from a correct guide, run link-langs.py. Cause (2026-11-10): getCachedGuide's legacy '' city fallback served a same-named place from another city; those cache rows were moved to their real cities the same day. 2026-11-13: 13 pages released by scripts/rebuild-held.py (README-lang-pages.md).",
+  "pages": [
+    {
+      "rel": "en/astana/parliament-house.html",
+      "text_is_about": "Parliament House, Port Moresby",
+      "since": "2026-11-10",
+      "still_held_because": "2026-11-13: new app guide has outdated seat counts and unverifiable dates; photo on the page is Canberra's Parliament House"
+    },
+    {
+      "rel": "en/cali/parque-bolívar.html",
+      "text_is_about": "Parque Bolívar, Guayaquil",
+      "since": "2026-11-10",
+      "still_held_because": "2026-11-13: new app guide (as 'Paseo Bolívar') says the Cali River is buried under the promenade; it is not"
+    }
+  ]
+}

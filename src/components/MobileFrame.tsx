@@ -102,13 +102,28 @@ export function MobileFrame({
         </div>
         {narrating && (
           <div
-            className={`absolute inset-x-0 z-30 ${
+            // px-3 pb-2: the player floats as a card, clear of the screen
+            // edges and the tab bar, instead of a full-width strip glued
+            // to them. Beka 2026-11-12: "პლეიერი იყოს ბექგრაუნდ
+            // ინტერფეისიდან გამოყოფილი და წინ წამოწეული ეფექტით."
+            className={`absolute inset-x-0 z-30 px-3 pb-2 ${
               hideTabBar
                 ? "bottom-[max(16px,env(safe-area-inset-bottom))]"
                 : "bottom-[calc(56px+max(16px,env(safe-area-inset-bottom)))]"
             }`}
           >
-            <InlineAudioPanel />
+            {/* Scrim: the page fades into the background behind and just
+                above the card, so the card reads as lifted off it. Not a
+                full-screen dim — people read the guide text while they
+                listen, so everything above stays fully visible. Purely
+                visual: it never takes a tap. */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 -top-16 bottom-0 bg-gradient-to-b from-transparent via-background/80 to-background"
+            />
+            <div className="relative">
+              <InlineAudioPanel />
+            </div>
           </div>
         )}
         {/* No "get the app" banner in the web app. Beka 2026-11-07: these

@@ -194,7 +194,7 @@ export const Route = createRootRoute({
       { title: `Lokali — Free Audio Guides in ${LANGUAGE_COUNT_LABEL} Languages` },
       {
         name: "description",
-        content: `Free audio guides for 190+ cities worldwide, in ${LANGUAGE_COUNT_LABEL} languages. History, what to look for and practical tips — offline, no ticket, no tour group.`,
+        content: `Free audio guides for cities worldwide, in ${LANGUAGE_COUNT_LABEL} languages. History, what to look for and practical tips — offline, no ticket, no tour group.`,
       },
       { name: "author", content: "Lokali" },
       {
@@ -203,7 +203,7 @@ export const Route = createRootRoute({
       },
       {
         property: "og:description",
-        content: `Free audio guides for 190+ cities worldwide, in ${LANGUAGE_COUNT_LABEL} languages. History, what to look for and practical tips — offline, no ticket, no tour group.`,
+        content: `Free audio guides for cities worldwide, in ${LANGUAGE_COUNT_LABEL} languages. History, what to look for and practical tips — offline, no ticket, no tour group.`,
       },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Lokali" },
@@ -215,7 +215,7 @@ export const Route = createRootRoute({
       },
       {
         name: "twitter:description",
-        content: `Free audio guides for 190+ cities worldwide, in ${LANGUAGE_COUNT_LABEL} languages. Offline, no ticket, no tour group.`,
+        content: `Free audio guides for cities worldwide, in ${LANGUAGE_COUNT_LABEL} languages. Offline, no ticket, no tour group.`,
       },
       {
         property: "og:image",
@@ -223,7 +223,7 @@ export const Route = createRootRoute({
       },
       {
         property: "og:image:alt",
-        content: "The Louvre pyramid at dusk — one of 960+ Lokali audio guides",
+        content: "The Louvre pyramid at dusk — one of the Lokali audio guides",
       },
       {
         name: "twitter:image",

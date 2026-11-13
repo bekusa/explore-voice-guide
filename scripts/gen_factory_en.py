@@ -19,6 +19,9 @@ writes <stage-dir>/en/<city>/<slug>.html + <slug>/index.html, and plan.json
 """
 import json, os, re, sys, math, html, collections
 from urllib.parse import quote_plus
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import lk_listen  # noqa: E402,F401  "Listen" buttons
+import lk_post  # noqa: E402  last step for every page: Listen buttons, no location counts, "Updated" line at the bottom
 
 
 def gmaps_url(name, place):
@@ -368,10 +371,12 @@ def page(a, pool):
     same = []
     if a["enwiki"]:
         same.append(wiki_url(a["enwiki"]))
-    same.append(f"https://www.wikidata.org/wiki/{a['q']}")
+    if a.get("q"):  # rebuild-held.py: a page whose place has no Wikidata item of its own
+        same.append(f"https://www.wikidata.org/wiki/{a['q']}")
     if a.get("web"):
         same.append(a["web"])
-    ta["sameAs"] = same
+    if same:
+        ta["sameAs"] = same
     cr = [{"@type": "ListItem", "position": 1, "name": "Lokali", "item": BASE},
           {"@type": "ListItem", "position": 2, "name": "Explore", "item": f"{BASE}/explore/index.html"}]
     if c_url:
@@ -465,6 +470,7 @@ def page(a, pool):
 
 
 def wr(rel, h):
+    h = lk_post.finish(h, rel)  # Listen buttons, no counts, "Updated" line at the bottom (lk_post.py)
     for p in (os.path.join(STAGE, rel), os.path.join(STAGE, rel[:-5], "index.html")):
         os.makedirs(os.path.dirname(p), exist_ok=True)
         tmp = p + ".tmp"

@@ -107,24 +107,24 @@ for title, sub, types, famous in THEMES:
     items = pick(types, FAM[title])
     if len(items) < 6: continue
     cards = "".join(pcard(a["url"], a["img"], a["name"], meta(a)) for a in items)
-    rails.append(f'<section><div class="shead"><div><span class="eyebrow">{len(items)} free guides</span>'
+    rails.append(f'<section><div class="shead"><div><span class="eyebrow">Free guides</span>'
                  f'<h2>{title}</h2><p>{sub}</p></div></div><div class="rail">{cards}</div></section>')
 
 # ---------- cities rail ----------
 top = [c for c in sorted(cities, key=lambda c: -c["n"]) if c["n"] >= 8][:16]
 city_cards = "".join(
     pcard(f'{SITE}/explore/en/{c["slug"]}.html', city_photo(c["slug"]), c["name"],
-          f'{c["n"]} free guides', cls="pcard wide") for c in top if city_photo(c["slug"]))
+          "Free guides", cls="pcard wide") for c in top if city_photo(c["slug"]))
 
 # ---------- a-z ----------
 def initial(n):
     n = "".join(ch for ch in unicodedata.normalize("NFKD", n) if not unicodedata.combining(ch))
     return n[0].upper() if n[0].isascii() and n[0].isalpha() else "#"
-az = "".join(f'<a href="{SITE}/explore/en/{esc(c["slug"])}.html">{esc(c["name"])}<span>{c["n"]}</span></a>'
+az = "".join(f'<a href="{SITE}/explore/en/{esc(c["slug"])}.html">{esc(c["name"])}</a>'
              for c in sorted(cities, key=lambda c: (initial(c["name"]), c["name"])))
 
 # ---------- search index (lazy-loaded json) ----------
-idx = [{"t": c["name"], "s": f'{c["n"]} free guides', "u": f'{SITE}/explore/en/{c["slug"]}.html',
+idx = [{"t": c["name"], "s": "Free audio guides", "u": f'{SITE}/explore/en/{c["slug"]}.html',
         "i": card_img(city_photo(c["slug"])) or "", "k": "City"} for c in cities]
 idx += [{"t": a["name"], "s": f'{cname[a["city"]]} · {a["type"] or "Place"}', "u": a["url"],
          "i": card_img(a["img"]), "k": "Place"} for a in attr]
@@ -138,12 +138,12 @@ slides_html = "".join(
     f'style="opacity:{1 if i==0 else 0};transition:opacity 1.2s ease" '
     f'{HI if i==0 else LZ} decoding="async">'
     for i, (s, _) in enumerate(SLIDES))
-slides_json = json.dumps([{"n": cname[s], "t": t, "u": f"{SITE}/explore/en/{s}.html", "c": ccount[s]}
+slides_json = json.dumps([{"n": cname[s], "t": t, "u": f"{SITE}/explore/en/{s}.html"}
                           for s, t in SLIDES], ensure_ascii=False)
 s0, t0 = SLIDES[0]
 
-TITLE = ("[PREVIEW] " if PREVIEW else "") + f"Explore {len(cities)} Cities — Free Audio Guides | Lokali"
-DESC = (f"Free audio guides for {total:,} landmarks in {len(cities)} cities. Ancient wonders, great museums, "
+TITLE = ("[PREVIEW] " if PREVIEW else "") + "Explore Cities — Free Audio Guides | Lokali"
+DESC = ("Free audio guides for landmarks in cities around the world. Ancient wonders, great museums, "
         "sacred places and old towns, in 50+ languages. Offline, no ticket.")[:158]
 ROBOTS = "noindex,nofollow" if PREVIEW else "index,follow,max-image-preview:large,max-snippet:-1"
 
@@ -178,7 +178,7 @@ doc = f'''<!DOCTYPE html>
 <section class="hero" id="hero" style="padding-bottom:40px">
 {slides_html}<span class="ov"></span>
 <div class="hero-copy">
-<span class="badge">{len(cities)} cities &middot; {total:,} free guides</span>
+<span class="badge">Free audio guides</span>
 <h1>Lokali <em id="h-name">{esc(cname[s0])}</em></h1>
 <p class="tag" id="h-tag">{esc(t0)}</p>
 <div class="btns"><a class="btn gold" id="h-go" href="{SITE}/explore/en/{s0}.html">Explore <span id="h-name2">{esc(cname[s0])}</span> &rarr;</a>
@@ -189,7 +189,7 @@ doc = f'''<!DOCTYPE html>
 <div class="search" role="search">
 <div class="sbox">
 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-<input id="q" type="search" placeholder="Search {len(cities)} cities and {total:,} landmarks&hellip;" autocomplete="off" aria-label="Search cities and landmarks">
+<input id="q" type="search" placeholder="Search cities and landmarks&hellip;" autocomplete="off" aria-label="Search cities and landmarks">
 <button class="go" id="qgo" type="button">GO &rarr;</button>
 </div>
 <div class="results" id="res" role="listbox"></div>
@@ -202,7 +202,7 @@ doc = f'''<!DOCTYPE html>
 
 {''.join(rails[2:])}
 
-<details class="az"><summary>All {len(cities)} cities, A&ndash;Z</summary><div class="azin">{az}</div></details>
+<details class="az"><summary>All cities, A&ndash;Z</summary><div class="azin">{az}</div></details>
 
 {apppanel(f"{SITE}/images/cities/rome.jpg", "explore-index")}
 {FOOTER}
@@ -245,6 +245,8 @@ doc = f'''<!DOCTYPE html>
 </body>
 </html>
 '''
+import lk_post  # Listen buttons + the shared last step (lk_post.py)
+doc = lk_post.finish(doc, "index.html")
 open(OUT, "w", encoding="utf-8").write(doc)
 print("index", len(doc), "bytes | rails", len(rails), "| city cards", city_cards.count("pcard"),
       "| search entries", len(idx))
