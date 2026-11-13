@@ -199,6 +199,34 @@ const CITY_FIX: Record<string, string> = {
   "zolsky-district/svaneti-museum-of-history-and-ethnography": "mestia/svaneti-museum-of-history-and-ethnography",
   "zolsky-district/ushguli": "mestia/ushguli",
   "þingeyjarsveit/goðafoss-waterfall": "akureyri/goðafoss-waterfall",
+  // 2026-11-14 (scripts/move-hubs.py): hubs named after an area, not a city
+  "auckland-region/auckland-art-gallery-toi-o-tamaki": "auckland/auckland-art-gallery-toi-o-tamaki",
+  "auckland-region/auckland-harbour-bridge": "auckland/auckland-harbour-bridge",
+  "auckland-region/auckland-war-memorial-museum": "auckland/auckland-war-memorial-museum",
+  "auckland-region/sky-tower": "auckland/sky-tower",
+  "commune-de-grand-bassam/artisan-market-of-grand-bassam": "grand-bassam/artisan-market-of-grand-bassam",
+  "commune-de-grand-bassam/grand-bassam-beach": "grand-bassam/grand-bassam-beach",
+  "commune-de-grand-bassam/grand-bassam-historic-district": "grand-bassam/grand-bassam-historic-district",
+  "commune-de-grand-bassam/quai-de-grand-bassam": "grand-bassam/quai-de-grand-bassam",
+  "city-of-london/london-stone": "greater-london/london-stone",
+  "city-of-london/st-brides-church": "greater-london/st-brides-church",
+  "city-of-london/st-pauls-cathedral": "greater-london/st-pauls-cathedral",
+  "orange-county/disneys-animal-kingdom": "orlando/disneys-animal-kingdom",
+  "orange-county/disneys-hollywood-studios": "orlando/disneys-hollywood-studios",
+  "orange-county/epcot": "orlando/epcot",
+  "orange-county/walt-disney-world": "orlando/walt-disney-world",
+  "central-district-iran/bishapur": "shiraz/bishapur",
+  "central-district-iran/jamkaran-mosque": "qom/jamkaran-mosque",
+  "central-district-iran/rudkhan-castle": "rasht/rudkhan-castle",
+};
+
+/** old city hub -> its new hub (lang/<city>.html), 2026-11-14: renamed or merged area hubs */
+const HUB_FIX: Record<string, string> = {
+  "auckland-region": "auckland",
+  "commune-de-grand-bassam": "grand-bassam",
+  "city-of-london": "greater-london",
+  "orange-county": "orlando",
+  "central-district-iran": "country/iran",
 };
 
 export const Route = createFileRoute("/explore/$")({
@@ -218,6 +246,8 @@ export const Route = createFileRoute("/explore/$")({
       const key = rest.slice(-2).join("/");
       const fixed = CITY_FIX[key];
       if (fixed) p = lang + "/" + fixed;
+    } else if (seg.length === 2 && HUB_FIX[seg[1]]) {
+      p = seg[0] + "/" + HUB_FIX[seg[1]];
     }
 
     const target = "/explore/" + p + ".html";

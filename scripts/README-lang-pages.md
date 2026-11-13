@@ -342,6 +342,31 @@ Still held: en/astana/parliament-house.html (outdated seat counts, unverifiable 
 en/cali/parque-bolívar.html (the generated "Paseo Bolívar" guide says the Cali River is
 buried under it; it is not).
 
+## Area hubs renamed or merged (2026-11-14)
+
+Beka: the "Cities in X" lists showed places that are not cities. 16 EN hubs were named after
+the area the geocoder returned. Checked one by one (where the places really are):
+
+- renamed: `auckland-region` -> `auckland` (all four places are in central Auckland),
+  `commune-de-grand-bassam` -> `grand-bassam` (the h1 already said Grand-Bassam);
+- merged: `city-of-london` -> `greater-london` (London), `orange-county` -> `orlando` (the four
+  Walt Disney World pages: Orange County, Florida, not California);
+- split: `central-district-iran` held three places in three provinces ("Central District" is a
+  generic county subdivision): Bishapur -> shiraz, Rudkhan Castle -> rasht, Jamkaran Mosque ->
+  qom (no Qom hub yet, so that page links to Iran); the old hub 301s to the Iran page;
+- kept as regions, because their places are real parts of that region and lie far apart:
+  Northern Territory, Qikiqtaaluk Region, Petén Department, Pune district, Aurangabad district,
+  County Galway, Southern District (Israel), Almaty Region, State of Mexico, Coconino County,
+  Custer County. Their country lists are headed "Cities and regions in X" (lk_post.py).
+
+`scripts/move-hubs.py` did it: pages rewritten under the new city (the guide text itself is never
+touched, only the frame: title, breadcrumb, "near X", rail heading, FAQ "Where is"), old files
+moved to `_to_delete/move-hubs-2026-11-14/`, cards appended to the target hubs, links on other
+pages / country hubs / index / search-index / sitemap / llms.txt rewritten. The 301s are in
+`src/routes/explore.$.tsx` (CITY_FIX lines + the new HUB_FIX map for hub URLs). Pages that link
+to an old URL were found with ripgrep first (MOVE_LINKS file), because walking the whole tree on
+the synced folder is too slow. Not moved: `bay-lake/magic-kingdom` (one page, no hub).
+
 Also fixed the same day: link-langs.py's sitemap step checked only noindex, so 18
 canonical-aliased duplicates (e.g. en/tbilisi/sioni-katedralen.html →
 sioni-cathedral.html) were still in the sitemap. It now uses `NOIDX()`, which
