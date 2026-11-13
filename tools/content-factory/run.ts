@@ -30,6 +30,7 @@ import { factCheck, summarize, type Claim } from "./gate3";
 import { publishAttractions, publishGuide } from "./publish";
 import { repairGuide } from "./repair";
 import { latestLimits, type UsageLimits } from "./transport";
+import { waitWhilePaused } from "../agent-control";
 
 type Job = {
   id: number;
@@ -66,6 +67,8 @@ mkdirSync(outDir, { recursive: true });
 if (local && !DRY_RUN) throw new Error("--local only runs with CF_DRY_RUN=1");
 
 let stopReason = "";
+/** Weekly ceiling in force: config, lowered by the dashboard's agent_control.max_weekly_pct when set. */
+let weeklyCap = CONFIG.usage.maxWeekly;
 const results: Record<string, number> = {};
 const bump = (k: string) => (results[k] = (results[k] ?? 0) + 1);
 
@@ -150,8 +153,8 @@ async function respectUsage(L: UsageLimits | null): Promise<void> {
     /* best effort */
   }
   const now = Date.now() / 1000;
-  if (L.sevenDay && L.sevenDay.resetsAt > now && L.sevenDay.utilization >= CONFIG.usage.maxWeekly) {
-    stopReason = `weekly usage cap: ${pct(L.sevenDay.utilization)} ≥ ${pct(CONFIG.usage.maxWeekly)} (resets ${at(L.sevenDay.resetsAt)})`;
+  if (L.sevenDay && L.sevenDay.resetsAt > now && L.sevenDay.utilization >= weeklyCap) {
+    stopReason = `weekly usage cap: ${pct(L.sevenDay.utilization)} ≥ ${pct(weeklyCap)} (resets ${at(L.sevenDay.resetsAt)})`;
     return;
   }
   if (L.fiveHour && L.fiveHour.resetsAt > now && L.fiveHour.utilization >= CONFIG.usage.maxFiveHour) {
@@ -359,6 +362,12 @@ async function main() {
     if (pauseUntil > Date.now()) {
       console.log(`  pausing   ${Math.round((pauseUntil - Date.now()) / 1000)}s after API pushback`);
       await sleep(pauseUntil - Date.now());
+    }
+    if (!local) {
+      // Dashboard switch: pause → claim nothing new and poll; run → take its weekly ceiling.
+      const control = await waitWhilePaused("factory", { note: `${kind} ${done}/${limit}`, deadline });
+      if (control === "deadline") { stopReason = "paused from the dashboard"; break; }
+      if (control) weeklyCap = Math.min(CONFIG.usage.maxWeekly, control.max_weekly_pct / 100);
     }
     const batch = await claim(Math.min(concurrency, limit - done));
     if (!batch.length) { stopReason = "queue empty"; break; }

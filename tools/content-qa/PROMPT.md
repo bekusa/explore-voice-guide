@@ -72,6 +72,7 @@ NON-NEGOTIABLE RULES
    - its cause (a prompt line, a code path or a data source);
    - a proposed fix.
    Do not silently patch thousands of rows that the app will keep producing.
+12. Dashboard switch (Beka, 2026-11-14). Table agent_control holds his command for this agent: desired_state run|pause and max_weekly_pct. Before EVERY unit (and before each Phase 0 step), run `npx tsx tools/agent-control.ts qa "<phase, wave, units done>"`. Exit code 3 means pause: claim nothing new, finish the unit in hand, release nothing, then check again every 5 minutes until it returns 0. Use the lower of max_weekly_pct and config.usage.maxWeekly as the weekly ceiling. run.ts must do the same through waitWhilePaused("qa", …) from tools/agent-control.ts. Never write desired_state yourself.
 11. Deletes. Never delete Azure blobs. In the database, delete or blank only what Beka approves in Phase 0 (for example stale translations, or wrong place-details matches).
 
 READ FIRST (Phase 0)
