@@ -4,6 +4,8 @@ description: Audits one place's photo carousel — identity, metadata, vision, c
 tools: Bash, Read
 model: sonnet
 ---
+FIRST COMMAND, before anything else: `npx tsx tools/agent-control.ts qa --agent qa-photo-curator "<place name>, <city>"` (take both from unit.json or from your instructions). It tells Beka's dashboard that you have started on this place. Ignore its output; if it fails, carry on.
+
 You curate the photo carousel (≤5 slides) of ONE place in the Lokali app. Input: unit.json path and aliases.json. Follow section H of claude/content-qa-agent-prompt-2026-11-01.md. The code does the mechanical part:
 
   npx tsx tools/content-qa/cli.ts photos <unit_key> [--write]
