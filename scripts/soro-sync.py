@@ -67,6 +67,15 @@ MAXTITLE, MAXDESC = 62, 158
 
 # ---------------------------------------------------------------- utilities
 
+def listen(page):
+    """App buttons -> "▶ Listen in app" (lk_listen.py, 2026-11-10); no city totals,
+    "45 languages" -> "50+ languages" (lk_post.blog, 2026-11-13)."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import lk_listen
+    import lk_post
+    return lk_post.blog(lk_listen.apply_blog(page))
+
+
 def atomic_write(path, text):
     """Temp file + os.replace. A killed run must never leave a half file —
     this project has been bitten by that twice."""
@@ -396,7 +405,7 @@ def article_html(it, css):
 <div class="prose">
 {it['body']}
 </div>
-<a class="cta" href="{utm}" rel="nofollow" target="_blank"><span class="tx"><b>Free audio guides, 190+ cities</b><span>50+ languages, works offline, no ticket and no rental desk.</span></span><span class="go">Get the app</span></a>
+<a class="cta" href="{utm}" rel="nofollow" target="_blank"><span class="tx"><b>Free audio guides worldwide</b><span>50+ languages, works offline, no ticket and no rental desk.</span></span><span class="go">Get the app</span></a>
 </article>
 <h2>Keep reading</h2>
 <div class="more-list"><a href="{SITE}/blog.html">All journal articles</a><a href="{SITE}/explore/en/rome.html">Rome</a><a href="{SITE}/explore/en/istanbul.html">Istanbul</a><a href="{SITE}/explore/en/tbilisi.html">Tbilisi</a></div>
@@ -462,7 +471,7 @@ def update_index(items):
                                             separators=(",", ":")) + mo.group(2),
         src, count=1, flags=re.S)
 
-    atomic_write(INDEX, src)
+    atomic_write(INDEX, listen(src))
     return order
 
 
@@ -547,7 +556,7 @@ def main():
         page = article_html(it, css)
         if "</html>" not in page[-20:]:
             raise SystemExit(f"soro-sync: {it['slug']} rendered truncated — aborting")
-        atomic_write(path, page)
+        atomic_write(path, listen(page))
         written.append(f"{SITE}/blog/{it['slug']}.html")
         print(f"  {'[dry] ' if DRY else ''}{it['slug']}.html  "
               f"{len(it['text'].split())} words  {it['date']}")

@@ -304,3 +304,73 @@ instead of one hub across countries.
 Totals after wave 2: 454 city hubs touched (334 new), 137 country hubs (66 new),
 sitemap 13,311 URLs. `link-langs.py` HEAD_BYTES raised to 200 KB because the Rome
 hub's JSON-LD (209 places) ends its <head> past 70 KB.
+
+## Held pages: wrong-city guide text (2026-11-10)
+
+Beka found /explore/en/chiang-mai/old-city.html telling Tbilisi's story. Cause:
+`getCachedGuide()` (src/lib/sharedCache.server.ts) falls back to the legacy `''`
+city bucket, so a generic name ("old city", "central market", "roman theatre")
+returned whichever city's guide was written first, and the pages were built from
+that. 15 pages were affected (Chiang Mai Old City in en/hy/ka/zh/zh-cn plus 10 EN
+pages); the list and what each text really describes are in `held-pages.json`.
+The same day the 11 legacy cache rows were moved to their real cities (backup:
+table `cached_guides_backup_20261110_wrongcity`), so the app now generates a
+fresh guide for those places instead of reusing the wrong one.
+
+`scripts/hold-pages.py` keeps the listed pages online but `noindex, follow`, with
+no hreflang, out of `sitemap-explore.xml` and `llms.txt`. It is idempotent.
+**Run it after any generator that rewrites a held page**, then link-langs.py as
+usual (link-langs honours the noindex tag). To release a page: delete it from
+`held-pages.json`, regenerate it from a correct guide, run link-langs.py and
+`build-explore-canonical.py`.
+
+**Released 2026-11-13 (13 of 15).** New guides were generated through the app's own
+/api/guide (Beka approved the ~$2), with names that cannot fall back to the wrong row
+("Gregorian Egyptian Museum", "Belvedere, Charlottenburg Palace Garden"). Two failed a source
+check and were repaired sentence by sentence against Wikipedia / SPSG / Landesarchiv
+(Casablanca: built 1917–1920 by Pierre Bousquet, not "early 1930s"; Belvedere: finished 1788,
+rebuilt 1956–60, opening-time tip removed); the repaired payloads were written back to
+cached_guides so the app says the same. The app's translation service returned
+TRANSLATE-FAILED, so the hy/ka/zh-cn Chiang Mai guides were translated in-session and stored.
+Alias rows: egyptian museum|vatican city, belvedere palace|berlin, belvedere|berlin,
+roman theatre|verona. `scripts/rebuild-held.py` (HELD_DATA = the guides + release.json with
+Wikidata facts and Commons photos) rebuilt the EN pages with gen_factory_en.page() and the
+hy/ka/zh/zh-cn pages in place, released them (held-pages.json, noindex, hreflang cluster,
+sitemap, llms.txt) and replaced the wrong photos and names on rails, hubs and the search index;
+then build-explore-canonical.py ran on the 2026-11-10 scan caches patched for these 13 rows.
+Still held: en/astana/parliament-house.html (outdated seat counts, unverifiable dates) and
+en/cali/parque-bolívar.html (the generated "Paseo Bolívar" guide says the Cali River is
+buried under it; it is not).
+
+## Area hubs renamed or merged (2026-11-14)
+
+Beka: the "Cities in X" lists showed places that are not cities. 16 EN hubs were named after
+the area the geocoder returned. Checked one by one (where the places really are):
+
+- renamed: `auckland-region` -> `auckland` (all four places are in central Auckland),
+  `commune-de-grand-bassam` -> `grand-bassam` (the h1 already said Grand-Bassam);
+- merged: `city-of-london` -> `greater-london` (London), `orange-county` -> `orlando` (the four
+  Walt Disney World pages: Orange County, Florida, not California);
+- split: `central-district-iran` held three places in three provinces ("Central District" is a
+  generic county subdivision): Bishapur -> shiraz, Rudkhan Castle -> rasht, Jamkaran Mosque ->
+  qom (no Qom hub yet, so that page links to Iran); the old hub 301s to the Iran page;
+- kept as regions, because their places are real parts of that region and lie far apart:
+  Northern Territory, Qikiqtaaluk Region, Petén Department, Pune district, Aurangabad district,
+  County Galway, Southern District (Israel), Almaty Region, State of Mexico, Coconino County,
+  Custer County. Their country lists are headed "Cities and regions in X" (lk_post.py).
+
+`scripts/move-hubs.py` did it: pages rewritten under the new city (the guide text itself is never
+touched, only the frame: title, breadcrumb, "near X", rail heading, FAQ "Where is"), old files
+moved to `_to_delete/move-hubs-2026-11-14/`, cards appended to the target hubs, links on other
+pages / country hubs / index / search-index / sitemap / llms.txt rewritten. The 301s are in
+`src/routes/explore.$.tsx` (CITY_FIX lines + the new HUB_FIX map for hub URLs). Pages that link
+to an old URL were found with ripgrep first (MOVE_LINKS file), because walking the whole tree on
+the synced folder is too slow. Not moved: `bay-lake/magic-kingdom` (one page, no hub).
+
+Also fixed the same day: link-langs.py's sitemap step checked only noindex, so 18
+canonical-aliased duplicates (e.g. en/tbilisi/sioni-katedralen.html →
+sioni-cathedral.html) were still in the sitemap. It now uses `NOIDX()`, which
+covers both. The 18 were removed with `hold-pages.py --also-drop`.
+
+Detection was a text scan of the 7,488 EN attraction pages for a different major
+city named in the story, so a wrong text that names no city would not be caught.

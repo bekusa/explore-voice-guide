@@ -1,0 +1,41 @@
+/* lk-listen.css — the "Listen" buttons on every /explore/ page and the Journal (Beka 2026-11-12, variant B).
+ * ONE PLACE TO EDIT their look: every page links this file with no ?v=, so a change here reaches all
+ * ~28,000 pages with the next push. Wording: LK_LISTEN_TEXT in lk-sheet.js. Markup: scripts/lk_listen.py.
+ *   .btn.play  big button: ▶ circle + "Listen to this guide" + "Free · 5 min · in the Lokali app"
+ *   .getapp    top-bar pill "▶ Listen in app";  .lkl  the same pill in the Journal
+ * Dark pill, gold ▶, two layers of orange/gold sound waves drifting along the bottom edge (like a
+ * phone's lock-screen player). Visitors with "reduce motion" on get the same button, still. */
+.btn.gold.play,.btn.play,a.getapp,.cta .go.lkl,#lk-install a.lkl,.lkl{position:relative;overflow:hidden;isolation:isolate;
+  background:#1f150d;color:#f9f4ec;border:1px solid rgba(245,183,91,.32);box-shadow:none;text-decoration:none;border-radius:100px}
+.btn.gold.play,.btn.play{display:inline-flex;align-items:center;gap:12px;padding:7px 22px 7px 7px;text-align:left;line-height:1.2}
+.btn.gold.play:hover,a.getapp:hover,.cta:hover .go.lkl,#lk-install a.lkl:hover{border-color:rgba(245,183,91,.65)}
+.btn.play .pl,a.getapp .pl,.lkl .pl{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;flex:none;
+  border-radius:50%;background:linear-gradient(135deg,#fdc357,#f67f2f);color:#110c08}
+.btn.play .pl{width:38px;height:38px;font-size:13px;padding-left:2px}
+.btn.play .bt{position:relative;z-index:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.btn.play .bt b{font-size:14.5px;font-weight:700;color:#f9f4ec}
+.btn.play .bt small{font-size:11.5px;font-weight:600;color:#c9b9a6;letter-spacing:.1px}
+a.getapp,.cta .go.lkl,#lk-install a.lkl,.lkl{display:inline-flex;align-items:center;gap:7px;padding:6px 14px 6px 6px;
+  font-weight:700;font-size:13px;white-space:nowrap}
+a.getapp .pl,.lkl .pl{width:22px;height:22px;font-size:9px;padding-left:1px}
+/* the waves: two tiles of an SVG wave, twice the button's width, sliding left forever. z-index:-1
+ * inside the isolated button = above its dark fill, below its text and the ▶ circle */
+.btn.play::before,.btn.play::after,a.getapp::before,a.getapp::after,.lkl::before,.lkl::after{content:"";position:absolute;left:0;bottom:0;
+  width:200%;height:55%;background-repeat:repeat-x;background-size:50% 100%;pointer-events:none;z-index:-1;
+  animation:lk-wave 7s linear infinite;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 22C25 8 25 8 50 22S75 36 100 22 125 8 150 22 175 36 200 22V40H0Z' fill='%23f67f2f' fill-opacity='.55'/%3E%3C/svg%3E")}
+.btn.play::after,a.getapp::after,.lkl::after{height:42%;animation-duration:4.5s;animation-direction:reverse;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 20C34 6 34 6 67 20S100 34 133 20 166 6 200 20V40H0Z' fill='%23fdc357' fill-opacity='.35'/%3E%3C/svg%3E")}
+@keyframes lk-wave{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.btn.play::before,.btn.play::after,a.getapp::before,a.getapp::after,.lkl::before,.lkl::after{animation:none}}
+/* bottom bar on phones (#gpb): both official store badges, built by lk-sheet.js (storeBar). Invisible
+ * until that has run, so the old Google-Play-only pill never flashes. Google's PNG has transparent
+ * margins, so it is drawn larger and pulled in to look the same height as Apple's badge. */
+#gpb.show:not(.lk-ready){visibility:hidden}
+.appbar-cta .lkb-row{display:flex;align-items:center;justify-content:center;gap:10px;flex:1;min-width:0}
+.appbar-cta a.lkb{flex:0 0 auto;display:block;line-height:0}
+.appbar-cta a.lkb img{display:block;height:36px;width:auto}
+.appbar-cta a.lkb-play img{height:54px;margin:-9px -9px}
+@media (max-width:340px){.appbar-cta a.lkb img{height:32px}.appbar-cta a.lkb-play img{height:48px;margin:-8px}}
+[dir=rtl] .btn.play{padding:7px 7px 7px 22px;text-align:right}
+[dir=rtl] a.getapp,[dir=rtl] .lkl{padding:6px 6px 6px 14px}

@@ -1,11 +1,22 @@
 import { useEffect, useRef, useState } from "react";
-import { FastForward, Loader2, Pause, Play, Rewind, RotateCcw, Square, X } from "lucide-react";
+import {
+  Headphones,
+  Loader2,
+  Pause,
+  Play,
+  RefreshCw,
+  RotateCcw,
+  RotateCw,
+  Square,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useT } from "@/hooks/useT";
 import { useAuth } from "@/hooks/useAuth";
 import { useNarration } from "@/hooks/useNarration";
 import {
   claimNarrationFetch,
+  cycleNarrationRate,
   failNarration,
   onNarrationError,
   pauseNarration,
@@ -67,6 +78,10 @@ export function InlineAudioPanel() {
   // as an "audio_played" so resumes/seeks don't inflate the metric — one
   // play event per generated guide, not per press of the play button.
   const playReportedRef = useRef<string | null>(null);
+  // The progress bar (Edge waves player): the track element, and where a
+  // finger currently holds the thumb (0..1) — null when nobody is dragging.
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [dragPct, setDragPct] = useState<number | null>(null);
 
   /* Playback state now lives OUTSIDE React — see lib/narrationPlayer.ts.
    * Beka 2026-10-04: "გადავედი სხვა ტაბზე … აუდიო პლეერი რომ დატოვო
@@ -400,8 +415,58 @@ export function InlineAudioPanel() {
     return `${m}:${sec.toString().padStart(2, "0")}`;
   };
 
-  const pct =
-    progress.total > 0 ? Math.min(100, Math.round((progress.current / progress.total) * 100)) : 0;
+  /* ── "A · Edge waves" player. Beka 2026-11-12 ──────────────────────
+   * Chosen from four wave variants: a card whose bottom edge carries
+   * three flowing gold/orange waves (EdgeWaves, below). His additions:
+   *   - no "Now narrating" eyebrow — the place name alone heads the card
+   *     (the label stays as the region's aria-label for screen readers);
+   *   - −10 / +10 second jumps instead of skip-back / skip-forward
+   *     icons, which read as "previous / next track";
+   *   - a speed button, one tap = next speed: 1x → 1.25x → 1.5x → 2x;
+   *   - a progress bar you can tap or drag to jump in the narration;
+   *   - the card lifted off the page (shadow + gold rim + the scrim
+   *     MobileFrame paints behind it).
+   * Play and Pause, two buttons before, are one toggle now. */
+  const rate = narration.rate;
+  const total = progress.total;
+  // While a finger is on the bar, the thumb and the clock follow the
+  // finger; the actual seek happens once, on release.
+  const shownCurrent = dragPct !== null ? dragPct * total : progress.current;
+  const pct = total > 0 ? Math.min(100, (shownCurrent / total) * 100) : 0;
+  const active = playing && !paused && !generating;
+  const canControl = !!audioUrl && !generating;
+
+  const pctAt = (clientX: number) => {
+    const el = trackRef.current;
+    if (!el) return 0;
+    const r = el.getBoundingClientRect();
+    return r.width > 0 ? Math.min(1, Math.max(0, (clientX - r.left) / r.width)) : 0;
+  };
+  const onTrackDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!canControl || total <= 0) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setDragPct(pctAt(e.clientX));
+  };
+  const onTrackMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (dragPct === null) return;
+    setDragPct(pctAt(e.clientX));
+  };
+  const onTrackUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (dragPct === null) return;
+    const p = pctAt(e.clientX);
+    setDragPct(null);
+    seekNarration(p * total);
+  };
+  const onTrackKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!canControl) return;
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      seekBy(-5);
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      seekBy(5);
+    }
+  };
 
   // Belt and braces: MobileFrame only renders us while a request is
   // active, but this keeps the component honest if anything else ever
@@ -412,113 +477,206 @@ export function InlineAudioPanel() {
     <div
       role="region"
       aria-label={t("player.nowNarrating")}
-      className="border-t border-border bg-background/95 px-5 pb-4 pt-4 shadow-elegant backdrop-blur-xl"
+      className="relative overflow-hidden rounded-[18px] border border-primary/30 bg-card px-3.5 pb-3.5 pt-3 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.85),0_0_42px_-14px_rgba(245,164,60,0.5)]"
     >
-      {/* The <audio> element that used to sit here is gone — it now
-          lives in lib/narrationPlayer.ts, outside the React tree, so
-          navigating between tabs can no longer unmount it. Its
-          loadedmetadata / timeupdate / play / pause / ended / error
-          handlers moved there too; the two that need UI (the review
-          signal and the failure toast) are subscriptions above. */}
+      {/* The <audio> element lives in lib/narrationPlayer.ts, outside the
+          React tree, so navigating between tabs can no longer unmount
+          it. Speed (rate) lives there too, so it survives that as well. */}
 
-      <div className="flex items-start gap-3">
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow">
-          <Play className="h-4 w-4 translate-x-[1px] fill-current" />
+      <div className="relative z-10 flex items-center gap-2.5">
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f5a43c] text-[#2a1600]">
+          <Headphones className="h-4 w-4" />
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
-            {t("player.nowNarrating")}
-          </p>
-          <p className="truncate text-[13px] font-semibold text-foreground">{name}</p>
-        </div>
+        <p className="min-w-0 flex-1 truncate text-[13.5px] font-semibold text-foreground">
+          {name}
+        </p>
+        {/* Speed. 44px-tall button around a pill-sized visual, so the
+            tap target meets the platform minimum without a fat pill. */}
         <button
-          // Closing the player is the ONLY teardown now — it pauses,
-          // drops the src and revokes the blob. Navigation no longer
-          // does any of that (which was the whole bug).
+          onClick={() => cycleNarrationRate()}
+          aria-label={`${formatRate(rate)}`}
+          className="grid h-11 shrink-0 place-items-center px-0.5 transition-smooth active:scale-95"
+        >
+          <span className="grid h-8 min-w-[50px] place-items-center rounded-full border border-primary/35 bg-background/40 px-2.5 text-[12px] font-semibold tabular-nums text-primary">
+            {formatRate(rate)}
+          </span>
+        </button>
+        <button
+          // Closing the player is the ONLY teardown — it pauses, drops
+          // the src and revokes the blob. Navigation does none of that.
           onClick={() => stopNarration()}
           aria-label={t("tm.close")}
-          // h-11 = 44px = Apple HIG minimum tap target. Previously
-          // h-8 (32px) which fails iOS / Android accessibility audits
-          // and makes the close gesture frustrating with thumbs.
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-border bg-card text-muted-foreground transition-smooth hover:text-foreground"
+          className="-mr-2 grid h-11 w-11 shrink-0 place-items-center rounded-full text-muted-foreground transition-smooth hover:text-foreground"
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="h-4 w-4" />
         </button>
       </div>
 
-      {/* Progress bar */}
-      <div className="mt-3 flex items-center gap-2 text-[10px] font-mono text-muted-foreground">
-        <span>{fmt(progress.current)}</span>
-        <div className="relative h-1 flex-1 overflow-hidden rounded-full bg-secondary">
+      {/* Progress — tap or drag to jump. */}
+      <div className="relative z-10 mt-2 flex items-center gap-2.5 font-mono text-[11px] text-muted-foreground">
+        <span className="w-9 tabular-nums">{fmt(shownCurrent)}</span>
+        <div
+          ref={trackRef}
+          role="slider"
+          tabIndex={canControl ? 0 : -1}
+          aria-label={name}
+          aria-valuemin={0}
+          aria-valuemax={Math.round(total)}
+          aria-valuenow={Math.round(shownCurrent)}
+          aria-valuetext={`${fmt(shownCurrent)} / ${fmt(total)}`}
+          onPointerDown={onTrackDown}
+          onPointerMove={onTrackMove}
+          onPointerUp={onTrackUp}
+          onPointerCancel={() => setDragPct(null)}
+          onKeyDown={onTrackKey}
+          className="relative h-7 flex-1 cursor-pointer touch-none select-none"
+        >
+          <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-secondary" />
           <div
-            className="absolute inset-y-0 left-0 bg-gradient-gold transition-[width] duration-150"
+            className={`absolute left-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-[#f5a43c] ${
+              dragPct === null ? "transition-[width] duration-150" : ""
+            }`}
             style={{ width: `${pct}%` }}
           />
+          <div
+            className={`absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#fdc357] shadow-[0_0_0_4px_rgba(245,164,60,0.18)] transition-transform ${
+              dragPct !== null ? "scale-125" : ""
+            }`}
+            style={{ left: `${pct}%` }}
+          />
         </div>
-        <span>{fmt(progress.total)}</span>
+        <span className="w-9 text-right tabular-nums">{fmt(total)}</span>
       </div>
 
-      {/* Full transport row: [Restart] [-10s] [Play] [Pause] [+10s] [Stop] */}
-      <div className="mt-3 flex items-center justify-center gap-2">
+      {/* Transport: [Restart] [−10] [Play/Pause] [+10] [Stop] */}
+      <div className="relative z-10 mt-1.5 flex items-center justify-center gap-2.5">
         <button
           onClick={() => restartNarration()}
-          disabled={!audioUrl}
+          disabled={!canControl}
           aria-label={t("player.restart")}
-          className="grid h-11 w-11 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
+          className={SIDE_BUTTON}
         >
-          <RotateCcw className="h-3.5 w-3.5" />
+          <RefreshCw className="h-[15px] w-[15px]" />
         </button>
         <button
           onClick={() => seekBy(-10)}
-          disabled={!audioUrl}
+          disabled={!canControl}
           aria-label={t("player.back10")}
-          className="grid h-11 w-11 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
+          className={SIDE_BUTTON}
         >
-          <Rewind className="h-3.5 w-3.5 fill-current" />
+          <Jump10 />
         </button>
         <button
-          onClick={() => resumeNarration()}
-          disabled={generating || !audioUrl || (playing && !paused)}
-          aria-label={t("player.resume")}
-          className="grid h-12 w-12 place-items-center rounded-full bg-gradient-gold text-primary-foreground shadow-glow transition-smooth hover:scale-[1.04] disabled:opacity-50"
+          onClick={() => (active ? pauseNarration() : resumeNarration())}
+          disabled={generating || !audioUrl}
+          aria-label={active ? t("player.pause") : t("player.resume")}
+          className="grid h-12 w-12 place-items-center rounded-full bg-[#f5a43c] text-[#2a1600] shadow-glow transition-smooth active:scale-95 disabled:opacity-50"
         >
           {generating ? (
             <Loader2 className="h-5 w-5 animate-spin" />
+          ) : active ? (
+            <Pause className="h-5 w-5 fill-current" />
           ) : (
             <Play className="h-5 w-5 translate-x-[1px] fill-current" />
           )}
         </button>
         <button
-          onClick={() => pauseNarration()}
-          disabled={generating || !audioUrl || !playing || paused}
-          aria-label={t("player.pause")}
-          className="grid h-12 w-12 place-items-center rounded-full border border-primary/40 bg-card text-foreground transition-smooth hover:border-primary/70 hover:scale-[1.04] disabled:opacity-50"
-        >
-          <Pause className="h-5 w-5 fill-current" />
-        </button>
-        <button
           onClick={() => seekBy(10)}
-          disabled={!audioUrl}
+          disabled={!canControl}
           aria-label={t("player.forward10")}
-          className="grid h-11 w-11 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
+          className={SIDE_BUTTON}
         >
-          <FastForward className="h-3.5 w-3.5 fill-current" />
+          <Jump10 forward />
         </button>
         <button
-          // Stop ≠ close: it parks the narration at 0:00 and leaves
-          // the panel up, so Play starts the same guide over. The X
-          // button above is what tears everything down.
+          // Stop ≠ close: it parks the narration at 0:00 and leaves the
+          // card up, so Play starts the same guide over. X tears down.
           onClick={() => {
             pauseNarration();
             seekNarration(0);
           }}
-          disabled={!audioUrl}
+          disabled={!canControl}
           aria-label={t("player.stop")}
-          className="grid h-11 w-11 place-items-center rounded-full border border-border bg-card text-foreground transition-smooth hover:bg-secondary disabled:opacity-50"
+          className={SIDE_BUTTON}
         >
           <Square className="h-3 w-3 fill-current" />
         </button>
       </div>
+
+      <EdgeWaves active={active} rate={rate} />
+    </div>
+  );
+}
+
+/** Transport buttons either side of Play. Translucent so the edge waves
+ *  show faintly through them, as in the approved mockup. 44px targets. */
+const SIDE_BUTTON =
+  "grid h-11 w-11 place-items-center rounded-full border border-border bg-card/60 text-foreground transition-smooth active:scale-95 disabled:opacity-40";
+
+/** 1 → "1x", 1.25 → "1.25x", 1.5 → "1.5x", 2 → "2x". */
+function formatRate(rate: number): string {
+  return `${rate}x`;
+}
+
+/**
+ * The −10 / +10 icon: a circular arrow with "10" inside — the usual
+ * "jump ten seconds" glyph. Replaces the skip-back / skip-forward icons,
+ * which Beka read as previous / next track (2026-11-12).
+ */
+function Jump10({ forward = false }: { forward?: boolean }) {
+  const Icon = forward ? RotateCw : RotateCcw;
+  return (
+    <span className="relative grid place-items-center" aria-hidden="true">
+      <Icon className="h-[22px] w-[22px]" strokeWidth={1.6} />
+      <span className="absolute pt-px text-[7.5px] font-bold leading-none">10</span>
+    </span>
+  );
+}
+
+/* ── Edge waves ──────────────────────────────────────────────────────
+ * Three sine layers along the card's bottom edge. Each path spans the
+ * 660-unit viewBox; the SVG is drawn at 200% width and slid left by
+ * half (styles.css → .lokali-edge-waves). For that loop to be seamless
+ * the wave must repeat a WHOLE number of times across each half, i.e.
+ * an even number of periods across 660 — the mockup's gold layer had 3
+ * and jumped at every loop, so it is 4 here (and 6 for the third).
+ * Paused → the strip flattens to a fifth of its height and freezes.
+ * Speed → animation-duration ÷ rate, so the waves hurry at 1.5x / 2x. */
+function wavePath(amp: number, periods: number, y: number): string {
+  const W = 660;
+  let d = `M0 ${y}`;
+  for (let x = 0; x <= W; x += 6) {
+    d += ` L${x} ${(y - amp * Math.sin((x / W) * Math.PI * 2 * periods)).toFixed(1)}`;
+  }
+  return `${d} L${W} 46 L0 46Z`;
+}
+
+const WAVE_LAYERS = [
+  { fill: "#f67f2f", opacity: 0.55, seconds: 7, d: wavePath(9, 2, 24) },
+  { fill: "#fdc357", opacity: 0.35, seconds: 11, d: wavePath(11, 4, 26) },
+  { fill: "#ff9a4a", opacity: 0.3, seconds: 5, d: wavePath(5, 6, 22) },
+];
+
+function EdgeWaves({ active, rate }: { active: boolean; rate: number }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`lokali-edge-waves pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[46px] origin-bottom transition-transform duration-500 ${
+        active ? "" : "is-paused"
+      }`}
+      style={{ transform: active ? "none" : "scaleY(0.2)" }}
+    >
+      {WAVE_LAYERS.map((l) => (
+        <div key={l.fill} className="absolute inset-0 overflow-hidden">
+          <svg
+            viewBox="0 0 660 46"
+            preserveAspectRatio="none"
+            style={{ animationDuration: `${l.seconds / rate}s` }}
+          >
+            <path d={l.d} fill={l.fill} opacity={l.opacity} />
+          </svg>
+        </div>
+      ))}
     </div>
   );
 }

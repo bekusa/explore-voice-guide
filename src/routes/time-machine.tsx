@@ -22,6 +22,11 @@ export const Route = createFileRoute("/time-machine")({
         content: "34 immersive historical simulations. Step inside the moment, become the witness.",
       },
     ],
+    // Self-canonical (2026-11-10): ?id=… only picks the starting card, the
+    // page is the same. Search Console listed /time-machine?id=first_contact,
+    // ?id=alexandria_library, ?id=pompeii_day, ?id=rhodes_colossus as
+    // "Duplicate without user-selected canonical" — this folds them into one.
+    links: [{ rel: "canonical", href: "https://lokali.travel/time-machine" }],
   }),
   component: TimeMachinePage,
 });

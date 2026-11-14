@@ -200,7 +200,22 @@ footer a{color:var(--gold);text-decoration:none}
  .sbox input{font-size:15px}.sbox{padding-left:16px}
  .btns .btn{flex:1 1 auto;justify-content:center}
 }
+
+/* country hubs: the city and place lists (gen_factory_hubs.py). Without these rules they ran together
+   as one line of links (Beka 2026-11-13). Empty count / brief spans are hidden. */
+.hub-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:16px}
+.hub-card{display:flex;flex-direction:column;gap:5px;padding:14px 16px;border:1px solid var(--border);border-radius:14px;background:var(--card-grad);text-decoration:none;color:var(--body);transition:border-color .2s}
+.hub-card:hover{border-color:rgba(245,183,91,.55)}
+.hub-card .hc-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.hub-card .hc-head b{font-size:15.5px;font-weight:600;color:var(--fg);line-height:1.3}
+.hub-card .km{flex:none;font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--gold);white-space:nowrap}
+.hub-card .mp-brief{font-size:13px;color:var(--muted);line-height:1.45}
+.hub-card .km:empty,.hub-card .mp-brief:empty{display:none}
+/* the "Updated · how we write these guides" line now sits at the bottom, just above the footer */
+.verified{margin-top:36px}
 """
+# "Listen" buttons: their look is NOT here but in public/explore/assets/lk-listen.css, which every
+# page links next to lk-1.css (scripts/lk_listen.py), so one file restyles them everywhere.
 
 def topbar(active="explore", lang_dd=""):
     on = ' class="on"' if active == "explore" else ""
@@ -220,7 +235,7 @@ def apppanel(img, campaign, heading="Take the guide <em>with you</em>",
             f'<div class="btns"><a class="btn gold" href="{PLAY.format(c=campaign)}" rel="nofollow" target="_blank">'
             f'<span class="pl">&#9654;</span>Get the Lokali app</a>'
             f'<a class="btn ghost" href="{SITE}/">Try it in the browser</a></div>'
-            f'<p class="meta">190+ cities &middot; no ticket &middot; no tour group &middot; no fee</p></div>'
+            f'<p class="meta">No ticket &middot; no tour group &middot; no fee</p></div>'  # no city count: it grows (Beka 2026-11-13)
             f'<div class="ap-img"><img src="{esc(img)}" alt="" loading="lazy" decoding="async"></div></section>')
 
 FOOTER = (f'<footer>Lokali &mdash; free audio guides for travellers, in your own language.<br>'

@@ -601,3 +601,31 @@ html:not(.light) .map-dark .leaflet-control-attribution a {
 html {
   overflow-x: clip;
 }
+
+/* ── Edge waves — the audio player's bottom-edge waves ───────────────
+   Beka 2026-11-12 chose variant "A · Edge waves": three gold/orange
+   sine layers flowing along the bottom edge of the player card. Each
+   SVG is drawn twice as wide as the card and slides left by half its
+   width, so the loop is seamless (the path repeats a whole number of
+   periods across the 660-unit viewBox). Paused → the strip flattens
+   and freezes; the speed button shortens animation-duration inline so
+   the waves visibly hurry at 1.5x / 2x. See InlineAudioPanel.tsx. */
+@keyframes lokali-wave-flow {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.lokali-edge-waves svg {
+  display: block;
+  width: 200%;
+  height: 100%;
+  animation: lokali-wave-flow linear infinite;
+}
+.lokali-edge-waves.is-paused svg {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lokali-edge-waves svg {
+    animation: none;
+  }
+}

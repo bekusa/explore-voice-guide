@@ -140,6 +140,7 @@ def faq_html(F):
 
 
 def wr(rel, h):
+    h = G.lk_post.finish(h, rel)  # Listen buttons, no counts, "Updated" line at the bottom (lk_post.py)
     p = os.path.join(STAGE, rel)
     os.makedirs(os.path.dirname(p), exist_ok=True)
     with open(p + ".tmp", "w", encoding="utf-8") as fh:
@@ -373,7 +374,8 @@ def country_hub(cname, cities_upd, loose):
         if h["noindex"]:
             byurl.pop(h["url"], None)
             continue
-        byurl[h["url"]] = {"url": h["url"], "name": h["name"], "n": h["n"], "brief": ", ".join(h["top"][:3])}
+        # no copied sight list under the city name (Beka 2026-11-13); the empty span keeps parse_hubcards working
+        byurl[h["url"]] = {"url": h["url"], "name": h["name"], "n": h["n"], "brief": ""}
     cities = sorted(byurl.values(), key=lambda c: -c["n"])
     loose = sorted(loose, key=lambda a: RANK.get(a["q"], 9999))
     total = sum(c["n"] for c in cities) + len(loose)

@@ -9,7 +9,7 @@ export const Route = createFileRoute("/")({
       { title: `Lokali - Free Audio Guides in ${LANGUAGE_COUNT_LABEL} Languages` },
       {
         name: "description",
-        content: `Free audio guides for 190+ cities worldwide, in ${LANGUAGE_COUNT_LABEL} languages. History, what to look for and practical tips - offline, no ticket, no tour group.`,
+        content: `Free audio guides for cities worldwide, in ${LANGUAGE_COUNT_LABEL} languages. History, what to look for and practical tips - offline, no ticket, no tour group.`,
       },
       {
         property: "og:title",
@@ -17,9 +17,13 @@ export const Route = createFileRoute("/")({
       },
       {
         property: "og:description",
-        content: `Free audio guides for 190+ cities worldwide, in ${LANGUAGE_COUNT_LABEL} languages. History, what to look for and practical tips - offline, no ticket, no tour group.`,
+        content: `Free audio guides for cities worldwide, in ${LANGUAGE_COUNT_LABEL} languages. History, what to look for and practical tips - offline, no ticket, no tour group.`,
       },
     ],
+    // Self-canonical (2026-11-10): the home page had none, so ?utm_…, ?ref=… and
+    // other query variants could be indexed as separate URLs. Same pattern as
+    // /destinations.
+    links: [{ rel: "canonical", href: "https://lokali.travel/" }],
     /* Entity markup belongs HERE, in the head, not in the component
      * tree. Beka 2026-10-25 — moving it is what fixed React #418 on
      * this page; the whole story is in the comment above ORG_JSON_LD. */
@@ -82,7 +86,7 @@ const ORG_JSON_LD = {
       alternateName: ["Lokali Audio Guide", "Lokali — Free Audio Guides"],
       url: "https://lokali.travel/",
       logo: "https://lokali.travel/icon-512.png",
-      description: `Lokali makes free AI-narrated audio guides for landmarks and museums in 190+ cities, in ${LANGUAGE_COUNT_LABEL} languages.`,
+      description: `Lokali makes free AI-narrated audio guides for landmarks and museums in cities around the world, in ${LANGUAGE_COUNT_LABEL} languages.`,
       email: "contact@lokali.travel",
       sameAs: [
         PLAY_URL,

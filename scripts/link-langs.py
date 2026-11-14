@@ -382,8 +382,11 @@ for root,members in sorted(comp.items()):
     alts.append(f'    <xhtml:link rel="alternate" hreflang="x-default" href="{pages[xd]}"/>')
     for m in sorted(members):
         u=pages[m]
-        # pages we deliberately keep out of the index must stay out of the sitemap
-        if 'name="robots" content="noindex' in read(m): continue
+        # pages we deliberately keep out of the index must stay out of the sitemap,
+        # and so must canonical-aliased duplicates (ALIASED's docstring said so,
+        # but this line only checked noindex: 18 aliases sat in the sitemap until
+        # 2026-11-10, e.g. en/tbilisi/sioni-katedralen.html -> sioni-cathedral.html)
+        if NOIDX(m): continue
         urls.append(u)
         out+=['  <url>',f'    <loc>{u}</loc>',
               f'    <lastmod>{old.get(u) or TODAY}</lastmod>',

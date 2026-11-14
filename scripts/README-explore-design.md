@@ -71,3 +71,81 @@ picker, captured with the app set to that language; UI strings only from the bun
 ui-locales, /api/translate was blocked, so place names stay as the app shows them) + the
 still `<lang>.webp`; the list is `SETTINGS.appLangs`. Blog pages get the card too (kind `blog`,
 generic title, no nearby list); `scripts/soro-sync.py` writes the script tag into new posts.
+
+## "Listen" buttons (2026-11-10, central since 2026-11-12)
+
+Beka's rule: the buttons and the card are the same on every page, and changing them must never mean
+editing pages. So each part lives in ONE file that every page loads (no `?v=`, ETag revalidation):
+
+| what | file | change it and … |
+|---|---|---|
+| look (variant B: dark pill, gold ▶, drifting orange/gold sound waves) | `public/explore/assets/lk-listen.css` | every page changes at the next push |
+| words, 47 languages, picked by the page language | `LK_LISTEN_TEXT` in `public/explore/assets/lk-sheet.js` | every page changes at the next push (the script rewrites the button text on load) |
+| where the button goes (App Store / Play / lokali.travel/app, hidden in the app) | `fixStoreLinks()` in `lk-sheet.js` | same |
+| the card (popup) | `lk-sheet.js` | same |
+
+The page HTML carries the same words for search engines; `scripts/lk_listen.py` reads them from
+`LK_LISTEN_TEXT`, so HTML and live text cannot drift. Rerunning `lk_listen.py run` after a wording
+change is optional (it only refreshes what crawlers see). The button carries the page's own facts as
+`data-kind`, `data-min` (the "Lokali audio guide" minutes, in the page language) and
+`data-name` (English hubs); no `data-n` since 2026-11-13 (no counts, see below). Every page links
+`/explore/assets/lk-listen.css` (explore pages, the explore index, the Journal). Wording as of 2026-11-13:
+
+- top bar: `▶ Listen in app` (was "Get the app")
+- attraction gold buttons: `▶ Listen to this guide` + `Free · 9 min · in the Lokali app`. The minutes
+  are the page's own "Lokali audio guide" fact, copied as written in the page language. A page
+  without that fact shows `Free · in the Lokali app`. On a computer the same button opens this
+  guide in the web app (fixStoreLinks, `data-store="web"`), so listenText() ends its line with the
+  `inbrowser` words instead: `Free · 9 min · in your browser` (Beka 2026-11-14). Phones keep
+  "in the Lokali app" (their button opens the App Store / Google Play), and so does the HTML
+  crawlers read.
+- EN city hubs: `▶ Listen to Tbilisi guides` + `Free · in the Lokali app`; EN country hubs: `▶ Listen
+  to guides in Georgia` + the same line. Other languages: `▶ Listen to the guides` (no city
+  name, so no grammar cases to get wrong; the h1 right above already names the city).
+- explore index: `▶ Listen to the guides` + `Free · 50+ languages · in the Lokali app`
+- Journal (`.cta` and the install bar): `▶ Listen in app`
+
+A bare "Play" was rejected on purpose: the button opens a store, so it says "in the app". Links,
+`rel`, `target` and classes are kept (class `play` is added), so lk-sheet.js still sends each
+visitor to their store and hides store links inside the app. The ▶ is `&#9654;&#xFE0E;` so iOS
+does not draw the emoji. The bottom bar on phones (#gpb, generated as a Google Play pill) is rebuilt
+by `storeBar()` in lk-sheet.js with both official badges, the visitor's store first (Beka 2026-11-13);
+lk-listen.css keeps it invisible until then, so the old pill never flashes. The waves are two CSS
+pseudo-elements with a tiny inline SVG (no images, ~3 KB for the whole file); "reduce motion"
+visitors get them still. Journal pills use class `lkl`.
+
+All generators call it before writing (`gen_factory_en.wr`, `gen_factory_hubs.wr`, `gen.wr`,
+lk_restyle, lk_index, soro-sync), so new pages come out the same way. `build-explore-hub.mjs`
+(Node) does not: pass its output through `python scripts/lk_listen.py run …` afterwards.
+The existing tree (28,319 pages + 29 Journal pages) was converted with
+`lk_listen.py list` / `run <list> <start> <end>` / `blog`. The transform is idempotent.
+
+## No counts, "Updated" line at the bottom (lk_post.py, 2026-11-13)
+
+Beka's rule: no numbers of guides, places, cities or countries on any page ("Tbilisi has 38 guides",
+"70 free audio guides in Georgia, across 5 cities", "565 cities · 7,268 free guides", "190+ cities").
+The collection grows every week, so any count is wrong soon after it is published. What stays: visit
+times, audio minutes, distances, "#1" ranks, dates, "50+ languages", and `numberOfItems` in JSON-LD
+(machine data the generators keep current).
+
+`scripts/lk_post.py` is the last step for every /explore/ page: `finish(html, rel)` =
+`lk_listen.apply()` + `lk_post.apply()`. All generators call it (`gen_factory_en.wr`,
+`gen_factory_hubs.wr`, `gen.wr`, lk_restyle, lk_index); `build-explore-hub.mjs` (Node) does not,
+so pass its output through `python scripts/lk_post.py run <list> <start> <end>` afterwards
+(the list comes from `lk_listen.py list`). What it does, idempotently:
+
+- hubs in every language: counts out of title, description, og/twitter, JSON-LD descriptions, lead,
+  badge, tagline, eyebrows, the "See all N" button, the Listen subline; the stats boxes
+  (`<div class="stats">`) and the "How many guides…?" FAQ (HTML and FAQPage JSON-LD) are removed.
+  English sentences are rewritten (`EN_RULES`); other languages use rules built from their own hub
+  templates (`XX_RULES`, `PAREN` for the shared "(7)" template), so nothing new had to be translated.
+- the `✓ Updated <month> · how we write these guides` line moves to just above the footer.
+- English country hubs: the city cards are a readable list (`.hub-list` / `.hub-card` in lk_sys.CSS)
+  with no sight names copied from the city pages and no counts.
+- the explore index (`INDEX_RULES`) and the app panel ("190+ cities" -> "No ticket · …").
+- the Journal: `lk_post.blog()` (called by soro-sync.py on every page; `python scripts/lk_post.py blog`
+  for existing posts) turns "more than 190 cities in 45 languages" into "cities around the world in
+  50+ languages" and the CTA into "Free audio guides worldwide".
+
+The SPA (`src/routes/__root.tsx`, `index.tsx`, `destinations.tsx`) and `public/about/editorial-process.html`
+were changed by hand the same day; they carry no counts either.

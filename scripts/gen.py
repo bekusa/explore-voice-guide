@@ -374,6 +374,8 @@ def hub(cs,items):
     return NL.join(L)
 
 def wr(rel,h):
+    import lk_post  # Listen buttons, no location counts, "Updated" line at the bottom (lk_post.py)
+    h=lk_post.finish(h,f'{LANG}/{rel}')
     # Write via a temp file + os.replace. A plain open(path,'w') truncates first
     # and fills second, so a run killed between those two steps leaves a
     # zero-byte page -- which is exactly how bg/edirne/dzhamiya-selimie.html
