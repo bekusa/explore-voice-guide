@@ -64,57 +64,58 @@ var LK_SHEET_SETTINGS = {
  * Minutes / counts / names are the page's own facts (data-min, data-n, data-name on the button).
  * Optional keys a language may add: cityTitle / countryTitle ({name}); without them hub buttons use
  * "guides". No counts on purpose (Beka 2026-11-13): they go stale as guides are added. The keys
- * places / place1 / guidesN / guide1 still work if ever added back. langs: explore index only. */
+ * places / place1 / guidesN / guide1 still work if ever added back. langs: explore index only. inbrowser: the
+ * big button's line on a computer, where it opens the guide in the web app (2026-11-14). */
 // LISTEN-TEXT-BEGIN
 var LK_LISTEN_TEXT = {
-  "en": {"app": "Listen in app", "guide": "Listen to this guide", "guides": "Listen to the guides", "free": "Free", "inapp": "in the Lokali app",
+  "en": {"app": "Listen in app", "guide": "Listen to this guide", "guides": "Listen to the guides", "free": "Free", "inapp": "in the Lokali app", "inbrowser": "in your browser",
          "cityTitle": "Listen to {name} guides", "countryTitle": "Listen to guides in {name}", "langs": "50+ languages"},
-  "fr": {"app": "Écouter dans l'app", "guide": "Écouter ce guide", "guides": "Écouter les guides", "free": "Gratuit", "inapp": "dans l'app Lokali"},
-  "de": {"app": "In der App hören", "guide": "Diesen Guide anhören", "guides": "Die Guides anhören", "free": "Kostenlos", "inapp": "in der Lokali-App"},
-  "es": {"app": "Escuchar en la app", "guide": "Escuchar esta guía", "guides": "Escuchar las guías", "free": "Gratis", "inapp": "en la app Lokali"},
-  "it": {"app": "Ascolta nell'app", "guide": "Ascolta questa guida", "guides": "Ascolta le guide", "free": "Gratis", "inapp": "nell'app Lokali"},
-  "nl": {"app": "Luister in de app", "guide": "Luister naar deze gids", "guides": "Luister naar de gidsen", "free": "Gratis", "inapp": "in de Lokali-app"},
-  "pl": {"app": "Słuchaj w aplikacji", "guide": "Posłuchaj tego przewodnika", "guides": "Posłuchaj przewodników", "free": "Za darmo", "inapp": "w aplikacji Lokali"},
-  "sv": {"app": "Lyssna i appen", "guide": "Lyssna på guiden", "guides": "Lyssna på guiderna", "free": "Gratis", "inapp": "i Lokali-appen"},
-  "nb": {"app": "Lytt i appen", "guide": "Lytt til guiden", "guides": "Lytt til guidene", "free": "Gratis", "inapp": "i Lokali-appen"},
-  "da": {"app": "Lyt i appen", "guide": "Lyt til guiden", "guides": "Lyt til guiderne", "free": "Gratis", "inapp": "i Lokali-appen"},
-  "fi": {"app": "Kuuntele sovelluksessa", "guide": "Kuuntele tämä opas", "guides": "Kuuntele oppaat", "free": "Ilmainen", "inapp": "Lokali-sovelluksessa"},
-  "cs": {"app": "Poslouchat v aplikaci", "guide": "Poslechněte si tohoto průvodce", "guides": "Poslechněte si průvodce", "free": "Zdarma", "inapp": "v aplikaci Lokali"},
-  "hu": {"app": "Hallgasd az appban", "guide": "Hallgasd meg ezt az idegenvezetést", "guides": "Hallgasd meg az idegenvezetéseket", "free": "Ingyenes", "inapp": "a Lokali appban"},
-  "ro": {"app": "Ascultă în aplicație", "guide": "Ascultă acest ghid", "guides": "Ascultă ghidurile", "free": "Gratuit", "inapp": "în aplicația Lokali"},
-  "hr": {"app": "Slušaj u aplikaciji", "guide": "Poslušaj ovaj vodič", "guides": "Poslušaj vodiče", "free": "Besplatno", "inapp": "u aplikaciji Lokali"},
-  "ru": {"app": "Слушать в приложении", "guide": "Слушать этот аудиогид", "guides": "Слушать аудиогиды", "free": "Бесплатно", "inapp": "в приложении Lokali"},
-  "uk": {"app": "Слухати в застосунку", "guide": "Слухати цей аудіогід", "guides": "Слухати аудіогіди", "free": "Безкоштовно", "inapp": "у застосунку Lokali"},
-  "bg": {"app": "Слушай в приложението", "guide": "Слушай този аудиогид", "guides": "Слушай аудиогидовете", "free": "Безплатно", "inapp": "в приложението Lokali"},
-  "sr": {"app": "Слушај у апликацији", "guide": "Послушај овај водич", "guides": "Послушај водиче", "free": "Бесплатно", "inapp": "у апликацији Lokali"},
-  "el": {"app": "Ακούστε στην εφαρμογή", "guide": "Ακούστε αυτόν τον οδηγό", "guides": "Ακούστε τους οδηγούς", "free": "Δωρεάν", "inapp": "στην εφαρμογή Lokali"},
-  "tr": {"app": "Uygulamada dinle", "guide": "Bu rehberi dinle", "guides": "Rehberleri dinle", "free": "Ücretsiz", "inapp": "Lokali uygulamasında"},
-  "az": {"app": "Tətbiqdə dinlə", "guide": "Bu bələdçini dinlə", "guides": "Bələdçiləri dinlə", "free": "Pulsuz", "inapp": "Lokali tətbiqində"},
-  "hy": {"app": "Լսել հավելվածում", "guide": "Լսել այս ուղեցույցը", "guides": "Լսել ուղեցույցները", "free": "Անվճար", "inapp": "Lokali հավելվածում"},
-  "ka": {"app": "მოუსმინეთ აპში", "guide": "მოუსმინეთ გიდს", "guides": "მოუსმინეთ გიდებს", "free": "უფასო", "inapp": "Lokali-ს აპში"},
-  "ar": {"app": "استمع في التطبيق", "guide": "استمع إلى هذا الدليل", "guides": "استمع إلى الأدلة", "free": "مجانًا", "inapp": "في تطبيق Lokali"},
-  "he": {"app": "האזינו באפליקציה", "guide": "האזינו למדריך הזה", "guides": "האזינו למדריכים", "free": "חינם", "inapp": "באפליקציית Lokali"},
-  "fa": {"app": "در اپ گوش دهید", "guide": "به این راهنما گوش دهید", "guides": "به راهنماها گوش دهید", "free": "رایگان", "inapp": "در اپ Lokali"},
-  "ur": {"app": "ایپ میں سنیں", "guide": "یہ گائیڈ سنیں", "guides": "گائیڈز سنیں", "free": "مفت", "inapp": "Lokali ایپ میں"},
-  "hi": {"app": "ऐप में सुनें", "guide": "यह गाइड सुनें", "guides": "गाइड सुनें", "free": "मुफ़्त", "inapp": "Lokali ऐप में"},
-  "bn": {"app": "অ্যাপে শুনুন", "guide": "এই গাইডটি শুনুন", "guides": "গাইডগুলো শুনুন", "free": "বিনামূল্যে", "inapp": "Lokali অ্যাপে"},
-  "ta": {"app": "ஆப்பில் கேளுங்கள்", "guide": "இந்த வழிகாட்டியைக் கேளுங்கள்", "guides": "வழிகாட்டிகளைக் கேளுங்கள்", "free": "இலவசம்", "inapp": "Lokali ஆப்பில்"},
-  "te": {"app": "యాప్‌లో వినండి", "guide": "ఈ గైడ్ వినండి", "guides": "గైడ్‌లు వినండి", "free": "ఉచితం", "inapp": "Lokali యాప్‌లో"},
-  "mr": {"app": "ॲपमध्ये ऐका", "guide": "हा गाइड ऐका", "guides": "गाइड ऐका", "free": "मोफत", "inapp": "Lokali ॲपमध्ये"},
-  "ja": {"app": "アプリで聴く", "guide": "このガイドを聴く", "guides": "ガイドを聴く", "free": "無料", "inapp": "Lokaliアプリで"},
-  "ko": {"app": "앱에서 듣기", "guide": "이 가이드 듣기", "guides": "가이드 듣기", "free": "무료", "inapp": "Lokali 앱에서"},
-  "zh": {"app": "在应用中收听", "guide": "收听本导览", "guides": "收听导览", "free": "免费", "inapp": "在 Lokali 应用中"},
-  "zh-cn": {"app": "在应用中收听", "guide": "收听本导览", "guides": "收听导览", "free": "免费", "inapp": "在 Lokali 应用中"},
-  "zh-tw": {"app": "在 App 中收聽", "guide": "收聽本導覽", "guides": "收聽導覽", "free": "免費", "inapp": "在 Lokali App 中"},
-  "th": {"app": "ฟังในแอป", "guide": "ฟังไกด์นี้", "guides": "ฟังไกด์", "free": "ฟรี", "inapp": "ในแอป Lokali"},
-  "vi": {"app": "Nghe trong ứng dụng", "guide": "Nghe hướng dẫn này", "guides": "Nghe các hướng dẫn", "free": "Miễn phí", "inapp": "trong ứng dụng Lokali"},
-  "id": {"app": "Dengarkan di aplikasi", "guide": "Dengarkan panduan ini", "guides": "Dengarkan panduannya", "free": "Gratis", "inapp": "di aplikasi Lokali"},
-  "ms": {"app": "Dengar dalam aplikasi", "guide": "Dengar panduan ini", "guides": "Dengar panduan", "free": "Percuma", "inapp": "dalam aplikasi Lokali"},
-  "sw": {"app": "Sikiliza kwenye programu", "guide": "Sikiliza mwongozo huu", "guides": "Sikiliza miongozo", "free": "Bure", "inapp": "kwenye programu ya Lokali"},
-  "af": {"app": "Luister in die app", "guide": "Luister na hierdie gids", "guides": "Luister na die gidse", "free": "Gratis", "inapp": "in die Lokali-app"},
-  "pt": {"app": "Ouvir na app", "guide": "Ouvir este guia", "guides": "Ouvir os guias", "free": "Grátis", "inapp": "na app Lokali"},
-  "pt-pt": {"app": "Ouvir na app", "guide": "Ouvir este guia", "guides": "Ouvir os guias", "free": "Grátis", "inapp": "na app Lokali"},
-  "pt-br": {"app": "Ouvir no app", "guide": "Ouvir este guia", "guides": "Ouvir os guias", "free": "Grátis", "inapp": "no app Lokali"}
+  "fr": {"app": "Écouter dans l'app", "guide": "Écouter ce guide", "guides": "Écouter les guides", "free": "Gratuit", "inapp": "dans l'app Lokali", "inbrowser": "dans votre navigateur"},
+  "de": {"app": "In der App hören", "guide": "Diesen Guide anhören", "guides": "Die Guides anhören", "free": "Kostenlos", "inapp": "in der Lokali-App", "inbrowser": "im Browser"},
+  "es": {"app": "Escuchar en la app", "guide": "Escuchar esta guía", "guides": "Escuchar las guías", "free": "Gratis", "inapp": "en la app Lokali", "inbrowser": "en tu navegador"},
+  "it": {"app": "Ascolta nell'app", "guide": "Ascolta questa guida", "guides": "Ascolta le guide", "free": "Gratis", "inapp": "nell'app Lokali", "inbrowser": "nel tuo browser"},
+  "nl": {"app": "Luister in de app", "guide": "Luister naar deze gids", "guides": "Luister naar de gidsen", "free": "Gratis", "inapp": "in de Lokali-app", "inbrowser": "in je browser"},
+  "pl": {"app": "Słuchaj w aplikacji", "guide": "Posłuchaj tego przewodnika", "guides": "Posłuchaj przewodników", "free": "Za darmo", "inapp": "w aplikacji Lokali", "inbrowser": "w przeglądarce"},
+  "sv": {"app": "Lyssna i appen", "guide": "Lyssna på guiden", "guides": "Lyssna på guiderna", "free": "Gratis", "inapp": "i Lokali-appen", "inbrowser": "i webbläsaren"},
+  "nb": {"app": "Lytt i appen", "guide": "Lytt til guiden", "guides": "Lytt til guidene", "free": "Gratis", "inapp": "i Lokali-appen", "inbrowser": "i nettleseren"},
+  "da": {"app": "Lyt i appen", "guide": "Lyt til guiden", "guides": "Lyt til guiderne", "free": "Gratis", "inapp": "i Lokali-appen", "inbrowser": "i browseren"},
+  "fi": {"app": "Kuuntele sovelluksessa", "guide": "Kuuntele tämä opas", "guides": "Kuuntele oppaat", "free": "Ilmainen", "inapp": "Lokali-sovelluksessa", "inbrowser": "selaimessa"},
+  "cs": {"app": "Poslouchat v aplikaci", "guide": "Poslechněte si tohoto průvodce", "guides": "Poslechněte si průvodce", "free": "Zdarma", "inapp": "v aplikaci Lokali", "inbrowser": "v prohlížeči"},
+  "hu": {"app": "Hallgasd az appban", "guide": "Hallgasd meg ezt az idegenvezetést", "guides": "Hallgasd meg az idegenvezetéseket", "free": "Ingyenes", "inapp": "a Lokali appban", "inbrowser": "a böngészőben"},
+  "ro": {"app": "Ascultă în aplicație", "guide": "Ascultă acest ghid", "guides": "Ascultă ghidurile", "free": "Gratuit", "inapp": "în aplicația Lokali", "inbrowser": "în browser"},
+  "hr": {"app": "Slušaj u aplikaciji", "guide": "Poslušaj ovaj vodič", "guides": "Poslušaj vodiče", "free": "Besplatno", "inapp": "u aplikaciji Lokali", "inbrowser": "u pregledniku"},
+  "ru": {"app": "Слушать в приложении", "guide": "Слушать этот аудиогид", "guides": "Слушать аудиогиды", "free": "Бесплатно", "inapp": "в приложении Lokali", "inbrowser": "в браузере"},
+  "uk": {"app": "Слухати в застосунку", "guide": "Слухати цей аудіогід", "guides": "Слухати аудіогіди", "free": "Безкоштовно", "inapp": "у застосунку Lokali", "inbrowser": "у браузері"},
+  "bg": {"app": "Слушай в приложението", "guide": "Слушай този аудиогид", "guides": "Слушай аудиогидовете", "free": "Безплатно", "inapp": "в приложението Lokali", "inbrowser": "в браузъра"},
+  "sr": {"app": "Слушај у апликацији", "guide": "Послушај овај водич", "guides": "Послушај водиче", "free": "Бесплатно", "inapp": "у апликацији Lokali", "inbrowser": "у прегледачу"},
+  "el": {"app": "Ακούστε στην εφαρμογή", "guide": "Ακούστε αυτόν τον οδηγό", "guides": "Ακούστε τους οδηγούς", "free": "Δωρεάν", "inapp": "στην εφαρμογή Lokali", "inbrowser": "στον browser"},
+  "tr": {"app": "Uygulamada dinle", "guide": "Bu rehberi dinle", "guides": "Rehberleri dinle", "free": "Ücretsiz", "inapp": "Lokali uygulamasında", "inbrowser": "tarayıcınızda"},
+  "az": {"app": "Tətbiqdə dinlə", "guide": "Bu bələdçini dinlə", "guides": "Bələdçiləri dinlə", "free": "Pulsuz", "inapp": "Lokali tətbiqində", "inbrowser": "brauzerdə"},
+  "hy": {"app": "Լսել հավելվածում", "guide": "Լսել այս ուղեցույցը", "guides": "Լսել ուղեցույցները", "free": "Անվճար", "inapp": "Lokali հավելվածում", "inbrowser": "դիտարկիչում"},
+  "ka": {"app": "მოუსმინეთ აპში", "guide": "მოუსმინეთ გიდს", "guides": "მოუსმინეთ გიდებს", "free": "უფასო", "inapp": "Lokali-ს აპში", "inbrowser": "ბრაუზერში"},
+  "ar": {"app": "استمع في التطبيق", "guide": "استمع إلى هذا الدليل", "guides": "استمع إلى الأدلة", "free": "مجانًا", "inapp": "في تطبيق Lokali", "inbrowser": "في متصفحك"},
+  "he": {"app": "האזינו באפליקציה", "guide": "האזינו למדריך הזה", "guides": "האזינו למדריכים", "free": "חינם", "inapp": "באפליקציית Lokali", "inbrowser": "בדפדפן"},
+  "fa": {"app": "در اپ گوش دهید", "guide": "به این راهنما گوش دهید", "guides": "به راهنماها گوش دهید", "free": "رایگان", "inapp": "در اپ Lokali", "inbrowser": "در مرورگر"},
+  "ur": {"app": "ایپ میں سنیں", "guide": "یہ گائیڈ سنیں", "guides": "گائیڈز سنیں", "free": "مفت", "inapp": "Lokali ایپ میں", "inbrowser": "براؤزر میں"},
+  "hi": {"app": "ऐप में सुनें", "guide": "यह गाइड सुनें", "guides": "गाइड सुनें", "free": "मुफ़्त", "inapp": "Lokali ऐप में", "inbrowser": "ब्राउज़र में"},
+  "bn": {"app": "অ্যাপে শুনুন", "guide": "এই গাইডটি শুনুন", "guides": "গাইডগুলো শুনুন", "free": "বিনামূল্যে", "inapp": "Lokali অ্যাপে", "inbrowser": "ব্রাউজারে"},
+  "ta": {"app": "ஆப்பில் கேளுங்கள்", "guide": "இந்த வழிகாட்டியைக் கேளுங்கள்", "guides": "வழிகாட்டிகளைக் கேளுங்கள்", "free": "இலவசம்", "inapp": "Lokali ஆப்பில்", "inbrowser": "உலாவியில்"},
+  "te": {"app": "యాప్‌లో వినండి", "guide": "ఈ గైడ్ వినండి", "guides": "గైడ్‌లు వినండి", "free": "ఉచితం", "inapp": "Lokali యాప్‌లో", "inbrowser": "బ్రౌజర్‌లో"},
+  "mr": {"app": "ॲपमध्ये ऐका", "guide": "हा गाइड ऐका", "guides": "गाइड ऐका", "free": "मोफत", "inapp": "Lokali ॲपमध्ये", "inbrowser": "ब्राउझरमध्ये"},
+  "ja": {"app": "アプリで聴く", "guide": "このガイドを聴く", "guides": "ガイドを聴く", "free": "無料", "inapp": "Lokaliアプリで", "inbrowser": "ブラウザで"},
+  "ko": {"app": "앱에서 듣기", "guide": "이 가이드 듣기", "guides": "가이드 듣기", "free": "무료", "inapp": "Lokali 앱에서", "inbrowser": "브라우저에서"},
+  "zh": {"app": "在应用中收听", "guide": "收听本导览", "guides": "收听导览", "free": "免费", "inapp": "在 Lokali 应用中", "inbrowser": "在浏览器中"},
+  "zh-cn": {"app": "在应用中收听", "guide": "收听本导览", "guides": "收听导览", "free": "免费", "inapp": "在 Lokali 应用中", "inbrowser": "在浏览器中"},
+  "zh-tw": {"app": "在 App 中收聽", "guide": "收聽本導覽", "guides": "收聽導覽", "free": "免費", "inapp": "在 Lokali App 中", "inbrowser": "在瀏覽器中"},
+  "th": {"app": "ฟังในแอป", "guide": "ฟังไกด์นี้", "guides": "ฟังไกด์", "free": "ฟรี", "inapp": "ในแอป Lokali", "inbrowser": "ในเบราว์เซอร์"},
+  "vi": {"app": "Nghe trong ứng dụng", "guide": "Nghe hướng dẫn này", "guides": "Nghe các hướng dẫn", "free": "Miễn phí", "inapp": "trong ứng dụng Lokali", "inbrowser": "trên trình duyệt"},
+  "id": {"app": "Dengarkan di aplikasi", "guide": "Dengarkan panduan ini", "guides": "Dengarkan panduannya", "free": "Gratis", "inapp": "di aplikasi Lokali", "inbrowser": "di browser"},
+  "ms": {"app": "Dengar dalam aplikasi", "guide": "Dengar panduan ini", "guides": "Dengar panduan", "free": "Percuma", "inapp": "dalam aplikasi Lokali", "inbrowser": "dalam pelayar"},
+  "sw": {"app": "Sikiliza kwenye programu", "guide": "Sikiliza mwongozo huu", "guides": "Sikiliza miongozo", "free": "Bure", "inapp": "kwenye programu ya Lokali", "inbrowser": "kwenye kivinjari"},
+  "af": {"app": "Luister in die app", "guide": "Luister na hierdie gids", "guides": "Luister na die gidse", "free": "Gratis", "inapp": "in die Lokali-app", "inbrowser": "in jou blaaier"},
+  "pt": {"app": "Ouvir na app", "guide": "Ouvir este guia", "guides": "Ouvir os guias", "free": "Grátis", "inapp": "na app Lokali", "inbrowser": "no navegador"},
+  "pt-pt": {"app": "Ouvir na app", "guide": "Ouvir este guia", "guides": "Ouvir os guias", "free": "Grátis", "inapp": "na app Lokali", "inbrowser": "no navegador"},
+  "pt-br": {"app": "Ouvir no app", "guide": "Ouvir este guia", "guides": "Ouvir os guias", "free": "Grátis", "inapp": "no app Lokali", "inbrowser": "no navegador"}
 };
 // LISTEN-TEXT-END
 
@@ -444,7 +445,10 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
         if (tt && n && cnt) sub.push(cnt.replace("{n}", n));
       }
       if (kind === "index") sub.push(k("langs"));
-      sub.push(k("inapp"));
+      // On a computer fixStoreLinks() (run just before this) sends the big button to this guide in the
+      // web app (data-store="web"), so its line says "in your browser", not "in the Lokali app"
+      // (Beka 2026-11-14). Phones keep "in the Lokali app": their button opens the store.
+      sub.push(k(a.getAttribute("data-store") === "web" ? "inbrowser" : "inapp"));
       b.textContent = title; s.textContent = sub.join(" · ");
     });
   }

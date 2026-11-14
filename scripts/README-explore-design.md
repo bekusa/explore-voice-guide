@@ -94,7 +94,11 @@ change is optional (it only refreshes what crawlers see). The button carries the
 - top bar: `▶ Listen in app` (was "Get the app")
 - attraction gold buttons: `▶ Listen to this guide` + `Free · 9 min · in the Lokali app`. The minutes
   are the page's own "Lokali audio guide" fact, copied as written in the page language. A page
-  without that fact shows `Free · in the Lokali app`.
+  without that fact shows `Free · in the Lokali app`. On a computer the same button opens this
+  guide in the web app (fixStoreLinks, `data-store="web"`), so listenText() ends its line with the
+  `inbrowser` words instead: `Free · 9 min · in your browser` (Beka 2026-11-14). Phones keep
+  "in the Lokali app" (their button opens the App Store / Google Play), and so does the HTML
+  crawlers read.
 - EN city hubs: `▶ Listen to Tbilisi guides` + `Free · in the Lokali app`; EN country hubs: `▶ Listen
   to guides in Georgia` + the same line. Other languages: `▶ Listen to the guides` (no city
   name, so no grammar cases to get wrong; the h1 right above already names the city).
