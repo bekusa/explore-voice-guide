@@ -14,6 +14,14 @@
  *
  *   npx tsx tools/agent-control.ts seo "weekly run start"   → prints the command; exit 0 = run, 3 = pause
  *
+ * Notes the dashboard understands (second CLI argument / `note`):
+ *   "WAITING: <one-line question>"  the run has stopped and needs Beka's decision → shown as "waiting for you"
+ *   "STOPPED: <where / result>"     the run has ended (Stop pressed, queue empty, limit reached)
+ *   anything else                    progress, e.g. "wave 2, 340/500"
+ * Stop on the dashboard = desired_state pause: finish the unit in hand, poll every 5 minutes for at
+ * most 30 minutes (Beka may press Start again), then end the run with a STOPPED note. A new run is
+ * started from the dashboard (scheduled tasks "Lokali · … start").
+ *
  * If the table is missing or the database is unreachable the helpers return null: the agent then
  * runs under its own config, exactly as before this file existed. Agents never write desired_state.
  */

@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public.agent_control (
   agent_note      TEXT
 );
 COMMENT ON TABLE public.agent_control IS
-  'One row per agent system. desired_state run|pause and max_weekly_pct (ceiling of the Max plan weekly window, %) are set by Beka from the dashboard. Agents: call agent_heartbeat(system, note) before each unit / at the start of each run; if it returns pause, claim nothing new, finish the unit in hand, then poll every 5 minutes. Never write desired_state yourself.';
+  'One row per agent system. desired_state run|pause and max_weekly_pct (ceiling of the Max plan weekly window, %) are set by Beka from the dashboard. Agents: call agent_heartbeat(system, note) before each unit / at the start of each run; if it returns pause (Stop), claim nothing new, finish the unit in hand, poll every 5 minutes for at most 30 minutes, then end the run with note ''STOPPED: <where>''. When waiting for Beka''s decision write note ''WAITING: <question>''. Never write desired_state yourself.';
 
 CREATE TABLE IF NOT EXISTS public.agent_control_log (
   id      BIGSERIAL PRIMARY KEY,
@@ -26,8 +26,9 @@ CREATE TABLE IF NOT EXISTS public.agent_control_log (
   at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-INSERT INTO public.agent_control (system, max_weekly_pct, updated_by) VALUES
-  ('factory', 100, 'init'), ('qa', 100, 'init'), ('seo', 50, 'init')
+-- Everything starts stopped: Beka presses Start on the dashboard.
+INSERT INTO public.agent_control (system, desired_state, max_weekly_pct, updated_by) VALUES
+  ('factory', 'pause', 100, 'init'), ('qa', 'pause', 100, 'init'), ('seo', 'pause', 50, 'init')
 ON CONFLICT (system) DO NOTHING;
 
 ALTER TABLE public.agent_control     ENABLE ROW LEVEL SECURITY;

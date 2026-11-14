@@ -30,7 +30,7 @@ import { factCheck, summarize, type Claim } from "./gate3";
 import { publishAttractions, publishGuide } from "./publish";
 import { repairGuide } from "./repair";
 import { latestLimits, type UsageLimits } from "./transport";
-import { waitWhilePaused } from "../agent-control";
+import { heartbeat, waitWhilePaused } from "../agent-control";
 
 type Job = {
   id: number;
@@ -365,8 +365,8 @@ async function main() {
     }
     if (!local) {
       // Dashboard switch: pause → claim nothing new and poll; run → take its weekly ceiling.
-      const control = await waitWhilePaused("factory", { note: `${kind} ${done}/${limit}`, deadline });
-      if (control === "deadline") { stopReason = "paused from the dashboard"; break; }
+      const control = await waitWhilePaused("factory", { note: `${kind} ${done}/${limit}`, deadline: Math.min(deadline, Date.now() + 30 * 60_000) });
+      if (control === "deadline") { stopReason = "stopped from the dashboard"; break; }
       if (control) weeklyCap = Math.min(CONFIG.usage.maxWeekly, control.max_weekly_pct / 100);
     }
     const batch = await claim(Math.min(concurrency, limit - done));
@@ -394,6 +394,7 @@ async function main() {
     if (local) break;
   }
   console.log(`finished: ${stopReason || "limit reached"} · ${JSON.stringify(results)}`);
+  if (!local) await heartbeat("factory", `STOPPED: ${stopReason || "limit reached"} · ${kind} ${done} done`);
 }
 
 await main();
