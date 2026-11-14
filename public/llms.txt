@@ -13,6 +13,49 @@ https://play.google.com/store/apps/details?id=app.lokali.travel
 
 ## Browse
 https://lokali.travel/explore/index.html
+https://lokali.travel/explore/af/index.html
+https://lokali.travel/explore/ar/index.html
+https://lokali.travel/explore/az/index.html
+https://lokali.travel/explore/bg/index.html
+https://lokali.travel/explore/bn/index.html
+https://lokali.travel/explore/cs/index.html
+https://lokali.travel/explore/da/index.html
+https://lokali.travel/explore/de/index.html
+https://lokali.travel/explore/el/index.html
+https://lokali.travel/explore/es/index.html
+https://lokali.travel/explore/fa/index.html
+https://lokali.travel/explore/fi/index.html
+https://lokali.travel/explore/fr/index.html
+https://lokali.travel/explore/he/index.html
+https://lokali.travel/explore/hi/index.html
+https://lokali.travel/explore/hr/index.html
+https://lokali.travel/explore/hu/index.html
+https://lokali.travel/explore/hy/index.html
+https://lokali.travel/explore/id/index.html
+https://lokali.travel/explore/it/index.html
+https://lokali.travel/explore/ja/index.html
+https://lokali.travel/explore/ka/index.html
+https://lokali.travel/explore/ko/index.html
+https://lokali.travel/explore/mr/index.html
+https://lokali.travel/explore/ms/index.html
+https://lokali.travel/explore/nb/index.html
+https://lokali.travel/explore/nl/index.html
+https://lokali.travel/explore/pl/index.html
+https://lokali.travel/explore/pt-br/index.html
+https://lokali.travel/explore/ro/index.html
+https://lokali.travel/explore/ru/index.html
+https://lokali.travel/explore/sr/index.html
+https://lokali.travel/explore/sv/index.html
+https://lokali.travel/explore/sw/index.html
+https://lokali.travel/explore/ta/index.html
+https://lokali.travel/explore/te/index.html
+https://lokali.travel/explore/th/index.html
+https://lokali.travel/explore/tr/index.html
+https://lokali.travel/explore/uk/index.html
+https://lokali.travel/explore/ur/index.html
+https://lokali.travel/explore/vi/index.html
+https://lokali.travel/explore/zh-cn/index.html
+https://lokali.travel/explore/zh-tw/index.html
 
 ## Canonical URLs (13289 total)
 

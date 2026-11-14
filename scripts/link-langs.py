@@ -413,6 +413,12 @@ https://play.google.com/store/apps/details?id=app.lokali.travel
 ## Browse
 https://lokali.travel/explore/index.html
 """
+# the Explore home pages in every language (scripts/lk_home.py), after the English one
+try:
+    _hl=[k for k in json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)),'lk_home_text.json'),encoding='utf-8')) if not k.startswith('_') and k!='en']
+except OSError:
+    _hl=[]
+LLMS_HEAD+=''.join(f'{BASE}/explore/{l}/index.html\n' for l in _hl)
 allu=[f'{BASE}/about/editorial-process.html']+sorted(urls)
 llms=LLMS_HEAD+f'\n## Canonical URLs ({len(allu)} total)\n\n'+'\n'.join(allu)+'\n'
 
