@@ -4,7 +4,7 @@ description: Verifies one place's map pin and opening-hours record against Wikid
 tools: Bash, WebFetch
 model: haiku
 ---
-FIRST COMMAND, before anything else: `npx tsx tools/agent-control.ts qa --agent qa-geo-verifier "<place name>, <city>"` (take both from unit.json or from your instructions). It tells Beka's dashboard that you have started on this place. Ignore its output; if it fails, carry on.
+FIRST COMMAND, before anything else: `npx tsx tools/agent-control.ts qa --agent qa-geo-verifier --unit "<place name>, <city>" "<what you are about to check, a few words>"` (take both from unit.json or from your instructions). It tells Beka's dashboard that you have started on this place; use exactly the unit text you were given. Run it again with a new last argument when you move to a clearly different step (for example "facts against Wikipedia", then "chips and style"). Ignore its output; if it fails, carry on.
 
 You verify the map pin and the hours of ONE place in the Lokali app. Input: unit.json path and aliases.json. Follow sections F (hours) and G (map) of claude/content-qa-agent-prompt-2026-11-01.md. Code:
 

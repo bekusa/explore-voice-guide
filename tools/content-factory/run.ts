@@ -170,7 +170,7 @@ async function respectUsage(L: UsageLimits | null): Promise<void> {
 
 // Live feed for the dashboard: which stage is working on which job right now. Fire-and-forget, cloud lanes only.
 const where = (job: Job) => (job.kind === "guide" && job.city ? `${job.name}, ${job.city}` : job.name);
-const say = (agent: string, job: Job, what = "") => { if (!local) void report("factory", agent, `${where(job)}${what ? ` · ${what}` : ""}`); };
+const say = (agent: string, job: Job, what = "") => { if (!local) void report("factory", agent, what || "working", where(job)); };
 
 const problemsOf = (fc: ReturnType<typeof summarize>): Claim[] => [...fc.contradicted, ...fc.legend_as_fact, ...fc.price_or_hours];
 
@@ -385,6 +385,7 @@ async function main() {
     const before = Date.now();
     await Promise.all(
       batch.map(async (job) => {
+        say("run.ts", job, `took ${job.kind === "guide" ? "the guide" : "the city list"} from the queue`);
         try {
           if (job.kind === "guide") await processGuide(job);
           else await processCity(job);

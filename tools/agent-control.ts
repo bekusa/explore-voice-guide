@@ -24,7 +24,13 @@
  *       switch AND reports; exit 0 = run, 3 = pause
  *   npx tsx tools/agent-control.ts qa --agent qa-text-editor "Hagia Sophia, Istanbul"
  *       a sub-agent reports what it has started; always exits 0 (a report, not a check)
- *   import { report } from "../agent-control";  report("factory", "fact-checker", job.name);
+ *   npx tsx tools/agent-control.ts qa --agent qa-text-editor --unit "Hagia Sophia, Istanbul" "checking facts"
+ *       the same, naming the ONE unit in work; the dashboard shows the unit and its steps
+ *   import { report } from "../agent-control";  report("factory", "fact-checker", "claims", job.name);
+ *
+ * ONE AT A TIME (Beka, 2026-11-14): every system works on one place / guide / page at a time and
+ * one sub-agent at a time on it. No parallel batches. So at any moment there is exactly one unit and
+ * one step to show.
  *
  * Keep `what` to one short line a non-developer can read: the place or page, then the step.
  * Never put secrets, keys or full URLs with tokens in it.
@@ -63,9 +69,9 @@ export const LEAD: Record<AgentSystem, string> = { factory: "run.ts", qa: "orche
 const oneLine = (s: string) => s.replace(/\s+/g, " ").trim().slice(0, 300);
 
 /** Appends one row to the live feed. Never throws: the dashboard is not allowed to break the work. */
-async function logActivity(system: AgentSystem, agent: string, what: string): Promise<void> {
+async function logActivity(system: AgentSystem, agent: string, what: string, unit?: string): Promise<void> {
   try {
-    await db.insert("agent_control_log", [{ system, field: "activity", new: oneLine(what), by: oneLine(agent).slice(0, 60) }]);
+    await db.insert("agent_control_log", [{ system, field: "activity", old: unit ? oneLine(unit).slice(0, 160) : null, new: oneLine(what), by: oneLine(agent).slice(0, 60) }]);
   } catch {
     /* table missing or no access: nothing to show, nothing to do */
   }
@@ -74,12 +80,14 @@ async function logActivity(system: AgentSystem, agent: string, what: string): Pr
 /**
  * A sub-agent or a pipeline stage says what it has just started. Updates the system's heartbeat
  * (so the dashboard shows it as working) and appends to the live feed. Fire-and-forget is fine:
- * `void report(...)`. Returns the command like heartbeat(), but callers need not act on it; the
- * switch itself is honoured by the lead agent between units.
+ * `void report(...)`. `unit` is the ONE place / guide / page being worked on ("Hagia Sophia, Istanbul");
+ * `what` is the step on it ("checking facts"). The dashboard draws the unit's steps from these rows,
+ * so always pass the same `unit` text for every step of one unit.
  */
-export async function report(system: AgentSystem, agent: string, what: string): Promise<Control | null> {
+export async function report(system: AgentSystem, agent: string, what: string, unit?: string): Promise<Control | null> {
   const line = oneLine(what);
-  const [c] = await Promise.all([heartbeat(system, `[${agent}] ${line}`), logActivity(system, agent, line)]);
+  const note = unit ? `[${agent}] ${oneLine(unit)} — ${line}` : `[${agent}] ${line}`;
+  const [c] = await Promise.all([heartbeat(system, note.slice(0, 300)), logActivity(system, agent, line, unit)]);
   return c;
 }
 
@@ -104,21 +112,21 @@ if (process.argv[1] && process.argv[1].replace(/\\/g, "/").endsWith("tools/agent
   const args = process.argv.slice(2);
   const system = args.shift();
   if (system !== "factory" && system !== "qa" && system !== "seo") {
-    console.log('usage: npx tsx tools/agent-control.ts <factory|qa|seo> [--agent <name>] ["what you are doing"]');
+    console.log('usage: npx tsx tools/agent-control.ts <factory|qa|seo> [--agent <name>] [--unit "<place, city>"] ["what you are doing"]');
     process.exit(2);
   }
-  let agent: string | null = null;
-  const i = args.indexOf("--agent");
-  if (i >= 0) agent = args.splice(i, 2)[1] ?? null;
+  const take = (flag: string): string | null => { const k = args.indexOf(flag); return k >= 0 ? (args.splice(k, 2)[1] ?? null) : null; };
+  const agent = take("--agent");
+  const unit = take("--unit") ?? undefined;
   const note = args.join(" ").trim();
   if (agent) {
     // A sub-agent's report: never a check, so never a failing exit code.
-    const c = await report(system, agent, note || "started");
+    const c = await report(system, agent, note || "started", unit);
     console.log(JSON.stringify({ reported: true, agent, desired_state: c?.desired_state ?? null }));
     process.exit(0);
   }
   const c = await heartbeat(system, note || undefined);
-  if (note) await logActivity(system, LEAD[system], note);
+  if (note) await logActivity(system, LEAD[system], note, unit);
   console.log(JSON.stringify(c ?? { desired_state: "run", max_weekly_pct: null, note: "no control table or no database access — run under your own config" }));
   process.exit(c?.desired_state === "pause" ? 3 : 0);
 }

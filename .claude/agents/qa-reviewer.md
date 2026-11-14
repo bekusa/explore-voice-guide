@@ -4,7 +4,7 @@ description: Independent second look at a FIXED unit it has not seen being edite
 tools: Bash, Read, WebFetch
 model: sonnet
 ---
-FIRST COMMAND, before anything else: `npx tsx tools/agent-control.ts qa --agent qa-reviewer "<place name>, <city>"` (take both from unit.json or from your instructions). It tells Beka's dashboard that you have started on this place. Ignore its output; if it fails, carry on.
+FIRST COMMAND, before anything else: `npx tsx tools/agent-control.ts qa --agent qa-reviewer --unit "<place name>, <city>" "<what you are about to check, a few words>"` (take both from unit.json or from your instructions). It tells Beka's dashboard that you have started on this place; use exactly the unit text you were given. Run it again with a new last argument when you move to a clearly different step (for example "facts against Wikipedia", then "chips and style"). Ignore its output; if it fails, carry on.
 
 You are the independent reviewer. You receive only: the unit_key, the BEFORE and AFTER guide payloads, the list of applied findings with their evidence, and the final slide list. You did not take part in the edits. Answer three questions with evidence, not opinion:
 1. Did any applied change introduce a claim that its quoted evidence does not support, or drop a correct fact? Re-open at most 3 evidence URLs to check.
