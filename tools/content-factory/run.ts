@@ -30,7 +30,7 @@ import { factCheck, summarize, type Claim } from "./gate3";
 import { publishAttractions, publishGuide } from "./publish";
 import { repairGuide } from "./repair";
 import { latestLimits, type UsageLimits } from "./transport";
-import { heartbeat, waitWhilePaused } from "../agent-control";
+import { heartbeat, report, waitWhilePaused } from "../agent-control";
 
 type Job = {
   id: number;
@@ -168,6 +168,10 @@ async function respectUsage(L: UsageLimits | null): Promise<void> {
   }
 }
 
+// Live feed for the dashboard: which stage is working on which job right now. Fire-and-forget, cloud lanes only.
+const where = (job: Job) => (job.kind === "guide" && job.city ? `${job.name}, ${job.city}` : job.name);
+const say = (agent: string, job: Job, what = "") => { if (!local) void report("factory", agent, `${where(job)}${what ? ` · ${what}` : ""}`); };
+
 const problemsOf = (fc: ReturnType<typeof summarize>): Claim[] => [...fc.contradicted, ...fc.legend_as_fact, ...fc.price_or_hours];
 
 async function processGuide(job: Job) {
@@ -185,6 +189,7 @@ async function processGuide(job: Job) {
   type Cand = { payload: GuidePayload; g1: ReturnType<typeof gate1Guide>; g2: ReturnType<typeof gate2Guide>; fc: ReturnType<typeof summarize> | null; attempt: number };
   const cands: Cand[] = [];
   for (let attempt = 1; attempt <= 1 + CONFIG.maxRerolls; attempt++) {
+    say("generator", job, attempt > 1 ? `guide, attempt ${attempt}` : "guide");
     const gen = await generateGuide({ name: job.name, city: job.city || undefined, interest: CONFIG.interest });
     cost += gen.call.costUsd;
     if (!gen.call.ok) {
@@ -204,12 +209,14 @@ async function processGuide(job: Job) {
     }
     const chips = trimChips(gen.payload);
     if (chips.trimmed) gen.payload = chips.payload;
+    say("gate1 · gate2", job, "contract and grounding");
     const g1 = gate1Guide(gen.payload, job.name);
     if (chips.trimmed) g1.soft.push("chips_trimmed_to_5");
     const g2 = gate2Guide(gen.payload, ev);
     let fc: ReturnType<typeof summarize> | null = null;
     let checkFailed = false;
     if (g1.hard.length === 0 && ev?.text) {
+      say("fact-checker", job, "claims against the evidence");
       let r = await factCheck(job.name, job.city, gen.payload, ev);
       cost += r.costUsd;
       if (!r.ok) {
@@ -243,6 +250,7 @@ async function processGuide(job: Job) {
   let edited = false;
   const problems = best.fc ? problemsOf(best.fc) : [];
   if (problems.length && ev) {
+    say("repairer", job, `${problems.length} flagged sentence${problems.length === 1 ? "" : "s"}`);
     const rep = await repairGuide(job.name, best.payload, problems, ev);
     cost += rep.costUsd;
     let ok = false;
@@ -270,6 +278,7 @@ async function processGuide(job: Job) {
   };
   edited = edited || best.g1.soft.includes("chips_trimmed_to_5");
   writeFileSync(join(outDir, `guide-${job.target_qid}.json`), JSON.stringify({ job, edited, payload: best.payload, gate1: best.g1, gate3: best.fc }, null, 1));
+  say("publish", job, "guide");
   const pub = await publishGuide(target, best.payload, CONFIG.interest);
   await audit(job, best.attempt, "publish", { verdict: "published", edited, findings: pub, payload: best.payload });
   return finish(job, "published", cost, { published_keys: pub.written });
@@ -279,6 +288,7 @@ async function processCity(job: Job) {
   let cost = 0;
   const center = Number.isFinite(job.meta.lat) && Number.isFinite(job.meta.lng) ? { lat: job.meta.lat, lng: job.meta.lng } : null;
   for (let attempt = 1; attempt <= 1 + CONFIG.maxRerolls; attempt++) {
+    say("generator", job, attempt > 1 ? `city list, attempt ${attempt}` : "city list");
     const gen = await generateAttractions({ query: job.name });
     cost += gen.call.costUsd;
     if (!gen.call.ok) {
@@ -310,6 +320,7 @@ async function processCity(job: Job) {
     if (g2.hard.length) continue;
     const kept: AttractionItem[] = g2.kept;
     writeFileSync(join(outDir, `city-${job.target_qid}.json`), JSON.stringify({ job, edited, list: kept, gate1: g1, gate2: g2 }, null, 1));
+    say("publish", job, `city list, ${kept.length} places`);
     const pub = await publishAttractions(job.meta.queries ?? [job.name], kept);
     await audit(job, attempt, "publish", { verdict: "published", edited, findings: pub });
     return finish(job, "published", cost, { published_keys: pub.written });
@@ -386,6 +397,7 @@ async function main() {
     done += batch.length;
     const spent = local ? 0 : await laneSpent();
     console.log(`[${new Date().toISOString()}] ${done}/${limit} done · ${Math.round((Date.now() - before) / 1000)}s batch · lane $${spent.toFixed(2)}/${budget} · ${limitsLine(latestLimits())} · ${JSON.stringify(results)}`);
+    if (!local) void report("factory", "run.ts", `${kind}: ${done}/${limit} done in this run · ${JSON.stringify(results)}`);
     if (!local && spent >= budget) stopReason = "lane budget reached";
     if (!stopReason && !local) {
       if (creditMode) creditCheck(latestLimits());

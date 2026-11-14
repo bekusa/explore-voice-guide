@@ -37,3 +37,9 @@ usage windows, backups and the rule-10 pattern pause (run.ts does this when used
 - Every changed fact: evidence_url + verbatim quote ≤30 words, or no change.
 - Georgia policy (Abkhazia, Tskhinvali region), conflict zones: monuments only, neutral.
 - Report in English JSON; the orchestrator writes Georgian summaries for Beka.
+
+## Live activity on the dashboard (2026-11-14)
+Beka watches the run on his dashboard. Two sources feed it, both through `tools/agent-control.ts`:
+- the orchestrator: `npx tsx tools/agent-control.ts qa "<phase / wave, n/N: place, city — step>"` at every Phase 0 step, at the start of every unit and at each of its own steps (this is also the Stop check: exit code 3);
+- each sub-agent, as its first command: `npx tsx tools/agent-control.ts qa --agent <name> "<place>, <city>"` (always exits 0).
+Every such call appends a row to `agent_control_log` (field `activity`), which the dashboard shows as the live feed and uses to mark who is working now. One short readable line per call; no secrets, no token URLs.
