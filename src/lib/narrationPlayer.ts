@@ -42,7 +42,9 @@
  * one that rejects a single action, must never break playback.
  */
 
-import { noteAudioCompleted } from "@/lib/reviewPrompt";
+import { normalizeLang } from "@/lib/cacheKey";
+import { getStoredLang } from "@/lib/i18n";
+import { maybeAskForReview, noteAudioCompleted } from "@/lib/reviewPrompt";
 
 /* ── MediaSession (lock screen, Control Center, headphones) ───────── */
 
@@ -236,6 +238,8 @@ function audio(): HTMLAudioElement | null {
     syncPlaybackState("paused");
   });
   el.addEventListener("ended", () => {
+    // Read before anything below can clear or replace the request.
+    const finishedLang = state.request?.language ?? "";
     state.playing = false;
     state.paused = false;
     emit();
@@ -244,8 +248,21 @@ function audio(): HTMLAudioElement | null {
      * purpose. The panel unmounts and remounts on every route change,
      * and a guide that finishes inside that window would otherwise
      * lose the strongest "this person got value" signal we have —
-     * which is exactly what the Play Store review prompt counts. */
-    void noteAudioCompleted();
+     * which is exactly what the Play Store review prompt counts.
+     *
+     * The review dialog itself is requested from here too (Beka
+     * 2026-11-15): the end of a guide the person just listened to is
+     * the natural pause for it. Until then it was requested when a
+     * guide page loaded, before a word had been heard. Chained after
+     * the count so this very guide can satisfy "≥ 1 completed".
+     * maybeAskForReview checks everything else (native only, 3 places,
+     * 2 days, no recent error, never asked before). */
+    void noteAudioCompleted().then(() =>
+      maybeAskForReview({
+        inPreferredLanguage: normalizeLang(finishedLang) === normalizeLang(getStoredLang()),
+        online: typeof navigator === "undefined" || navigator.onLine !== false,
+      }),
+    );
     endedHandlers.forEach((fn) => {
       try {
         fn();
