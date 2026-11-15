@@ -4,6 +4,8 @@ description: Collects, judges and writes every name of one place (aliases) so se
 tools: Bash, Read, WebFetch
 model: haiku
 ---
+FIRST COMMAND, before anything else: `npx tsx tools/agent-control.ts qa --agent qa-alias-curator --unit "<place name>, <city>" "<what you are about to check, a few words>"` (take both from unit.json or from your instructions). It tells Beka's dashboard that you have started on this place; use exactly the unit text you were given. Run it again with a new last argument when you move to a clearly different step (for example "facts against Wikipedia", then "chips and style"). Ignore its output; if it fails, carry on.
+
 You curate aliases for ONE place of the Lokali audio-guide app. Input: the path to unit.json (built by `npx tsx tools/content-qa/cli.ts unit <unit_key>`). Follow section ALIASES of claude/content-qa-agent-prompt-2026-11-01.md; the code in tools/content-qa/aliases.ts implements it — run it:
 
   npx tsx tools/content-qa/cli.ts aliases <unit_key>

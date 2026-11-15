@@ -23,7 +23,8 @@ claim unit (qa_claim_units)
 → npx tsx tools/content-qa/cli.ts unit <unit_key>          # assembles the Unit JSON into a scratch file
 → qa-alias-curator  (reads unit.json)        → aliases.json       (writes qa_aliases, classifications, keys)
 → qa-text-editor    (unit.json, aliases)     → text.json          (findings + patch, NO writes)
-→ in parallel: qa-geo-verifier → geo.json ;  qa-photo-curator → photos.json (writes photos if SAS)
+→ qa-geo-verifier   → geo.json
+→ qa-photo-curator  → photos.json (writes photos if SAS)      # one sub-agent at a time, one unit at a time (PROMPT rule 13)
 → orchestrator: gate1 + normalizeGuidePayload on the patch → write every key → severity → translations
 → qa-reviewer on every FIXED unit in the pilot, and on a 5% sample afterwards → may flip to REVIEW
 → qa_units / qa_findings / qa_changes → release
@@ -37,3 +38,9 @@ usage windows, backups and the rule-10 pattern pause (run.ts does this when used
 - Every changed fact: evidence_url + verbatim quote ≤30 words, or no change.
 - Georgia policy (Abkhazia, Tskhinvali region), conflict zones: monuments only, neutral.
 - Report in English JSON; the orchestrator writes Georgian summaries for Beka.
+
+## Live activity on the dashboard (2026-11-14)
+Beka watches the run on his dashboard. Two sources feed it, both through `tools/agent-control.ts`:
+- the orchestrator: `npx tsx tools/agent-control.ts qa "<phase / wave, n/N: place, city — step>"` at every Phase 0 step, at the start of every unit and at each of its own steps (this is also the Stop check: exit code 3);
+- each sub-agent, as its first command: `npx tsx tools/agent-control.ts qa --agent <name> --unit "<place>, <city>" "<what it is checking>"` (always exits 0). The --unit text must be identical for every step of one unit: the dashboard groups the steps by it.
+Every such call appends a row to `agent_control_log` (field `activity`), which the dashboard shows as the live feed and uses to mark who is working now. One short readable line per call; no secrets, no token URLs.

@@ -50,7 +50,9 @@ export const CONFIG = {
   },
   /** Evidence sent to the checker: the article from the top (lead + history usually come first). */
   evidenceChars: 25_000,
-  concurrency: 4,
+  /** One job at a time (Beka 2026-11-14: "one location / guide at a time, not batch work"; the dashboard
+   *  shows the one job and its step). Was 4. Do not raise without asking him. */
+  concurrency: 1,
   /** Re-rolls are for contract failures only (unparseable, too short, broken chips).
    *  Fact problems go straight to REPAIR — a fresh sample brings fresh errors. */
   maxRerolls: 2,

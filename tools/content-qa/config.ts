@@ -105,7 +105,8 @@ export const QA_CONFIG = {
   stopAfterPilot: true,
   pilotSize: 20,
   waveSize: 500,
-  concurrency: 4,
+  /** One unit at a time (Beka 2026-11-14). Was 4. Do not raise without asking him. */
+  concurrency: 1,
   staleClaimMinutes: 30,
 
   /** Rule 10: pause the wave when one defect pattern exceeds this share of units. */
