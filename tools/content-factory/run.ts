@@ -297,6 +297,8 @@ async function processCity(job: Job) {
   // (exclude = names already shown). publishAttractions never overwrites a row, so a
   // fresh 30-item list for such a city was generated and then thrown away (London, 2026-11-08).
   const queries: string[] = job.meta.queries ?? [job.name];
+  // rows_extend jobs carry meta.base_n (the list's size when queued); the live list is read again here,
+  // so a list the app extended in the meantime is not extended twice.
   const base = wantCount > CONFIG.attractionsPerCity ? await existingCityList(queries) : null;
   if (base && base.list.length >= wantCount) return finish(job, "skipped", 0, { last_error: `list already has ${base.list.length} items` });
   const genCount = base ? wantCount - base.list.length : wantCount;
