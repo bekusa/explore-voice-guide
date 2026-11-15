@@ -89,10 +89,14 @@ export function extractAttractionsArray(payload: unknown): AttractionItem[] {
   return arr.filter((x) => !!x && typeof x === "object");
 }
 
-/** Mirror of api.attractions.ts first-page branch: count 10, no interest bias. */
-export async function generateAttractions(args: { query: string }): Promise<GenResult<{ attractions: AttractionItem[] }>> {
+/** Mirror of api.attractions.ts. Defaults to the first-page branch (count 10,
+ *  no interest bias). `count` up to 30 mirrors the app's background extension
+ *  (pages 2-3) in a single call; `exclude` is the app's prefetch argument and is
+ *  only needed when appending to a list instead of regenerating it. */
+export async function generateAttractions(args: { query: string; count?: number; exclude?: string[] }): Promise<GenResult<{ attractions: AttractionItem[] }>> {
+  const count = args.count && args.count > 0 ? args.count : CONFIG.attractionsPerCity;
   const system = buildAttractionsSystem();
-  const user = buildAttractionsUser({ query: args.query, language: "en", count: CONFIG.attractionsPerCity, interests: [] });
+  const user = buildAttractionsUser({ query: args.query, language: "en", count, interests: [], exclude: args.exclude });
   const call = await runClaude({
     system,
     user,

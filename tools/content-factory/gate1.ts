@@ -125,12 +125,12 @@ export function gate1Guide(g: GuidePayload, expectedName: string): GateResult {
 
 const INTEREST_IDS = new Set(INTERESTS.map((i) => i.id));
 
-export function gate1Attractions(list: AttractionItem[]): GateResult {
+export function gate1Attractions(list: AttractionItem[], maxItems: number = CONFIG.attractions.maxItems): GateResult {
   const C = CONFIG.attractions;
   const hard: string[] = [];
   const soft: string[] = [];
   if (list.length < C.minItems) hard.push(`items_under:${list.length}`);
-  if (list.length > C.maxItems) soft.push(`items_over:${list.length}`);
+  if (list.length > maxItems) soft.push(`items_over:${list.length}`);
 
   const seen = new Set<string>();
   let run = 1;

@@ -27,7 +27,7 @@ import { generateAttractions, generateGuide, trimChips, type AttractionItem, typ
 import { gate1Attractions, gate1Guide } from "./gate1";
 import { gate2Attractions, gate2Guide } from "./gate2";
 import { factCheck, summarize, type Claim } from "./gate3";
-import { publishAttractions, publishGuide } from "./publish";
+import { existingCityList, newItemsOnly, publishAttractions, publishExtendedAttractions, publishGuide } from "./publish";
 import { repairGuide } from "./repair";
 import { latestLimits, type UsageLimits } from "./transport";
 import { heartbeat, report, waitWhilePaused } from "../agent-control";
@@ -287,9 +287,23 @@ async function processGuide(job: Job) {
 async function processCity(job: Job) {
   let cost = 0;
   const center = Number.isFinite(job.meta.lat) && Number.isFinite(job.meta.lng) ? { lat: job.meta.lat, lng: job.meta.lng } : null;
+  // meta.count lets one job ask for a longer list than the first page: 30 is the
+  // app's first page plus its two background extension calls, in one generation.
+  const rawCount = Number(job.meta.count);
+  const wantCount = Number.isFinite(rawCount) && rawCount > 0 ? Math.min(30, Math.floor(rawCount)) : CONFIG.attractionsPerCity;
+  const maxItems = Math.max(CONFIG.attractions.maxItems, wantCount);
+  // Pages 2-3 on a city that already has a list: keep the existing first page (audited,
+  // coordinates filled in October) and append, the way the app's extension call does
+  // (exclude = names already shown). publishAttractions never overwrites a row, so a
+  // fresh 30-item list for such a city was generated and then thrown away (London, 2026-11-08).
+  const queries: string[] = job.meta.queries ?? [job.name];
+  const base = wantCount > CONFIG.attractionsPerCity ? await existingCityList(queries) : null;
+  if (base && base.list.length >= wantCount) return finish(job, "skipped", 0, { last_error: `list already has ${base.list.length} items` });
+  const genCount = base ? wantCount - base.list.length : wantCount;
+  const exclude = base ? base.list.map((a) => String(a.name ?? "")).filter(Boolean) : undefined;
   for (let attempt = 1; attempt <= 1 + CONFIG.maxRerolls; attempt++) {
-    say("generator", job, attempt > 1 ? `city list, attempt ${attempt}` : "city list");
-    const gen = await generateAttractions({ query: job.name });
+    say("generator", job, base ? `city list, ${genCount} more after ${base.list.length}${attempt > 1 ? `, attempt ${attempt}` : ""}` : attempt > 1 ? `city list, attempt ${attempt}` : "city list");
+    const gen = await generateAttractions({ query: job.name, count: genCount, exclude });
     cost += gen.call.costUsd;
     if (!gen.call.ok) {
       stopOn(gen.call.errorKind);
@@ -301,8 +315,12 @@ async function processCity(job: Job) {
       if (stopReason) break;
       continue;
     }
-    const list = gen.payload?.attractions ?? [];
-    const g1 = gate1Attractions(list);
+    const generated = gen.payload?.attractions ?? [];
+    const list = base ? newItemsOnly(base.list, generated) : generated; // only the new items go through the gates
+    const g1raw = gate1Attractions(list, base ? genCount : maxItems);
+    // An extend that needs only 1-2 more items is fine with 1-2 new ones (Szczecin 29 + 1 went to
+    // review on Gate 1's minimum of 3).
+    const g1 = base && list.length > 0 ? { ...g1raw, hard: g1raw.hard.filter((h) => !h.startsWith("items_under:")) } : g1raw;
     // The model sometimes declines a city in prose (Damascus, first try at Pyongyang).
     // The app shows nothing in that case; give it one more try, then skip.
     const declined = !gen.payload && !/[{[]/.test(gen.call.text.slice(0, 200));
@@ -314,14 +332,17 @@ async function processCity(job: Job) {
       await audit(job, attempt, "generate", { verdict: "reroll", model: gen.call.model, cost_usd: gen.call.costUsd, findings: { gate1: g1 }, payload: gen.payload, raw_output: gen.payload ? null : gen.call.text.slice(0, 20000) });
       continue;
     }
+    say("gate1 · gate2", job, `contract and grounding, ${list.length} new places`);
     const g2 = await gate2Attractions(list, center, job.name);
+    // same for Gate 2's minimum: on an extend, 1-2 grounded new items are a valid result
+    const g2hard = base && g2.kept.length > 0 ? g2.hard.filter((h) => !h.startsWith("too_few_after_grounding:")) : g2.hard;
     const edited = g2.dropped.length > 0 || g2.fixedCoords.length > 0;
-    await audit(job, attempt, "generate", { verdict: g2.hard.length ? "reroll" : "pass", model: gen.call.model, cost_usd: gen.call.costUsd, findings: { gate1: g1, gate2: { soft: g2.soft, dropped: g2.dropped } }, payload: gen.payload, edited });
-    if (g2.hard.length) continue;
-    const kept: AttractionItem[] = g2.kept;
-    writeFileSync(join(outDir, `city-${job.target_qid}.json`), JSON.stringify({ job, edited, list: kept, gate1: g1, gate2: g2 }, null, 1));
+    await audit(job, attempt, "generate", { verdict: g2hard.length ? "reroll" : "pass", model: gen.call.model, cost_usd: gen.call.costUsd, findings: { gate1: g1, gate2: { hard: g2hard, soft: g2.soft, dropped: g2.dropped } }, payload: gen.payload, edited });
+    if (g2hard.length) continue;
+    const kept: AttractionItem[] = base ? [...base.list, ...g2.kept].slice(0, wantCount) : g2.kept;
+    writeFileSync(join(outDir, `city-${job.target_qid}.json`), JSON.stringify({ job, edited, list: kept, base_items: base?.list.length ?? 0, gate1: g1, gate2: g2 }, null, 1));
     say("publish", job, `city list, ${kept.length} places`);
-    const pub = await publishAttractions(job.meta.queries ?? [job.name], kept);
+    const pub = base ? await publishExtendedAttractions(queries, base, kept) : await publishAttractions(queries, kept);
     await audit(job, attempt, "publish", { verdict: "published", edited, findings: pub });
     return finish(job, "published", cost, { published_keys: pub.written });
   }

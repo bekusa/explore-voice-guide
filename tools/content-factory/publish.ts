@@ -98,6 +98,65 @@ export async function cityHasList(query: string): Promise<boolean> {
   return rows.length > 0;
 }
 
+const foldItemName = (s: unknown) => foldDiacritics(String(s ?? "")).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+
+/** The city's current EN list (first query that has one), for page 2-3 jobs. */
+export async function existingCityList(queries: string[]): Promise<{ query: string; list: AttractionItem[] } | null> {
+  const qs = [...new Set(queries.map(normalizeName))];
+  if (qs.length === 0) return null;
+  const rows = await db.select<{ query_normalized: string; payload: { attractions?: AttractionItem[] } | null }>(
+    "cached_attractions",
+    `select=query_normalized,payload&query_normalized=${inList(qs)}&language=eq.en&filters_key=eq.${encodeURIComponent(filtersKey({}))}`,
+  );
+  for (const q of qs) {
+    const list = rows.find((r) => r.query_normalized === q)?.payload?.attractions;
+    if (Array.isArray(list) && list.length > 0) return { query: q, list };
+  }
+  return null;
+}
+
+/** New items whose names are not already on the list (the app's mergeAttractions does the same). */
+export function newItemsOnly(base: AttractionItem[], extra: AttractionItem[]): AttractionItem[] {
+  const seen = new Set(base.map((a) => foldItemName(a.name)));
+  return extra.filter((a) => {
+    const k = foldItemName(a.name);
+    if (!k || seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
+
+/**
+ * Pages 2-3 on a city that already has a list: the existing items stay exactly as they are
+ * (first, in order) and the new ones are appended — the same merge the app's extension call
+ * writes (mergeAttractions(cached, new).slice(0, 30) → putCachedAttractions). An alias row
+ * holding a different list is left alone, in line with the rule above.
+ */
+export async function publishExtendedAttractions(queries: string[], base: { query: string; list: AttractionItem[] }, merged: AttractionItem[]) {
+  const qs = [...new Set(queries.map(normalizeName))];
+  if (DRY_RUN) return { written: qs, extended: true, dryRun: true };
+  const rows = await db.select<{ query_normalized: string; payload: { attractions?: AttractionItem[] } | null }>(
+    "cached_attractions",
+    `select=query_normalized,payload&query_normalized=${inList(qs)}&language=eq.en&filters_key=eq.${encodeURIComponent(filtersKey({}))}`,
+  );
+  const sig = (l: AttractionItem[] | undefined) => (l ?? []).map((a) => foldItemName(a.name)).join("|");
+  const baseSig = sig(base.list);
+  const written: string[] = [];
+  const skipped: string[] = [];
+  for (const q of qs) {
+    const own = rows.find((r) => r.query_normalized === q)?.payload?.attractions;
+    if (!own || own.length === 0 || q === base.query || sig(own) === baseSig) written.push(q);
+    else skipped.push(q);
+  }
+  const now = new Date().toISOString();
+  await db.upsert(
+    "cached_attractions",
+    written.map((q) => ({ query_normalized: q, language: normalizeLang("en"), filters_key: filtersKey({}), payload: { attractions: merged }, updated_at: now })),
+    "query_normalized,language,filters_key",
+  );
+  return { written, extended: true, base_items: base.list.length, total_items: merged.length, skipped_alias_with_other_list: skipped };
+}
+
 export async function publishAttractions(queries: string[], list: AttractionItem[]) {
   if (DRY_RUN) return { written: [...new Set(queries.map(normalizeName))], dryRun: true };
   const now = new Date().toISOString();
