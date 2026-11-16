@@ -57,7 +57,7 @@ const limit = Number(arg("limit", "10"));
 const minutes = Number(arg("minutes", "100"));
 const local = arg("local");
 const offset = Number(arg("offset", "0"));
-const concurrency = Number(arg("concurrency", String(CONFIG.concurrency)));
+const concurrency = Number(arg("concurrency", String(CONFIG.concurrencyByKind[kind] ?? CONFIG.concurrency)));
 // CF_WORKER names the session that runs this (two cloud sessions both report hostname "vm").
 const worker = `${process.env.CF_WORKER ?? hostname()}-${process.pid}`;
 const deadline = Date.now() + minutes * 60_000;

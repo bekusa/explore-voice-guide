@@ -53,6 +53,9 @@ export const CONFIG = {
   /** One job at a time (Beka 2026-11-14: "one location / guide at a time, not batch work"; the dashboard
    *  shows the one job and its step). Was 4. Do not raise without asking him. */
   concurrency: 1,
+  /** Per-kind exception (Beka 2026-11-16, guide queue to the 31,899 target: "იყოს 4 ერთდროულად").
+   *  Same Max usage per guide, ~4x faster; the dashboard shows up to four guides at once. */
+  concurrencyByKind: { guide: 4 } as Partial<Record<"guide" | "attractions", number>>,
   /** Re-rolls are for contract failures only (unparseable, too short, broken chips).
    *  Fact problems go straight to REPAIR — a fresh sample brings fresh errors. */
   maxRerolls: 2,
