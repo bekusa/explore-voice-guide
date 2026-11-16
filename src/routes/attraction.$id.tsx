@@ -42,13 +42,7 @@ import { MobileFrame } from "@/components/MobileFrame";
 import { UnescoBadge } from "@/components/UnescoBadge";
 import { PracticalInfo } from "@/components/PracticalInfo";
 import { GuideRating } from "@/components/GuideRating";
-import { maybeAskForReview, noteLocationViewed } from "@/lib/reviewPrompt";
-// Aliased: this file also deals with UI language codes, and i18n.ts
-// exports a DIFFERENT normalizeLang that only strips the region.
-// The cache one is the right comparison here (it folds zh-hans,
-// bare zh/pt, underscores) — mixing them up would make "en" and
-// "en-US" look like different languages.
-import { normalizeLang as normalizeCacheLang } from "@/lib/cacheKey";
+import { noteLocationViewed } from "@/lib/reviewPrompt";
 import { isUnescoSite } from "@/lib/unesco";
 import { LANGUAGE_COUNT_LABEL } from "@/lib/languages";
 import {
@@ -511,29 +505,10 @@ function AttractionPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, searchName, searchNameEn, fallbackName]);
 
-  /* Play Store review prompt — the actual attempt. Beka 2026-09-19.
-   *
-   * Sits HERE, below `guide`, not up with the other signal effects:
-   * referencing `guide` before its useState line is a temporal-dead-
-   * zone ReferenceError at render time, not a lint nit.
-   *
-   * Cheap and idempotent — it no-ops unless every condition holds
-   * (3 distinct places, one audio finished, a 4-5★ guide rating, two
-   * separate days, no error in 24 h, online, native, never asked).
-   *
-   * `inPreferredLanguage` is Beka's explicit requirement: "რამდენიმე
-   * ლოკაციას ნახავს საკუთარ არჩეულ ენაზე". `language` is detected
-   * from the place NAME's script, so a Latin-script name can hand a
-   * Georgian reader an English guide — that is not the experience we
-   * want to be judged on, so we stay quiet. Compared through the
-   * cache normaliser so "en" and "en-US" don't read as a mismatch. */
-  useEffect(() => {
-    if (!guide) return;
-    void maybeAskForReview({
-      inPreferredLanguage: normalizeCacheLang(language) === normalizeCacheLang(preferredLanguage),
-      online,
-    });
-  }, [guide, language, preferredLanguage, online]);
+  /* The Play Store review attempt used to live here (requested once a
+   * guide had loaded). Since 2026-11-15 it is requested when an audio
+   * guide finishes — see the `ended` handler in lib/narrationPlayer.ts,
+   * which also carries the "in the reader's own language" check. */
 
   // What the InlineAudioPanel actually speaks. Originally just the
   // narrated `script`; Beka asked for the audio to also cover the

@@ -1,19 +1,36 @@
 /**
- * Play Store in-app review prompt. Beka 2026-09-18 spec.
+ * Play Store in-app review prompt. Beka 2026-09-18 spec, reworked
+ * 2026-11-15 (see "What changed" below).
  *
  * ── The rule this file exists to respect ──────────────────────────
- * Google's In-App Review policy forbids GATING: you may not ask the
- * user how they feel and then show the store dialog only to the happy
- * ones, and you may not put your own text next to the dialog or draw
- * attention to it.
+ * Google's In-App Review guidance: no questions about the user's
+ * opinion before or while the review card is shown, no showing the
+ * store dialog only to the happy ones, and no text of our own next to
+ * it or drawing attention to it.
  *
- * So the high rating is NOT a gate. It is one of several signals that
- * this person has had a good run with the app — alongside "listened
- * to a whole audio guide", "came back on a second day", "read three
- * places", "hit no errors". We use that bundle to pick a MOMENT, and
- * then hand over to Google's dialog with no commentary of our own.
- * We never ask "do you like Lokali?" first, and we never branch on
- * the answer.
+ * We pick a MOMENT from behaviour alone — "listened to a whole audio
+ * guide", "came back on a second day", "opened three places", "hit no
+ * errors" — and then hand over to Google's dialog with no commentary.
+ * We never ask "do you like Lokali?" first, and nothing the user told
+ * us about their opinion decides whether they see it.
+ *
+ * ── What changed 2026-11-15 (Beka: "მიდი დაიწყე გასწორება") ────────
+ *  1. The dialog had NEVER shown. The plugin was loaded with
+ *     import("@capacitor-community/in-app-review"). The native shells
+ *     load the site from lokali.travel, where a bare package name like
+ *     that cannot be resolved, so the import threw, the catch logged
+ *     "skipped", and that was every attempt since September (checked
+ *     in the live bundle: the bare name is there, no registerPlugin).
+ *     It now goes through registerPlugin("InAppReview") — the name
+ *     the package itself registers, and the same route Apple sign-in
+ *     takes in routes/auth.tsx. The native side was always installed.
+ *  2. A 4-5★ guide rating is no longer required. It made our own
+ *     "how was this guide?" stars the filter for who sees Google's
+ *     dialog — exactly the happy-users-only pattern the guidance
+ *     warns against. Ratings now only count as a day of activity.
+ *  3. The moment moved from "a guide page loaded" (often before the
+ *     person had heard a word) to "an audio guide just finished" —
+ *     see the `ended` handler in lib/narrationPlayer.ts.
  *
  * Practical consequence: no copy, so nothing to translate into 45
  * languages. Google renders the dialog in the device's language.
@@ -41,8 +58,6 @@ const MIN_AUDIO_COMPLETED = 1;
 const MIN_DISTINCT_DAYS = 2;
 /** A recent failure poisons the moment. 24 h of quiet required. */
 const ERROR_COOLDOWN_MS = 24 * 60 * 60 * 1000;
-/** Only a 4-5★ guide rating counts as a positive signal. */
-const GOOD_RATING = 4;
 
 type State = {
   /** Distinct attraction keys the user has opened. Capped to keep the blob small. */
@@ -52,18 +67,17 @@ type State = {
   days: string[];
   /** Epoch ms of the last user-visible error, or 0. */
   lastErrorAt: number;
-  /** Highest guide rating the user has given, 0 if none. */
-  bestRating: number;
   /** True once the Google dialog has been requested. Never reset. */
   asked: boolean;
 };
+// (Blobs saved before 2026-11-15 also carry `bestRating`. It is read
+// back harmlessly with the rest and simply no longer consulted.)
 
 const EMPTY: State = {
   locations: [],
   audioCompleted: 0,
   days: [],
   lastErrorAt: 0,
-  bestRating: 0,
   asked: false,
 };
 
@@ -119,11 +133,16 @@ export async function noteAudioCompleted(): Promise<void> {
   await write(withToday({ ...s, audioCompleted: s.audioCompleted + 1 }));
 }
 
-/** The user rated a guide. Only 4-5★ moves the needle. */
-export async function noteGuideRated(stars: number): Promise<void> {
+/**
+ * The user rated a guide. Counts as a day of activity and nothing more:
+ * since 2026-11-15 the stars themselves no longer decide anything (see
+ * "What changed" at the top). The parameter stays so GuideRating's call
+ * site is untouched.
+ */
+export async function noteGuideRated(_stars: number): Promise<void> {
   const s = await read();
   if (s.asked) return;
-  await write(withToday({ ...s, bestRating: Math.max(s.bestRating, stars) }));
+  await write(withToday(s));
 }
 
 /**
@@ -152,7 +171,7 @@ export async function maybeAskForReview(opts: {
   online: boolean;
 }): Promise<boolean> {
   try {
-    const { Capacitor } = await import("@capacitor/core");
+    const { Capacitor, registerPlugin } = await import("@capacitor/core");
     // Web has no Play dialog. Bail before touching Preferences.
     if (!Capacitor.isNativePlatform()) return false;
     if (!opts.online || !opts.inPreferredLanguage) return false;
@@ -162,34 +181,27 @@ export async function maybeAskForReview(opts: {
     if (s.locations.length < MIN_LOCATIONS) return false;
     if (s.audioCompleted < MIN_AUDIO_COMPLETED) return false;
     if (s.days.length < MIN_DISTINCT_DAYS) return false;
-    if (s.bestRating < GOOD_RATING) return false;
     if (s.lastErrorAt && Date.now() - s.lastErrorAt < ERROR_COOLDOWN_MS) return false;
 
-    /* Dynamic import so the plugin is never pulled into the web
-     * bundle, where it does not exist.
+    /* Reach the native plugin by the name it registers, through
+     * @capacitor/core — NOT by importing the npm package.
      *
-     * The module specifier is deliberately held in a variable rather
-     * than written inline. Beka 2026-10-03: with it inline,
-     * `tsc --noEmit` fails on any machine where the package is not
-     * installed —
-     *   TS2307: Cannot find module '@capacitor-community/in-app-review'
-     * — and that is a genuinely optional NATIVE-only dependency. A
-     * web-only checkout, a fresh clone, or a CI job that skips native
-     * deps would all have had their type-check blocked by a plugin
-     * they correctly do not have.
+     * The previous code did `import(pluginId)` with the package name
+     * held in a variable (to keep tsc quiet on machines without the
+     * package). That compiled, and then failed at runtime on every
+     * device: the shells load the web app from lokali.travel, and a
+     * browser cannot resolve a bare package name there. The npm
+     * package's own JS is nothing but registerPlugin("InAppReview"),
+     * so calling it directly gives the identical proxy with no import
+     * to resolve — same pattern as SignInWithApple in routes/auth.tsx.
+     * Type-checks without the package installed, too.
      *
-     * Hiding the specifier behind a variable stops TypeScript
-     * resolving it at compile time while leaving the runtime
-     * behaviour identical: on native the plugin loads, elsewhere the
-     * import throws and the catch below turns it into "skip the
-     * prompt", which is exactly right.
-     */
-    const pluginId = "@capacitor-community/in-app-review";
-    const mod = (await import(/* @vite-ignore */ pluginId)) as {
-      InAppReview?: { requestReview: () => Promise<void> };
-    };
-    const InAppReview = mod.InAppReview;
-    if (!InAppReview) return false;
+     * isPluginAvailable first: an older store build without the native
+     * half would otherwise reject the call AFTER `asked` is saved, and
+     * that user would lose their one prompt for good. Not available →
+     * stay quiet and try again after they update the app. */
+    if (!Capacitor.isPluginAvailable("InAppReview")) return false;
+    const InAppReview = registerPlugin<{ requestReview: () => Promise<void> }>("InAppReview");
 
     // Mark BEFORE the call, not after. If requestReview throws midway
     // we still must not try again — and Google gives us no way to

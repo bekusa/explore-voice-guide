@@ -2,6 +2,13 @@ import json, os, sys, unicodedata, collections
 sys.path.insert(0, os.path.dirname(__file__))
 from lk_sys import *
 
+# Retired 2026-11-14: the Explore home pages (English + every language) now come from
+# scripts/lk_home.py (after scripts/lk_home_scan.py). This script would overwrite the new
+# English home with the old one, so it stops unless asked for on purpose.
+if "--old-index" not in sys.argv:
+    sys.exit("lk_index.py is retired: run scripts/lk_home_scan.py + scripts/lk_home.py instead "
+             "(pass --old-index only to rebuild the pre-2026-11-14 page)")
+
 PUB = sys.argv[1]                      # .../public
 OUT = sys.argv[2]                      # output html
 PREVIEW = "--preview" in sys.argv

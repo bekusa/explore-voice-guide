@@ -7,13 +7,14 @@ Files:
 - `lk_sys.py`: tokens, CSS and card/topbar helpers
 - `lk_l10n.py`: app-panel copy in 47 languages
 - `lk_restyle.py`: re-skins any existing page (attraction, city hub, country; all templates and languages)
-- `lk_index.py`: builds `public/explore/index.html` (search, theme rails, cities)
+- `lk_home_scan.py` + `lk_home.py`: build the Explore home pages, `public/explore/index.html` and
+  `public/explore/<lang>/index.html` (see "Explore home pages" below). `lk_index.py` is retired.
 
 **Run order after any generator (gen.py, link-langs.py, a new language):**
 1. Generate pages as before.
 2. Run `lk_restyle.py` over the new or changed files. Pages that already carry
    `<meta name="lk-design">` are skipped, so it's safe to run over everything.
-3. Rebuild the index with `lk_index.py <public> <public>/explore/index.html`.
+3. Rebuild the home pages: `python scripts/lk_home_scan.py <cache>` then `python scripts/lk_home.py <cache>`.
 
 The restyler keeps the head, hreflang, canonical and JSON-LD byte-for-byte. It refuses to write
 if the counts of alternates, ld+json or canonical change. It never invents text; non-English pages
@@ -149,3 +150,61 @@ so pass its output through `python scripts/lk_post.py run <list> <start> <end>` 
 
 The SPA (`src/routes/__root.tsx`, `index.tsx`, `destinations.tsx`) and `public/about/editorial-process.html`
 were changed by hand the same day; they carry no counts either.
+
+## Explore home pages (lk_home.py, 2026-11-14)
+
+Beka approved the new home (mockup 2026-11-14: lokali.travel style, "Near me", English first) and asked for
+it in every language. One page per language: `/explore/index.html` (English, same URL as before) and
+`/explore/<lang>/index.html` for every language in `scripts/lk_home_text.json` (43 today, each with its own
+city pages). All of them carry the same hreflang set (+ x-default = English) and are listed, with that set,
+in `public/sitemap-explore-home.xml` (linked from `sitemap.xml`).
+
+    python scripts/lk_home_scan.py <cache> [lang | en@3/32 ...]   # reads the published pages; parallel, shardable
+    python scripts/lk_home.py <cache> [lang ...]                   # writes the pages + data files
+
+The scan reads every published page once (h1, og:image, lead, story length, JSON-LD coordinates, type,
+breadcrumbs, hreflang). First reads on the OneDrive folder are slow (~30 pages/s from Windows Python, far
+slower through the Linux mount), so run it on Windows in shards that fit the tool time limit. Nothing comes
+from the database: the home pages only show what a visitor can already open.
+
+| part | where it comes from |
+|---|---|
+| copy (title, hero, sections, FAQ, Near me messages) | `scripts/lk_home_text.json`, one block per language (translated in-session 2026-11-14, no paid API) |
+| app block wording | `lk_l10n.L10N` (the app panel every page already uses) |
+| Listen button and top-bar text | `LK_LISTEN_TEXT` in `lk-sheet.js` (`langs` added for all 47 languages) |
+| look | `public/explore/assets/lk-home.css` (on top of lk-1.css + lk-listen.css) |
+| behaviour (search, Near me, tabs, collections, place of the day, store badge per device) | `public/explore/assets/lk-home.js` |
+| page data for the script | `<script id="lk-home-data">` in each page |
+
+Sections: hero (city photos, Listen, Browse cities) · search + **Near me** · How it works · Place of the day ·
+Travel by region (English: countries; other languages: their own city pages, biggest region first) ·
+Cities to start with · Collections (two rails open, the rest behind tiles) · the app (badges, QR on computers,
+the app animation in the page language) · Journal (English only, the three newest posts on blog.html) · FAQ
+(+ FAQPage JSON-LD) · All cities A–Z · footer.
+
+Choices, all from the pages themselves:
+- Collections = the old index's editorial themes (`THEMES`): famous places first, filled by the page's own
+  "type"; other languages show the same places through the English pages' hreflang links, then their own
+  pages of that type (via their English twin). A rail needs 6 places (5 in other languages).
+- A place is only featured (rails, place of the day) when its page has its story (≥300 characters) or a long
+  lead. Place of the day: up to 14 candidates, one per theme in turn; the build shows today's, lk-home.js
+  keeps it current by date, so no rebuild is needed for it to change.
+- Two city pages with one name (e.g. `sanliurfa` / `şanlıurfa`) are listed once (indexable first).
+
+Data files (rewritten by every run):
+- `/explore/search-index.json` — English: cities (with country), countries, places.
+- `/explore/assets/search/<lang>.json` — the language's own cities and places; `e` = the English twin, so
+  the page can add the English list without showing a place twice (English results carry "· EN").
+- `/explore/assets/geo/<lang>.json` — Near me: `c` = cities `[name, slug, lat, lng]` (median of their
+  places), `p` = places `[lat, lng, name, "city/slug", city index(, English twin)]`. Places more than 80 km
+  from their city are left out (doubtful coordinates, same rule as build-near-index.py). The browser asks
+  for the position, loads the language file + English, and lists up to 8 places within 50 km (one place
+  with two pages is listed once); with none, the 4 nearest cities. The position never leaves the device.
+
+Other languages' pages link "Explore" (top bar, breadcrumb, footer) to their own home: `lk_post.apply`
+rewrites `/explore/index.html` to `/explore/<lang>/index.html` for every language in lk_home_text.json, so
+new pages get it from their generator. The existing pages of all 43 languages (≈12,500 files with their
+folder twins) got the same replace on 2026-11-14 as a plain one-time pass, so nothing else in them changed.
+
+Rerun both scripts after adding pages, a language (add its block to lk_home_text.json first) or a Journal post
+you want on the English home.

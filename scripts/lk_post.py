@@ -264,10 +264,25 @@ def blog(html):
     return html
 
 
+def _home_langs():
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "lk_home_text.json"), encoding="utf-8") as fh:
+            return {k for k in json.load(fh) if not k.startswith("_") and k != "en"}
+    except OSError:
+        return set()
+
+
+HOME_LANGS = _home_langs()  # languages with their own Explore home, /explore/<lang>/index.html (lk_home.py)
+EN_HOME = "https://lokali.travel/explore/index.html"
+
+
 def apply(html, rel):
     lang, kind = lk_listen.where(rel)
     if kind is None:
         return html
+    if lang in HOME_LANGS and kind != "index":
+        # "Explore" in the top bar and breadcrumb, "All cities" in the footer: the page's own language home
+        html = html.replace(EN_HOME, f"https://lokali.travel/explore/{lang}/index.html")
     html = APPPANEL_META.sub('<p class="meta">No ticket', html)
     if kind == "index":
         for a, b in INDEX_RULES:

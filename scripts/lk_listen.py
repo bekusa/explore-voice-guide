@@ -64,6 +64,8 @@ def where(rel):
     p = rel.replace("\\", "/").strip("/").split("/")
     if p == ["index.html"]:
         return "en", "index"
+    if len(p) == 2 and p[1] == "index.html":  # language home, /explore/<lang>/index.html (lk_home.py)
+        return p[0], "index"
     if p[-1] == "index.html" and len(p) >= 3:
         p = p[:-2] + [p[-2] + ".html"]
     if len(p) == 2:

@@ -240,6 +240,12 @@ export const Route = createFileRoute("/explore/$")({
     if (!p) return;
 
     const seg = p.split("/");
+    // /explore/<lang> or /explore/<lang>/ -> that language's Explore home (scripts/lk_home.py, 2026-11-14)
+    if (seg.length === 1 && /^[a-z]{2}(-[a-z]{2})?$/.test(seg[0])) {
+      const home = seg[0] === "en" ? "/explore/index.html" : "/explore/" + seg[0] + "/index.html";
+      if (home !== incoming) throw redirect({ href: home, statusCode: 301 });
+      return;
+    }
     // lang/city/slug -> fixable; lang/city -> only needs .html
     if (seg.length >= 3) {
       const [lang, ...rest] = seg;

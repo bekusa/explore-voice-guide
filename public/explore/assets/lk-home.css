@@ -1,0 +1,126 @@
+/* Explore home pages (/explore/index.html, /explore/<lang>/index.html), on top of lk-1.css.
+ * Written by hand; the pages come from scripts/lk_home.py. One file for every language. */
+.lk-home .hero{padding-bottom:40px}
+.lk-home .hero>img{transition:opacity 1.2s ease}
+.hm-sub{color:#e7ddcf;font-size:17px;line-height:1.55;max-width:580px;margin-top:10px;text-shadow:0 1px 18px rgba(0,0,0,.5)}
+section.hm{margin-top:64px}
+section.hm>.shead,.hm-rail>.shead{margin-top:0}
+.hm-rail{margin-top:40px}
+.hm-rail[hidden]{display:none}
+
+/* search + near me */
+.lk-home .sbox{gap:10px}
+.lk-home .sbox input{flex:1;min-width:0}
+.hm-near{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(245,183,91,.45);background:transparent;color:var(--gold);border-radius:100px;padding:8px 14px;font:700 13px Inter,system-ui,sans-serif;cursor:pointer;white-space:nowrap}
+.hm-near:hover,.hm-near[aria-busy=true]{border-color:var(--gold);background:rgba(245,183,91,.08)}
+.hm-nearbox{display:none;margin:12px auto 0;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px 18px;box-shadow:0 18px 50px -12px rgba(0,0,0,.8)}
+.hm-nearbox.on{display:block}
+.hm-nearbox h4{font:600 13px Inter,system-ui,sans-serif;color:var(--muted);margin-bottom:6px}
+.hm-nearbox p{color:#e7ddcf;font-size:14.5px}
+.hm-nearbox ul{list-style:none;display:grid;gap:2px;margin-top:4px}
+.hm-nearbox li a{display:flex;justify-content:space-between;gap:14px;color:#e7ddcf;text-decoration:none;font-size:14.5px;border-bottom:1px solid var(--sec);padding:8px 0}
+.hm-nearbox li a:hover b{color:var(--gold)}
+.hm-nearbox li b{font-weight:600}
+.hm-nearbox li small{display:block;color:var(--muted);font-size:12px;font-weight:400}
+.hm-nearbox li span{color:var(--muted);font-size:13px;white-space:nowrap;align-self:center}
+.hm-nearbox .pv{color:var(--muted);font-size:11.5px;margin-top:10px}
+.results .k.en{opacity:.7}
+
+/* how it works */
+.hm-how{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.hm-how-i{background:var(--card-grad);border:1px solid var(--border);border-radius:18px;padding:18px}
+.hm-how-i svg{color:var(--gold);margin-bottom:10px}
+.hm-how-i b{display:block;font-size:15.5px;margin-bottom:4px}
+.hm-how-i p{color:var(--muted);font-size:13.5px;line-height:1.5}
+
+/* place of the day */
+.hm-potd{display:grid;grid-template-columns:1.25fr 1fr;border-radius:24px;overflow:hidden;border:1px solid var(--border);background:var(--card)}
+.hm-potd .ph{display:block;min-height:340px;background:var(--sec)}
+.hm-potd .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.hm-potd .tx{padding:28px 28px 26px;display:flex;flex-direction:column;justify-content:center;gap:12px;align-items:flex-start}
+.hm-potd h3{font-family:var(--serif);font-weight:500;font-size:clamp(28px,3.4vw,38px);line-height:1.08}
+.hm-potd p{color:#e7ddcf;font-size:15.5px;line-height:1.6}
+.hm-potd .facts{color:var(--muted);font-size:13px}
+
+/* travel by region */
+.hm-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.hm-tab{background:transparent;border:1px solid var(--border);color:#e7ddcf;border-radius:100px;padding:8px 16px;font:600 13.5px Inter,system-ui,sans-serif;cursor:pointer}
+.hm-tab.on{background:var(--gold-grad);color:#110c08;border-color:transparent}
+.hm-pane{display:none;flex-wrap:wrap;gap:8px}
+.hm-pane.on{display:flex}
+.hm-pane a{background:var(--card);border:1px solid var(--border);color:#e7ddcf;text-decoration:none;border-radius:12px;padding:9px 14px;font-size:14px;white-space:nowrap}
+.hm-pane a:hover{border-color:var(--gold);color:var(--gold)}
+.hm-cities{grid-auto-columns:minmax(260px,300px)}
+
+/* collections */
+.hm-themes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:22px}
+.hm-theme{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;color:var(--fg);text-align:start;cursor:pointer;font:inherit}
+.hm-theme:hover,.hm-theme[aria-expanded=true]{border-color:var(--gold)}
+.hm-theme b{font-family:var(--serif);font-weight:500;font-size:20px;display:block;margin-bottom:4px}
+.hm-theme b em{color:var(--gold)}
+.hm-theme small{color:var(--muted);font-size:12.5px;line-height:1.5}
+
+/* the app */
+.hm-app{display:grid;grid-template-columns:1.2fr 1fr;gap:28px;align-items:center;background:var(--card-grad);border:1px solid rgba(245,183,91,.32);border-radius:28px;padding:34px;box-shadow:var(--glow)}
+.hm-app h3{font-family:var(--serif);font-weight:500;font-size:clamp(28px,3.4vw,38px);line-height:1.08}
+.hm-app h3 em{color:var(--gold)}
+.hm-app p{color:#e7ddcf;margin:12px 0 18px}
+.hm-badges{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hm-badges img{height:44px;width:auto;display:block}
+.hm-badges .hm-gp img{height:64px;margin:-10px -8px}
+.hm-qr{display:flex;align-items:center;gap:12px;margin-top:16px;color:var(--muted);font-size:13px}
+.hm-qr img{width:84px;height:84px;background:#fff;border-radius:10px;padding:6px;flex:none}
+.hm-phone{justify-self:center;width:250px;border-radius:38px;border:8px solid #2b221b;overflow:hidden;background:#0d0906;box-shadow:0 30px 80px -20px rgba(0,0,0,.7),0 0 60px -10px rgba(245,183,91,.25)}
+.hm-phone img{width:100%;height:auto;display:block}
+.lk-touch .hm-qr{display:none}
+.lk-ios .hm-gp,.lk-android .hm-as{display:none}
+
+/* journal */
+.hm-js{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.hm-j{border-radius:18px;overflow:hidden;border:1px solid var(--border);text-decoration:none;color:var(--fg);background:var(--card);transition:border-color .2s ease}
+.hm-j:hover{border-color:rgba(245,183,91,.6)}
+.hm-j img{width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;display:block}
+.hm-jt{display:block;padding:12px 14px 16px}
+.hm-jt small{color:var(--gold);font:700 10.5px Inter,system-ui,sans-serif;letter-spacing:1.4px;text-transform:uppercase}
+.hm-jt b{display:block;font-family:var(--serif);font-weight:500;font-size:19px;line-height:1.25;margin-top:4px}
+
+/* questions */
+.hm-faq details{border-bottom:1px solid var(--border);padding:14px 0}
+.hm-faq summary{cursor:pointer;font-weight:600;font-size:16px;list-style:none;display:flex;justify-content:space-between;gap:16px}
+.hm-faq summary::-webkit-details-marker{display:none}
+.hm-faq summary::after{content:"+";color:var(--gold);font-size:20px;line-height:1}
+.hm-faq details[open] summary::after{content:"\2013"}
+.hm-faq p{color:#e7ddcf;margin-top:8px;font-size:15px;line-height:1.6}
+.hm-faq p a{color:var(--gold)}
+
+@media (max-width:820px){
+ .hm-how{grid-template-columns:1fr 1fr}
+ .hm-potd,.hm-app{grid-template-columns:1fr}
+ .hm-potd .ph{min-height:220px;aspect-ratio:16/10}
+ .hm-js{grid-template-columns:1fr}
+ .hm-app{padding:24px}
+}
+@media (max-width:640px){
+ .lk-home .sbox{flex-wrap:wrap;border-radius:26px;padding:8px 8px 8px 18px}
+ .lk-home .sbox input{flex-basis:calc(100% - 40px)}
+ /* long country lists scroll sideways in three rows instead of filling the screen */
+ .hm-pane.on{display:grid;grid-auto-flow:column;grid-template-rows:repeat(3,auto);overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
+ .hm-js{grid-auto-flow:column;grid-template-columns:none;grid-auto-columns:82%;overflow-x:auto;scroll-snap-type:x mandatory}
+ .hm-j{scroll-snap-align:start}
+ .hm-cities{grid-auto-columns:minmax(230px,260px)}
+}
+@media (prefers-reduced-motion:reduce){.lk-home .hero>img{transition:none}}
+/* scripts whose words run long at display size */
+.lk-home .hero h1{font-size:clamp(36px,5.4vw,64px)}
+.lk-home .hero h1:lang(ka),.lk-home .hero h1:lang(hy),.lk-home .hero h1:lang(ta),.lk-home .hero h1:lang(te),
+.lk-home .hero h1:lang(ml),.lk-home .hero h1:lang(bn),.lk-home .hero h1:lang(mr),.lk-home .hero h1:lang(hi),
+.lk-home .hero h1:lang(th),.lk-home .hero h1:lang(el),.lk-home .hero h1:lang(ru),.lk-home .hero h1:lang(uk),
+.lk-home .hero h1:lang(bg),.lk-home .hero h1:lang(sr){font-size:clamp(30px,4.3vw,52px);line-height:1.08}
+@media (max-width:640px){
+ .lk-home .hero h1{font-size:clamp(32px,9vw,44px)}
+ .lk-home .hero h1:lang(ka),.lk-home .hero h1:lang(hy),.lk-home .hero h1:lang(ta),.lk-home .hero h1:lang(te),
+ .lk-home .hero h1:lang(ml),.lk-home .hero h1:lang(bn),.lk-home .hero h1:lang(mr),.lk-home .hero h1:lang(hi),
+ .lk-home .hero h1:lang(th),.lk-home .hero h1:lang(el),.lk-home .hero h1:lang(ru),.lk-home .hero h1:lang(uk),
+ .lk-home .hero h1:lang(bg),.lk-home .hero h1:lang(sr){font-size:clamp(24px,6.6vw,32px);overflow-wrap:anywhere}
+ .hm-sub{font-size:15px}
+}
