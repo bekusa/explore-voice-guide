@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-16T04:58:38.910374+00:00",
+  "generated": "2026-11-17T05:01:27.217373+00:00",
   "feed": "https://app.trysoro.com/api/rss/40e3fcd6-ae58-4652-bf7f-5ad9d903f38f",
   "noindex": false,
   "pages": [
@@ -8,6 +8,7 @@
     "https://lokali.travel/blog/audio-walking-tour-see-a-city-at-your-pace.html",
     "https://lokali.travel/blog/best-istanbul-museum-audio-guides.html",
     "https://lokali.travel/blog/city-sightseeing-tips-without-groups.html",
+    "https://lokali.travel/blog/find-turkish-city-guides-free.html",
     "https://lokali.travel/blog/first-time-visitor-sightseeing-guide.html",
     "https://lokali.travel/blog/free-audio-guide-versus-rental.html",
     "https://lokali.travel/blog/free-city-guides-set-your-own-pace.html",
@@ -30,6 +31,7 @@
     "https://lokali.travel/blog/which-museum-guides-are-free.html"
   ],
   "in_feed": [
+    "https://lokali.travel/blog/find-turkish-city-guides-free.html",
     "https://lokali.travel/blog/istanbul-historical-walking-route-one-day.html",
     "https://lokali.travel/blog/how-to-hear-colosseum-history.html",
     "https://lokali.travel/blog/best-istanbul-museum-audio-guides.html",
