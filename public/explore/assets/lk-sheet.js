@@ -44,6 +44,8 @@ var LK_SHEET_SETTINGS = {
   areaCount: 2,              // …at most this many
   playUrl: "https://play.google.com/store/apps/details?id=app.lokali.travel",
   appStoreUrl: "https://apps.apple.com/app/id6828065471",
+  appStorePt: "129676452",   // Apple campaign links (2026-11-24): ?pt=…&ct=explore_sheet / explore_page / explore_bar
+                             // (blog_… on the Journal) → App Store Connect → Analytics → Campaigns; "" = plain links
   appLink: "https://lokali.travel/app", // picks the store by device; QR + both badges elsewhere
   fixPageLinks: true,        // the pages' own "Get the app" / "Open the Lokali app" buttons → the visitor's store
   qrImage: "app-qr-explore.svg", // in assets/: QR of https://lokali.travel/app?utm_source=seo&utm_medium=qr&utm_campaign=explore
@@ -317,6 +319,11 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
   var SB = "https://dwyajguhgyjbgkpzjaln.supabase.co/rest/v1/usage_events";
   var PK = "sb_publishable_9e0MpAV3FKmVGhMLw8u2ig_FL5ZqzHd";
   var demo = /[?&]lksheet=1/.test(location.search);
+  function asUrl(where) {
+    if (!S.appStorePt) return S.appStoreUrl;
+    var ct = ((/^\/blog/.test(location.pathname) ? "blog_" : "explore_") + where).slice(0, 40);
+    return S.appStoreUrl + "?pt=" + S.appStorePt + "&ct=" + ct + "&mt=8";
+  }
   // ?lksheet=reset forgets an earlier "×" on this device (testing: a closed card stays hidden hideForDays)
   if (/[?&]lksheet=reset/.test(location.search)) { try { localStorage.removeItem("lk_sheet_closed_at"); } catch (e) {} }
 
@@ -401,7 +408,7 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
       // opens this guide in the web app instead, where it plays straight away (Beka 2026-11-13,
       // Louvre: "the guide doesn't open"). Phones still go to their store.
       if (!ios && !android && web && a.classList.contains("play")) { a.href = web; a.setAttribute("data-store", "web"); return; }
-      a.href = ios ? S.appStoreUrl : android ? S.playUrl + (q ? "&" + q : "") : S.appLink + (q ? "?" + q : "");
+      a.href = ios ? asUrl("page") : android ? S.playUrl + (q ? "&" + q : "") : S.appLink + (q ? "?" + q : "");
       a.setAttribute("data-store", ios ? "app_store" : android ? "play" : "app_link");
     });
     // "Try it in the browser" (the app panel's second button) opens this guide too, not the home page
@@ -429,7 +436,7 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
     var ios = /iPhone|iPad|iPod/.test(ua) || ((/Macintosh/.test(ua) || navigator.platform === "MacIntel") && navigator.maxTouchPoints > 1);
     var old = pill.querySelector("a:not(.lkb)");
     var q = old ? (old.getAttribute("href").split("?")[1] || "").split("&").filter(function (p) { return /^utm_/.test(p); }).join("&") : "";
-    var apple = '<a class="lkb" data-store="app_store" href="' + S.appStoreUrl + '" target="_blank" rel="noopener noreferrer">' +
+    var apple = '<a class="lkb" data-store="app_store" href="' + asUrl("bar") + '" target="_blank" rel="noopener noreferrer">' +
       '<img src="' + A + 'app-store-badge.svg" alt="Download on the App Store" width="108" height="36"></a>';
     var play = '<a class="lkb lkb-play" data-store="play" href="' + S.playUrl + (q ? "&" + q : "") + '" target="_blank" rel="noopener noreferrer">' +
       '<img src="' + A + 'google-play-badge.png" alt="Get it on Google Play" width="140" height="54"></a>';
@@ -597,7 +604,7 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
   }
   var pts = tx("pts").split("|").join("<br>");
   // Official artwork only: Apple's black badge (no standalone Apple logo) and Google's badge.
-  var asBadge = '<a class="lks-badge lks-as" data-t="app_store" href="' + S.appStoreUrl + '" rel="nofollow" target="_blank"><img src="' + A +
+  var asBadge = '<a class="lks-badge lks-as" data-t="app_store" href="' + asUrl("sheet") + '" rel="nofollow" target="_blank"><img src="' + A +
     'app-store-badge.svg" alt="Download on the App Store" width="120" height="40"></a>';
   var gpBadge = '<a class="lks-badge lks-gp" data-t="play" href="' + playUrl + '" rel="nofollow" target="_blank"><img src="' + A +
     'google-play-badge.png" alt="Get it on Google Play" width="155" height="60"></a>';

@@ -4,7 +4,7 @@ import { useT } from "@/hooks/useT";
 import { trackEvent } from "@/lib/analytics";
 import {
   APP_QR_SRC,
-  APP_STORE_URL,
+  appStoreUrl,
   PLAY_URL,
   storePlatform,
   type StorePlatform,
@@ -101,7 +101,7 @@ export function ContinueInAppPrompt({
   const desktop = platform === "desktop";
   const href =
     platform === "ios"
-      ? APP_STORE_URL
+      ? appStoreUrl("web_after_listen")
       : `${PLAY_URL}&utm_source=web&utm_medium=after_listen`;
 
   return (

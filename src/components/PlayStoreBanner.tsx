@@ -5,7 +5,7 @@ import { useT } from "@/hooks/useT";
 import {
   APP_QR_SRC,
   APP_STORE_BADGE_SRC,
-  APP_STORE_URL,
+  appStoreUrl,
   PLAY_BADGE_SRC,
   PLAY_URL,
   isIOSSafari,
@@ -92,7 +92,7 @@ export function PlayStoreBanner() {
   // stores' badges).
   const appStoreBadge = (
     <a
-      href={APP_STORE_URL}
+      href={appStoreUrl("web_banner")}
       target="_blank"
       rel="noopener noreferrer"
       className="block shrink-0 rounded-[9px]"

@@ -17,6 +17,19 @@ export const APP_STORE_ID = "6828065471";
 export const APP_STORE_URL = `https://apps.apple.com/app/id${APP_STORE_ID}`;
 
 /**
+ * Apple campaign links (Beka 2026-11-24). pt = Lokali's provider token
+ * (App Store Connect → Analytics → Campaigns → Generate Campaign Link),
+ * ct = which of our placements sent the visitor. App Store Connect then
+ * shows downloads per placement under Acquisition → Campaigns (once 5+
+ * devices per campaign). APP_STORE_URL stays bare for JSON-LD / sameAs.
+ */
+export const APP_STORE_PROVIDER_TOKEN = "129676452";
+export function appStoreUrl(campaign: string): string {
+  const ct = campaign.replace(/[^A-Za-z0-9_.-]+/g, "_").slice(0, 40) || "web";
+  return `${APP_STORE_URL}?pt=${APP_STORE_PROVIDER_TOKEN}&ct=${ct}&mt=8`;
+}
+
+/**
  * Apple's official black "Download on the App Store" badge (US-UK, 120×40),
  * self-hosted. Downloaded 2026-11-07 from Apple's marketing toolbox
  * (toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/

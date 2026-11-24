@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   APP_QR_SRC,
   APP_STORE_BADGE_SRC,
-  APP_STORE_URL,
+  appStoreUrl,
   PLAY_BADGE_SRC,
   PLAY_URL,
   isNativeApp,
@@ -51,6 +51,15 @@ function utmFrom(params: URLSearchParams): Record<string, string> {
     if (v) out[k] = v.slice(0, 120);
   }
   return out;
+}
+
+/** Apple campaign token for /app: "link" + the utm tags it arrived with, e.g. link_seo_qr_explore. */
+function appStoreUrlWithUtm(utm: Record<string, string>): string {
+  return appStoreUrl(
+    ["link", utm.utm_source, utm.utm_medium, utm.utm_campaign]
+      .filter(Boolean)
+      .join("_"),
+  );
 }
 
 function playUrlWithUtm(utm: Record<string, string>): string {
@@ -102,7 +111,8 @@ export const Route = createFileRoute("/app")({
         return new Response(null, {
           status: 302,
           headers: {
-            Location: store === "ios" ? APP_STORE_URL : playUrlWithUtm(utm),
+            Location:
+              store === "ios" ? appStoreUrlWithUtm(utm) : playUrlWithUtm(utm),
             "Cache-Control": "private, no-store",
             Vary: "User-Agent",
             "X-Robots-Tag": "noindex",
@@ -126,7 +136,9 @@ function GetAppPage() {
     }
     const p = storePlatform();
     if (p === "ios") {
-      window.location.replace(APP_STORE_URL);
+      window.location.replace(
+        appStoreUrlWithUtm(utmFrom(new URLSearchParams(window.location.search))),
+      );
       return;
     }
     if (p === "android") {
@@ -173,7 +185,7 @@ function GetAppPage() {
             </p>
             <div className="mt-6 flex items-center justify-center gap-3">
               <a
-                href={APP_STORE_URL}
+                href={appStoreUrl("link_page")}
                 rel="noopener noreferrer"
                 className="block shrink-0"
               >
