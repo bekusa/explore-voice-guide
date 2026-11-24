@@ -636,4 +636,6 @@ export const TH: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "ดาวน์โหลดบน Google Play",
   "playBanner.qrTitle": "ดาวน์โหลดแอปลงโทรศัพท์",
   "playBanner.qrHint": "สแกนด้วยกล้องโทรศัพท์",
+  "appPrompt.title": "ฟังต่อในแอป Lokali",
+  "appPrompt.sub": "ฟรี · ใช้งานออฟไลน์ได้ · 50+ ภาษา",
 };

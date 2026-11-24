@@ -15,6 +15,7 @@ import {
   identifyUser,
   resetAnalytics,
   installPlayStoreClickTracking,
+  installEngagementTracking,
 } from "@/lib/analytics";
 import { LANGUAGE_COUNT_LABEL } from "@/lib/languages";
 import { installClientErrorGuard } from "@/lib/clientErrorGuard";
@@ -372,6 +373,7 @@ function RootComponent() {
   // navigation. router.subscribe returns its own unsubscribe fn.
   useEffect(() => {
     installPlayStoreClickTracking();
+    installEngagementTracking();
     logVisit();
     const unsubscribe = router.subscribe("onResolved", () => {
       logVisit();

@@ -630,4 +630,6 @@ export const ZH_TW: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "在 Google Play 下載",
   "playBanner.qrTitle": "在手機上下載 App",
   "playBanner.qrHint": "用手機相機掃描",
+  "appPrompt.title": "在 Lokali App 中繼續收聽",
+  "appPrompt.sub": "免費 · 可離線使用 · 50+ 種語言",
 };

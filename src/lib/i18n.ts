@@ -235,6 +235,8 @@ export const UI_STRINGS = {
   "playBanner.playAlt": "Get it on Google Play",
   "playBanner.qrTitle": "Get the app on your phone",
   "playBanner.qrHint": "Scan with your phone's camera",
+  "appPrompt.title": "Keep listening in the Lokali app",
+  "appPrompt.sub": "Free · works offline · 50+ languages",
   "profile.title": "Profile",
   "profile.account": "Account",
   "profile.openSettings": "Settings",

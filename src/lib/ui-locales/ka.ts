@@ -90,6 +90,8 @@ export const KA: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "გადმოწერე Google Play-დან",
   "playBanner.qrTitle": "გადმოწერე აპი ტელეფონზე",
   "playBanner.qrHint": "დაასკანერე ტელეფონის კამერით",
+  "appPrompt.title": "განაგრძე მოსმენა Lokali-ს აპში",
+  "appPrompt.sub": "უფასო · მუშაობს ოფლაინ · 50+ ენა",
   "profile.title": "პროფილი",
   "profile.account": "ანგარიში",
   "profile.openSettings": "პარამეტრები",

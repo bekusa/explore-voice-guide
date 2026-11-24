@@ -96,6 +96,8 @@ export const LT: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Gaukite iš Google Play",
   "playBanner.qrTitle": "Įsidiekite programėlę telefone",
   "playBanner.qrHint": "Nuskaitykite telefono kamera",
+  "appPrompt.title": "Klausykitės toliau Lokali programėlėje",
+  "appPrompt.sub": "Nemokama · veikia be interneto · 50+ kalbų",
   "profile.title": "Profilis",
   "profile.account": "Paskyra",
   "profile.openSettings": "Nustatymai",

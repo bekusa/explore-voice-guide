@@ -584,4 +584,6 @@ export const HY: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Ստանալ Google Play-ում",
   "playBanner.qrTitle": "Ներբեռնեք հավելվածը ձեր հեռախոսում",
   "playBanner.qrHint": "Սկանավորեք հեռախոսի տեսախցիկով",
+  "appPrompt.title": "Շարունակիր լսել Lokali հավելվածում",
+  "appPrompt.sub": "Անվճար · աշխատում է օֆլայն · 50+ լեզու",
 };

@@ -638,4 +638,6 @@ export const HI: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Google Play पर पाएं",
   "playBanner.qrTitle": "अपने फ़ोन पर ऐप पाएं",
   "playBanner.qrHint": "फ़ोन के कैमरे से स्कैन करें",
+  "appPrompt.title": "Lokali ऐप में सुनना जारी रखें",
+  "appPrompt.sub": "मुफ़्त · ऑफ़लाइन चलता है · 50+ भाषाएँ",
 };

@@ -633,4 +633,6 @@ export const HE: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "זמין ב-Google Play",
   "playBanner.qrTitle": "הורידו את האפליקציה לטלפון",
   "playBanner.qrHint": "סרקו עם מצלמת הטלפון",
+  "appPrompt.title": "המשיכו להאזין באפליקציית Lokali",
+  "appPrompt.sub": "חינם · עובד אופליין · יותר מ-50 שפות",
 };

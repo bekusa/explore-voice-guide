@@ -640,4 +640,6 @@ export const HU: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Szerezd meg a Google Playen",
   "playBanner.qrTitle": "Töltsd le az appot a telefonodra",
   "playBanner.qrHint": "Olvasd be a telefonod kamerájával",
+  "appPrompt.title": "Hallgasd tovább a Lokali appban",
+  "appPrompt.sub": "Ingyenes · offline is működik · 50+ nyelv",
 };

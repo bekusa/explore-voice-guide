@@ -33,6 +33,8 @@ var LK_SHEET_SETTINGS = {
   showAfterSeconds: 5,       // show anyway after this long (Beka 2026-11-07: 25 → 12 → 5)
   engagedAfterSeconds: 5,    // ...or earlier, once this long has passed AND
   engagedScroll: 0.5,        // ...the visitor has scrolled past this share of the page
+  requireInteraction: { mobile: true, desktop: false }, // phones: the card waits for a first tap / key / scroll
+                             // (2026-11-23), so bots never see it; computers: unchanged, shown on the timer (Beka 2026-11-24)
   hideForDays: 7,            // after "×", stay hidden this long
   nearbyMaxKm: 3,            // "Nearby: …" lists places at most this far (from the page's own Nearby list)
   nearbyCount: 3,            // ...and at most this many of them
@@ -317,6 +319,29 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
   var demo = /[?&]lksheet=1/.test(location.search);
   // ?lksheet=reset forgets an earlier "×" on this device (testing: a closed card stays hidden hideForDays)
   if (/[?&]lksheet=reset/.test(location.search)) { try { localStorage.removeItem("lk_sheet_closed_at"); } catch (e) {} }
+
+  // "engaged" (2026-11-23): one per tab session, on the first real interaction (tap, click, key, wheel,
+  // or a scroll after the first second). Bots load pages but never interact, so the dashboard counts
+  // people as distinct anon_ids with this event. Same sessionStorage key as the web app
+  // (src/lib/analytics.ts installEngagementTracking), so one tab session counts once.
+  (function () {
+    if (demo || nativeApp() || /bot|crawl|spider|slurp|lighthouse|headless|preview|facebookexternalhit/i.test(navigator.userAgent || "")) return;
+    try { if (sessionStorage.getItem("lokali_engaged")) return; } catch (e) { return; }
+    var evs = ["pointerdown", "touchstart", "keydown", "wheel", "scroll"], t0 = Date.now();
+    function go(e) {
+      if (e.type === "scroll" && Date.now() - t0 < 1000) return;
+      evs.forEach(function (n) { window.removeEventListener(n, go, true); });
+      try { if (sessionStorage.getItem("lokali_engaged")) return; sessionStorage.setItem("lokali_engaged", "1"); } catch (x) { return; }
+      var a = null;
+      try { a = localStorage.getItem("lokali_anon_id"); if (!a) { a = crypto.randomUUID(); localStorage.setItem("lokali_anon_id", a); } } catch (x) {}
+      try {
+        fetch(SB, { method: "POST", keepalive: true, headers: { apikey: PK, Authorization: "Bearer " + PK, "Content-Type": "application/json", Prefer: "return=minimal" },
+          body: JSON.stringify({ event: "engaged", anon_id: a, props: { page: location.pathname, via: e.type, ms: Date.now() - t0, app: "web", src: "explore",
+            device: innerWidth < 768 ? "mobile" : "desktop" } }) });
+      } catch (x) {}
+    }
+    evs.forEach(function (n) { window.addEventListener(n, go, { capture: true, passive: true }); });
+  })();
 
   // Inside our iOS/Android app no store link may show (Apple 2.3.10). The native shell defines
   // window.Capacitor with isNativePlatform() → true; a web copy of @capacitor/core says false.
@@ -643,8 +668,19 @@ LK_SHEET_TEXT.zh = LK_SHEET_TEXT["zh-cn"];
   }
 
   if (demo) { setTimeout(show, 600); return; }
-  var t0 = Date.now();
-  setTimeout(show, S.showAfterSeconds * 1000);
+  var ri = S.requireInteraction, t0 = Date.now(), due = false;
+  var acted = !(ri && (typeof ri === "object" ? ri[desk ? "desktop" : "mobile"] : ri));
+  // requireInteraction: the timer only marks the card as due; it appears on the first interaction.
+  if (!acted) {
+    var acts = ["pointerdown", "touchstart", "keydown", "wheel", "scroll"];
+    var onAct = function (e) {
+      if (e.type === "scroll" && Date.now() - t0 < 1000) return;
+      acted = true; acts.forEach(function (n) { window.removeEventListener(n, onAct, true); });
+      if (due) show();
+    };
+    acts.forEach(function (n) { window.addEventListener(n, onAct, { capture: true, passive: true }); });
+  }
+  setTimeout(function () { if (acted) show(); else due = true; }, S.showAfterSeconds * 1000);
   window.addEventListener("scroll", function () {
     if (Date.now() - t0 < S.engagedAfterSeconds * 1000) return;
     var h = document.documentElement;

@@ -641,4 +641,6 @@ export const RO: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Descarcă de pe Google Play",
   "playBanner.qrTitle": "Descarcă aplicația pe telefon",
   "playBanner.qrHint": "Scanează cu camera telefonului",
+  "appPrompt.title": "Ascultă în continuare în aplicația Lokali",
+  "appPrompt.sub": "Gratuit · funcționează offline · 50+ limbi",
 };

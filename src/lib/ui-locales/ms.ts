@@ -643,4 +643,6 @@ export const MS: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Dapatkan di Google Play",
   "playBanner.qrTitle": "Dapatkan aplikasi di telefon anda",
   "playBanner.qrHint": "Imbas dengan kamera telefon",
+  "appPrompt.title": "Teruskan mendengar dalam aplikasi Lokali",
+  "appPrompt.sub": "Percuma · berfungsi luar talian · 50+ bahasa",
 };

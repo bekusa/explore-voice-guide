@@ -32,6 +32,7 @@ import { resolveAzureVoice } from "@/lib/azureVoices";
 import { attractionSlug } from "@/lib/api";
 import { audioId, getAudioBlobUrl, saveAudioBlob, saveScript, scriptId } from "@/lib/offlineStore";
 import { trackEvent } from "@/lib/analytics";
+import { ContinueInAppPrompt } from "@/components/ContinueInAppPrompt";
 
 /**
  * Module-level cache of the resolved Azure voice preference.
@@ -473,6 +474,11 @@ export function InlineAudioPanel() {
   // mounts it. It sits AFTER every hook so the hook order is stable.
   if (!narration.request) return null;
 
+  // "Keep listening in the app" (web only — the prompt checks): offered
+  // while the guide plays, 8 s in — once the listener has heard it work,
+  // never waiting for the end (Beka 2026-11-24).
+  const promptReady = !!audioUrl && progress.current >= 8;
+
   return (
     <div
       role="region"
@@ -602,6 +608,8 @@ export function InlineAudioPanel() {
           <Square className="h-3 w-3 fill-current" />
         </button>
       </div>
+
+      <ContinueInAppPrompt ready={promptReady} userId={user?.id ?? null} />
 
       <EdgeWaves active={active} rate={rate} />
     </div>

@@ -95,6 +95,8 @@ export const GU: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Google Play પર મેળવો",
   "playBanner.qrTitle": "તમારા ફોનમાં એપ મેળવો",
   "playBanner.qrHint": "તમારા ફોનના કેમેરાથી સ્કેન કરો",
+  "appPrompt.title": "Lokali ઍપમાં સાંભળવાનું ચાલુ રાખો",
+  "appPrompt.sub": "મફત · ઑફલાઇન ચાલે છે · 50+ ભાષાઓ",
   "profile.title": "પ્રોફાઇલ",
   "profile.account": "ખાતું",
   "profile.openSettings": "સેટિંગ્સ",

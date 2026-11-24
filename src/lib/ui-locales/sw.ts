@@ -584,4 +584,6 @@ export const SW: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Ipate kwenye Google Play",
   "playBanner.qrTitle": "Pata programu kwenye simu yako",
   "playBanner.qrHint": "Changanua kwa kamera ya simu yako",
+  "appPrompt.title": "Endelea kusikiliza kwenye programu ya Lokali",
+  "appPrompt.sub": "Bure · inafanya kazi nje ya mtandao · lugha 50+",
 };

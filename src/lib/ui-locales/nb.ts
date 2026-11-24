@@ -641,4 +641,6 @@ export const NB: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Tilgjengelig på Google Play",
   "playBanner.qrTitle": "Last ned appen på mobilen",
   "playBanner.qrHint": "Skann med mobilkameraet",
+  "appPrompt.title": "Lytt videre i Lokali-appen",
+  "appPrompt.sub": "Gratis · fungerer offline · 50+ språk",
 };

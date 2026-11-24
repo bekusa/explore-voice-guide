@@ -644,4 +644,6 @@ export const TR: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Google Play'den alın",
   "playBanner.qrTitle": "Uygulamayı telefonunuza indirin",
   "playBanner.qrHint": "Telefonunuzun kamerasıyla tarayın",
+  "appPrompt.title": "Lokali uygulamasında dinlemeye devam et",
+  "appPrompt.sub": "Ücretsiz · çevrimdışı çalışır · 50+ dil",
 };

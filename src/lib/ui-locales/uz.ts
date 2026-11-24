@@ -102,6 +102,8 @@ export const UZ: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Google Play'dan oling",
   "playBanner.qrTitle": "Ilovani telefoningizga yuklab oling",
   "playBanner.qrHint": "Telefon kamerasi bilan skanerlang",
+  "appPrompt.title": "Lokali ilovasida tinglashda davom eting",
+  "appPrompt.sub": "Bepul · oflayn ishlaydi · 50+ til",
   "profile.title": "Profil",
   "profile.account": "Hisob",
   "profile.openSettings": "Sozlamalar",

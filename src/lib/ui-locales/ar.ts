@@ -635,4 +635,6 @@ export const AR: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "احصل عليه من Google Play",
   "playBanner.qrTitle": "احصل على التطبيق على هاتفك",
   "playBanner.qrHint": "امسح الرمز بكاميرا هاتفك",
+  "appPrompt.title": "تابع الاستماع في تطبيق Lokali",
+  "appPrompt.sub": "مجاني · يعمل دون اتصال · أكثر من 50 لغة",
 };

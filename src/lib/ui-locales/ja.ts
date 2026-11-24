@@ -641,4 +641,6 @@ export const JA: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Google Play で手に入れよう",
   "playBanner.qrTitle": "スマホにアプリを入れよう",
   "playBanner.qrHint": "スマホのカメラでスキャン",
+  "appPrompt.title": "続きは Lokali アプリで",
+  "appPrompt.sub": "無料 · オフライン対応 · 50以上の言語",
 };

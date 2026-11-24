@@ -638,4 +638,6 @@ export const FA: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "دریافت از Google Play",
   "playBanner.qrTitle": "اپلیکیشن را روی گوشی‌تان نصب کنید",
   "playBanner.qrHint": "با دوربین گوشی اسکن کنید",
+  "appPrompt.title": "در اپ Lokali به شنیدن ادامه دهید",
+  "appPrompt.sub": "رایگان · آفلاین کار می‌کند · بیش از ۵۰ زبان",
 };

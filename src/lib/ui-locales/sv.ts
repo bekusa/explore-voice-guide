@@ -640,4 +640,6 @@ export const SV: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Ladda ned på Google Play",
   "playBanner.qrTitle": "Hämta appen till mobilen",
   "playBanner.qrHint": "Skanna med mobilens kamera",
+  "appPrompt.title": "Lyssna vidare i Lokali-appen",
+  "appPrompt.sub": "Gratis · fungerar offline · 50+ språk",
 };

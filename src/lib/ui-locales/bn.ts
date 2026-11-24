@@ -641,4 +641,6 @@ export const BN: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Google Play থেকে পান",
   "playBanner.qrTitle": "ফোনে অ্যাপটি নিন",
   "playBanner.qrHint": "ফোনের ক্যামেরা দিয়ে স্ক্যান করুন",
+  "appPrompt.title": "Lokali অ্যাপে শোনা চালিয়ে যান",
+  "appPrompt.sub": "বিনামূল্যে · অফলাইনে চলে · ৫০+ ভাষা",
 };

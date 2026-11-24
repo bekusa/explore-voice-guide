@@ -646,4 +646,6 @@ export const DE: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Jetzt bei Google Play",
   "playBanner.qrTitle": "Hol dir die App aufs Handy",
   "playBanner.qrHint": "Mit der Handykamera scannen",
+  "appPrompt.title": "Hör weiter in der Lokali-App",
+  "appPrompt.sub": "Kostenlos · funktioniert offline · 50+ Sprachen",
 };

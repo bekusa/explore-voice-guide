@@ -637,4 +637,6 @@ export const KO: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Google Play에서 다운로드",
   "playBanner.qrTitle": "휴대폰에 앱을 설치하세요",
   "playBanner.qrHint": "휴대폰 카메라로 스캔하세요",
+  "appPrompt.title": "Lokali 앱에서 계속 들어보세요",
+  "appPrompt.sub": "무료 · 오프라인 지원 · 50개 이상 언어",
 };

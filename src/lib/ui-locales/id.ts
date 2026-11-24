@@ -640,4 +640,6 @@ export const ID: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Temukan di Google Play",
   "playBanner.qrTitle": "Dapatkan aplikasinya di ponselmu",
   "playBanner.qrHint": "Pindai dengan kamera ponsel",
+  "appPrompt.title": "Lanjutkan mendengarkan di aplikasi Lokali",
+  "appPrompt.sub": "Gratis · bisa offline · 50+ bahasa",
 };

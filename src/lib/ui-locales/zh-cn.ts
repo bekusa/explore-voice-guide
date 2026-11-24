@@ -631,4 +631,6 @@ export const ZH_CN: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "在 Google Play 上获取",
   "playBanner.qrTitle": "在手机上获取应用",
   "playBanner.qrHint": "用手机相机扫码",
+  "appPrompt.title": "在 Lokali App 中继续收听",
+  "appPrompt.sub": "免费 · 可离线使用 · 50+ 种语言",
 };

@@ -640,4 +640,6 @@ export const DA: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Hent den på Google Play",
   "playBanner.qrTitle": "Hent appen på din telefon",
   "playBanner.qrHint": "Scan med telefonens kamera",
+  "appPrompt.title": "Lyt videre i Lokali-appen",
+  "appPrompt.sub": "Gratis · virker offline · 50+ sprog",
 };

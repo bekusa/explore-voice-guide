@@ -584,4 +584,6 @@ export const SR: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Набавите на Google Play-у",
   "playBanner.qrTitle": "Преузмите апликацију на телефон",
   "playBanner.qrHint": "Скенирајте камером телефона",
+  "appPrompt.title": "Слушајте даље у апликацији Lokali",
+  "appPrompt.sub": "Бесплатно · ради офлајн · 50+ језика",
 };

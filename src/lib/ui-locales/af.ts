@@ -584,4 +584,6 @@ export const AF: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Kry dit op Google Play",
   "playBanner.qrTitle": "Kry die toep op jou foon",
   "playBanner.qrHint": "Skandeer met jou foon se kamera",
+  "appPrompt.title": "Luister verder in die Lokali-app",
+  "appPrompt.sub": "Gratis · werk aflyn · 50+ tale",
 };

@@ -584,4 +584,6 @@ export const AZ: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Google Play-dən əldə edin",
   "playBanner.qrTitle": "Tətbiqi telefonunuza yükləyin",
   "playBanner.qrHint": "Telefonunuzun kamerası ilə skan edin",
+  "appPrompt.title": "Lokali tətbiqində dinləməyə davam et",
+  "appPrompt.sub": "Pulsuz · oflayn işləyir · 50+ dil",
 };

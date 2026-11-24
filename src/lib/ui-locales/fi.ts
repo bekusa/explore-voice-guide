@@ -641,4 +641,6 @@ export const FI: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Lataa Google Playsta",
   "playBanner.qrTitle": "Lataa sovellus puhelimeesi",
   "playBanner.qrHint": "Skannaa puhelimen kameralla",
+  "appPrompt.title": "Jatka kuuntelua Lokali-sovelluksessa",
+  "appPrompt.sub": "Ilmainen · toimii offline · 50+ kieltä",
 };

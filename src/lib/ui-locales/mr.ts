@@ -584,4 +584,6 @@ export const MR: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Google Play वर मिळवा",
   "playBanner.qrTitle": "फोनवर ॲप मिळवा",
   "playBanner.qrHint": "फोनच्या कॅमेऱ्याने स्कॅन करा",
+  "appPrompt.title": "Lokali ॲपमध्ये ऐकणे सुरू ठेवा",
+  "appPrompt.sub": "मोफत · ऑफलाइन चालते · 50+ भाषा",
 };

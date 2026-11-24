@@ -104,6 +104,8 @@ export const FIL: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Kunin ito sa Google Play",
   "playBanner.qrTitle": "Kunin ang app sa phone mo",
   "playBanner.qrHint": "I-scan gamit ang camera ng phone mo",
+  "appPrompt.title": "Ituloy ang pakikinig sa Lokali app",
+  "appPrompt.sub": "Libre · gumagana offline · 50+ wika",
   "profile.title": "Profile",
   "profile.account": "Account",
   "profile.openSettings": "Mga Setting",

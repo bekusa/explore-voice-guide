@@ -640,4 +640,6 @@ export const VI: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Tải về trên Google Play",
   "playBanner.qrTitle": "Tải ứng dụng về điện thoại",
   "playBanner.qrHint": "Quét bằng camera điện thoại",
+  "appPrompt.title": "Tiếp tục nghe trong ứng dụng Lokali",
+  "appPrompt.sub": "Miễn phí · dùng ngoại tuyến · hơn 50 ngôn ngữ",
 };

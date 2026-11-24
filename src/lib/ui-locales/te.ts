@@ -584,4 +584,6 @@ export const TE: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Google Playలో పొందండి",
   "playBanner.qrTitle": "మీ ఫోన్‌లో యాప్ పొందండి",
   "playBanner.qrHint": "ఫోన్ కెమెరాతో స్కాన్ చేయండి",
+  "appPrompt.title": "Lokali యాప్‌లో వినడం కొనసాగించండి",
+  "appPrompt.sub": "ఉచితం · ఆఫ్‌లైన్‌లో పనిచేస్తుంది · 50+ భాషలు",
 };

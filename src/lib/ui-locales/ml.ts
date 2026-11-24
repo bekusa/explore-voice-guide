@@ -98,6 +98,8 @@ export const ML: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Google Play-ൽ നിന്ന് നേടുക",
   "playBanner.qrTitle": "ഫോണിൽ ആപ്പ് നേടുക",
   "playBanner.qrHint": "ഫോൺ ക്യാമറ ഉപയോഗിച്ച് സ്കാൻ ചെയ്യുക",
+  "appPrompt.title": "Lokali ആപ്പിൽ കേൾക്കുന്നത് തുടരൂ",
+  "appPrompt.sub": "സൗജന്യം · ഓഫ്‌ലൈനിൽ പ്രവർത്തിക്കും · 50+ ഭാഷകൾ",
   "profile.title": "പ്രൊഫൈൽ",
   "profile.account": "അക്കൗണ്ട്",
   "profile.openSettings": "ക്രമീകരണങ്ങൾ",

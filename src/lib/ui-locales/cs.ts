@@ -638,4 +638,6 @@ export const CS: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Nyní na Google Play",
   "playBanner.qrTitle": "Stáhněte si aplikaci do telefonu",
   "playBanner.qrHint": "Naskenujte fotoaparátem telefonu",
+  "appPrompt.title": "Poslouchejte dál v aplikaci Lokali",
+  "appPrompt.sub": "Zdarma · funguje offline · 50+ jazyků",
 };

@@ -642,4 +642,6 @@ export const NL: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Ontdek het op Google Play",
   "playBanner.qrTitle": "Download de app op je telefoon",
   "playBanner.qrHint": "Scan met de camera van je telefoon",
+  "appPrompt.title": "Luister verder in de Lokali-app",
+  "appPrompt.sub": "Gratis · werkt offline · 50+ talen",
 };

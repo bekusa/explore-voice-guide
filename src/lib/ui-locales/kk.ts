@@ -98,6 +98,8 @@ export const KK: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Google Play-ден алыңыз",
   "playBanner.qrTitle": "Қолданбаны телефонға жүктеңіз",
   "playBanner.qrHint": "Телефон камерасымен сканерлеңіз",
+  "appPrompt.title": "Lokali қолданбасында тыңдауды жалғастырыңыз",
+  "appPrompt.sub": "Тегін · офлайн жұмыс істейді · 50+ тіл",
   "profile.title": "Профиль",
   "profile.account": "Аккаунт",
   "profile.openSettings": "Параметрлер",

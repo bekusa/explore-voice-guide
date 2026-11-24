@@ -98,6 +98,8 @@ export const PA: Partial<Record<UiKey, string>> = {
   "playBanner.playAlt": "Google Play ਤੋਂ ਪ੍ਰਾਪਤ ਕਰੋ",
   "playBanner.qrTitle": "ਆਪਣੇ ਫ਼ੋਨ ਵਿੱਚ ਐਪ ਲਓ",
   "playBanner.qrHint": "ਫ਼ੋਨ ਦੇ ਕੈਮਰੇ ਨਾਲ ਸਕੈਨ ਕਰੋ",
+  "appPrompt.title": "Lokali ਐਪ ਵਿੱਚ ਸੁਣਨਾ ਜਾਰੀ ਰੱਖੋ",
+  "appPrompt.sub": "ਮੁਫ਼ਤ · ਔਫਲਾਈਨ ਚੱਲਦਾ ਹੈ · 50+ ਭਾਸ਼ਾਵਾਂ",
   "profile.title": "ਪ੍ਰੋਫਾਈਲ",
   "profile.account": "ਖਾਤਾ",
   "profile.openSettings": "ਸੈਟਿੰਗਾਂ",

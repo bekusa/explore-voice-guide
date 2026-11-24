@@ -248,6 +248,54 @@ export function installPlayStoreClickTracking(): void {
 }
 
 /**
+ * "engaged" — one per tab session, on the visitor's first real interaction
+ * (tap, click, key, wheel, or a scroll after the first second). Crawlers
+ * and headless bots load pages but never interact, so the dashboard counts
+ * humans as distinct anon_ids with this event (Beka 2026-11-23: the web →
+ * store funnel was diluted by bot "visitors"). Same sessionStorage key as
+ * public/explore/assets/lk-sheet.js, so moving from an explore page into
+ * the web app in the same tab is counted once.
+ */
+const ENGAGED_KEY = "lokali_engaged";
+const ENGAGE_EVENTS = ["pointerdown", "touchstart", "keydown", "wheel", "scroll"] as const;
+let engagementInstalled = false;
+export function installEngagementTracking(): void {
+  if (typeof window === "undefined" || engagementInstalled) return;
+  engagementInstalled = true;
+  try {
+    if (clientInfo().bot || sessionStorage.getItem(ENGAGED_KEY)) return;
+  } catch {
+    return;
+  }
+  const t0 = Date.now();
+  const opts: AddEventListenerOptions = { capture: true, passive: true };
+  const onAct = (e: Event) => {
+    // Scroll restoration / anchor jumps on load are not a person.
+    if (e.type === "scroll" && Date.now() - t0 < 1000) return;
+    for (const n of ENGAGE_EVENTS) window.removeEventListener(n, onAct, opts);
+    try {
+      if (sessionStorage.getItem(ENGAGED_KEY)) return;
+      sessionStorage.setItem(ENGAGED_KEY, "1");
+      const info = clientInfo();
+      trackEvent(
+        "engaged",
+        {
+          path: location.pathname,
+          via: e.type,
+          ms: Date.now() - t0,
+          browser: info.browser,
+          device: info.device,
+        },
+        currentUserId,
+      );
+    } catch {
+      /* never throw from telemetry */
+    }
+  };
+  for (const n of ENGAGE_EVENTS) window.addEventListener(n, onAct, opts);
+}
+
+/**
  * Tie subsequent telemetry to a signed-in user.
  *
  * Still required after PostHog was removed (Beka 2026-10-29): this keeps
