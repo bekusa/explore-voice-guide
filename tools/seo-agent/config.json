@@ -68,11 +68,11 @@
   "models": {
     "orchestrator": "session",
     "extraction_classification": "claude-haiku-4-5",
-    "audits_drafts": "claude-sonnet-4-5",
+    "audits_drafts": "claude-sonnet-4-6",
     "strategy_destructive_retro_selfmod_skillreview": "claude-opus-5-5",
     "verifier_destructive": "claude-opus-5-5",
-    "verifier_routine": "claude-sonnet-4-5",
-    "second_opinion_on_rejections": "claude-sonnet-4-5",
+    "verifier_routine": "claude-sonnet-4-6",
+    "second_opinion_on_rejections": "claude-sonnet-4-6",
     "claude_seo_parallelism_cap": 3
   },
   "languages": {

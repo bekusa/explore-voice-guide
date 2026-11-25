@@ -140,8 +140,11 @@ export const Route = createFileRoute("/api/attractions")({
           //     worker's ~100 s budget → 502 "AI temporarily busy"
           //     (Beka hit it repeatedly). Reverted 2026-07-30 to
           //     sonnet-4-5 DIRECT: single call, ~45 s, fits the budget.
+          // 2026-11-25: no `model:` here any more — the list follows
+          // DEFAULT_MODEL in anthropic.server.ts (Sonnet 4.6 since
+          // Anthropic retires Sonnet 4.5 on 2026-11-30), so the next
+          // model change is one line in one file.
           const text = await callClaude({
-            model: "claude-sonnet-4-5",
             system,
             user,
             maxTokens: 3072,
@@ -468,7 +471,6 @@ async function handleExtensionRequest(
     // used 6144 budget would flirt with the worker's ~100 s limit
     // the same way Opus did. 4096 still fits ~25 rows.
     const text = await callClaude({
-      model: "claude-sonnet-4-5",
       system,
       user,
       maxTokens: 4096,

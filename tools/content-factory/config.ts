@@ -8,16 +8,17 @@
 export const CONFIG = {
   /** Beka 2026-10-22, after the 5-place comparison: guides with Opus 5.5
    *  (fewer invented facts, meets the length contract), city lists with the
-   *  app's own Sonnet 4.5. The live app still generates new guides with
-   *  Sonnet unless src/lib/anthropic.server.ts DEFAULT_MODEL is changed. */
+   *  app's own Sonnet. 2026-11-25: Sonnet 4.5 → 4.6 everywhere, because
+   *  Anthropic retires 4.5 on 2026-11-30 (the app's DEFAULT_MODEL in
+   *  src/lib/anthropic.server.ts moved the same day). */
   guideModel: "claude-opus-5-5",
-  attractionsModel: "claude-sonnet-4-5",
+  attractionsModel: "claude-sonnet-4-6",
   /** Beka 2026-10-22: no fact-check / repair in the credit run (cost). Gates 1-2 (code) stay. */
   factCheck: false,
   /** Fact-checker and repair do not need to match the app. */
   checkerModel: "claude-haiku-4-5",
-  secondOpinionModel: "claude-sonnet-4-5",
-  repairModel: "claude-sonnet-4-5",
+  secondOpinionModel: "claude-sonnet-4-6",
+  repairModel: "claude-sonnet-4-6",
 
   attractionsPerCity: 10,
   interest: "editors",
