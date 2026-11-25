@@ -201,7 +201,7 @@ So today a search by any name other than the exact one usually misses:
      - pl "Wielki Pałac" → "Wilanów Palace", i.e. a different place;
      - ml "ഷ്വാർട്സ് പള്ളി" → "Schwarzwälder Kirche".
      Of 133 Haiku resolutions, 26 led to names we have no guide for.
-   - Judge (claude -p, Max subscription, no money). For each candidate alias, ask: is this the same place as the QID, and not a part, a parent or a namesake? Is it ambiguous? Is it generic? Give the model the QID's label, description, coordinates and the candidate's source. Use claude-haiku-4-5 first, and claude-sonnet-4-5 for every rejection and every "unsure".
+   - Judge (claude -p, Max subscription, no money). For each candidate alias, ask: is this the same place as the QID, and not a part, a parent or a namesake? Is it ambiguous? Is it generic? Give the model the QID's label, description, coordinates and the candidate's source. Use claude-haiku-4-5 first, and claude-sonnet-4-6 for every rejection and every "unsure".
    - Gap-filler. Where Wikidata has no label in a chosen language, the model may PROPOSE names people commonly use: a colloquial name ("Duomo"), a standard transliteration, a common spelling variant. A proposal is written only after a non-AI check ties it to the same QID. Acceptable checks:
      - that language's Wikipedia resolves it (by title or redirect) to the article whose wikibase_item is the QID;
      - or the Wikipedia or Wikidata text of that item states the name.
@@ -431,7 +431,7 @@ PHOTO CHECKS PER UNIT
    - modern_photo_of_subject (exterior, interior or characteristic detail);
    - historical_photo, drawing_or_art, map_or_plan, other_place, person_or_event, low_quality, unsure.
    Show the model the Wikidata P18 image as the reference for what the place looks like.
-   Use claude-haiku-4-5 for the first pass and claude-sonnet-4-5 for every rejection and every "unsure". In Phase 0, verify that image input works with your claude -p setup, e.g. by allowing only the Read tool for a thumbnail path.
+   Use claude-haiku-4-5 for the first pass and claude-sonnet-4-6 for every rejection and every "unsure". In Phase 0, verify that image input works with your claude -p setup, e.g. by allowing only the Read tool for a thumbnail path.
 7. Duplicates. Two slides are the same photo when they share the source file (normalise the upload. and thumb. hosts and strip /thumb/…/Npx- down to the base filename) or a near-identical perceptual hash. Keep the best one of each group.
 8. Order:
    - slide 1 is the clearest exterior or overall view;

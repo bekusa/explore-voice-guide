@@ -64,21 +64,106 @@ function isRegionBlock(status: number, body: string): boolean {
 }
 
 /**
- * Default model. Sonnet-class for the narrated guide (and any caller
- * that doesn't override `model:`) because Beka reverted from Haiku —
- * Haiku's terse style was hurting the narrated guide quality.
+ * Default model. Sonnet-class for the narrated guide and the city
+ * lists (and any caller that doesn't override `model:`) because Beka
+ * reverted from Haiku — Haiku's terse style was hurting the narrated
+ * guide quality.
  *
- * 2026-07-25: tried "claude-sonnet-5" as default. 2026-07-30 REVERTED
- * to "claude-sonnet-4-5" — the Anthropic Console logs show ZERO
- * sonnet-5 requests ever reached the account (it isn't enabled here
- * yet), so every call wasted a failed sonnet-5 attempt (+ its retry
- * backoff) BEFORE falling back to sonnet-4-5, and the two-call total
- * pushed /api/attractions past the Cloudflare Worker's ~100 s limit →
- * intermittent 502 "AI temporarily busy". sonnet-4-5 direct is the
- * proven single-call path. Flip back to sonnet-5 only once the
- * Console shows sonnet-5 requests succeeding on this account.
+ * 2026-11-25: "claude-sonnet-4-5" → "claude-sonnet-4-6". Anthropic
+ * retires Sonnet 4.5 on 2026-11-30; after that date every 4.5 call
+ * fails, which would break each guide / city list that is not
+ * already cached. Beka chose Sonnet 4.6 over Anthropic's suggested
+ * replacement (Sonnet 5.5): it is the closest to what the app has
+ * been writing with — same request shape, same price. It is not
+ * retired before 2027-02-17 per Anthropic's deprecations page, so
+ * this needs doing again; the 5.x path below is already in place
+ * for that day (change this one constant to "claude-sonnet-5-5").
+ *
+ * Why the July attempts at "claude-sonnet-5" / "claude-opus-4-8"
+ * failed (the old note here blamed the account): the 5.x family
+ * REJECTS `temperature` with a 400, and this wrapper always sent
+ * one. buildRequestBody() below shapes the request per model
+ * family, so a 5.x model works as a single call when it is chosen.
  */
-export const DEFAULT_MODEL = "claude-sonnet-4-5";
+export const DEFAULT_MODEL = "claude-sonnet-4-6";
+
+/** Claude 5.x (Sonnet 5.5, Opus 5.5, Haiku 5.5, …) takes a different request shape. */
+function isGen5(model: string): boolean {
+  return /^claude-[a-z]+-5(-|$)/.test(model);
+}
+
+/**
+ * One request body per model family.
+ *
+ * Claude 4.x and older: `temperature` is sent, there is no thinking
+ * unless asked for.
+ *
+ * Claude 5.x (migration guide, platform.claude.com/docs/en/models/
+ * sonnet-5-5/migration-guide):
+ *  - sampling parameters (`temperature`, `top_p`, `top_k`) are a 400;
+ *  - a request without a `thinking` field THINKS, and the thinking is
+ *    billed and counted inside `max_tokens`. Our prompts are single
+ *    JSON generations on a ~100 s Worker budget, so we ask for the
+ *    lowest setting, `between_tools` (with no tools: text only — the
+ *    old behaviour), at `medium` effort;
+ *  - the same text is ~30 % more tokens than on 4.x, so the callers'
+ *    `maxTokens` (tuned on 4.5) is raised by 35 % here, in one place,
+ *    instead of at every call site.
+ */
+const GEN5_EFFORT = "medium";
+const GEN5_TOKEN_FACTOR = 1.35;
+
+type RequestBody = Record<string, unknown> & { model: string };
+
+function buildRequestBody(model: string, opts: ClaudeCallOpts): RequestBody {
+  const maxTokens = opts.maxTokens ?? 4096;
+  const base = {
+    model,
+    system: opts.system,
+    messages: [{ role: "user", content: opts.user }],
+  };
+  if (isGen5(model)) {
+    return {
+      ...base,
+      max_tokens: Math.ceil(maxTokens * GEN5_TOKEN_FACTOR),
+      thinking: { type: "between_tools" },
+      output_config: { effort: GEN5_EFFORT },
+    };
+  }
+  return { ...base, max_tokens: maxTokens, temperature: opts.temperature ?? 0.7 };
+}
+
+/**
+ * A 400 that names a parameter we sent means the model family moved
+ * on again (the July outage was exactly this, undiagnosed for days).
+ * Drop the named parameter and let the caller re-send once, rather
+ * than failing every generation until someone reads the logs.
+ * Returns true when it changed the body.
+ */
+function healRequestBody(body: RequestBody, status: number, errText: string): boolean {
+  if (status !== 400) return false;
+  if (/temperature|top_p|top_k|sampling/i.test(errText) && "temperature" in body) {
+    delete body.temperature;
+    return true;
+  }
+  if (/thinking/i.test(errText) && "thinking" in body) {
+    delete body.thinking;
+    return true;
+  }
+  if (/output_config|effort/i.test(errText) && "output_config" in body) {
+    delete body.output_config;
+    return true;
+  }
+  return false;
+}
+
+/** All text blocks of a Messages response, in order (5.x may put thinking blocks first). */
+function textOf(data: { content?: Array<{ type?: string; text?: string }> }): string {
+  return (data.content ?? [])
+    .filter((b) => b?.type === "text" && typeof b.text === "string")
+    .map((b) => b.text as string)
+    .join("");
+}
 
 export type ClaudeCallOpts = {
   /** Optional model override; defaults to DEFAULT_MODEL. */
@@ -102,18 +187,17 @@ export type ClaudeCallOpts = {
  * returned text as JSON (most prompts ask Claude to emit JSON).
  */
 /**
- * Known-good fallback. Live incident 2026-07-25: with this account's
- * API key, claude-haiku-4-5 and claude-sonnet-4-5 work, but BOTH
- * claude-opus-4-8 and claude-sonnet-5 fail terminally (every
- * /api/attractions and /api/guide generation 502'd while photo /
- * classify routes were healthy). Until the account-side cause is
- * confirmed in the Anthropic Console, callClaude retries a failed
- * call ONCE on this proven model so users never see "AI is
- * temporarily busy" because of a model-availability problem. The
- * console.warn below records the primary model's real error for
- * diagnosis.
+ * Fallback for callers that name ANOTHER model: when that model's
+ * call fails for good, callClaude retries once on this one, so users
+ * don't see "AI is temporarily busy" because of a model-side problem
+ * (born in the 2026-07-25 incident). A call already on this model
+ * has no further fallback.
+ *
+ * 2026-11-25: was "claude-sonnet-4-5", retired on 2026-11-30. Kept
+ * equal to DEFAULT_MODEL (Beka: Sonnet 4.6 only), so the guide and
+ * the city lists are never written by a second, different model.
  */
-const FALLBACK_MODEL = "claude-sonnet-4-5";
+const FALLBACK_MODEL = "claude-sonnet-4-6";
 
 export async function callClaude(opts: ClaudeCallOpts): Promise<string> {
   // Telemetry wrapper (2026-07-17): time every Anthropic call end-to-end
@@ -127,16 +211,19 @@ export async function callClaude(opts: ClaudeCallOpts): Promise<string> {
   const started = Date.now();
   const model = opts.model ?? DEFAULT_MODEL;
   try {
-    const text = await callClaudeWithFallback(opts);
+    const out = await callClaudeWithFallback(opts);
+    // `model` is the one that actually ANSWERED. When the fallback
+    // had to step in, `error` says so on an ok row, so the dashboard
+    // (and whoever migrates models next) can see it happening.
     await logApiCall({
       label: opts.label ?? null,
-      model,
+      model: out.model,
       duration_ms: Date.now() - started,
       ok: true,
       status: 200,
-      error: null,
+      error: out.note,
     });
-    return text;
+    return out.text;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await logApiCall({
@@ -178,18 +265,20 @@ function extractStatus(message: string): number | null {
   return m ? parseInt(m[1], 10) : null;
 }
 
-async function callClaudeWithFallback(opts: ClaudeCallOpts): Promise<string> {
+type ClaudeResult = { text: string; model: string; note: string | null };
+
+async function callClaudeWithFallback(opts: ClaudeCallOpts): Promise<ClaudeResult> {
+  const model = opts.model ?? DEFAULT_MODEL;
   try {
-    return await callClaudeOnce(opts);
+    return { text: await callClaudeOnce(opts), model, note: null };
   } catch (err) {
-    const model = opts.model ?? DEFAULT_MODEL;
     if (model === FALLBACK_MODEL) throw err;
+    const why = err instanceof Error ? err.message.slice(0, 300) : String(err);
     console.warn(
-      `[anthropic] model ${model} failed — falling back to ${FALLBACK_MODEL}. Primary error: ${
-        err instanceof Error ? err.message.slice(0, 300) : String(err)
-      }`,
+      `[anthropic] model ${model} failed — falling back to ${FALLBACK_MODEL}. Primary error: ${why}`,
     );
-    return callClaudeOnce({ ...opts, model: FALLBACK_MODEL });
+    const text = await callClaudeOnce({ ...opts, model: FALLBACK_MODEL });
+    return { text, model: FALLBACK_MODEL, note: `fallback from ${model}: ${why}`.slice(0, 500) };
   }
 }
 
@@ -200,8 +289,8 @@ async function callClaudeOnce(opts: ClaudeCallOpts): Promise<string> {
   }
 
   const model = opts.model ?? DEFAULT_MODEL;
-  const maxTokens = opts.maxTokens ?? 4096;
-  const temperature = opts.temperature ?? 0.7;
+  const body = buildRequestBody(model, opts);
+  let heals = 0;
 
   // Up to 3 attempts: initial + 2 retries on 429 (rate limit) or 5xx
   // (transient upstream). Beka hit the 10K-tok/min budget once when
@@ -219,21 +308,13 @@ async function callClaudeOnce(opts: ClaudeCallOpts): Promise<string> {
         "x-api-key": apiKey,
         "anthropic-version": "2023-06-01",
       },
-      body: JSON.stringify({
-        model,
-        max_tokens: maxTokens,
-        temperature,
-        system: opts.system,
-        messages: [{ role: "user", content: opts.user }],
-      }),
+      body: JSON.stringify(body),
     });
 
     if (res.ok) {
-      const data = (await res.json()) as {
-        content?: Array<{ type?: string; text?: string }>;
-      };
-      const block = (data.content ?? []).find((b) => b?.type === "text");
-      const text = block?.text ?? "";
+      const text = textOf(
+        (await res.json()) as { content?: Array<{ type?: string; text?: string }> },
+      );
       if (!text.trim()) {
         throw new Error("[anthropic] empty text content in response");
       }
@@ -241,6 +322,17 @@ async function callClaudeOnce(opts: ClaudeCallOpts): Promise<string> {
     }
 
     const errText = await res.text().catch(() => "");
+
+    // A parameter this model no longer accepts: drop it and re-send
+    // at once (at most twice; does not use up a retry attempt).
+    if (heals < 2 && healRequestBody(body, res.status, errText)) {
+      heals++;
+      attempt--;
+      console.warn(
+        `[anthropic] ${model} rejected a request parameter — re-sending without it: ${errText.slice(0, 200)}`,
+      );
+      continue;
+    }
     const retryable = res.status === 429 || (res.status >= 500 && res.status < 600);
     if (retryable && attempt < MAX_ATTEMPTS) {
       // Anthropic spec: 429 + 5xx may include `retry-after` in
@@ -292,21 +384,13 @@ async function callClaudeOnce(opts: ClaudeCallOpts): Promise<string> {
               "x-anthropic-key": apiKey,
               "anthropic-version": "2023-06-01",
             },
-            body: JSON.stringify({
-              model,
-              max_tokens: maxTokens,
-              temperature,
-              system: opts.system,
-              messages: [{ role: "user", content: opts.user }],
-            }),
+            body: JSON.stringify(body),
           });
 
           if (relayed.ok) {
-            const data = (await relayed.json()) as {
-              content?: Array<{ type?: string; text?: string }>;
-            };
-            const block = (data.content ?? []).find((b) => b?.type === "text");
-            const text = block?.text ?? "";
+            const text = textOf(
+              (await relayed.json()) as { content?: Array<{ type?: string; text?: string }> },
+            );
             if (text.trim()) return text;
             throw new Error("[anthropic] empty text content via relay");
           }

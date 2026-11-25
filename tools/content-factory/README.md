@@ -14,7 +14,7 @@ The factory imports, not copies, everything the live routes run:
 `src/lib/prompts.ts` (prompts), `src/lib/guidePostprocess.ts` (duration,
 spoken years), `parseClaudeJson`, `resolveCoords`, and the cache-key
 normalizers in `src/lib/cacheKey.ts`. Only the transport differs:
-`claude -p --model claude-sonnet-4-5` with the app's system prompt, no
+`claude -p --model claude-sonnet-4-6` with the app's system prompt, no
 tools, no thinking (`transport.ts`).
 
 ## Files

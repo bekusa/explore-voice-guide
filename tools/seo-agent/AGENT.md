@@ -100,7 +100,7 @@ The orchestrator (you) plans, routes, reads only summaries, decides, and writes 
 
 Model routing (set in config.json; the orchestrator runs on the session model):
 - extraction, classification, validation of many items (alias candidates, SERP parsing, page checks): claude-haiku-4-5;
-- page audits, SERP analysis, drafts, title/meta rewrites: claude-sonnet-4-5;
+- page audits, SERP analysis, drafts, title/meta rewrites: claude-sonnet-4-6 (was claude-sonnet-4-5, retired by Anthropic on 2026-11-30);
 - strategy, wave decisions, pruning decisions, the monthly retro, every self-modification proposal, every skill import review, and the verifier's verdict on destructive changes: claude-opus-5-5 (or the session model if newer);
 - sub-agents run through claude -p with --model and, where the task is pure JSON, a --json-schema; usage counts toward the 50% ceiling.
 

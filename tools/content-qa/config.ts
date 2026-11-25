@@ -48,7 +48,7 @@ export const QA_CONFIG = {
     /** Geosearch radius for places without a Commons category. */
     geoRadiusM: { building: 200, site: 1000 },
     visionModel: "claude-haiku-4-5",
-    visionSecondOpinion: "claude-sonnet-4-5",
+    visionSecondOpinion: "claude-sonnet-4-6",
   },
 
   hours: {
@@ -73,7 +73,7 @@ export const QA_CONFIG = {
     tier3Official: true,
     tier3MaxFetches: 3,
     checkerModel: "claude-haiku-4-5",
-    secondOpinionModel: "claude-sonnet-4-5",
+    secondOpinionModel: "claude-sonnet-4-6",
     repairModel: "claude-opus-5-5",
   },
 
@@ -96,7 +96,7 @@ export const QA_CONFIG = {
     languages: ["en", "ka", "tr", "ru", "de", "fr", "es", "it", "pt", "ar", "zh", "ja", "ko", "hi", "pl", "uk", "he", "fa", "az"],
     includeLocalLanguage: true,
     judgeModel: "claude-haiku-4-5",
-    judgeSecondOpinion: "claude-sonnet-4-5",
+    judgeSecondOpinion: "claude-sonnet-4-6",
     minLength: 4,
   },
 
