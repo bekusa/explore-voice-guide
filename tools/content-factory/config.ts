@@ -46,7 +46,7 @@ export const CONFIG = {
     // Beka 2026-10-31: use the plan up to 100%. The 5-hour window still pauses at 98% so a run waits
     // for the reset instead of being rejected (a rejected call stops the run).
     maxFiveHour: 0.98,
-    maxWeekly: 0.99, // Beka 2026-10-22: 80%; 90% on 2026-10-24; 100% on 2026-10-31; 99% on 2026-11-17 ("99%-ზე გააჩერე")
+    maxWeekly: 1.0, // 100% again on 2026-11-26 ("განაგრძე სანამ 100% არ ამოწურავ"); Beka 2026-10-22: 80%; 90% on 2026-10-24; 100% on 2026-10-31; 99% on 2026-11-17 ("99%-ზე გააჩერე")
   },
   /** Evidence sent to the checker: the article from the top (lead + history usually come first). */
   evidenceChars: 25_000,
