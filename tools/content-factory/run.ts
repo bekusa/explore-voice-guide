@@ -175,6 +175,7 @@ const say = (agent: string, job: Job, what = "") => { if (!local) void report("f
 const problemsOf = (fc: ReturnType<typeof summarize>): Claim[] => [...fc.contradicted, ...fc.legend_as_fact, ...fc.price_or_hours];
 
 async function processGuide(job: Job) {
+  if (!job.name.trim()) return finish(job, "skipped", 0, { last_error: "empty place name" }); // never generate a guide for a nameless job
   let cost = 0;
   let ev: Evidence | null = null;
   if (CONFIG.factCheck) {

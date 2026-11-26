@@ -284,7 +284,9 @@ async function main() {
     if (!city) { city = g.nearest_city; how = "nearest_fallback"; }
     if (g.nearest_city && normalizeName(g.nearest_city) !== normalizeName(city) && Number(g.nearest_city_km) <= 15) cityAliases.push(g.nearest_city);
 
-    const promptName = /\(/.test(g.en_title) ? g.name : g.en_title;
+    // A target without an English Wikipedia title has an empty en_title: fall back to its label. (Until 2026-11-27 this
+    // produced jobs with an EMPTY name, and 1,072 guides were written about the nearest town instead of the place.)
+    const promptName = (/\(/.test(g.en_title) ? g.name : g.en_title) || g.name;
     const keyNames = [...new Set([g.en_title, g.name, promptName].filter(Boolean))];
     const bucketless = keyNames.filter((n) => (keyOwners.get(normalizeName(n))?.size ?? 0) === 1 && g.name_collision !== "true");
     guideJobs.push({
