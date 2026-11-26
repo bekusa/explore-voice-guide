@@ -31,7 +31,7 @@ export const CONFIG = {
    *  `usage` below. These dollar caps stay as a second brake. */
   budgetUsd: {
     "cloud:guide": 3500, // Beka 2026-11-26: 3500 ("აღარ გამიჩეროს"); reached 2000 with 795 guides left of the 31,899 target (2000 since 2026-10-22). Max plan. Not money (overage is off): the weekly cap below is the real brake. Beka 2026-10-22 lifted it from $175.
-    "cloud:attractions": 600, // Beka 2026-10-23: continue past 1,000 cities; 2026-11-14 pages 2-3 for every list (lane at ~$300 then)
+    "cloud:attractions": 1500, // 2026-11-27: 1500 for the 4,217 new city lists (lane at ~$356); Beka 2026-10-23: continue past 1,000 cities; 2026-11-14 pages 2-3 for every list (lane at ~$300 then)
     // Cloud-session credit ($250, expires 2026-11-04 23:59 PT). Run with CF_CREDIT_MODE=1 from a
     // session outside any Project; ~$25 stays for that session's own conversation.
     "credit:guide": 200,
