@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-23T16:29:23.734901+00:00",
+  "generated": "2026-11-25T05:00:54.159395+00:00",
   "feed": "https://app.trysoro.com/api/rss/40e3fcd6-ae58-4652-bf7f-5ad9d903f38f",
   "noindex": false,
   "pages": [
@@ -13,6 +13,7 @@
     "https://lokali.travel/blog/first-time-visitor-sightseeing-guide.html",
     "https://lokali.travel/blog/free-audio-guide-versus-rental.html",
     "https://lokali.travel/blog/free-city-guides-set-your-own-pace.html",
+    "https://lokali.travel/blog/free-ephesus-ruins-guide.html",
     "https://lokali.travel/blog/free-self-guided-city-tours-on-your-time.html",
     "https://lokali.travel/blog/historic-district-self-guided-walks.html",
     "https://lokali.travel/blog/how-to-explore-a-city-alone.html",
@@ -34,6 +35,7 @@
     "https://lokali.travel/blog/which-museum-guides-are-free.html"
   ],
   "in_feed": [
+    "https://lokali.travel/blog/free-ephesus-ruins-guide.html",
     "https://lokali.travel/blog/are-city-audio-guides-free.html",
     "https://lokali.travel/blog/prado-self-guided-route-first-visit.html",
     "https://lokali.travel/blog/louvre-audio-guide-review.html",
