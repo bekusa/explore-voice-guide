@@ -77,6 +77,46 @@ function readCurrentInterest(): string {
   }
 }
 
+/* ── English stored under another language ──────────────────────────
+ * Beka 2026-11-28: "ქართულ ენაზე ჩავწერე ბაგრატის კათედრალი. და
+ * ინგლისურად გამოაქვს". When the server's translation fails it still
+ * answers with the English guide (better than nothing), and this cache
+ * used to keep that English under the user's language for good — so the
+ * phone would go on showing English even after the server was fixed.
+ * Translation was down from about 2026-11-13 to 11-28, which left such
+ * entries on many devices.
+ *
+ * So an entry whose text is plainly English is neither stored nor
+ * served for a non-English language; the next open fetches it again.
+ * The test is deliberately crude and one-sided — it must never throw
+ * away a real translation:
+ *   - non-Latin languages (Georgian, Russian, Arabic, Hindi, Chinese…):
+ *     more than 60 % of the letters are Latin;
+ *   - Latin-script languages (French, German, Spanish…): English
+ *     function words make up over 6 % of the words. In English prose
+ *     "the", "and", "of" alone run to ~12 %; in a real French or German
+ *     translation they all but vanish. */
+const NON_LATIN_LANGS = new Set(
+  "ka el ru uk bg kk hy he ar fa ur hi mr bn pa gu ta te ml th ja ko zh".split(" "),
+);
+const ENGLISH_MARKERS = new Set("the and of with which this that you your from were".split(" "));
+
+export function looksUntranslated(text: string, language: string): boolean {
+  const lang = (language || "").toLowerCase();
+  if (!text || !lang || lang.startsWith("en")) return false;
+  const sample = text.slice(0, 2000);
+  const letters = sample.match(/\p{L}/gu)?.length ?? 0;
+  if (letters < 80) return false;
+  if (NON_LATIN_LANGS.has(lang.split("-")[0])) {
+    const latin = sample.match(/\p{Script=Latin}/gu)?.length ?? 0;
+    return latin / letters > 0.6;
+  }
+  const words = sample.toLowerCase().match(/\p{L}+/gu) ?? [];
+  if (words.length < 40) return false;
+  const english = words.filter((w) => ENGLISH_MARKERS.has(w)).length;
+  return english / words.length > 0.06;
+}
+
 function read(): CacheMap {
   if (!isBrowser()) return {};
   try {
@@ -116,11 +156,12 @@ function write(map: CacheMap) {
 export function getCachedGuide(name: string, language: string, interest?: string): string | null {
   const map = read();
   const entry = map[makeKey(name, language, interest)];
-  return entry?.text ?? null;
+  if (!entry?.text || looksUntranslated(entry.text, language)) return null;
+  return entry.text;
 }
 
 export function setCachedGuide(name: string, language: string, text: string, interest?: string) {
-  if (!text) return;
+  if (!text || looksUntranslated(text, language)) return;
   const map = read();
   const key = makeKey(name, language, interest);
   // Preserve any existing rich fields on the entry — only update text.
@@ -140,7 +181,7 @@ export function getCachedGuideData(
 ): CachedGuideData | null {
   const map = read();
   const entry = map[makeKey(name, language, interest)];
-  if (!entry) return null;
+  if (!entry || looksUntranslated(entry.text, language)) return null;
   return {
     title: entry.title,
     script: entry.text,
@@ -161,7 +202,7 @@ export function setCachedGuideData(
   data: CachedGuideData,
   interest?: string,
 ) {
-  if (!data.script) return;
+  if (!data.script || looksUntranslated(data.script, language)) return;
   const map = read();
   map[makeKey(name, language, interest)] = {
     text: data.script,

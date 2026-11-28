@@ -83,6 +83,83 @@ const seen = new Map<string, Seen>();
 let sent = 0;
 let limitAnnounced = false;
 
+/* ── Image failures: who is actually seeing them ─────────────────────
+ * Beka 2026-11-27: "Failed to load img" was the most frequent row in
+ * error_logs — 60-130 a day from mid-November. Matched against
+ * usage_events page by page, about three in four came from one crawler:
+ * desktop "Windows Chrome", US datacentre networks, a brand-new device
+ * on every page, one attraction every 3-10 s, never a tap. Most of the
+ * rest came from look-alikes in HK/SG. Such crawlers block image
+ * downloads to save bandwidth, so the first <img> on each page (a map
+ * tile or the hero photo) "fails" — while the same photo opens fine for
+ * everyone else (spot-checked: the photo blobs load). Real people produced
+ * roughly 20 of these rows in 12 days.
+ *
+ * Three filters, image failures only. Scripts and stylesheets are NOT
+ * filtered — a stale chunk means a blank page whose owner may never get
+ * the chance to tap anything.
+ *  1. Map tiles are never reported. A missing tile is a grey square
+ *     Leaflet already tolerates and retries on the next pan, and with
+ *     real users they almost never fail.
+ *  2. Nothing is reported from an automated browser (navigator.webdriver).
+ *  3. An image failure is HELD until the page shows a human sign — a
+ *     tap, click, key or scroll wheel — and only then sent. Crawlers
+ *     that spoof webdriver still never touch the page, so their failures
+ *     are simply never sent. Cost: a person who opens a page and leaves
+ *     without touching it goes unrecorded. Note the row's created_at is
+ *     then the moment of that first touch, not of the failure.
+ */
+const TILE_HOST = /(^|\.)tile\.openstreetmap\.org$/i;
+const HUMAN_EVENTS = ["pointerdown", "touchstart", "keydown", "wheel"] as const;
+/** More than enough to show the problem; a page of broken thumbnails stays small. */
+const MAX_HELD = 5;
+
+let humanSeen = false;
+let humanWatch = false;
+const held: ClientErrorReport[] = [];
+
+function hostOf(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    return new URL(url, typeof location !== "undefined" ? location.href : undefined).hostname;
+  } catch {
+    return null;
+  }
+}
+
+function isAutomated(): boolean {
+  try {
+    return typeof navigator !== "undefined" && navigator.webdriver === true;
+  } catch {
+    return false;
+  }
+}
+
+function watchForHuman(): void {
+  if (humanWatch || typeof window === "undefined") return;
+  humanWatch = true;
+  const onHuman = () => {
+    humanSeen = true;
+    for (const ev of HUMAN_EVENTS) window.removeEventListener(ev, onHuman, true);
+    for (const r of held.splice(0, held.length)) reportClientError(r);
+  };
+  for (const ev of HUMAN_EVENTS) {
+    window.addEventListener(ev, onHuman, { capture: true, passive: true });
+  }
+}
+
+/** True when this report should not be sent (now, or — if held — yet). */
+function holdOrDropImage(report: ClientErrorReport, message: string): boolean {
+  if (!/^Failed to load img\b/.test(message)) return false;
+  const host = hostOf(report.source);
+  if (host && TILE_HOST.test(host)) return true;
+  if (isAutomated()) return true;
+  if (humanSeen) return false;
+  watchForHuman();
+  if (held.length < MAX_HELD) held.push(report);
+  return true;
+}
+
 /** Turn any thrown value into one short, useful line. */
 function describe(error: unknown): string {
   if (error instanceof DOMException) return `${error.name}: ${error.message}`;
@@ -166,7 +243,12 @@ export function reportClientError(report: ClientErrorReport): void {
     const status = report.status ?? null;
     const kind = report.kind ?? "network";
 
-    const verdict = admit(`${kind}|${report.where}|${message}|${status}`);
+    if (kind === "resource" && holdOrDropImage(report, message)) return;
+
+    // The host is part of a resource signature so that one broken photo
+    // source cannot hide another inside the 60 s dedupe window.
+    const host = kind === "resource" ? (hostOf(report.source) ?? "") : "";
+    const verdict = admit(`${kind}|${report.where}|${message}|${status}|${host}`);
     if (!verdict) return;
 
     const body = JSON.stringify({

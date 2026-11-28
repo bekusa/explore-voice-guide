@@ -108,6 +108,22 @@ export const Route = createFileRoute("/api/client-error")({
         const status = num(body.status);
         const durationMs = num(body.durationMs);
 
+        /* Who sent it. Beka 2026-11-27: three quarters of the image
+         * failures turned out to be one crawler, and proving that took
+         * a join against usage_events because these rows carried no
+         * trace of the sender. The user agent and the network operator
+         * (Cloudflare's `cf.asOrganization` — "Amazon.com", "Google
+         * LLC" is a datacentre, a telecom is a person) settle it at a
+         * glance. Read from the request, never trusted from the body. */
+        const ua = clip(request.headers.get("user-agent"), 200);
+        let network: string | null = null;
+        try {
+          const cf = (request as Request & { cf?: { asOrganization?: unknown } }).cf;
+          network = clip(cf?.asOrganization, 80);
+        } catch {
+          /* not on Workers (local dev) */
+        }
+
         const rawKind = clip(body.kind, 16);
         // Default "network" rather than "unknown": that is what every
         // build before 2026-10-25 meant by saying nothing at all.
@@ -151,6 +167,8 @@ export const Route = createFileRoute("/api/client-error")({
              * A large number is itself the finding — it means a loop,
              * not a one-off. */
             repeats: num(body.repeats) ?? 0,
+            ua,
+            network,
             hint: "Reported BY THE BROWSER. The request may never have reached the Worker — check whether a matching server-side row exists at the same minute.",
           },
         });

@@ -1,3 +1,5 @@
+import { logError } from "@/lib/errorLog.server";
+
 /**
  * Google Cloud Translation API v2 (Basic) — drop-in replacement for
  * the previous Anthropic Haiku translation pipeline.
@@ -23,6 +25,31 @@
  */
 
 const TRANSLATE_URL = "https://translation.googleapis.com/language/translate/v2";
+
+/* Beka 2026-11-28: this is the fallback under Gemini, and when Gemini's
+ * model was switched off in November it caught nothing — the Cloud
+ * Translation API in "Lokali Production" showed zero requests, i.e. the
+ * key is missing or belongs to another project. Nobody could tell,
+ * because failures here only went to console.warn. Now they reach
+ * error_logs (service "google-translate"), at most once a minute per
+ * kind of failure per Worker. */
+const lastLogged = new Map<string, number>();
+
+async function reportFailure(what: string, message: string, target: string): Promise<void> {
+  console.warn(`[googleTranslate] ${what}: ${message}`);
+  const now = Date.now();
+  if (now - (lastLogged.get(what) ?? 0) < 60_000) return;
+  lastLogged.set(what, now);
+  const status = Number(/HTTP (\d{3})/.exec(message)?.[1]) || null;
+  await logError({
+    service: "google-translate",
+    route: "translate",
+    status,
+    ...(status == null ? { kind: what === "config" ? "auth" : "bad-response" } : {}),
+    message: `${what}: ${message}`.slice(0, 600),
+    context: { target },
+  });
+}
 
 /**
  * Map app language codes (BCP-47, lowercased) to Google Translate
@@ -63,7 +90,11 @@ export async function googleTranslateBatch(texts: string[], target: string): Pro
   if (texts.length === 0) return [];
   const apiKey = typeof process !== "undefined" ? process.env?.GOOGLE_TRANSLATE_KEY : undefined;
   if (!apiKey) {
-    console.warn("[googleTranslate] GOOGLE_TRANSLATE_KEY missing — returning source strings");
+    await reportFailure(
+      "config",
+      "GOOGLE_TRANSLATE_KEY missing — returning source strings",
+      target,
+    );
     return texts;
   }
 
@@ -86,7 +117,7 @@ export async function googleTranslateBatch(texts: string[], target: string): Pro
     );
     return results.flat();
   } catch (err) {
-    console.warn("[googleTranslate] batch failed", err);
+    await reportFailure("batch", err instanceof Error ? err.message : String(err), target);
     return texts;
   }
 }
