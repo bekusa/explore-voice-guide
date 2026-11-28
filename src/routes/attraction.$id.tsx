@@ -659,6 +659,37 @@ function AttractionPage() {
    * falls back to the name search. */
   const detailsCity =
     (typeof attraction?.city === "string" ? attraction.city : null) || searchCity || undefined;
+
+  /* "About this place" and "The story" from lists already in the cache
+   * (Beka 2026-11-28, "კიდე მარტო the tour დააგენერირა"). Until now
+   * they arrived only via fetchAttractions below, which for a name
+   * nobody had searched builds a whole new list (~35 s, paid) and may
+   * not even contain the place. /api/place-summary looks the place up in
+   * its own and its city's cached list instead — free and fast. Used
+   * only to fill sections the attraction record leaves empty. */
+  const hasOwnText = Boolean(
+    attraction?.outside_desc || attraction?.description || attraction?.insider_desc,
+  );
+  const [summary, setSummary] = useState<{ about?: string; story?: string } | null>(null);
+  useEffect(() => {
+    if (!hintLoaded || hasOwnText) return;
+    let cancelled = false;
+    setSummary(null);
+    const qs = new URLSearchParams({ name: guideLookupName, lang: language });
+    if (detailsCity) qs.set("city", detailsCity);
+    fetch(`/api/place-summary?${qs.toString()}`)
+      .then((r) => (r.ok ? (r.json() as Promise<{ about?: string; story?: string }>) : null))
+      .then((d) => {
+        if (!cancelled && d && (d.about || d.story)) setSummary({ about: d.about, story: d.story });
+      })
+      .catch(() => {
+        /* optional enrichment — the fetchAttractions path still runs */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [hintLoaded, hasOwnText, guideLookupName, language, detailsCity]);
+
   const fallbackLat =
     typeof attraction?.lat === "number" ? attraction.lat : (geocoded?.lat ?? null);
   const fallbackLng =
@@ -1317,13 +1348,13 @@ function AttractionPage() {
             about text fills in later if the list adds anything. */}
             <AboutSection
               loading={loadingScript}
-              aboutText={a?.outside_desc ?? a?.description ?? ""}
+              aboutText={a?.outside_desc || a?.description || summary?.about || ""}
             />
 
             {/* The story — what a local would tell you (n8n: insider_desc).
             SECOND: longer, story-shaped intro before the audio guide
             content itself. */}
-            <StorySection storyText={a?.insider_desc} />
+            <StorySection storyText={a?.insider_desc || summary?.story} />
 
             {/* The stops — the full narrated audio-guide content (n8n: script).
             THIRD: rendered as flowing prose, with no chapter cards or

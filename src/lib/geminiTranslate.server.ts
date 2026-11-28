@@ -118,20 +118,79 @@ export async function geminiTranslateBatch(
     return texts;
   }
 
+  const ctx = { target: targetLangName, strings: texts.length };
+
+  /* Beka 2026-11-28, hours after the switch: "კიდე ჩავარდა". The new
+   * model returned 26 strings for 15 — it splits multi-sentence items —
+   * and the old all-or-nothing length check threw the whole batch away.
+   * Items now travel with an id and come back matched by id, so a split
+   * or merged item can no longer shift every string after it. Items that
+   * come back missing get one second try on their own. If any are still
+   * missing, the WHOLE batch is reported as failed: callers would
+   * otherwise cache a half-English payload under the target language,
+   * which stays wrong long after a plain failure would have retried. */
+  const first = await translateById(
+    texts.map((text, id) => ({ id, text })),
+    targetLangName,
+    apiKey,
+    ctx,
+  );
+  if (!first) return texts;
+  const out: Array<string | undefined> = texts.map((_, i) => first.get(i));
+  let missing = out.flatMap((v, i) => (v === undefined ? [i] : []));
+  if (missing.length > 0) {
+    const second = await translateById(
+      missing.map((id) => ({ id, text: texts[id] })),
+      targetLangName,
+      apiKey,
+      { ...ctx, retryOf: missing.length },
+    );
+    if (second) for (const i of missing) out[i] = second.get(i) ?? out[i];
+    missing = out.flatMap((v, i) => (v === undefined ? [i] : []));
+    if (missing.length > 0) {
+      await reportFailure(
+        "shape",
+        `${missing.length} of ${texts.length} items missing after retry — batch left untranslated`,
+        null,
+        ctx,
+      );
+      return texts;
+    }
+  }
+  return out as string[];
+}
+
+type Item = { id: number; text: string };
+
+/**
+ * One request: items with ids in, Map id → translation out. null on a
+ * hard failure (network, HTTP error, unreadable reply), already reported.
+ * Tries the next model only when the current one is gone, and waits and
+ * retries once on 429 (per-minute limit — a single page can send several
+ * translations at once).
+ */
+async function translateById(
+  items: Item[],
+  targetLangName: string,
+  apiKey: string,
+  ctx: Record<string, unknown>,
+): Promise<Map<number, string> | null> {
   // The model card prompt: explicit about preserving placeholders,
   // proper nouns, and the country-vs-state disambiguation that v2
   // got wrong for Georgia.
   const systemInstruction =
-    `You are a translation engine. Translate every input string into ${targetLangName}.\n\n` +
+    `You are a translation engine. Translate the "text" of every item into ${targetLangName}.\n\n` +
     `Strict rules:\n` +
-    `  - Output ONLY a JSON array of translated strings, same length and same order as the input.\n` +
+    `  - Output ONLY JSON of the form {"items":[{"id":<same id>,"text":"<translation>"}]}.\n` +
+    `  - Exactly one output item per input item, with the same id. Never split an item into several, never merge items, never drop one.\n` +
+    `  - Keep line breaks inside a text as they are.\n` +
     `  - Do not add comments, prefaces, or explanations.\n` +
     `  - Preserve placeholders like {name}, {n}, %s, {{x}} verbatim.\n` +
     `  - Preserve proper nouns (museum names, artist names, brand names) in their original form unless ${targetLangName} has a well-established conventional spelling.\n` +
     `  - For country and city names, use the canonical ${targetLangName} form (e.g. "Georgia" → the South Caucasus country, not the US state, when context is about a city or museum).\n` +
     `  - Never return the source text untranslated unless it is a brand name, code, or already in ${targetLangName}.\n`;
 
-  const userPayload = JSON.stringify({ inputs: texts });
+  const userPayload = JSON.stringify({ items });
 
   const body = {
     systemInstruction: { parts: [{ text: systemInstruction }] },
@@ -145,21 +204,31 @@ export async function geminiTranslateBatch(
       maxOutputTokens: 16384,
     },
   };
-  const ctx = { target: targetLangName, strings: texts.length };
+
+  const post = (m: string) =>
+    fetch(`${geminiUrl(m)}?key=${encodeURIComponent(apiKey)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
 
   let res: Response | null = null;
   let model: string = GEMINI_MODELS[0];
   for (const m of GEMINI_MODELS) {
     model = m;
     try {
-      res = await fetch(`${geminiUrl(m)}?key=${encodeURIComponent(apiKey)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+      res = await post(m);
+      if (res.status === 429) {
+        // Logged only if the retry fails too (below) — a 429 that clears
+        // after a second is not an incident.
+        console.warn(`[geminiTranslate] 429 on ${m} — retrying once in 1.5 s`);
+        await res.text().catch(() => "");
+        await new Promise((r) => setTimeout(r, 1500));
+        res = await post(m);
+      }
     } catch (err) {
       await reportFailure("network", String(err), null, { ...ctx, model: m });
-      return texts;
+      return null;
     }
     if (res.ok) break;
     const errTxt = await res.text().catch(() => "");
@@ -167,10 +236,10 @@ export async function geminiTranslateBatch(
       ...ctx,
       model: m,
     });
-    if (!isModelGone(res.status, errTxt)) return texts;
+    if (!isModelGone(res.status, errTxt)) return null;
     res = null; // retired model — try the next one
   }
-  if (!res) return texts;
+  if (!res) return null;
 
   type GeminiResponse = {
     candidates?: Array<{
@@ -184,7 +253,7 @@ export async function geminiTranslateBatch(
     data = (await res.json()) as GeminiResponse;
   } catch (err) {
     await reportFailure("parse", `response body: ${String(err)}`, null, { ...ctx, model });
-    return texts;
+    return null;
   }
 
   // Join the answer parts; skip any thought part a thinking model adds.
@@ -198,12 +267,12 @@ export async function geminiTranslateBatch(
       ...ctx,
       model,
     });
-    return texts;
+    return null;
   }
 
-  let translations: unknown;
+  let parsed: unknown;
   try {
-    translations = JSON.parse(text);
+    parsed = JSON.parse(text);
   } catch (err) {
     await reportFailure(
       "parse",
@@ -211,36 +280,32 @@ export async function geminiTranslateBatch(
       null,
       { ...ctx, model, chars: text.length },
     );
-    return texts;
+    return null;
   }
 
-  // Accept both `[...]` (a bare array) and `{ "translations": [...] }`
-  // shapes — Gemini sometimes wraps the array in an object even when
-  // the system prompt asks for a bare array.
-  let arr: unknown[];
-  if (Array.isArray(translations)) {
-    arr = translations;
-  } else if (
-    typeof translations === "object" &&
-    translations !== null &&
-    "translations" in translations &&
-    Array.isArray((translations as { translations: unknown }).translations)
-  ) {
-    arr = (translations as { translations: unknown[] }).translations;
-  } else {
-    await reportFailure("shape", "unexpected response shape", null, { ...ctx, model });
-    return texts;
+  // Expected {"items":[{id,text}]}; also accept a bare array of those.
+  // A plain array of strings (the old protocol) is used only when its
+  // length matches exactly — position is then the only key there is.
+  const list: unknown[] = Array.isArray(parsed)
+    ? parsed
+    : parsed && typeof parsed === "object" && Array.isArray((parsed as { items?: unknown }).items)
+      ? ((parsed as { items: unknown[] }).items ?? [])
+      : [];
+  const got = new Map<number, string>();
+  const ids = new Set(items.map((it) => it.id));
+  if (list.length === items.length && list.every((v) => typeof v === "string")) {
+    items.forEach((it, i) => got.set(it.id, list[i] as string));
+    return got;
   }
-
-  if (arr.length !== texts.length) {
-    await reportFailure(
-      "shape",
-      `length mismatch: expected ${texts.length}, got ${arr.length}`,
-      null,
-      { ...ctx, model },
-    );
-    return texts;
+  for (const v of list) {
+    if (!v || typeof v !== "object") continue;
+    const { id, text: t } = v as { id?: unknown; text?: unknown };
+    const n = typeof id === "number" ? id : typeof id === "string" ? Number(id) : NaN;
+    if (ids.has(n) && typeof t === "string" && t.trim() && !got.has(n)) got.set(n, t);
   }
-
-  return arr.map((v, i) => (typeof v === "string" ? v : texts[i]));
+  if (got.size === 0) {
+    await reportFailure("shape", "no usable items in the reply", null, { ...ctx, model });
+    return null;
+  }
+  return got;
 }
