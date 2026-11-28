@@ -149,9 +149,17 @@ function watchForHuman(): void {
 }
 
 /** True when this report should not be sent (now, or — if held — yet). */
+/* Beka 2026-11-28: the other recurring row was "Failed to load link" for
+ * fonts.googleapis.com — the Playfair Display stylesheet, on visits that
+ * arrive from the /explore/ pages. A blocked web font changes nothing
+ * but the typeface (the page falls back to a system font), so unlike
+ * our own /assets chunks it is never a blank page. Dropped outright. */
+const FONT_HOST = /(^|\.)fonts\.(googleapis|gstatic)\.com$/i;
+
 function holdOrDropImage(report: ClientErrorReport, message: string): boolean {
-  if (!/^Failed to load img\b/.test(message)) return false;
   const host = hostOf(report.source);
+  if (host && FONT_HOST.test(host)) return true;
+  if (!/^Failed to load img\b/.test(message)) return false;
   if (host && TILE_HOST.test(host)) return true;
   if (isAutomated()) return true;
   if (humanSeen) return false;

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import "leaflet/dist/leaflet.css";
 import { destroyLeafletMap } from "@/lib/destroyLeafletMap";
@@ -43,6 +43,7 @@ import { UnescoBadge } from "@/components/UnescoBadge";
 import { PracticalInfo } from "@/components/PracticalInfo";
 import { GuideRating } from "@/components/GuideRating";
 import { noteLocationViewed } from "@/lib/reviewPrompt";
+import { READING_SIZES, setReadingStep, useReadingSize, useReadingStep } from "@/lib/readingSize";
 import { isUnescoSite } from "@/lib/unesco";
 import { LANGUAGE_COUNT_LABEL } from "@/lib/languages";
 import {
@@ -87,6 +88,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   getCachedGuide,
   getCachedGuideData,
+  looksUntranslated,
   onGuideCacheChange,
   removeCachedGuide,
 } from "@/lib/guideCache";
@@ -485,7 +487,13 @@ function AttractionPage() {
   useEffect(() => {
     const slug = attractionSlug(searchName ?? unslugAttraction(id));
     const seed = getSaved().find((s) => s.id === slug);
-    if (seed?.attraction) {
+    /* A saved copy keeps the language it was saved in — English if it was
+     * saved in English, or during the 2026-11 translation outage. Showing
+     * that under a Georgian page is what Beka saw on Narikala ("ნაწილი
+     * ქართულია და ნაწილი ინგლისური", 2026-11-28). Skip such a seed; the
+     * network fills the page in the right language a moment later. */
+    const seedText = `${seed?.attraction?.description ?? ""}\n${seed?.attraction?.insider_desc ?? ""}`;
+    if (seed?.attraction && !looksUntranslated(seedText, language)) {
       setAttraction((cur) => (cur && cur.city ? cur : seed.attraction));
     }
     /* Keyed the same way the guide effect below keys it (English where
@@ -1290,6 +1298,11 @@ function AttractionPage() {
             the n8n /webhook/guide with that interest, and the script /
             chips come back tilted toward it. History default. */}
             <InterestPicker current={interest} onPick={setInterest} loading={loadingScript} />
+
+            {/* Text size for the three prose sections below (Beka 2026-11-28). */}
+            <div className="mt-6 flex justify-end px-6">
+              <ReadingSizeControl />
+            </div>
 
             {/* About — outside-view short description (n8n: outside_desc).
             FIRST: at-a-glance factual summary.
@@ -2213,6 +2226,7 @@ function InterestPicker({
  */
 function AboutSection({ loading, aboutText }: { loading: boolean; aboutText: string }) {
   const t = useT();
+  const fontSize = useReadingSize();
   // Split into readable paragraphs. n8n sometimes returns a single
   // unbroken sentence-pile, sometimes proper paragraphs separated by
   // blank lines. Strategy:
@@ -2274,12 +2288,104 @@ function AboutSection({ loading, aboutText }: { loading: boolean; aboutText: str
           {t("attr.aboutWord")} <span className="italic text-primary">{t("attr.thisPlace")}</span>
         </h2>
       </div>
-      <div className="mt-4 space-y-3 text-[13.5px] leading-relaxed text-foreground/80">
+      <div className={PROSE_CLASS} style={{ fontSize }}>
         {paragraphs.map((p, i) => (
           <p key={i}>{p}</p>
         ))}
       </div>
     </section>
+  );
+}
+
+/* ── Reading prose: one look for all three long sections ─────────────
+ * Beka 2026-11-28: "გამოტანილი კონტენტი … სხვა და სხვა ფონტის ზომის:
+ * about this place, the story, the tour". They were 13.5 px, 15.5 px and
+ * 14 px with three different line heights and opacities. Now one class
+ * and one size, which the reader can change with ReadingSizeControl. */
+const PROSE_CLASS = "mt-4 space-y-3.5 leading-[1.7] text-foreground/85";
+
+/** "A− A+" for the prose below it. Glyph-only, so it needs no translation;
+ *  the aria-labels carry the words for screen readers. */
+function ReadingSizeControl() {
+  const t = useT();
+  const stepNow = useReadingStep();
+  const btn =
+    "flex h-8 min-w-8 items-center justify-center rounded-full border border-border bg-secondary/40 px-2.5 font-display text-foreground transition-smooth active:scale-95 disabled:opacity-35";
+  return (
+    <div className="flex items-center gap-1.5" role="group" aria-label={t("attr.textSize")}>
+      <button
+        type="button"
+        onClick={() => setReadingStep(stepNow - 1)}
+        disabled={stepNow <= 0}
+        aria-label={t("attr.textSmaller")}
+        className={`${btn} text-[13px]`}
+      >
+        A−
+      </button>
+      <button
+        type="button"
+        onClick={() => setReadingStep(stepNow + 1)}
+        disabled={stepNow >= READING_SIZES.length - 1}
+        aria-label={t("attr.textLarger")}
+        className={`${btn} text-[17px]`}
+      >
+        A+
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Body of "The story" and "The tour". Beka 2026-11-28: "The story და The
+ * Tour იყოს აკეცილი". Closed, it shows the opening three lines fading out,
+ * so the reader can see there is text there; the button opens the rest.
+ * Closing a long tour scrolls its heading back into view, otherwise the
+ * reader is left somewhere far below the section they just folded.
+ */
+function CollapsibleProse({
+  paragraphs,
+  fontSize,
+  sectionRef,
+}: {
+  paragraphs: string[];
+  fontSize: number;
+  sectionRef: React.RefObject<HTMLElement | null>;
+}) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const bodyId = useId();
+  const toggle = () => {
+    setOpen((was) => {
+      if (was) sectionRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      return !was;
+    });
+  };
+  return (
+    <>
+      <div id={bodyId} className={`relative ${PROSE_CLASS}`} style={{ fontSize }}>
+        {open ? (
+          paragraphs.map((p, i) => <p key={i}>{p}</p>)
+        ) : (
+          <>
+            <p className="line-clamp-3">{paragraphs[0]}</p>
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-background to-transparent"
+            />
+          </>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={toggle}
+        aria-expanded={open}
+        aria-controls={bodyId}
+        className="mt-3 inline-flex items-center gap-1 rounded-full border border-primary/40 px-3.5 py-1.5 text-[13px] font-semibold text-primary transition-smooth active:scale-95"
+      >
+        {open ? t("card.collapse") : t("card.expand")}
+        <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+    </>
   );
 }
 
@@ -2290,6 +2396,8 @@ function AboutSection({ loading, aboutText }: { loading: boolean; aboutText: str
  */
 function StorySection({ storyText }: { storyText?: string }) {
   const t = useT();
+  const fontSize = useReadingSize();
+  const ref = useRef<HTMLElement | null>(null);
   if (!storyText || !storyText.trim()) return null;
   // insider_desc may arrive as one long line or as paragraphs — split
   // on blank lines so multi-paragraph stories stay readable.
@@ -2298,18 +2406,14 @@ function StorySection({ storyText }: { storyText?: string }) {
     .map((p) => p.trim())
     .filter(Boolean);
   return (
-    <section className="mt-8 px-6">
+    <section ref={ref} className="mt-8 scroll-mt-4 px-6">
       <div className="flex items-center gap-2">
         <Sparkles className="h-4 w-4 text-primary" />
         <h2 className="font-display text-[20px] text-foreground">
           {t("attr.theWord")} <span className="italic text-primary">{t("attr.story")}</span>
         </h2>
       </div>
-      <div className="mt-4 space-y-4 text-[15.5px] leading-[1.75] text-foreground/90">
-        {paragraphs.map((p, i) => (
-          <p key={i}>{p}</p>
-        ))}
-      </div>
+      <CollapsibleProse paragraphs={paragraphs} fontSize={fontSize} sectionRef={ref} />
     </section>
   );
 }
@@ -2323,6 +2427,8 @@ function StorySection({ storyText }: { storyText?: string }) {
  */
 function StopsSection({ script, loading }: { script: string; loading: boolean }) {
   const t = useT();
+  const fontSize = useReadingSize();
+  const ref = useRef<HTMLElement | null>(null);
   const paragraphs = useMemo(
     () =>
       stripTtsMarkers(script)
@@ -2373,18 +2479,14 @@ function StopsSection({ script, loading }: { script: string; loading: boolean })
   if (paragraphs.length === 0) return null;
 
   return (
-    <section className="mt-8 px-6">
+    <section ref={ref} className="mt-8 scroll-mt-4 px-6">
       <div className="flex items-center gap-2">
         <BookOpen className="h-4 w-4 text-primary" />
         <h2 className="font-display text-[20px] text-foreground">
           {t("attr.theWord")} <span className="italic text-primary">{t("attr.stopsWord")}</span>
         </h2>
       </div>
-      <div className="mt-4 space-y-3.5 text-[14px] leading-[1.7] text-foreground/85">
-        {paragraphs.map((p, i) => (
-          <p key={i}>{p}</p>
-        ))}
-      </div>
+      <CollapsibleProse paragraphs={paragraphs} fontSize={fontSize} sectionRef={ref} />
     </section>
   );
 }

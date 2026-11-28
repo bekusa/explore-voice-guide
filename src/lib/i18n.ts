@@ -854,6 +854,11 @@ export const UI_STRINGS = {
   "attr.stopsWord": "tour",
   "attr.aboutWord": "About",
   "attr.thisPlace": "this place",
+  // Text-size buttons above the prose sections (2026-11-28). The buttons
+  // show "A−" / "A+" only; these are their screen-reader labels.
+  "attr.textSize": "Text size",
+  "attr.textSmaller": "Smaller text",
+  "attr.textLarger": "Larger text",
   "attr.keyFacts": "Key facts",
   "attr.keyFactsTitle": "Key facts",
   "attr.whatToLook": "What to look for",
