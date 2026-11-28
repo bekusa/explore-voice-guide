@@ -55,7 +55,7 @@ export const CONFIG = {
   concurrency: 1,
   /** Per-kind exception (Beka 2026-11-16, guide queue to the 31,899 target: "იყოს 4 ერთდროულად").
    *  Same Max usage per guide, ~4x faster; the dashboard shows up to four guides at once. */
-  concurrencyByKind: { guide: 4 } as Partial<Record<"guide" | "attractions", number>>,
+  concurrencyByKind: { guide: 4, attractions: 4 /* Beka 2026-11-28: "გაზარდე რომ უფრო სწრაფად წავიდეს" */ } as Partial<Record<"guide" | "attractions", number>>,
   /** Re-rolls are for contract failures only (unparseable, too short, broken chips).
    *  Fact problems go straight to REPAIR — a fresh sample brings fresh errors. */
   maxRerolls: 2,
